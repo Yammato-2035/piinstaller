@@ -1598,9 +1598,15 @@ const Documentation: React.FC = () => {
                   Die Version wird <strong>pro Bereich</strong> bei jeder Änderung/Fehlerbehebung erhöht; die Dokumentation wird dazu selbstständig ergänzt. Details: <code className="bg-slate-700 px-1 rounded">VERSIONING.md</code> im Projekt.
                 </p>
                   <div className="mt-4 p-3 bg-sky-900/20 dark:bg-sky-900/20 border border-sky-700/40 dark:border-sky-700/40 rounded-lg">
-                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version: {appVersion}</p>
+                  <p className="text-sm font-semibold text-white dark:text-white mb-2">Aktuelle Version (dieses UI-Builds): {appVersion}</p>
+                  <p className="text-xs opacity-90 mb-3">
+                    Build-Version kommt aus <code className="bg-slate-700 px-1 rounded">frontend/package.json</code> (Vite). Soll sie mit dem Repo übereinstimmen: im Ordner{' '}
+                    <code className="bg-slate-700 px-1 rounded">frontend/</code> den Befehl <code className="bg-slate-700 px-1 rounded">node sync-version.js</code> ausführen (liest{' '}
+                    <code className="bg-slate-700 px-1 rounded">config/version.json</code>) und den Dev-Server neu starten.
+                  </p>
+                  <p className="text-xs font-semibold text-sky-200 mb-2">Changelog — ältere Meilensteine (nicht die laufende Build-Version)</p>
                   <div className="mb-3">
-                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">1.5.0.0 (Backup-Runner / Recovery-Grundlage)</p>
+                    <p className="text-xs font-semibold text-sky-300 dark:text-sky-300 mb-1">Release 1.5.0.0 (Backup-Runner / Recovery-Grundlage)</p>
                     <ul className="list-disc list-inside text-xs opacity-95 mt-1 ml-4 space-y-1">
                       <li><strong>Data-Runner:</strong> Helper/Template-Unit <code className="bg-slate-700 px-1 rounded">setuphelfer-backup@.service</code>, Polkit, <code className="bg-slate-700 px-1 rounded">packaging/helpers/setuphelfer-backup-starter.py</code>; Doku <code className="bg-slate-700 px-1 rounded">BACKUP_SYSTEMD_RUN_MIGRATION.md</code></li>
                       <li><strong>Full-Runner:</strong> vorbereitet/teilvalidiert (<code className="bg-slate-700 px-1 rounded">backend/tools/backup_runner.py</code>); Verify basic/deep; Partial-Archiv-, Paketmanager- und Suspend-Schutz (<code className="bg-slate-700 px-1 rounded">systemd-inhibit</code>); Testmatrix <code className="bg-slate-700 px-1 rounded">BACKUP_RESTORE_STABILITY_TEST_MATRIX.md</code></li>

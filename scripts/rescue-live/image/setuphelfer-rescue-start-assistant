@@ -71,6 +71,8 @@ EOF
 
 _on_exit() {
   local rc=$?
+  _media_stable="$(setuphelfer_rescue_media_is_stable)"
+  _network_ok="$(setuphelfer_rescue_network_is_ok)"
   if [[ "$rc" -ne 0 && "$_exit_code" -eq 0 ]]; then
     _exit_code="$rc"
     _last_error_code="ASSISTANT_EXIT_${rc}"
@@ -118,6 +120,7 @@ Der Assistent führt Sie Schritt für Schritt durch:
   • Sichere Empfehlung / Plan (ohne automatisches Schreiben)
 
 OK = weiter" 22 78 3>&1 1>&2 2>&3 || return 1
+    setuphelfer_rescue_ensure_telemetry_opt_in
   else
     setuphelfer_rescue_show_branding
     echo "Setuphelfer Rettungsstick — Startassistent"
@@ -129,9 +132,15 @@ OK = weiter" 22 78 3>&1 1>&2 2>&3 || return 1
 _step_media() {
   _wizard_step="media_check"
   _status_write
-  "${SCRIPT_DIR}/setuphelfer-rescue-media-check" || true
+  # The media-check.service already ran the (slow, ~45s on USB) sha256 integrity
+  # check before this assistant starts (After=...media-check.service) and wrote
+  # MEDIA_JSON. Re-running it here hashed 1.2 GB a second time and froze the TUI on
+  # a blank screen for ~45s. Reuse the existing result; only run if it is missing.
+  if [[ ! -f "$MEDIA_JSON" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-media-check" || true
+  fi
   if [[ -f "$MEDIA_JSON" ]]; then
-    _media_stable="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("live_media_runtime_stable", False))' "$MEDIA_JSON" 2>/dev/null || echo false)"
+    _media_stable="$(setuphelfer_rescue_media_is_stable)"
   fi
   if [[ "$_media_stable" != true ]]; then
     if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
@@ -153,18 +162,19 @@ _step_network() {
   if [[ "$MODE" == "--boot-trigger" ]]; then
     "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --non-interactive || _rc=$?
     if [[ -f "$NETWORK_JSON" ]]; then
-      _network_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source") in ("ethernet_connected","already_connected","prepared_env","known_nm_profile","interactive_menu")))' "$NETWORK_JSON" 2>/dev/null || echo false)"
+      _network_ok="$(setuphelfer_rescue_network_is_ok)"
     fi
     if [[ "$_network_ok" != true ]]; then
+      _rc=0
       "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || _rc=$?
+    else
+      _rc=0
     fi
   else
     "${SCRIPT_DIR}/setuphelfer-rescue-network-onboarding" --interactive || _rc=$?
   fi
-  if [[ -f "$NETWORK_JSON" ]]; then
-    _network_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source") in ("ethernet_connected","already_connected","prepared_env","known_nm_profile","interactive_menu")))' "$NETWORK_JSON" 2>/dev/null || echo false)"
-  fi
-  if [[ "$_rc" -eq 20 ]]; then
+  _network_ok="$(setuphelfer_rescue_network_is_ok)"
+  if [[ "$_rc" -eq 20 && "$_network_ok" != true ]]; then
     if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
       whiptail --title "Netzwerk" --msgbox "Offline-Modus. Telemetrie wird bei Verbindung automatisch nachgesendet (Spool)." 10 60 3>&1 1>&2 2>&3 || true
     fi
@@ -174,6 +184,7 @@ _step_network() {
 
 _step_telemetry() {
   _wizard_step="telemetry"
+  _network_ok="$(setuphelfer_rescue_network_is_ok)"
   _status_write
   local _health_ok=false
   if ip route show default 2>/dev/null | grep -q .; then
@@ -185,7 +196,7 @@ _step_telemetry() {
   "${SCRIPT_DIR}/setuphelfer-rescue-telemetry-push" || true
   systemctl start setuphelfer-rescue-telemetry-retry.timer 2>/dev/null || true
   if [[ -f "$ACK_JSON" ]]; then
-    _telemetry_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("http_status")==200)' "$ACK_JSON" 2>/dev/null || echo false)"
+    _telemetry_ok="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("true" if d.get("http_status")==200 else "false")' "$ACK_JSON" 2>/dev/null || echo false)"
     _last_ack_id="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print(d.get("ack_id") or d.get("response",{}).get("ack_id") or "")' "$ACK_JSON" 2>/dev/null || echo "")"
   fi
   if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
@@ -276,7 +287,10 @@ _main_menu() {
         ;;
       quit)
         setuphelfer_rescue_record_menu_evidence "quit" "ok" ""
-        break
+        if _final_actions; then
+          return 2
+        fi
+        return 0
         ;;
       *)
         setuphelfer_rescue_record_menu_evidence "${_choice:-unknown}" "unknown" "unexpected_choice"
@@ -285,14 +299,57 @@ _main_menu() {
   done
 }
 
+# Offer real end actions after the wizard. The service uses RemainAfterExit=yes and
+# Conflicts=getty@tty1, so just exiting leaves tty1 frozen with no shell/getty — which
+# looked like "quit does nothing". Returns 0 = leave (system going down), 10 = back to menu.
+_final_actions() {
+  local _fin _fin_rc
+  if ! command -v whiptail >/dev/null 2>&1 || ! setuphelfer_rescue_has_interactive_tty; then
+    return 0
+  fi
+  set +e
+  _fin="$(whiptail --title "Setuphelfer Rettungsstick" \
+    --menu "Assistent beendet — Aktion wählen:" 14 70 4 \
+    "menu" "Zurück zum Assistenten-Menü" \
+    "reboot" "Neustart" \
+    "poweroff" "Herunterfahren" 3>&1 1>&2 2>&3)"
+  _fin_rc=$?
+  set -e
+  if [[ "$_fin_rc" -ne 0 ]]; then
+    return 10
+  fi
+  case "$_fin" in
+    reboot)
+      whiptail --infobox "Neustart wird ausgeführt…" 7 50 3>&1 1>&2 2>&3 || true
+      systemctl reboot 2>/dev/null || reboot 2>/dev/null || true
+      sleep 15
+      return 0
+      ;;
+    poweroff)
+      whiptail --infobox "Rechner wird heruntergefahren…" 7 50 3>&1 1>&2 2>&3 || true
+      systemctl poweroff 2>/dev/null || poweroff 2>/dev/null || true
+      sleep 15
+      return 0
+      ;;
+    *)
+      return 10
+      ;;
+  esac
+}
+
 if [[ "$MODE" == "--boot-trigger" ]]; then
   _autostart=true
   if ! setuphelfer_rescue_cmdline_has_start_assistant; then
     _exit_code=0
     exit 0
   fi
-  if [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x /usr/local/sbin/setuphelfer-rescue-ui-launch ]]; then
-    exec /usr/local/sbin/setuphelfer-rescue-ui-launch
+  # Graphical kiosk (X + chromium) is OPT-IN via setuphelfer_kiosk=1. By default we
+  # run the text TUI wizard below, which works on every GPU (incl. NVIDIA GTX 1070
+  # without a driver, or nomodeset). Blindly exec'ing the graphical kiosk on tty1
+  # without an X server left the screen at a blinking cursor on real hardware.
+  if grep -qw 'setuphelfer_kiosk=1' /proc/cmdline 2>/dev/null \
+     && [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x /usr/local/sbin/setuphelfer-rescue-kiosk-start ]]; then
+    exec /usr/local/sbin/setuphelfer-rescue-kiosk-start
   fi
   if setuphelfer_rescue_prepare_tty1; then
     _tty1_prepared=true
@@ -326,7 +383,15 @@ _step_network
 _step_telemetry
 _step_disks
 _step_recommendation
-_main_menu
+while true; do
+  set +e
+  _main_menu
+  _menu_rc=$?
+  set -e
+  if [[ "$_menu_rc" -eq 2 ]]; then
+    break
+  fi
+done
 _wizard_write_state
 _status_write "completed"
 setuphelfer_rescue_run_evidence_bundle

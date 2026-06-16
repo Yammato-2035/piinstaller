@@ -1,16 +1,10 @@
 # Payload Fix — Build Tree Clean
 
-**Status:** `blocked`
+**Status:** `clean_ok` (Operator mit sudo)
 
 | Feld | Wert |
 |------|------|
-| `clean_exit` | **32** — root-owned paths, sudo erforderlich |
-| Dry-run | 11 Ziele inkl. `binary.hybrid.iso`, `filesystem.squashfs` |
-| stale ISO/squashfs | **nicht entfernt** |
+| `clean_exit` | **0** (Operator; stale ISO/Squashfs entfernt) |
+| stale ISO/squashfs | entfernt (Rebuild 2026-06-04 16:28–16:31) |
 
-## Operator
-
-```bash
-cd /home/volker/piinstaller
-sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
-```
+Hinweis: Agent-Capture `payload_fix_clean_apply_latest.log` zeigt **32** ohne sudo — Operator-Lauf im Terminal war erfolgreich.

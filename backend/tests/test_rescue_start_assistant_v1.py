@@ -33,6 +33,48 @@ class RescueStartAssistantTests(unittest.TestCase):
             proc = subprocess.run(["bash", "-n", str(IMAGE / name)], capture_output=True, text=True)
             self.assertEqual(proc.returncode, 0, f"{name}: {proc.stderr}")
 
+    def test_boolean_flags_emit_lowercase_for_bash(self) -> None:
+        # Regression: python prints booleans as "True"/"False" but bash compares
+        # against lowercase `true`. The capital form NEVER matched, so a stable
+        # medium still showed "Live-Medium nicht stabil" and a connected Wi-Fi still
+        # showed "Kein Netzwerk" (looked like the password was rejected).
+        text = (IMAGE / "setuphelfer-rescue-start-assistant").read_text(encoding="utf-8")
+        for flag in ("_media_stable=", "_network_ok=", "_telemetry_ok="):
+            for line in text.splitlines():
+                if line.strip().startswith(flag) and "python3" in line:
+                    self.assertTrue(
+                        ".lower()" in line or 'print("true"' in line,
+                        f"{flag} must emit lowercase bool for bash: {line.strip()}",
+                    )
+
+    def test_quit_offers_real_end_actions(self) -> None:
+        # Regression: the service runs RemainAfterExit=yes + Conflicts=getty@tty1, so
+        # plain exit froze tty1 ("quit does nothing"). The wizard must offer
+        # reboot/poweroff end actions.
+        text = (IMAGE / "setuphelfer-rescue-start-assistant").read_text(encoding="utf-8")
+        self.assertIn("_final_actions()", text)
+        self.assertIn("systemctl reboot", text)
+        self.assertIn("systemctl poweroff", text)
+
+    def test_offline_msg_only_when_network_still_missing(self) -> None:
+        # Regression: non-interactive onboarding returns exit 20 (WIFI_NOT_CONFIGURED)
+        # but a successful interactive connect must NOT show "Offline-Modus" afterwards.
+        text = (IMAGE / "setuphelfer-rescue-start-assistant").read_text(encoding="utf-8")
+        net_block = text.split("_step_network()", 1)[1].split("_step_telemetry()", 1)[0]
+        self.assertIn('if [[ "$_rc" -eq 20 && "$_network_ok" != true ]]; then', net_block)
+        self.assertIn("_rc=0", net_block)
+
+    def test_quit_shows_final_actions_immediately(self) -> None:
+        text = (IMAGE / "setuphelfer-rescue-start-assistant").read_text(encoding="utf-8")
+        quit_block = text.split('quit)', 1)[1].split('expert)', 1)[0]
+        self.assertIn("_final_actions", quit_block)
+        self.assertIn("return 2", quit_block)
+
+    def test_network_helpers_in_common(self) -> None:
+        common = (IMAGE / "setuphelfer-rescue-common.sh").read_text(encoding="utf-8")
+        self.assertIn("setuphelfer_rescue_network_is_ok", common)
+        self.assertIn("setuphelfer_rescue_ensure_telemetry_opt_in", common)
+
     def test_disk_discovery_classifies_rescue_stick(self) -> None:
         mod = _load_module("disk_discovery", IMAGE / "setuphelfer-rescue-disk-discovery.py")
         devices = [

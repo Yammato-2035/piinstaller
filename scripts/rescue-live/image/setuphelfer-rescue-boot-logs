@@ -1,0 +1,70 @@
+#!/bin/bash
+# Headless boot-log capture — writes the full boot journal, dmesg, failed units
+# and timing to the rescue stick (FAT32 ESP) with a /run fallback, so a boot that
+# does not reach the UI can still be diagnosed offline. Best-effort, never blocks.
+#
+# Uses the system python3 (3.11 in the live image) on purpose — NOT the bundled
+# venv — so log capture works even if the venv/backend is broken.
+set -uo pipefail
+
+export PYTHONPATH="/opt/setuphelfer-rescue/backend:/usr/local/lib/setuphelfer:${PYTHONPATH:-}"
+
+STAMP="$(date +%Y%m%d_%H%M%S 2>/dev/null || echo unknown)"
+TMP="$(mktemp -d 2>/dev/null || echo /tmp/setuphelfer-bootlogs)"
+mkdir -p "$TMP"
+trap 'rm -rf "$TMP"' EXIT
+
+# Collect (each best-effort; a missing tool must not abort the capture).
+journalctl -b --no-pager                                   > "$TMP/journal-boot.log"        2>&1 || true
+dmesg                                                      > "$TMP/dmesg.log"               2>&1 || true
+{ systemctl --failed --no-pager --no-legend;
+  echo '--- list-units (failed) ---';
+  systemctl list-units --type=service --state=failed --no-legend --no-pager; } \
+                                                          > "$TMP/systemd-failed.txt"      2>&1 || true
+systemd-analyze blame                                      > "$TMP/systemd-blame.txt"       2>&1 || true
+systemd-analyze critical-chain                             > "$TMP/systemd-critical-chain.txt" 2>&1 || true
+for svc in setuphelfer-backend setuphelfer-rescue-media-check setuphelfer-rescue-start-assistant setuphelfer setuphelfer-rescue-ui; do
+  systemctl status "$svc" --no-pager -l                    > "$TMP/status-${svc}.txt"       2>&1 || true
+done
+
+python3 - "$TMP" "$STAMP" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+src = Path(sys.argv[1])
+stamp = sys.argv[2]
+try:
+    from rescue.rescue_evidence_spool import (
+        resolve_spool_base,
+        sanitize_rescue_log,
+        LOG_ROOT_REL,
+    )
+except ImportError:
+    print(json.dumps({"status": "skipped", "reason": "module_missing"}))
+    raise SystemExit(0)
+
+base = resolve_spool_base()
+boot_root = base / LOG_ROOT_REL / "boot"
+dest = boot_root / stamp
+written: list[str] = []
+try:
+    dest.mkdir(parents=True, exist_ok=True)
+    for f in sorted(src.glob("*")):
+        if not f.is_file():
+            continue
+        text = sanitize_rescue_log(f.read_text(encoding="utf-8", errors="replace"))
+        (dest / f.name).write_text(text, encoding="utf-8")
+        written.append(f.name)
+    # Stable quick-triage pointer (overwritten each boot).
+    fail = src / "systemd-failed.txt"
+    if fail.is_file():
+        (boot_root / "latest-failed.txt").write_text(
+            sanitize_rescue_log(fail.read_text(encoding="utf-8", errors="replace")),
+            encoding="utf-8",
+        )
+    status = {"status": "written", "base": str(base), "dest": str(dest), "files": written}
+except OSError as exc:
+    status = {"status": "error", "error": str(exc), "base": str(base)}
+print(json.dumps(status))
+PY

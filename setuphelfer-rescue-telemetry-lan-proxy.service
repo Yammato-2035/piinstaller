@@ -1,0 +1,44 @@
+# Setuphelfer Rescue Telemetry LAN Proxy — MSI/Rescue-Stick → LAN :8001 → Backend :8000
+# Installieren: ./scripts/install-rescue-telemetry-lan-proxy-service.sh
+# Status: sudo systemctl status setuphelfer-rescue-telemetry-lan-proxy
+
+[Unit]
+Description=Setuphelfer Rescue Telemetry LAN Proxy (allowlisted forward to backend)
+Documentation=file:/opt/setuphelfer/docs/knowledge-base/development/RESCUE_TELEMETRY_INGEST.md
+After=network-online.target setuphelfer-backend.service
+Wants=network-online.target
+BindsTo=setuphelfer-backend.service
+PartOf=setuphelfer-backend.service
+StartLimitIntervalSec=300
+StartLimitBurst=12
+
+[Service]
+Type=simple
+User={{USER}}
+Group={{USER}}
+WorkingDirectory={{INSTALL_DIR}}
+Environment=PYTHONPATH={{INSTALL_DIR}}/backend:{{INSTALL_DIR}}
+Environment=SETUPHELFER_RESCUE_TELEMETRY_UPSTREAM=http://127.0.0.1:8000
+Environment=SETUPHELFER_RESCUE_TELEMETRY_PORT=8001
+EnvironmentFile=-/etc/setuphelfer/rescue-telemetry-lan-proxy.env
+ExecStartPre=/bin/rm -f /tmp/setuphelfer-rescue-telemetry-lan-proxy.pid
+ExecStartPre=/bin/bash -c 'for i in $(seq 1 90); do curl -sf --max-time 3 http://127.0.0.1:8000/api/rescue/telemetry/health >/dev/null && exit 0; sleep 2; done; echo "setuphelfer-rescue-telemetry-lan-proxy: backend telemetry health not ready" >&2; exit 1'
+ExecStart=/usr/bin/python3 {{INSTALL_DIR}}/scripts/rescue-live/rescue_telemetry_lan_proxy.py
+ExecStopPost=/bin/rm -f /tmp/setuphelfer-rescue-telemetry-lan-proxy.pid
+Restart=on-failure
+RestartSec=5
+TimeoutStartSec=240
+StandardOutput=journal
+StandardError=journal
+NoNewPrivileges=true
+PrivateTmp=no
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths={{INSTALL_DIR}}/docs/evidence/runtime-results/rescue
+ReadWritePaths=/tmp
+RestrictAddressFamilies=AF_INET AF_INET6
+SystemCallArchitectures=native
+SystemCallFilter=@system-service
+
+[Install]
+WantedBy=multi-user.target

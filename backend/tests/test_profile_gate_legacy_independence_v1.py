@@ -49,7 +49,8 @@ class ProfileGateLegacyIndependenceTests(unittest.TestCase):
             self.assertFalse(st.dev_server_enabled)
             self.assertFalse(should_register_dev_server_router())
 
-    def test_release_dev_server_allowed_with_developer_capability(self) -> None:
+    def test_release_dev_server_not_registered_with_developer_capability(self) -> None:
+        """DCC host exemption may enable devserver config but must not mount /api/dev-server in release."""
         with patch.dict(
             os.environ,
             {
@@ -63,7 +64,7 @@ class ProfileGateLegacyIndependenceTests(unittest.TestCase):
             from devserver.config import load_dev_server_config
 
             self.assertTrue(is_dev_server_host_locally_allowed())
-            self.assertTrue(should_register_dev_server_router())
+            self.assertFalse(should_register_dev_server_router())
             cfg = load_dev_server_config()
             self.assertTrue(cfg.enabled)
             self.assertEqual(cfg.mode, "local_lab")

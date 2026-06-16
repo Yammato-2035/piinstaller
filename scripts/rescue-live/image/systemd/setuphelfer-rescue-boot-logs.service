@@ -1,0 +1,16 @@
+[Unit]
+Description=Setuphelfer Rescue headless boot logs to stick
+After=multi-user.target
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-logs
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=120
+ExecStart=/usr/local/sbin/setuphelfer-rescue-boot-logs
+SuccessExitStatus=0
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -4,24 +4,24 @@
   "target_device": "/dev/sdb",
   "target_partition": "/dev/sdb1",
   "iso_path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_sha256": "c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194",
-  "started_at": "2026-06-08T22:05:11Z",
-  "completed_at": "2026-06-08T22:05:41.028426+00:00",
+  "iso_sha256": "2a54a3cfc9b2e13da45beff7d9409669eab81814b8d9ef8e26c0df5a424151cf",
+  "started_at": "2026-06-15T20:19:17Z",
+  "completed_at": "2026-06-15T20:20:35.507845+00:00",
   "write_executed": true,
   "write_status": "success",
   "failed_step": null,
-  "fat_uuid": "C9C8-394A",
+  "fat_uuid": "E4B4-9CD6",
   "pre_state": {
-    "lsblk": "=== pre_lsblk ===\nNAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE FSTYPE PARTTYPENAME    MOUNTPOINTS\nsdb    /dev/sdb   59G Ultra Line 24111412110686 usb  disk                        \n└─sdb1 /dev/sdb1  59G                                part exfat  HPFS/NTFS/exFAT \nNAME PATH      SIZE TYPE FSTYPE PARTTYPENAME    MOUNTPOINTS\nsdb1 /dev/sdb1  59G part exfat  HPFS/NTFS/exFAT \n=== pre_wipefs ===\nDEVICE OFFSET TYPE UUID LABEL\nsdb    0x1fe  dos       \n=== pre_sgdisk ===\n\n***************************************************************\nFound invalid GPT and valid MBR; converting MBR to GPT format\nin memory. \n***************************************************************\n\n\nWarning! Secondary partition table overlaps the last partition by\n33 blocks!\nYou will need to delete this partition or resize it in another utility.\nDisk /dev/sdb: 123699200 sectors, 59.0 GiB\nModel: Ultra Line      \nSector size (logical/physical): 512/512 bytes\nDisk identifier (GUID): 8202D27F-90F9-48DC-818C-321CD9339B2D\nPartition table holds up to 128 entries\nMain partition table begins at sector 2 and ends at sector 33\nFirst usable sector is 34, last usable sector is 123699166\nPartitions will be aligned on 64-sector boundaries\nTotal free space is 30 sectors (15.0 KiB)\n\nNumber  Start (sector)    End (sector)  Size       Code  Name\n   1              64       123699199   59.0 GiB    0700  Microsoft basic data\n"
+    "lsblk": "=== pre_lsblk ===\nNAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE FSTYPE PARTTYPENAME         MOUNTPOINTS\nsdb    /dev/sdb   59G Ultra Line 24111412110686 usb  disk                             \n├─sdb1 /dev/sdb1   4G                                part vfat   EFI System           \n└─sdb2 /dev/sdb2  55G                                part vfat   Microsoft basic data \nNAME PATH      SIZE TYPE FSTYPE PARTTYPENAME MOUNTPOINTS\nsdb1 /dev/sdb1   4G part vfat   EFI System   \n=== pre_wipefs ===\nDEVICE OFFSET      TYPE UUID LABEL\nsdb    0x200       gpt       \nsdb    0xebefffe00 gpt       \nsdb    0x1fe       PMBR      \n=== pre_sgdisk ===\nDisk /dev/sdb: 123699200 sectors, 59.0 GiB\nModel: Ultra Line      \nSector size (logical/physical): 512/512 bytes\nDisk identifier (GUID): 495659B5-D59E-4EFE-86BE-211AC92B0168\nPartition table holds up to 128 entries\nMain partition table begins at sector 2 and ends at sector 33\nFirst usable sector is 34, last usable sector is 123699166\nPartitions will be aligned on 2048-sector boundaries\nTotal free space is 2014 sectors (1007.0 KiB)\n\nNumber  Start (sector)    End (sector)  Size       Code  Name\n   1            2048         8390655   4.0 GiB     EF00  SETUPHELFER_RESCUE\n   2         8390656       123699166   55.0 GiB    0700  SETUPHELFER_LOGS\n"
   },
   "post_state": {
-    "lsblk": "=== post_lsblk ===\nNAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE FSTYPE PARTTYPENAME MOUNTPOINTS\nsdb    /dev/sdb   59G Ultra Line 24111412110686 usb  disk                     \n└─sdb1 /dev/sdb1   4G                                part vfat   EFI System   \nNAME PATH      SIZE TYPE FSTYPE PARTTYPENAME MOUNTPOINTS\nsdb1 /dev/sdb1   4G part vfat   EFI System   \n=== post_blkid ===\n/dev/sdb1: LABEL_FATBOOT=\"SETUPHELFER\" LABEL=\"SETUPHELFER\" UUID=\"C9C8-394A\" VERSION=\"FAT32\" FSBLOCKSIZE=\"4096\" BLOCK_SIZE=\"512\" FSSIZE=\"4294967296\" TYPE=\"vfat\" USAGE=\"filesystem\" PART_ENTRY_SCHEME=\"gpt\" PART_ENTRY_NAME=\"SETUPHELFER_RESCUE\" PART_ENTRY_UUID=\"7419ecd9-a9bc-4749-b113-a95d8022984f\" PART_ENTRY_TYPE=\"c12a7328-f81f-11d2-ba4b-00a0c93ec93b\" PART_ENTRY_NUMBER=\"1\" PART_ENTRY_OFFSET=\"2048\" PART_ENTRY_SIZE=\"8388608\" PART_ENTRY_DISK=\"8:16\"\n"
+    "lsblk": "=== post_lsblk ===\nNAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE FSTYPE PARTTYPENAME         MOUNTPOINTS\nsdb    /dev/sdb   59G Ultra Line 24111412110686 usb  disk                             \n├─sdb1 /dev/sdb1   4G                                part vfat   EFI System           \n└─sdb2 /dev/sdb2  55G                                part vfat   Microsoft basic data \nNAME PATH      SIZE TYPE FSTYPE PARTTYPENAME MOUNTPOINTS\nsdb1 /dev/sdb1   4G part vfat   EFI System   \n=== post_blkid ===\n/dev/sdb1: LABEL_FATBOOT=\"SETUPHELFER\" LABEL=\"SETUPHELFER\" UUID=\"E4B4-9CD6\" VERSION=\"FAT32\" FSBLOCKSIZE=\"4096\" BLOCK_SIZE=\"512\" FSSIZE=\"4294967296\" TYPE=\"vfat\" USAGE=\"filesystem\" PART_ENTRY_SCHEME=\"gpt\" PART_ENTRY_NAME=\"SETUPHELFER_RESCUE\" PART_ENTRY_UUID=\"5d6e5aa7-b5e0-426b-ab8e-71bb81e8a448\" PART_ENTRY_TYPE=\"c12a7328-f81f-11d2-ba4b-00a0c93ec93b\" PART_ENTRY_NUMBER=\"1\" PART_ENTRY_OFFSET=\"2048\" PART_ENTRY_SIZE=\"8388608\" PART_ENTRY_DISK=\"8:16\"\n"
   },
   "verify_status": "success",
   "evidence_status": "complete",
   "evidence_errors": [],
   "rs001_status": "red",
   "rs001_reason": "USB written and verified, hardware boot not yet proven",
-  "evidence_dir": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511",
+  "evidence_dir": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917",
   "secrets_exposed": false
 }

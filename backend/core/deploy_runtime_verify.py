@@ -135,7 +135,13 @@ def verify_runtime_files(
 
 
 def verify_app_route_markers(*, runtime_root: Path) -> dict[str, Any]:
-    """Prueft, dass app.py die erwarteten Route-Deklarationen enthaelt."""
+    """Prueft, dass die erwarteten Route-Deklarationen im Backend vorhanden sind.
+
+    Routen leben teils direkt in app.py, teils in modularen Routern unter
+    backend/api/routes/*.py (z. B. capabilities.py). Daher app.py UND alle
+    Router-Module einbeziehen, sonst meldet der Check refaktorierte Routen
+    faelschlich als fehlend.
+    """
     try:
         rt_root = runtime_root.expanduser().resolve()
     except OSError as exc:
@@ -145,10 +151,22 @@ def verify_app_route_markers(*, runtime_root: Path) -> dict[str, Any]:
     if not app_py.is_file():
         return {"ok": False, "missing_markers": ["backend/app.py"], "app_py_exists": False}
 
-    try:
-        text = app_py.read_text(encoding="utf-8", errors="replace")
-    except OSError as exc:
-        return {"ok": False, "missing_markers": ["backend/app.py:read_failed"], "error": str(exc)}
+    sources = [app_py]
+    routes_dir = rt_root / "backend" / "api" / "routes"
+    if routes_dir.is_dir():
+        sources.extend(sorted(routes_dir.glob("*.py")))
+
+    combined: list[str] = []
+    for src in sources:
+        try:
+            combined.append(src.read_text(encoding="utf-8", errors="replace"))
+        except OSError as exc:
+            return {
+                "ok": False,
+                "missing_markers": [f"{src}:read_failed"],
+                "error": str(exc),
+            }
+    text = "\n".join(combined)
 
     missing: list[str] = []
     for route, marker in APP_ROUTE_MARKERS:

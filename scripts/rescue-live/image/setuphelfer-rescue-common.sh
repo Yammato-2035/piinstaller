@@ -12,6 +12,37 @@ SETUPHELFER_RESCUE_WIFI_SECURITY="${SETUPHELFER_RESCUE_WIFI_SECURITY:-}"
 SETUPHELFER_RESCUE_WIFI_PSK_FILE="${SETUPHELFER_RESCUE_WIFI_PSK_FILE:-}"
 SETUPHELFER_RESCUE_ISO_SHA256="${SETUPHELFER_RESCUE_ISO_SHA256:-}"
 
+setuphelfer_rescue_json_bool() {
+  python3 -c 'import json,sys; print("true" if json.load(open(sys.argv[1])).get(sys.argv[2], False) else "false")' "$1" "$2" 2>/dev/null || echo false
+}
+
+setuphelfer_rescue_network_is_ok() {
+  local json="${SETUPHELFER_RESCUE_STATE_DIR}/network-onboarding.json"
+  if [[ -f "$json" ]]; then
+    python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("true" if (d.get("default_route_present") and (d.get("wifi_connected") or d.get("config_source") in ("ethernet_connected","already_connected","prepared_env","known_nm_profile","interactive_menu"))) else "false")' "$json" 2>/dev/null || echo false
+    return 0
+  fi
+  if ip route show default 2>/dev/null | grep -q .; then
+    echo true
+  else
+    echo false
+  fi
+}
+
+setuphelfer_rescue_media_is_stable() {
+  local json="${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json"
+  if [[ -f "$json" ]]; then
+    python3 -c 'import json,sys; print(str(json.load(open(sys.argv[1])).get("live_media_runtime_stable", False)).lower())' "$json" 2>/dev/null || echo false
+    return 0
+  fi
+  echo false
+}
+
+setuphelfer_rescue_ensure_telemetry_opt_in() {
+  setuphelfer_rescue_ensure_state_dir
+  touch "${SETUPHELFER_RESCUE_STATE_DIR}/telemetry-opt-in" 2>/dev/null || true
+}
+
 setuphelfer_rescue_ensure_state_dir() {
   mkdir -p "$SETUPHELFER_RESCUE_STATE_DIR"
   chmod 0750 "$SETUPHELFER_RESCUE_STATE_DIR" 2>/dev/null || true

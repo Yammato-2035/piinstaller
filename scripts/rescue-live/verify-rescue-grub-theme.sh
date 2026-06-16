@@ -42,7 +42,6 @@ check_grep() {
 [[ -d "$BUILD_ROOT" ]] || die "build root missing: ${BUILD_ROOT}" 22
 
 check_file "${THEME_DIR}/theme.txt" "grub theme.txt"
-check_file "${THEME_DIR}/setuphelfer-boot-menu-de.png" "grub theme PNG"
 
 if [[ -f "${THEME_DIR}/theme.txt" ]]; then
   _img="$(grep -E '^desktop-image:' "${THEME_DIR}/theme.txt" | sed 's/.*"\(.*\)".*/\1/' || true)"

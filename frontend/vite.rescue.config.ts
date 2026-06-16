@@ -13,6 +13,7 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),
     __SETUPHELFER_RESCUE_UI__: JSON.stringify(true),
   },
+  publicDir: path.resolve(__dirname, '../assets/rescue'),
   build: {
     outDir: path.resolve(__dirname, '../build/rescue/ui'),
     emptyOutDir: true,

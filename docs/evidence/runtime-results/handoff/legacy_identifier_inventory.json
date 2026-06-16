@@ -3261,7 +3261,7 @@
     }
   ],
   "findings_truncated": true,
-  "generated_at": "2026-05-12T03:59:57Z",
+  "generated_at": "2026-05-15T17:13:25Z",
   "inventory_schema_version": 1,
   "inventory_status": "review_required",
   "scan_targets": [

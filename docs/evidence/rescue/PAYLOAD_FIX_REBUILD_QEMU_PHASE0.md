@@ -1,17 +1,18 @@
 # Payload Fix Rebuild QEMU — Phase 0
 
-**Datum:** 2026-06-03  
-**HEAD:** `ddd502e`  
+**Datum:** 2026-06-04  
+**HEAD:** `abd2320` (enthält Fix `ddd502e`)  
 **Branch:** `main`  
-**ddd502e vorhanden:** yes  
+**ddd502e vorhanden:** yes (in History)  
 
-## Runtime
+## Runtime (nach Operator-QEMU, release restored)
 
 | Feld | Wert |
 |------|------|
-| `setuphelfer-backend.service` | active |
-| `setuphelfer.service` | active |
-| `profile_gate_status` | OK (profile-aware gate) |
+| `install_profile` | `release` |
+| `profile_gate_status` | `green` |
+| `dev_control_enabled` | `false` |
+| `backend_runtime_path` | `/opt/setuphelfer/backend` |
 
 Baseline: `payload_fix_rebuild_qemu_phase0_version_latest.json`
 
@@ -19,4 +20,3 @@ Baseline: `payload_fix_rebuild_qemu_phase0_version_latest.json`
 
 - Kein USB / Backup / Restore
 - Kein Push
-- Fix-Commit `ddd502e` ist HEAD

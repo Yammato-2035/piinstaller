@@ -1,0 +1,17 @@
+xorriso 1.5.6 : RockRidge filesystem manipulator, libburnia project.
+
+Copying of file objects from ISO image to disk filesystem is: Enabled
+xorriso : NOTE : Loading ISO image tree from LBA 0
+xorriso : UPDATE :     252 nodes read in 1 seconds
+xorriso : NOTE : Detected El-Torito boot information which currently is set to be discarded
+Drive current: -indev '/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso'
+Media current: stdio file, overwriteable
+Media status : is written , is appendable
+Boot record  : El Torito , MBR isohybrid cyl-align-off GPT
+Media summary: 1 session, 661158 data blocks, 1291m data, 1246g free
+Volume id    : 'SETUPHELFER_RESCUE'
+xorriso : UPDATE :       1 files restored (8037.9k) in 1 seconds = 5.9xD
+Extracted from ISO image: file '/live/vmlinuz'='/tmp/rescue_vm_zHZHPJ/vmlinuz'
+xorriso : UPDATE :       1 files restored ( 37783k) in 1 seconds = 27.9xD
+Extracted from ISO image: file '/live/initrd.img'='/tmp/rescue_vm_zHZHPJ/initrd.img'
+qemu-system-x86_64: terminating on signal 15 from pid 694013 (timeout)

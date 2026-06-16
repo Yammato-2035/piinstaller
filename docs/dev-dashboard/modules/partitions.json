@@ -1,0 +1,57 @@
+{
+  "id": "partitions",
+  "title": "Partitionshelfer",
+  "area": "backup",
+  "status": "yellow",
+  "summary": "Phase 2.1: Read-only Sicherheitsvorschau mit Datenträgerkarten, Hardstops, Layout- und Restore-Handoff-Preview. Keine Schreiboperationen.",
+  "last_updated": "2026-06-10",
+  "commits": [],
+  "current_focus": "Phase 2.1 UI – Setuphelfer-Design, Dev-Dashboard-Kachel PARTITIONS",
+  "next_steps": [
+    "Manifest-Pfad in UI mit echtem Backup verknüpfen",
+    "Phase 3: kontrollierte Schreiboperationen nur nach Gate-Freigabe",
+    "HW-Abnahme mit Rettungsstick-Kontext"
+  ],
+  "blockers": [
+    "write_allowed bleibt false bis Rescue-/Gate-Kette grün",
+    "Runtime-Smoke abhängig von deploy-gate"
+  ],
+  "evidence_files": [
+    "docs/evidence/partitions/PARTITIONS_PHASE2_UI_PREVIEW_STUB.md",
+    "docs/partitions/PARTITION_MANAGER_PHASE2_UI_DE.md"
+  ],
+  "prompt_files": [],
+  "report_files": [],
+  "docs": [
+    "docs/partitions/PARTITION_MANAGER_PHASE2_UI_DE.md",
+    "docs/partitions/PARTITION_MANAGER_PHASE2_UI_EN.md"
+  ],
+  "faq": [],
+  "knowledge_base": ["docs/knowledge-base/partitions/PARTITION_MANAGER_PHASE2.md"],
+  "diagnostics": [],
+  "i18n": ["frontend/src/locales/de.json", "frontend/src/locales/en.json"],
+  "tests": [
+    "frontend/src/components/PartitionManagerPhase2.test.ts",
+    "backend/tests/test_partitions_phase2_safety_contracts_v1.py"
+  ],
+  "children": [
+    {
+      "id": "partitions-phase2-ui",
+      "title": "Phase 2.1 Safety Preview UI",
+      "area": "backup",
+      "status": "yellow",
+      "summary": "Datenträgerkarten, grafische Layout-Ansicht, Hardstop- und Restore-Handoff-Panels."
+    },
+    {
+      "id": "partitions-phase2-api",
+      "title": "Phase 2 Safety API",
+      "area": "backup",
+      "status": "green",
+      "summary": "hardstop-preview, manifest-layout-preview, restore-handoff-preview – write_allowed=false."
+    }
+  ],
+  "artifacts": [
+    {"path": "frontend/src/pages/PartitionManager.tsx", "kind": "source"},
+    {"path": "docs/partitions/PARTITION_MANAGER_PHASE2_UI_DE.md", "kind": "doc"}
+  ]
+}

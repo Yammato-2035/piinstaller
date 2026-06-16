@@ -16,6 +16,7 @@ JOB_ID_RE = re.compile(r"^[a-zA-Z0-9._-]{1,80}$")
 # Zweiter Eintrag: BR-001 / Betreiberfreigabe — nur dieser Media-Pfad, kein generisches /media.
 ALLOWED_BACKUP_ROOTS: tuple[Path, ...] = (
     Path("/mnt/setuphelfer/backups").resolve(),
+    Path("/media/setuphelfer").resolve(),
     Path("/media/gabriel/setuphelfer-back").resolve(),
     # Gleiches externes Volume (sda1/ext4) — aktueller Mountpunkt laut lsblk/findmnt.
     Path("/media/gabriel/setuphelfer-back1").resolve(),

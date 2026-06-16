@@ -83,6 +83,19 @@ def detect_lan_ip() -> str | None:
     bind_override = os.environ.get(DEFAULT_BIND_ENV, "").strip()
     if bind_override and bind_override not in {"127.0.0.1", "localhost"}:
         return bind_override
+    # Socket trick: no subprocess, works under systemd syscall sandboxes where
+    # `hostname -I` may fail with "Address family not supported by protocol".
+    try:
+        probe = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            probe.connect(("1.1.1.1", 80))
+            candidate = probe.getsockname()[0]
+            if _is_usable_lan_ip(candidate):
+                return candidate
+        finally:
+            probe.close()
+    except OSError:
+        pass
     try:
         out = subprocess.check_output(
             ["ip", "-4", "route", "get", "1.1.1.1"],

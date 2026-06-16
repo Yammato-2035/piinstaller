@@ -1,0 +1,3 @@
+# Lab-only: enable fleet session API on local runtime (optional if dev-server local_lab drop-in is active).
+[Service]
+Environment=SETUPHELFER_FLEET_SESSIONS_ENABLED=true

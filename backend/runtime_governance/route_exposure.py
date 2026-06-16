@@ -59,4 +59,10 @@ def should_register_rescue_agent_router(capabilities: RuntimeCapabilities) -> bo
 
 
 def should_register_dev_server_router(capabilities: RuntimeCapabilities) -> bool:
-    return capabilities.dev_server_enabled or _dev_server_host_locally_allowed()
+    """Register dev-server only when the install profile enables it.
+
+    Host-level developer capability (DCC token on the machine) must not mount
+    /api/dev-server in release/production — profile gate probes /health for HTTP 200.
+    local_lab / developer / rescue_lab get dev_server_enabled via profile_policy.
+    """
+    return capabilities.dev_server_enabled

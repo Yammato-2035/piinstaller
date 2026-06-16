@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "checked_at": "2026-06-07T09:15:00Z",
-  "workspace_head_short": "pending_commit",
+  "workspace_head_short": "13b91ff",
   "runtime_project_version": "1.7.3.1",
   "target_project_version": "1.7.4.0",
   "root_cause_primary": "not_deployed",

@@ -1,7 +1,7 @@
 # RS-001 FAT32-ESP USB Write Result
 
-**Updated:** 2026-06-08T22:05:41.028426+00:00
-**Evidence dir:** `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511`
+**Updated:** 2026-06-15T20:20:35.507845+00:00
+**Evidence dir:** `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917`
 
 ## Summary
 
@@ -13,7 +13,7 @@
 | write_status | `success` |
 | verify_status | `success` |
 | evidence_status | `complete` |
-| fat_uuid | `C9C8-394A` |
+| fat_uuid | `E4B4-9CD6` |
 | rs001_status | `red` |
 
 **rs001_reason:** USB written and verified, hardware boot not yet proven
@@ -22,17 +22,15 @@
 
 - USB write: **success**
 - USB verify: **success**
-- Physical boot: **reached** (UEFI → GRUB → Setuphelfer dialog)
-- Live-medium warning: **yes** (“Live-Medium nicht stabil”)
-- RS-001: **yellow** / hardware boot OK but live-medium check blocks
-- Next: retest after squashfs fix (`RS_001_LIVE_MEDIUM_RETEST_HANDOFF.md`)
+- RS-001: **red** / hardware boot not yet proven
+- Next: physical UEFI boot on MSI/reference hardware
 
 ## Artifacts
 
-- `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511/plan.json`
-- `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511/write_steps.log`
-- `docs/evidence/runtime-results/rescue/fat32_esp_write_20260608_220511/verify.log`
-- `docs/evidence/runtime-results/rescue/fat32_esp_write_latest.json`
+- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917/plan.json`
+- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917/write_steps.log`
+- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917/verify.log`
+- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_latest.json`
 
 ## Hardware boot
 

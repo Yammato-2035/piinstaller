@@ -1,6 +1,7 @@
 # Post Rescue-Agent-Commit — Operator Deploy-Sync erforderlich
 
-**Stand:** 2026-06-02 (nach Commit; HEAD siehe `git rev-parse --short HEAD`)
+**Stand:** 2026-06-02  
+**HEAD nach Rescue-Agent-Commit:** `2e602d0`
 
 ## Warum jetzt Deploy?
 

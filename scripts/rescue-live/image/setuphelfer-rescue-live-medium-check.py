@@ -298,9 +298,21 @@ def evaluate_live_medium_check(
         req_ok = True
         missing_files = []
 
+    # The full-image sha256 is the AUTHORITATIVE integrity proof. When it matches
+    # the expected hash, the medium is provably intact — even if the `unsquashfs
+    # -cat` spot checks failed (some unsquashfs builds don't support -cat, and it
+    # also fails on symlinked targets like /usr/bin/nmcli). In that case the spot
+    # check is a false positive that must NOT mark the medium "unstable" and block
+    # the rescue flow. Keep the spot_failed list as advisory evidence only.
+    spot_gate = spot_ok
+    if medium_mode == "fat32_esp" and hash_ok is True:
+        spot_gate = True
+        if error_code == "SQUASHFS_SPOT_CHECK_FAILED":
+            error_code = None
+
     if (
         read_ok
-        and spot_ok
+        and spot_gate
         and req_ok
         and error_code is None
         and (medium_mode != "fat32_esp" or hash_ok is True)

@@ -76,6 +76,31 @@ def _free_port() -> int:
 
 
 class RescueTelemetryLanProxyAllowlistTests(unittest.TestCase):
+    def test_systemd_unit_template_present(self) -> None:
+        repo = Path(__file__).resolve().parents[2]
+        unit = repo / "setuphelfer-rescue-telemetry-lan-proxy.service"
+        install = repo / "scripts/install-rescue-telemetry-lan-proxy-service.sh"
+        self.assertTrue(unit.is_file(), "systemd unit template missing")
+        self.assertTrue(install.is_file(), "install script missing")
+        text = unit.read_text(encoding="utf-8")
+        self.assertIn("WantedBy=multi-user.target", text)
+        self.assertIn("After=network-online.target setuphelfer-backend.service", text)
+        self.assertIn("Restart=on-failure", text)
+        self.assertIn("rescue_telemetry_lan_proxy.py", text)
+
+    def test_detect_lan_ip_prefers_env_override(self) -> None:
+        with patch.dict(os.environ, {"SETUPHELFER_RESCUE_TELEMETRY_BIND": "192.168.178.140"}):
+            self.assertEqual(detect_lan_ip(), "192.168.178.140")
+
+    def test_detect_lan_ip_socket_fallback_without_subprocess(self) -> None:
+        with patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("SETUPHELFER_RESCUE_TELEMETRY_BIND", None)
+        with patch("core.rescue_telemetry_lan_proxy.subprocess.check_output", side_effect=OSError("blocked")):
+            with patch("socket.socket") as mock_sock_cls:
+                mock_sock = mock_sock_cls.return_value
+                mock_sock.getsockname.return_value = ("192.168.178.140", 0)
+                self.assertEqual(detect_lan_ip(), "192.168.178.140")
+
     def test_allowed_paths_only_telemetry(self) -> None:
         self.assertTrue(is_path_allowed("GET", "/api/rescue/telemetry/health"))
         self.assertTrue(is_path_allowed("POST", "/api/rescue/telemetry/v1/ingest"))

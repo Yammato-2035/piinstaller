@@ -1,0 +1,6 @@
+{
+  "install_profile": "release",
+  "profile_gate_status": "green",
+  "dev_control_enabled": false,
+  "backend_runtime_path": "/opt/setuphelfer/backend"
+}

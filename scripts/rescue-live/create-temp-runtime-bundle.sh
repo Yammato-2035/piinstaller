@@ -28,7 +28,7 @@ RSYNC_EX=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.env' --exclude='
   --exclude='node_modules' --exclude='.git' --exclude='*.tar.gz' --exclude='*.tar'
   --exclude='*.backup' --exclude='*.restore' --exclude='.pytest_cache'
   --exclude='cache/' --exclude='*.img' --exclude='*.iso' --exclude='*.qcow2'
-  --exclude='.venv/' --exclude='.venv-ci/' --exclude='tests/' --exclude='CONFIG.md')
+  --exclude='.venv/' --exclude='.venv-ci/' --exclude='venv/' --exclude='tests/' --exclude='CONFIG.md')
 
 rsync -rlt "${RSYNC_EX[@]}" "$REPO_ROOT/backend/" "$STAGE/backend/"
 rsync -rlt "${RSYNC_EX[@]}" "$REPO_ROOT/frontend/dist/" "$STAGE/frontend/dist/"

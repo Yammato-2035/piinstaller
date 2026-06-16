@@ -129,10 +129,15 @@ if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" 
     EXIT_CODE=11
   fi
 
-  if [[ "$DEFAULT_ROUTE" != true && "$OFFLINE_MODE" != true ]]; then
+  # Only wait for a default route if we actually established (or already had) a
+  # Wi-Fi connection. In the boot --non-interactive pass with no Wi-Fi configured
+  # yet (WIFI_NOT_CONFIGURED / EXIT_CODE=20) there is nothing to wait for — waiting
+  # the full 60s here just froze the start assistant on a blank screen BEFORE it
+  # could open the interactive Wi-Fi menu. Return fast so the menu appears.
+  if [[ "$DEFAULT_ROUTE" != true && "$OFFLINE_MODE" != true && "$WIFI_CONNECTED" == true ]]; then
     if setuphelfer_rescue_wait_default_route; then
       DEFAULT_ROUTE=true
-    elif [[ "$WIFI_CONNECTED" == true && "$EXIT_CODE" -eq 0 ]]; then
+    elif [[ "$EXIT_CODE" -eq 0 ]]; then
       ERROR_CODE="DEFAULT_ROUTE_MISSING"
       EXIT_CODE=14
     fi

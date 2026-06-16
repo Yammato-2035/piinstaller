@@ -223,6 +223,11 @@ class RescueUsbOperatorSelectionTests(unittest.TestCase):
         self.assertFalse(summary["destructive_write_allowed"])
         self.assertIn(rus.BLOCKER_SELECTION_REQUIRED, summary["blockers"])
 
+    def test_setup_logs_mount_is_not_backup_target(self) -> None:
+        self.assertFalse(rus._is_backup_mountpoint("/media/gabriel/SETUP_LOGS"))
+        self.assertFalse(rus._is_backup_mountpoint("/media/gabriel/SETUPHELFER"))
+        self.assertTrue(rus._is_backup_mountpoint("/media/gabriel/BACKUP_DISK"))
+
 
 @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")
 class RescueUsbOperatorHttpTests(unittest.TestCase):

@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-05-31T10:09:17.188774+00:00",
-  "run_id": "rescue_developer_iso_20260531_100916",
+  "generated_at": "2026-06-02T18:32:18.894107+00:00",
+  "run_id": "rescue_developer_iso_20260602_183208",
   "status": "blocked",
-  "runtime_gate_ok": true,
+  "runtime_gate_ok": false,
   "backend_version_gate_ok": true,
   "profile_guard_ok": true,
   "clean_runtime_assumed": true,
@@ -18,11 +18,10 @@
   "permission_policy": {
     "build_tree": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live",
     "tree_writable": true,
-    "dot_build_writable": false,
-    "dot_build_config_writable": false,
-    "root_owned_count": 60,
+    "dot_build_writable": true,
+    "dot_build_config_writable": true,
+    "root_owned_count": 31501,
     "root_owned_paths_sample": [
-      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build",
       "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_checksums",
       "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_chroot",
       "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/binary_disk",
@@ -41,7 +40,8 @@
       "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_install-packages.install",
       "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_install-packages.live",
       "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_linux-image",
-      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_live-packages"
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_live-packages",
+      "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/.build/chroot_package-lists.install"
     ],
     "operator_fix_required": true,
     "recommended_fix": "Run: sudo ./scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean"
@@ -51,8 +51,7 @@
     "prior_artifacts_inventoried:28"
   ],
   "errors": [
-    "dot_build_not_writable",
-    "dot_build_config_not_writable",
+    "runtime_gate_failed",
     "root_owned_active_work_areas",
     "root_owned_top_level_artifacts"
   ]

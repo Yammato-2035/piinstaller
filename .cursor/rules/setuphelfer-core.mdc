@@ -1,0 +1,62 @@
+# Setuphelfer – Core Rules
+
+## Zweck
+Setuphelfer ist kein Bastelprojekt für lose Features, sondern ein geführter Assistent für Raspberry Pi und Linux mit stabilem Backend, verständlicher UI, dokumentierten Risiken und wiederverwendbaren Diagnosebausteinen.
+
+## Grundprinzipien
+1. Keine neue Funktion ohne Prüfung des aktuellen Ist-Stands im Repo.
+2. Keine Annahmen über vorhandene APIs, Komponenten oder Dateien.
+3. Keine Scheinfertigstellung. Teilfertige oder ungetestete Arbeit ist klar als unvollständig zu kennzeichnen.
+4. Keine großflächigen Umbauten außerhalb des aktuellen Abschnitts.
+5. Bestehende Dateien und Architektur zuerst verstehen, dann gezielt erweitern.
+6. Wiederverwendbarkeit vor Schnellschuss.
+7. Anfängerfreundliche UX, aber technisch korrekt.
+8. Fehler, Risiken und Grenzen offen benennen.
+
+## Pflicht vor jeder Änderung
+Cursor muss vor jeder Umsetzung:
+- die betroffenen Dateien identifizieren,
+- den Ist-Stand zusammenfassen,
+- benennen, was bereits existiert,
+- benennen, was fehlt,
+- benennen, welche Dateien geändert werden,
+- offene Fragen stellen, wenn Anforderungen unklar sind.
+
+## Änderungsregeln
+- Änderungen nur im aktuellen Abschnitt durchführen.
+- Keine unaufgeforderten Refactorings außerhalb des Abschnitts.
+- Keine stillen Breaking Changes.
+- Keine doppelten Endpunkte, Utilities oder Komponenten erzeugen, wenn bereits passende Strukturen existieren.
+- Wenn Legacy-Logik vorhanden ist, zuerst dokumentieren, dann gezielt konsolidieren.
+
+## Qualitätsregeln
+- Jede neue Funktion braucht:
+  - klare UI-Rückmeldung,
+  - Backend-Fehlerbehandlung,
+  - Logging,
+  - Dokumentationsnotiz,
+  - FAQ-/Tutorial-Hinweis, wenn aus dem Fehlerbild Wissen entsteht.
+- Jede risikoreiche Aktion braucht:
+  - Warnhinweis,
+  - klare Voraussetzungen,
+  - verständliche Fehlermeldung,
+  - sichere Abbruchmöglichkeit.
+
+## Stop-Regeln
+Cursor muss sofort stoppen und Fragen stellen, wenn:
+- mehrere konkurrierende Architekturpfade möglich sind,
+- eine Änderung Datenverlust verursachen kann,
+- bestehende Logik widersprüchlich ist,
+- API und UI nicht eindeutig zueinander passen,
+- Systemdienste, Boot-Verhalten oder Verschlüsselung betroffen sind.
+
+## Abschlussformat pro Abschnitt
+Am Ende jedes Abschnitts liefert Cursor:
+1. Was wurde geändert?
+2. Welche Dateien wurden geändert?
+3. Was ist fertig?
+4. Was ist noch offen?
+5. Welche Risiken bestehen?
+6. Welche Tests wurden durchgeführt?
+7. Welche Logeinträge und FAQ-Hinweise wurden ergänzt?
+

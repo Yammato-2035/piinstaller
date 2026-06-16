@@ -37,6 +37,14 @@ REQ=(
   config/includes.chroot/etc/systemd/system/setuphelfer.service
   config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-backend.service
   config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer.service
+  config/includes.chroot/usr/local/sbin/setuphelfer-rescue-boot-diagnostics
+  config/includes.chroot/etc/systemd/system/setuphelfer-rescue-boot-diagnostics.service
+  config/includes.chroot/etc/systemd/system/setuphelfer-rescue-boot-diagnostics.timer
+  config/includes.chroot/etc/systemd/system/setuphelfer-rescue-boot-diagnostics-shutdown.service
+  config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-rescue-boot-diagnostics.service
+  config/includes.chroot/etc/systemd/system/timers.target.wants/setuphelfer-rescue-boot-diagnostics.timer
+  config/includes.chroot/etc/systemd/system/setuphelfer-rescue-boot-diagnostics-early.service
+  config/includes.chroot/etc/systemd/system/sysinit.target.wants/setuphelfer-rescue-boot-diagnostics-early.service
   config/includes.chroot/etc/live/config.conf.d/10-setuphelfer-rescue.conf
   config/includes.chroot/etc/default/keyboard
   config/includes.chroot/etc/vconsole.conf
@@ -49,6 +57,9 @@ REQ=(
   config/includes.chroot/etc/systemd/network/20-wired.network
   config/includes.chroot/etc/systemd/network/25-ethernet-alt.network
   config/hooks/normal/010-enable-setuphelfer-services.hook.chroot
+  config/hooks/005-setuphelfer-live-user.chroot
+  config/hooks/010-enable-setuphelfer-services.chroot
+  config/hooks/012-build-rescue-backend-venv.chroot
   config/bootloaders/isolinux/bootlogo
   config/bootloaders/isolinux/splash.svg.in
   config/bootloaders/grub-efi/setuphelfer-grub-efi-note.txt
@@ -133,6 +144,44 @@ for _display_pkg in xserver-xorg xinit openbox dbus-x11 x11-xserver-utils; do
   grep -qx "$_display_pkg" "$_CHROOT_PKG_LIST" \
     || fail_missing "setuphelfer.list.chroot must list ${_display_pkg} (R.4 display stack)"
 done
+# Chromium runs as root in the rescue kiosk; without --no-sandbox its zygote
+# refuses to start and the kiosk crash-loops (blank screen on real hardware).
+_UI_LAUNCH="$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-ui-launch"
+if [ -f "$_UI_LAUNCH" ]; then
+  grep -q -- '--no-sandbox' "$_UI_LAUNCH" \
+    || fail_missing "setuphelfer-rescue-ui-launch must pass --no-sandbox to chromium (root kiosk zygote crash-loop guard)"
+fi
+# Boot diagnostics matrix: must mount the ESP read-write and sync, else logs are
+# lost on power-off (the whole point is offline post-hang diagnosis).
+_DIAG="$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-boot-diagnostics"
+if [ -f "$_DIAG" ]; then
+  [ -x "$_DIAG" ] || fail_missing "setuphelfer-rescue-boot-diagnostics must be executable"
+  grep -qE 'mount .*vfat|remount,rw' "$_DIAG" \
+    || fail_missing "setuphelfer-rescue-boot-diagnostics must mount the ESP read-write (rw) to persist logs"
+  grep -qw 'sync' "$_DIAG" \
+    || fail_missing "setuphelfer-rescue-boot-diagnostics must sync after writing (survive hard power-off)"
+  # The dedicated SETUPHELFER_LOGS partition is the only target that reliably
+  # persists when remounting the read-only live medium rw fails on real firmware.
+  grep -q 'SETUPHELFER_LOGS' "$_DIAG" \
+    || fail_missing "setuphelfer-rescue-boot-diagnostics must prefer the dedicated SETUPHELFER_LOGS partition"
+  grep -q 'PHASE" = "early"\|PHASE = "early"\|"early"' "$_DIAG" \
+    || fail_missing "setuphelfer-rescue-boot-diagnostics must support the early-phase fast marker"
+fi
+# The writer must create the dedicated, always-writable logs partition.
+_WRITER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/write-fat32-esp-rescue-usb.sh"
+if [ -f "$_WRITER" ]; then
+  grep -q 'SETUPHELFER_LOGS' "$_WRITER" \
+    || fail_missing "write-fat32-esp-rescue-usb.sh must create the SETUPHELFER_LOGS partition"
+fi
+grep -qx 'dmidecode' "$_CHROOT_PKG_LIST" \
+  || fail_missing "setuphelfer.list.chroot must list dmidecode (boot diagnostics hardware identification)"
+# Start assistant must not blindly launch the graphical kiosk on tty1 (no X server)
+# -> blank/blinking-cursor screen. The graphical kiosk is opt-in via setuphelfer_kiosk=1.
+_START_ASSIST="$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-start-assistant"
+if [ -f "$_START_ASSIST" ]; then
+  grep -q 'setuphelfer_kiosk=1' "$_START_ASSIST" \
+    || fail_missing "setuphelfer-rescue-start-assistant must gate the graphical kiosk behind setuphelfer_kiosk=1 (text TUI default, no blank screen)"
+fi
 grep -qx 'systemd' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list systemd"
 grep -qx 'systemd-sysv' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
@@ -265,6 +314,20 @@ done < <(find "$BUILD_ROOT" \( "${LB_ARTIFACT_PRUNE[@]}" \) -prune -o -type f \(
 
 if find "$BUILD_ROOT" \( "${LB_ARTIFACT_PRUNE[@]}" \) -prune -o -type d -name node_modules -print 2>/dev/null | grep -q .; then
   fail_forbidden "node_modules"
+fi
+
+# R8D: the backend venv must be built in-chroot (013 hook), never staged in the tree.
+# A staged venv is the host venv (wrong python/glibc) and hangs the boot. If this
+# fires, prepare-controlled-live-build-tree.sh was not re-run after the bundle.
+if [[ -e "$BUILD_ROOT/config/includes.chroot/opt/setuphelfer-rescue/backend/venv" ]]; then
+  fail_forbidden "config/includes.chroot/opt/setuphelfer-rescue/backend/venv (host venv leak — re-run prepare; venv is built in-chroot via flat 012 hook)"
+fi
+
+# R8D-2: live-build 3.0~a57 runs ONLY config/hooks/*.chroot, never
+# config/hooks/normal/*.hook.chroot. A venv-build hook misplaced under normal/
+# silently does not run -> venv missing -> blank tty1 boot hang. Catch it.
+if compgen -G "$BUILD_ROOT/config/hooks/normal/*build-rescue-backend-venv*" >/dev/null 2>&1; then
+  fail_forbidden "venv hook under config/hooks/normal/ (this live-build ignores normal/ — use flat config/hooks/012-build-rescue-backend-venv.chroot)"
 fi
 
 RUNTIME="$BUILD_ROOT/config/includes.chroot/opt/setuphelfer-rescue"

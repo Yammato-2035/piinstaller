@@ -117,16 +117,23 @@ def _device_path(node: Mapping[str, Any]) -> str:
     return ""
 
 
+def _is_rescue_stick_mountpoint(mp: str) -> bool:
+    upper = (mp or "").upper()
+    return "SETUPHELFER" in upper or "SETUP_LOGS" in upper
+
+
 def _is_backup_mountpoint(mp: str) -> bool:
     s = (mp or "").rstrip("/")
     if not s or s in {"/", "/boot", "/boot/firmware"}:
+        return False
+    if _is_rescue_stick_mountpoint(s):
         return False
     if s.startswith("/mnt/setuphelfer") or s.startswith("/mnt/pi-installer"):
         return True
     parts = Path(s).parts
     if len(parts) >= 3 and parts[1] == "media":
         login = parts[2]
-        if login not in ("setuphelfer",) and "SETUPHELFER" not in s.upper():
+        if login not in ("setuphelfer",) and not _is_rescue_stick_mountpoint(s):
             return True
     return False
 

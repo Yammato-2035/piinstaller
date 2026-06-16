@@ -7,6 +7,14 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 export PYTHONPATH="${REPO_ROOT}/backend:${REPO_ROOT}:${PYTHONPATH:-}"
 STATUS_FILE="${REPO_ROOT}/docs/evidence/runtime-results/rescue/rescue_telemetry_lan_proxy_status_latest.json"
 
+SYSTEMD_UNIT="setuphelfer-rescue-telemetry-lan-proxy.service"
+if command -v systemctl >/dev/null 2>&1 \
+  && systemctl list-unit-files "${SYSTEMD_UNIT}" >/dev/null 2>&1 \
+  && systemctl is-enabled --quiet "${SYSTEMD_UNIT}" 2>/dev/null; then
+  sudo systemctl stop "${SYSTEMD_UNIT}" 2>/dev/null || true
+  exec "$SCRIPT_DIR/status-rescue-telemetry-lan-proxy.sh"
+fi
+
 _stopped=false
 if [[ -f "$PID_FILE" ]]; then
   _pid="$(cat "$PID_FILE" 2>/dev/null || true)"

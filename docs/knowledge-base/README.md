@@ -22,15 +22,11 @@ Kuratierte Notizen aus Support- und Setup-Runden, damit Lösungen **nicht doppel
 | [../inspect/INSPECT_PHASE_2_EN.md](../inspect/INSPECT_PHASE_2_EN.md) | **Inspect Phase 2 (EN):** API fields `classification` / `advice` |
 | [safety/WRITE_SAFETY_OVERVIEW.md](safety/WRITE_SAFETY_OVERVIEW.md) | **Write-Safety:** Zweck, Blockregeln, kein Override in Phase 1 |
 | [preflight/PREFLIGHT_BACKUP_OVERVIEW.md](preflight/PREFLIGHT_BACKUP_OVERVIEW.md) | **Preflight Backup:** Zweck, Token-Bestätigung, Hard-Stop-Zielprüfung |
-
-**Verwandt im Repo:** [ASUS ROG Lüftersteuerung](../ASUS_ROG_FAN_CONTROL.md) (Link in die APT-FAQ).
-
-Neue Themen: eigene Datei unter `knowledge-base/` oder Abschnitt in der APT-FAQ ergänzen.
-
-| [rescue/RESCUE_ORCHESTRATOR_PREVIEW.md](rescue/RESCUE_ORCHESTRATOR_PREVIEW.md) | **Rescue Preview:** Safety/Verify/Dryrun-Orchestrierung ohne Execute in Phase 1 |
+| [rescue/RESCUE_START_ASSISTANT_OVERVIEW.md](rescue/RESCUE_START_ASSISTANT_OVERVIEW.md) | **Start Assistant 1.7.7.0:** TUI-Wizard, WLAN/Telemetrie, Boot-Menü-Fix, read-only Disk-Discovery, Pläne ohne Ausführung |
+| [../rescue-stick/RESCUE_START_ASSISTANT_WIZARD_STATE.md](../rescue-stick/RESCUE_START_ASSISTANT_WIZARD_STATE.md) | **WizardState JSON:** Schema für TUI und künftige GUI |
+| [../rescue-stick/RESCUE_BOOT_MENU_BRANDING.md](../rescue-stick/RESCUE_BOOT_MENU_BRANDING.md) | **Boot-Menü:** ISOLINUX/GRUB-Einträge, Branding, Validator |
 | [../rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md](../rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md) | **Rettungsstick C.4:** Restore-Preview-Plan, kanonische Dryrun/Verify-Referenz, kein Restore |
 | [../rescue-stick/BACKUP_BEFORE_OVERWRITE_GATE_2026-05-20.md](../rescue-stick/BACKUP_BEFORE_OVERWRITE_GATE_2026-05-20.md) | **Backup-before-overwrite:** Gate vor Restore-Preview bei belegten Zielen |
-
 | [rescue/RESCUE_ORCHESTRATOR_EXECUTE.md](rescue/RESCUE_ORCHESTRATOR_EXECUTE.md) | **Rescue Execute:** Preview-Session-Gate, Token, Re-Checks vor Restore |
 | [rescue/POST_RESTORE_VALIDATION.md](rescue/POST_RESTORE_VALIDATION.md) | **Post-Restore Validation:** Read-only Plausibilitätsprüfung nach Restore, ohne Boot-Repair/Auto-Install |
 | [boot/BOOT_CAPABILITY_CHECK.md](boot/BOOT_CAPABILITY_CHECK.md) | **Boot Capability Check:** Defensive read-only Plausibilitätsbewertung von Boot-Artefakten |
@@ -142,3 +138,7 @@ Neue Themen: eigene Datei unter `knowledge-base/` oder Abschnitt in der APT-FAQ 
 | [deploy/DEPLOY_RUNTIME_IDENTIFIER_ZERO_STATE_VERIFICATION.md](deploy/DEPLOY_RUNTIME_IDENTIFIER_ZERO_STATE_VERIFICATION.md) | **Runtime Identifier Zero State:** Verifikation Rest=0, optional Patch-Bump-Preparation/Apply/Postcheck ohne Release/Tag |
 | [deploy/DEPLOY_SETUPHELFER_BRANDING_GUARD.md](deploy/DEPLOY_SETUPHELFER_BRANDING_GUARD.md) | **Setuphelfer Branding Guard:** Read-only Blocker gegen neue pi-installer-/PI_INSTALLER-Runtime-Treffer; Evidence-Handoff + optionales rg-Skript |
 | [deploy/DEPLOY_LEGACY_RUNTIME_COMPATIBILITY.md](deploy/DEPLOY_LEGACY_RUNTIME_COMPATIBILITY.md) | **Legacy Runtime Compatibility:** Inventar/Koexistenz/Migrations-Empfehlungen/Upgrade-Matrix aus Handoff-JSON ohne echte Migration oder systemctl |
+
+**Verwandt im Repo:** [ASUS ROG Lüftersteuerung](../ASUS_ROG_FAN_CONTROL.md) (Link in die APT-FAQ).
+
+Neue Themen: eigene Datei unter `knowledge-base/` oder Abschnitt in der APT-FAQ ergänzen.

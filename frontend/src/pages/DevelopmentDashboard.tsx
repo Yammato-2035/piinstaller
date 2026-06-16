@@ -16,6 +16,7 @@ import { EvidencePanel } from '../components/dev-dashboard/EvidencePanel'
 import { ReleaseGatePanel } from '../components/dev-dashboard/ReleaseGatePanel'
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
+import { PartitionsDashboardCard } from '../components/dev-dashboard/PartitionsDashboardCard'
 import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel'
 import { RecommendedActionsPanel } from '../components/dev-dashboard/RecommendedActionsPanel'
 import { StructuralHealthPanel } from '../components/dev-dashboard/StructuralHealthPanel'
@@ -215,6 +216,7 @@ const DevelopmentDashboard: React.FC = () => {
               <NotificationPanel refreshSec={15} />
               <RescueStickBoard dashboard={dashboard} />
               <RescueBuildPanel refreshSec={12} />
+              <PartitionsDashboardCard refreshSec={30} />
               <ReleaseGatePanel dashboard={dashboard} t={t} />
               <RecommendedActionsPanel dashboard={dashboard} t={t} />
             </>

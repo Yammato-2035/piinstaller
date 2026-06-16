@@ -74,6 +74,17 @@ python3 -m unittest backend.tests.test_rescue_start_assistant_v1 backend.tests.t
 - `RESCUE_MSI_BOOT_AUTOMATED_TELEMETRY_ACK_PENDING`
 - `WINDOWS_INSPECT_BLOCKED`
 
+## Dokumentation (2026-06-07)
+
+| Typ | Pfad |
+|-----|------|
+| Überblick | `docs/knowledge-base/rescue/RESCUE_START_ASSISTANT_OVERVIEW.md` |
+| FAQ Rettungsstick | `docs/faq/RESCUE_STICK_FAQ_DE.md` |
+| FAQ ISO-Build | `docs/faq/rescue_iso_build_faq.md` (Abschnitt 1.7.7.0) |
+| FAQ Rescue allgemein | `docs/faq/RESCUE_FAQ.md` (Start Assistant) |
+| Wissensdatenbank | `docs/host-env/WISSENSDATENBANK.md` (KB-011 … KB-014) |
+| Boot-Menü | `docs/rescue-stick/RESCUE_BOOT_MENU_BRANDING.md` |
+
 ## Nächster Prompt
 
 **`RESCUE_START_ASSISTANT_ISO_REBUILD_OPERATOR_COMPLETION`**

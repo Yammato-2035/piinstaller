@@ -1,0 +1,204 @@
+#!/bin/bash
+# Setuphelfer Rescue Boot Diagnostics Matrix.
+#
+# Captures a COMPLETE hardware/driver/firmware/network/systemd snapshot to the
+# rescue stick (FAT32 ESP, mounted READ-WRITE) on every boot — early, repeated
+# (timer) and at shutdown — so a boot that hangs at a blinking cursor or a black
+# kiosk can be diagnosed OFFLINE by reading the stick afterwards. We must never
+# fly blind again.
+#
+# Hard rules:
+#   * Best-effort: a missing tool or a single failed command must NEVER abort the
+#     capture or block the boot.
+#   * Uses the system python3/tools (3.11 live base), NOT the bundled venv, so it
+#     still works if the backend/venv is broken.
+#   * Writes to the ESP read-write and fsyncs, so data survives a hard power-off.
+set -uo pipefail
+
+STAMP="$(date -u +%Y%m%d_%H%M%S 2>/dev/null || echo unknown)"
+PHASE="${1:-snapshot}"   # snapshot | boot | shutdown (label only)
+ESP_RW_DIR="/run/setuphelfer/esp-rw"
+RAM_FALLBACK="/run/setuphelfer/diagnostics"
+DIAG_REL="setuphelfer/diagnostics"
+
+log() { printf '%s\n' "$*" >&2; }
+
+# ---------------------------------------------------------------------------
+# Mount the boot ESP read-write. live-boot mounts it read-only at
+# /run/live/medium, so cp/echo there fail silently -> logs are lost on power-off.
+# Strategy: find the SETUPHELFER-labelled vfat partition and mount it rw at a
+# private mountpoint. Fall back to remount,rw of /run/live/medium, then RAM.
+# Echoes the writable base directory.
+# ---------------------------------------------------------------------------
+# A mount is only acceptable if we can actually CREATE A FILE there. A second
+# vfat mount of an already-read-only superblock "succeeds" but stays read-only,
+# so every later write fails silently -> empty stick. Always write-test.
+_rw_usable() {
+  local d="$1" t
+  [ -d "$d" ] || return 1
+  t="$d/.sh-rw-test.$$"
+  if ( : >"$t" ) 2>/dev/null; then
+    rm -f "$t" 2>/dev/null || true
+    return 0
+  fi
+  return 1
+}
+
+ensure_esp_rw() {
+  # Reuse a private rw mount from a previous run if still writable.
+  if mountpoint -q "$ESP_RW_DIR" 2>/dev/null && _rw_usable "$ESP_RW_DIR"; then
+    printf '%s' "$ESP_RW_DIR"; return 0
+  fi
+
+  # 0) PREFERRED: the dedicated SETUPHELFER_LOGS partition. live-boot never mounts
+  #    it (it has no /live), so a fresh rw mount is genuinely writable. This is the
+  #    only target that reliably persists on firmware/USB combos where remounting
+  #    the read-only live medium rw silently fails (-> empty stick after a hang).
+  local logsdev=""
+  for cand in /dev/disk/by-partlabel/SETUPHELFER_LOGS /dev/disk/by-label/SETUP_LOGS /dev/disk/by-label/SETUPHELFER_LOGS; do
+    [ -e "$cand" ] && { logsdev="$(readlink -f "$cand" 2>/dev/null || echo "$cand")"; break; }
+  done
+  if [ -n "$logsdev" ] && [ -b "$logsdev" ]; then
+    mkdir -p "$ESP_RW_DIR" 2>/dev/null || true
+    if timeout 10 mount -t vfat -o rw,flush,umask=0022 "$logsdev" "$ESP_RW_DIR" 2>/dev/null && _rw_usable "$ESP_RW_DIR"; then
+      printf '%s' "$ESP_RW_DIR"; return 0
+    fi
+    umount "$ESP_RW_DIR" 2>/dev/null || true
+  fi
+
+  # 1) Remount the LIVE MEDIUM rw in place — same partition we booted from, most
+  #    reliable. live-boot mounts it read-only; flip it to rw and write-test.
+  local m
+  for m in /run/live/medium /lib/live/mount/medium; do
+    if mountpoint -q "$m" 2>/dev/null; then
+      timeout 10 mount -o remount,rw "$m" 2>/dev/null || true
+      if _rw_usable "$m"; then printf '%s' "$m"; return 0; fi
+    fi
+  done
+
+  # 2) Fresh rw mount of the SETUPHELFER partition at a private mountpoint.
+  local dev=""
+  for cand in /dev/disk/by-label/SETUPHELFER /dev/disk/by-label/SETUPHELFER_RESCUE; do
+    [ -e "$cand" ] && { dev="$(readlink -f "$cand" 2>/dev/null || echo "$cand")"; break; }
+  done
+  if [ -z "$dev" ] && command -v findmnt >/dev/null 2>&1; then
+    dev="$(findmnt -no SOURCE /run/live/medium 2>/dev/null || true)"
+  fi
+  if [ -n "$dev" ] && [ -b "$dev" ]; then
+    mkdir -p "$ESP_RW_DIR" 2>/dev/null || true
+    if timeout 10 mount -t vfat -o rw,flush,umask=0022 "$dev" "$ESP_RW_DIR" 2>/dev/null && _rw_usable "$ESP_RW_DIR"; then
+      printf '%s' "$ESP_RW_DIR"; return 0
+    fi
+    umount "$ESP_RW_DIR" 2>/dev/null || true
+  fi
+
+  # 3) Last resort: RAM (lost on power-off, but keeps the capture path working).
+  mkdir -p "$RAM_FALLBACK" 2>/dev/null || true
+  printf '%s' "$RAM_FALLBACK"
+  return 0
+}
+
+ESP_BASE="$(ensure_esp_rw)"
+PERSISTENT=true
+case "$ESP_BASE" in
+  "$RAM_FALLBACK") PERSISTENT=false ;;
+esac
+
+DEST="${ESP_BASE}/${DIAG_REL}/${STAMP}_${PHASE}"
+LATEST="${ESP_BASE}/${DIAG_REL}/latest"
+mkdir -p "$DEST" 2>/dev/null || { DEST="${RAM_FALLBACK}/${STAMP}_${PHASE}"; mkdir -p "$DEST"; PERSISTENT=false; }
+
+# run <outfile> <cmd...> — time-bounded, never aborts.
+run() {
+  local out="$1"; shift
+  if ! command -v "$1" >/dev/null 2>&1; then
+    printf '[absent: %s]\n' "$1" >"$DEST/$out" 2>/dev/null || true
+    return 0
+  fi
+  timeout 15 "$@" >"$DEST/$out" 2>&1 || printf '\n[command failed or timed out: %s]\n' "$*" >>"$DEST/$out" 2>/dev/null || true
+}
+
+# capture <outfile> <shell-snippet> — for pipelines/loops, time-bounded.
+capture() {
+  local out="$1"; shift
+  timeout 20 bash -c "$1" >"$DEST/$out" 2>&1 || printf '\n[snippet failed or timed out]\n' >>"$DEST/$out" 2>/dev/null || true
+}
+
+# --- meta / kernel -------------------------------------------------------------
+{
+  echo "stamp_utc=$STAMP"
+  echo "phase=$PHASE"
+  echo "persistent_to_stick=$PERSISTENT"
+  echo "esp_base=$ESP_BASE"
+  echo "uptime=$(cat /proc/uptime 2>/dev/null || true)"
+  echo "cmdline=$(cat /proc/cmdline 2>/dev/null || true)"
+  echo "uname=$(uname -a 2>/dev/null || true)"
+  echo "product=$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
+  echo "board=$(cat /sys/class/dmi/id/board_name 2>/dev/null || true)"
+  echo "bios=$(cat /sys/class/dmi/id/bios_version 2>/dev/null || true)"
+} >"$DEST/00-meta.txt" 2>/dev/null || true
+
+# EARLY phase: a fast, lightweight marker that proves how far systemd got, written
+# before the heavy journalctl/dmesg captures. If even this is missing on the stick
+# after a boot, the hang is pre-systemd (kernel/initramfs/KMS), not in userspace.
+if [ "$PHASE" = "early" ]; then
+  capture 03-early-fast.txt 'echo "=== loaded net/gpu modules ==="; lsmod | grep -Ei "iwl|ath|rtl|r8169|e1000|igb|nouveau|nvidia|i915|amdgpu|radeon|drm" || true; echo; echo "=== systemd default target / current ==="; systemctl get-default 2>/dev/null; systemctl is-system-running 2>/dev/null; echo; echo "=== dmesg tail ==="; dmesg 2>/dev/null | tail -60 || true'
+  if mkdir -p "$LATEST" 2>/dev/null; then
+    cp -f "$DEST"/*.txt "$LATEST/" 2>/dev/null || true
+    printf 'last_capture=%s phase=%s persistent=%s\n' "$STAMP" "$PHASE" "$PERSISTENT" >"$LATEST/INDEX.txt" 2>/dev/null || true
+  fi
+  timeout 30 sync 2>/dev/null || true
+  log "setuphelfer-rescue-boot-diagnostics: phase=early dest=$DEST persistent=$PERSISTENT"
+  exit 0
+fi
+
+run 01-dmidecode.txt dmidecode -t system -t baseboard -t bios
+capture 02-cpu-mem.txt 'grep -m1 "model name" /proc/cpuinfo; nproc; free -h; head -40 /proc/meminfo'
+
+# --- hardware / drivers --------------------------------------------------------
+run 10-lspci.txt lspci -nnk
+run 11-lsusb.txt lsusb
+run 12-lsmod.txt lsmod
+run 13-loaded-modules-net-gpu.txt sh -c 'lsmod | grep -Ei "iwl|ath|rtl|r8169|e1000|igb|nouveau|nvidia|i915|amdgpu|radeon|drm" || true'
+
+# --- firmware (the WiFi/driver question) --------------------------------------
+capture 20-dmesg-firmware.txt 'dmesg 2>/dev/null | grep -Ei "firmware|microcode|failed to load|direct-loading|requesting|iwlwifi" || true'
+capture 21-firmware-present.txt 'ls -1 /lib/firmware/iwlwifi-* 2>/dev/null; echo "---nvidia/nouveau---"; ls -1 /lib/firmware/nvidia 2>/dev/null; echo "---installed firmware packages---"; dpkg -l 2>/dev/null | grep -i firmware || true'
+
+# --- GPU / KMS (the blinking-cursor question) ---------------------------------
+capture 30-dmesg-gpu.txt 'dmesg 2>/dev/null | grep -Ei "drm|nouveau|nvidia|i915|fb0|vga|gpu|modeset" || true'
+capture 31-drm-status.txt 'for s in /sys/class/drm/*/status; do [ -f "$s" ] && { echo "== $s =="; cat "$s"; }; done; echo "---/proc/fb---"; cat /proc/fb 2>/dev/null || true'
+run 32-xorg-log.txt cat /var/log/Xorg.0.log
+
+# --- network / WiFi ------------------------------------------------------------
+capture 40-net-links.txt 'ip -br link; echo "---addr---"; ip -br addr; echo "---route---"; ip route'
+capture 41-wifi.txt 'rfkill list 2>/dev/null; echo "---iw dev---"; iw dev 2>/dev/null; echo "---/proc/net/wireless---"; cat /proc/net/wireless 2>/dev/null; echo "---nmcli radio---"; nmcli radio 2>/dev/null; echo "---nmcli dev---"; nmcli -t -f DEVICE,TYPE,STATE,CONNECTION dev 2>/dev/null'
+run 42-nm-journal.txt journalctl -u NetworkManager -b --no-pager
+
+# --- systemd state (what is hanging) ------------------------------------------
+run 50-systemd-jobs.txt systemctl list-jobs
+run 51-systemd-failed.txt systemctl --failed --no-pager
+run 52-systemd-blame.txt systemd-analyze blame
+run 53-systemd-critical-chain.txt systemd-analyze critical-chain
+capture 54-service-status.txt 'for u in setuphelfer-backend setuphelfer setuphelfer-rescue-media-check setuphelfer-rescue-start-assistant setuphelfer-rescue-ui NetworkManager; do echo "===== $u ====="; systemctl status "$u" --no-pager -l 2>&1 | head -40; echo; done'
+
+# --- processes / kiosk-ui evidence --------------------------------------------
+run 60-ps.txt ps aux
+capture 61-rescue-run-state.txt 'for f in /run/setuphelfer/*.json /run/setuphelfer-rescue/*.json; do [ -f "$f" ] && { echo "== $f =="; cat "$f"; echo; }; done 2>/dev/null || true'
+
+# --- full logs -----------------------------------------------------------------
+run 90-journal-boot.txt journalctl -b --no-pager
+run 91-journal-kernel.txt journalctl -k -b --no-pager
+run 92-dmesg-full.txt dmesg
+
+# --- refresh the stable "latest" pointer --------------------------------------
+if mkdir -p "$LATEST" 2>/dev/null; then
+  cp -f "$DEST"/*.txt "$LATEST/" 2>/dev/null || true
+  printf 'last_capture=%s phase=%s persistent=%s\n' "$STAMP" "$PHASE" "$PERSISTENT" >"$LATEST/INDEX.txt" 2>/dev/null || true
+fi
+
+# Flush to the physical stick so a hard power-off cannot lose the snapshot.
+timeout 30 sync 2>/dev/null || true
+
+log "setuphelfer-rescue-boot-diagnostics: phase=$PHASE dest=$DEST persistent=$PERSISTENT"
+exit 0

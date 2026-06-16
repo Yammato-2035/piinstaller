@@ -1,10 +1,9 @@
 # Payload Fix — Validate Tree
 
-**Status:** `blocked`
+**Status:** `tree_valid`
 
 | Feld | Wert |
 |------|------|
-| `validate_tree_exit` | **11** |
-| Grund | `FORBIDDEN: binary/live/filesystem.squashfs` (stale root-owned artifact) |
+| `validate_tree_exit` | **0** (nach Operator-Clean + prepare) |
 
-Agent/Autopilot-Marker in **Profil-Quelle** geprüft; Tree-Validator blockiert bis Operator-Clean + Rebuild.
+Agent/Autopilot/Host-Header/Serial-Marker in Profil-Quelle und post-build Squashfs geprüft.

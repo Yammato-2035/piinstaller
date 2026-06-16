@@ -1,0 +1,23 @@
+#!/bin/bash
+# Best-effort evidence spool bootstrap on FAT32 ESP or /run fallback.
+set -euo pipefail
+export PYTHONPATH="/opt/setuphelfer-rescue/backend:/usr/local/lib/setuphelfer:${PYTHONPATH:-}"
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+try:
+    from rescue.rescue_evidence_spool import resolve_spool_base, write_rescue_evidence_event
+except ImportError:
+    print(json.dumps({"status": "skipped", "reason": "module_missing"}))
+    raise SystemExit(0)
+
+base = resolve_spool_base()
+result = write_rescue_evidence_event(
+    {"event": "rescue_boot", "ui": "react-rescue-shell", "status": "spool_ready"},
+    base=base,
+    category="boot",
+    best_effort=True,
+)
+print(json.dumps(result))
+PY

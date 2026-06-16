@@ -243,7 +243,7 @@ write_rescue_react_shell_overlay() {
     copy_host_file "${image_src}/${script}" "${sbin}/${script}" 0755
   done
 
-  for unit in setuphelfer-rescue-ui.service setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service; do
+  for unit in setuphelfer-rescue-ui.service setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service setuphelfer-rescue-boot-logs.service; do
     copy_host_file "${image_src}/systemd/${unit}" "${systemd_dir}/${unit}" 0644
     ln -sf "../${unit}" "${wants}/${unit}"
   done
@@ -273,6 +273,11 @@ set -eu
 systemctl enable setuphelfer-rescue-evidence-spool.service || true
 systemctl enable setuphelfer-rescue-state.service || true
 systemctl enable setuphelfer-rescue-ui.service || true
+systemctl enable setuphelfer-rescue-boot-logs.service || true
+systemctl enable setuphelfer-rescue-boot-diagnostics-early.service || true
+systemctl enable setuphelfer-rescue-boot-diagnostics.service || true
+systemctl enable setuphelfer-rescue-boot-diagnostics.timer || true
+systemctl enable setuphelfer-rescue-boot-diagnostics-shutdown.service || true
 EOF
 }
 
@@ -297,7 +302,7 @@ write_rescue_network_telemetry_overlay() {
   local wants="${systemd_dir}/multi-user.target.wants"
   local timers="${systemd_dir}/timers.target.wants"
   mkdir -p "$sbin" "$wants" "$timers" "$share" "$rescue_cfg"
-  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-boot-evidence-init setuphelfer-rescue-plan-builder.py setuphelfer-rescue-evidence.py setuphelfer-rescue-ui-launch setuphelfer-rescue-kiosk-start setuphelfer-rescue-kiosk-health; do
+  for script in setuphelfer-rescue-common.sh setuphelfer-rescue-network-onboarding setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py setuphelfer-rescue-telemetry-push setuphelfer-rescue-telemetry-retry setuphelfer-rescue-telemetry-build-payload.py setuphelfer-rescue-task-pull setuphelfer-rescue-disk-discovery setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-start-assistant setuphelfer-rescue-boot-evidence-init setuphelfer-rescue-boot-logs setuphelfer-rescue-boot-diagnostics setuphelfer-rescue-plan-builder.py setuphelfer-rescue-evidence.py setuphelfer-rescue-ui-launch setuphelfer-rescue-kiosk-start setuphelfer-rescue-kiosk-health; do
     [[ -f "${image_src}/${script}" ]] || die "missing rescue image script: ${script}"
     copy_host_file "${image_src}/${script}" "${sbin}/${script}" 0755
   done
@@ -391,6 +396,99 @@ Unit=setuphelfer-rescue-telemetry-retry.service
 [Install]
 WantedBy=timers.target
 EOF
+
+  # --- Boot Diagnostics Matrix: capture a full HW/driver/firmware/network/systemd
+  # snapshot to the stick EARLY (before the UI), repeatedly (timer) and at shutdown,
+  # so a boot that hangs (blinking cursor / black kiosk) can be diagnosed offline.
+  # EARLY marker: runs at the sysinit stage (long before multi-user/the UI). Writes
+  # only a fast lightweight snapshot. If THIS is missing on the stick after a boot,
+  # the hang is pre-systemd (kernel/initramfs/KMS). If present but the full snapshot
+  # is not, the hang is between sysinit and multi-user.
+  write_text_file "${systemd_dir}/setuphelfer-rescue-boot-diagnostics-early.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue Boot Diagnostics (early sysinit marker)
+DefaultDependencies=no
+After=systemd-udevd.service systemd-udev-settle.service
+Wants=systemd-udev-settle.service
+# Deliberately NOT ordered Before=sysinit.target: the diagnostic must never delay
+# or block the boot itself. It is pulled in by sysinit.target and starts as soon as
+# udev has settled (so /dev/disk/by-label/SETUPHELFER_LOGS exists), running in
+# parallel with the rest of early boot. The fast early capture finishes in seconds.
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-diagnostics
+
+[Service]
+Type=oneshot
+TimeoutStartSec=45
+ExecStart=/usr/local/sbin/setuphelfer-rescue-boot-diagnostics early
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=sysinit.target
+EOF
+
+  write_text_file "${systemd_dir}/setuphelfer-rescue-boot-diagnostics.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue Boot Diagnostics (snapshot to stick)
+After=systemd-udevd.service local-fs.target
+Wants=local-fs.target
+# NOTE: deliberately NOT ordered Before the start assistant — a slow capture
+# (journalctl/sync to a slow USB stick) must never delay the tty1 TUI and look
+# like a hang. The .timer (OnBootSec=15s) guarantees an early snapshot anyway.
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-diagnostics
+
+[Service]
+Type=oneshot
+TimeoutStartSec=90
+ExecStart=/usr/local/sbin/setuphelfer-rescue-boot-diagnostics boot
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  write_text_file "${systemd_dir}/setuphelfer-rescue-boot-diagnostics.timer" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue Boot Diagnostics periodic snapshot
+
+[Timer]
+OnBootSec=15s
+OnUnitActiveSec=15s
+AccuracySec=2s
+Unit=setuphelfer-rescue-boot-diagnostics.service
+
+[Install]
+WantedBy=timers.target
+EOF
+
+  write_text_file "${systemd_dir}/setuphelfer-rescue-boot-diagnostics-shutdown.service" 0644 <<'EOF'
+[Unit]
+Description=Setuphelfer Rescue Boot Diagnostics (final snapshot at shutdown)
+DefaultDependencies=no
+Before=shutdown.target umount.target
+After=local-fs.target
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-diagnostics
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecStop=/usr/local/sbin/setuphelfer-rescue-boot-diagnostics shutdown
+TimeoutStopSec=60
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  ln -sf "../setuphelfer-rescue-boot-diagnostics.service" "${wants}/setuphelfer-rescue-boot-diagnostics.service"
+  ln -sf "../setuphelfer-rescue-boot-diagnostics-shutdown.service" "${wants}/setuphelfer-rescue-boot-diagnostics-shutdown.service"
+  ln -sf "../setuphelfer-rescue-boot-diagnostics.timer" "${timers}/setuphelfer-rescue-boot-diagnostics.timer"
+  local sysinit_wants="${systemd_dir}/sysinit.target.wants"
+  mkdir -p "$sysinit_wants"
+  ln -sf "../setuphelfer-rescue-boot-diagnostics-early.service" "${sysinit_wants}/setuphelfer-rescue-boot-diagnostics-early.service"
 
   mkdir -p "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/getty@tty1.service.d"
   write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/getty@tty1.service.d/setuphelfer-rescue.conf" 0644 <<'EOF'
@@ -584,6 +682,7 @@ rfkill
 iw
 pciutils
 usbutils
+dmidecode
 dnsutils
 ethtool
 whiptail
@@ -813,6 +912,37 @@ systemctl enable setuphelfer-backend.service || true
 systemctl enable setuphelfer.service || true
 EOF
 
+# Build the backend venv INSIDE the chroot so it matches the live base
+# (Debian Bookworm: python3.11 / glibc 2.36). A host-built venv (Ubuntu 24.04:
+# python3.12 / glibc 2.38) makes every venv service fail at boot -> blank tty1
+# (blinking cursor) on real hardware. See R8D venv glibc triage.
+#
+# MUST be a flat config/hooks/*.chroot hook: live-build 3.0~a57 (this base)
+# executes ONLY config/hooks/*.chroot, NOT config/hooks/normal/*.hook.chroot.
+# A hook under normal/ never runs -> the venv would be missing -> boot hang.
+write_text_file "${BUILD_ROOT}/config/hooks/012-build-rescue-backend-venv.chroot" 0755 <<'EOF'
+#!/bin/sh
+set -eu
+BACKEND_DIR=/opt/setuphelfer-rescue/backend
+VENV_DIR="${BACKEND_DIR}/venv"
+REQ="${BACKEND_DIR}/requirements.txt"
+
+[ -f "$REQ" ] || { echo "ERROR: ${REQ} missing in chroot (bundle not staged?)" >&2; exit 1; }
+
+# Never trust a shipped venv — always rebuild against the chroot interpreter.
+rm -rf "$VENV_DIR"
+python3 -m venv "$VENV_DIR"
+"${VENV_DIR}/bin/pip" install --no-cache-dir --upgrade pip setuptools wheel
+"${VENV_DIR}/bin/pip" install --no-cache-dir --prefer-binary -r "$REQ"
+
+# Prove ABI compatibility now (fail the build early instead of hanging at boot).
+"${VENV_DIR}/bin/python3" - <<'PYCHECK'
+import fastapi, uvicorn, pydantic, cryptography, PIL, yaml, psutil  # noqa: F401
+print("rescue backend venv imports OK")
+PYCHECK
+echo "OK: rescue backend venv built in-chroot ($("${VENV_DIR}/bin/python3" --version 2>&1))"
+EOF
+
 write_rescue_dev_agent_service() {
   local qemu_fallback="${1:-false}"
   local exec_start="/usr/bin/python3 -m backend.devserver_agent.cli --send --json"
@@ -1004,8 +1134,12 @@ for stale_bundle in "$(dirname "$BUNDLE_DST")/$(basename "$BUNDLE_DST").old."*; 
   move_to_trash "$stale_bundle"
 done
 mkdir -p "$(dirname "$BUNDLE_DST")"
+# NOTE: 'venv' is excluded — the venv is rebuilt in-chroot (013 hook) to match the
+# Bookworm base python/glibc. Shipping a host venv bakes an incompatible python
+# binary (rsync -L dereferences venv/bin/python3 -> host python) and hangs the boot.
 rsync -rltL \
   --exclude='__pycache__' --exclude='*.pyc' --exclude='.env' \
+  --exclude='venv' --exclude='.venv' \
   --exclude='node_modules' --exclude='*.iso' --exclude='*.img' --exclude='*.qcow2' \
   "$BUNDLE_SRC/" "$BUNDLE_DST/"
 

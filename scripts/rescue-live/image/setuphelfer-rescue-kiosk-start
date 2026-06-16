@@ -62,7 +62,7 @@ if [[ -x "$KIOSK_HEALTH" ]]; then
 fi
 
 _browser=""
-for candidate in chromium chromium-browser firefox-esr firefox; do
+for candidate in chromium chromium-browser firefox-esr firefox x-www-browser; do
   if command -v "$candidate" >/dev/null 2>&1; then
     _browser="$candidate"
     break

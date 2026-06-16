@@ -10560,10 +10560,14 @@ async def backup_target_check(
                 write_test = {"success": False, "mode": "user", "message": f"Schreibtest fehlgeschlagen (User): {err_user}", "reason_code": None, "hints": [], "suggest_usb_prepare": False}
                 # Fallback: sudo write test, wenn Passwort gespeichert
                 if sudo_password:
-                    cmd = (
-                        f"sh -c "
-                        f"{shlex.quote('tmp=$(mktemp -p ' + backup_dir + ' .pi-installer-write-test.XXXXXX) && echo ok > \"$tmp\" && rm -f \"$tmp\"')}"
+                    # NOTE: do not inline this into an f-string — a backslash inside an
+                    # f-string expression is a SyntaxError on Python 3.11 (live base),
+                    # even though Python 3.12 (dev host) accepts it (PEP 701).
+                    write_test_snippet = (
+                        'tmp=$(mktemp -p ' + backup_dir
+                        + ' .pi-installer-write-test.XXXXXX) && echo ok > "$tmp" && rm -f "$tmp"'
                     )
+                    cmd = "sh -c " + shlex.quote(write_test_snippet)
                     sudo_res = run_command(cmd, sudo=True, sudo_password=sudo_password)
                     if sudo_res["success"]:
                         write_test = {"success": True, "mode": "sudo", "message": "Schreibtest ok (sudo)", "reason_code": "permissions", "hints": [], "suggest_usb_prepare": False}

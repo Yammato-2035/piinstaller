@@ -1,20 +1,7 @@
-# Backend Watchdog Path Fix — local_lab API Smoke
+# Ports Registry — local_lab API Smoke (ingest note)
 
 **Datum:** 2026-06-03
 
-| Prüfpunkt | Wert |
-|-----------|------|
-| install_profile | **local_lab** |
-| dev_control_enabled | **true** |
-| API HTTP | **200** |
-| status | **ok** |
-| stale | **false** |
-| source_path | `/opt/setuphelfer/docs/evidence/dev-dashboard/backend_health_latest.json` |
-| searched_paths /opt state=ok | **yes** |
-| current_health vorhanden | **yes** |
-| overall_status | **ok** |
-| failure_classification | **none** |
-| history_tail | **yes** (≤20) |
-| **Status** | **ok** |
+Vorheriger Operator-Lauf: `BACKEND_WATCHDOG_PATH_FIX_LOCAL_LAB_API_SMOKE.md` — backend-health HTTP 200 unter local_lab.
 
-Evidence: `watchdog_path_fix_backend_health_local_lab_body.json`, `watchdog_path_fix_backend_health_local_lab_response.txt`
+Dieser Lauf: Runtime **release**; Gating unter release verifiziert (404). local_lab-Smoke nicht erneut ausgeführt.

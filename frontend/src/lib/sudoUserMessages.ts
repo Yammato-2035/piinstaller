@@ -10,6 +10,13 @@ export function sudoSaveErrorToast(raw: string | undefined, t: (key: string) => 
   ) {
     return t('sudo.dialog.toast.wrongPassword')
   }
+  if (
+    m.includes('no new privileges') ||
+    m.includes('keine neuen privilegien') ||
+    m.includes('nonewprivileges')
+  ) {
+    return t('sudo.dialog.toast.sudoBlockedByNnp')
+  }
   if (m.includes('timeout') || m.includes('lange gedauert') || m.includes('too long') || m.includes('timed out')) {
     return t('sudo.dialog.toast.sudoTestTimeout')
   }

@@ -41,6 +41,14 @@ xorriso -osirrox on -indev "$ISO" -extract /live/filesystem.squashfs "$WORK/file
 
 SQ="$WORK/filesystem.squashfs"
 
+# List the squashfs ONCE into a file. Piping `unsquashfs -ll | grep -q` directly is
+# flaky on a ~1.2GB image: grep -q exits at the first match and SIGPIPEs unsquashfs
+# mid-stream, which can make later/large listings report no match. Read the cached
+# listing instead — robust and much faster than re-listing per check.
+SQ_LL="$WORK/squashfs.ll.txt"
+unsquashfs -ll "$SQ" > "$SQ_LL" 2>/dev/null \
+  || fail_missing "unsquashfs -ll failed on extracted squashfs"
+
 squashfs_path_exists() {
   unsquashfs -cat "$SQ" "$1" >/dev/null 2>&1
 }
@@ -52,15 +60,35 @@ squashfs_grep() {
 }
 
 squashfs_list_has() {
-  unsquashfs -ll "$SQ" 2>/dev/null | grep -qF "$1"
+  grep -qF "$1" "$SQ_LL"
 }
 
 # --- Bundle / Runtime (exit 11) ---
 squashfs_path_exists 'opt/setuphelfer-rescue/MANIFEST.json' \
   || fail_bundle "/opt/setuphelfer-rescue/MANIFEST.json missing"
 
-squashfs_path_exists 'opt/setuphelfer-rescue/backend/venv/bin/python3' \
-  || fail_bundle "bundled backend venv missing"
+# NOTE: check pyvenv.cfg (a regular file), NOT venv/bin/python3 — the latter is a
+# symlink (-> /bin/python3) and squashfs_path_exists/unsquashfs -cat cannot read
+# symlinks, so it would false-negative even on a perfectly good in-chroot venv.
+squashfs_path_exists 'opt/setuphelfer-rescue/backend/venv/pyvenv.cfg' \
+  || fail_bundle "bundled backend venv missing (no pyvenv.cfg — flat 012 chroot venv hook did not run)"
+grep -qE 'backend/venv/bin/python3( ->| |$)' "$SQ_LL" \
+  || fail_bundle "bundled backend venv missing python3 interpreter symlink"
+
+# R8D regression guard: the venv must be built in-chroot and match the live base
+# python version. A host venv (e.g. python3.12 from Ubuntu 24.04) carries a
+# glibc 2.38 binary + wrong-ABI extensions and hangs the boot (blank tty1).
+_base_pyver="$(grep -oE 'usr/lib/python3\.[0-9]+' "$SQ_LL" | grep -oE 'python3\.[0-9]+' | sort -u | head -1)"
+if [[ -n "$_base_pyver" ]]; then
+  _venv_pyvers="$(grep -oE 'opt/setuphelfer-rescue/backend/venv/lib/python3\.[0-9]+' "$SQ_LL" | grep -oE 'python3\.[0-9]+' | sort -u)"
+  for _vv in $_venv_pyvers; do
+    if [[ "$_vv" != "$_base_pyver" ]]; then
+      fail_bundle "backend venv uses ${_vv} but live base is ${_base_pyver} (host venv leak — rebuild venv in-chroot)"
+    fi
+  done
+fi
+grep -q 'backend/venv/lib/python3.*/site-packages/fastapi' "$SQ_LL" \
+  || fail_bundle "backend venv missing fastapi site-package (pip install in flat 012 chroot hook did not run)"
 
 squashfs_path_exists 'opt/setuphelfer-rescue/frontend/dist/index.html' \
   || fail_bundle "frontend/dist/index.html missing"

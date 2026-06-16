@@ -2,10 +2,7 @@
 set -eu
 systemctl enable NetworkManager.service || true
 systemctl enable setuphelfer-rescue-keyboard.service || true
-systemctl enable setuphelfer-rescue-network-onboarding.service || true
 systemctl enable setuphelfer-rescue-media-check.service || true
-systemctl enable setuphelfer-rescue-telemetry-push.service || true
-systemctl enable setuphelfer-rescue-telemetry-retry.timer || true
 systemctl enable setuphelfer-rescue-start-assistant.service || true
 systemctl enable setuphelfer-rescue-task-pull.service || true
 systemctl enable setuphelfer-backend.service || true

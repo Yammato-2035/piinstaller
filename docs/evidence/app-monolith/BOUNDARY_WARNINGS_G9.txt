@@ -1,0 +1,38 @@
+# Boundary Warnings Snapshot — Phase G.9
+
+**Datum:** 2026-06-10  
+**HEAD (Workspace):** 23462c1 (vor G.9-Commit)  
+**Skript:** `./scripts/check-module-boundaries.sh`  
+**Modus:** WARN-only
+
+## G.9 Guards (neu)
+
+| Guard-ID | Ziel |
+|----------|------|
+| `hardware_discovery_core_missing` | Core-Modul vorhanden |
+| `system_info_facade_depends_on_app` | Kein `import app`, kein `_legacy_*` |
+| `hardware_discovery_duplicate_logic` | Discovery importiert nicht `app` |
+| `hardware_legacy_wrapper_missing` | app.py Wrapper delegieren |
+| `hardware_new_logic_outside_discovery` | Keine parallele dmidecode/lspci/cpuinfo-Logik |
+| `hardware_direct_discovery_usage_outside_facade` | Direktaufrufe nur über Discovery/Facade |
+
+## G.9-spezifische Warnungen (nach Guard-Tuning)
+
+```
+(keine — Kernpfad system_info_facade → hardware_discovery bestanden)
+```
+
+Ausgeschlossen vom Scan (bewusst): `raspberry_pi_config`, `oled_display_runner`, `support_bundle`, venv-Pfade.
+
+## Erfolgskriterium
+
+- `system_info_facade.py`: **0** `_legacy_*` Adapter, **0** `import app`
+- Kanonischer Owner: `backend/core/hardware_discovery.py`
+
+## Verifikation
+
+```bash
+python3 -m unittest backend.tests.test_hardware_discovery_v1 \
+  backend.tests.test_system_info_without_app_dependency_g9 -v
+rg '_legacy_|import app' backend/core/system_info_facade.py  # keine Treffer
+```

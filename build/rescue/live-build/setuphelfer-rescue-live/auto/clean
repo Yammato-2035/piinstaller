@@ -2,3 +2,4 @@
 set -eu
 # Kein "lb clean" hier: live-build ruft auto/clean selbst auf und wuerde sonst rekursiv enden.
 rm -rf .build chroot cache binary local
+rm -f binary.iso binary.hybrid.iso binary.img binary*.zsync* 2>/dev/null || true

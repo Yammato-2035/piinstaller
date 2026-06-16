@@ -29,7 +29,7 @@ print(json.dumps({
         "wayland": __import__("os").environ.get("WAYLAND_DISPLAY") or None,
         "tty1": __import__("pathlib").Path("/dev/tty1").exists(),
     },
-    "browser_candidates": [b for b in ("chromium","chromium-browser","firefox-esr","firefox") if __import__("shutil").which(b)],
+    "browser_candidates": [b for b in ("chromium","chromium-browser","firefox-esr","firefox","x-www-browser") if __import__("shutil").which(b)],
     "react_ui_html": __import__("pathlib").Path(${HTML@Q}).is_file(),
     "ui_url": ${UI_URL@Q},
     "timeout_sec": int(${TIMEOUT_SEC@Q}),
@@ -45,7 +45,7 @@ PY
 }
 
 _browsers=()
-for candidate in chromium chromium-browser firefox-esr firefox; do
+for candidate in chromium chromium-browser firefox-esr firefox x-www-browser; do
   if command -v "$candidate" >/dev/null 2>&1; then
     _browsers+=("$candidate")
   fi

@@ -1,9 +1,12 @@
 {
   "component": "rescue_stick_readonly_build_final_gate",
-  "errors": [],
-  "gate_status": "ready",
+  "errors": [
+    "RESCUE_STICK_FINAL_FORBIDDEN_ARTIFACTS",
+    "RESCUE_STICK_FINAL_MANIFEST_BLOCKED"
+  ],
+  "gate_status": "blocked",
   "generated": false,
-  "generated_at": "2026-05-24T20:17:59.237786+00:00",
+  "generated_at": "2026-05-25T12:05:26.926668+00:00",
   "inputs_present": {
     "debian_live_tree": true,
     "frontend_bundle": true,

@@ -1,0 +1,43 @@
+# Boundary Warnings Snapshot — Phase G.6
+
+**Datum:** 2026-06-10  
+**HEAD (Workspace):** 23462c1 (vor G.6-Commit)  
+**Skript:** `./scripts/check-module-boundaries.sh`  
+**Modus:** WARN-only
+
+## G.6 Guards (neu)
+
+| Guard-ID | Ziel |
+|----------|------|
+| `system_info_facade_missing` | Facade-Datei vorhanden |
+| `system_info_route_requires_facade` | Handler nutzt `system_info_facade` |
+| `system_info_direct_network_usage` | Kein direktes Network in Handler/Facade |
+| `system_info_duplicate_status_mapping` | Sections nur über `build_section_status` |
+| `system_info_new_logic_outside_facade` | Keine parallele Route-Implementierung |
+| `system_info_facade_bypasses_network_facade` | Facade importiert `network_info_facade` |
+
+## G.6-spezifische Warnungen
+
+```
+(keine — alle G.6 Guards bestanden)
+```
+
+## Ersetzte G.3-Guards
+
+- `app_system_info_requires_network_facade` → entfernt (Handler delegiert an `system_info_facade`, nicht direkt an `network_info_facade`)
+- `network_facade_candidate_detected:system_info_facade` → aus G.5-Kandidatenliste entfernt (promoted CANONICAL)
+
+## Gesamtstatus (Auszug)
+
+`status: review_required` — bestehende Monolith-/Deploy-/Runner-Warnungen unverändert; **keine neuen G.6-Regressionen**.
+
+## Verifikation
+
+```bash
+./scripts/check-module-boundaries.sh 2>&1 | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+assert not [w for w in d['warnings'] if 'system_info' in w]
+print('G.6 guards OK')
+"
+```

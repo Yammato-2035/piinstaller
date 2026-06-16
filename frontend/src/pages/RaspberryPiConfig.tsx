@@ -207,11 +207,11 @@ const RaspberryPiConfig: React.FC = () => {
     }
   }
 
-  const storeSudoPassword = async (sudoPassword: string) => {
+  const storeSudoPassword = async (sudoPassword: string, skipTest = true) => {
     const resp = await fetchApi('/api/users/sudo-password', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sudo_password: sudoPassword }),
+      body: JSON.stringify({ sudo_password: sudoPassword, skip_test: skipTest }),
     })
     const data = await resp.json()
     if (data.status !== 'success') {
@@ -229,8 +229,8 @@ const RaspberryPiConfig: React.FC = () => {
     }
 
     setSudoModalOpen(true)
-    setPendingAction(() => async (pwd: string) => {
-      await storeSudoPassword(pwd)
+    setPendingAction(() => async (pwd: string, skipTest?: boolean) => {
+      await storeSudoPassword(pwd, skipTest ?? true)
       await action()
     })
   }
@@ -338,10 +338,10 @@ const RaspberryPiConfig: React.FC = () => {
           setSudoModalOpen(false)
           setPendingAction(null)
         }}
-        onConfirm={async (pwd) => {
+        onConfirm={async (pwd, skipTest) => {
           try {
             if (!pendingAction) return
-            await pendingAction(pwd)
+            await pendingAction(pwd, skipTest)
             toast.success('Sudo-Passwort gespeichert (Session)')
             setSudoModalOpen(false)
             setPendingAction(null)

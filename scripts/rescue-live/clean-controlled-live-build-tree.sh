@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 # Controlled clean of local live-build working tree only.
 # Default: dry-run. With --operator-confirm-clean: remove allowed paths.
+#
+# Always run from repo root, e.g.:
+#   cd /home/volker/piinstaller
+#   sudo bash scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_PATH="${SCRIPT_DIR}/$(basename "${BASH_SOURCE[0]}")"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BUILD_ROOT="${REPO_ROOT}/build/rescue/live-build/setuphelfer-rescue-live"
 LOG_DIR="${REPO_ROOT}/build/rescue/logs/controlled-iso-build"
@@ -21,7 +26,10 @@ Removes only allowed paths under:
 Allowed: .build, binary, chroot, cache, local, binary.*, chroot.*, wget-log*
 
 If root-owned files block removal, re-run with sudo:
-  sudo $0 --operator-confirm-clean
+  cd ${REPO_ROOT}
+  sudo bash scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
+
+Script path: ${SCRIPT_PATH}
 
 Forbidden: paths outside build tree, /opt, /dev, /media, /mnt, git, apt, dd, mount.
 EOF

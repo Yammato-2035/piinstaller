@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 from dataclasses import dataclass, field
@@ -20,7 +21,6 @@ from core.rescue_fat32_esp_usb_verify import (
 from core.rescue_squashfs_react_shell_verify import squashfs_verify_launcher_payload
 from rescue.rescue_grub_branding import (
     BOOTX64_GFX_MODULES,
-    GRUB_BACKGROUND_FILE,
     GRUB_THEME_DIR_REL,
     GRUB_THEME_FILE,
     grub_cfg_loads_gfx_modules,
@@ -145,8 +145,12 @@ def evaluate_grub_branding_on_mount(mount_root: Path) -> dict[str, Any]:
     grub_text = grub_cfg_path.read_text(encoding="utf-8") if grub_cfg_path.is_file() else ""
     theme_dir = mount_root / GRUB_THEME_DIR_REL
     theme_file = theme_dir / GRUB_THEME_FILE
-    bg_file = theme_dir / GRUB_BACKGROUND_FILE
-    errors = validate_fat32_grub_branding(mount_root, grub_text)
+    theme_txt = theme_file.read_text(encoding="utf-8") if theme_file.is_file() else ""
+    desktop_match = re.search(r'desktop-image:\s*"([^"]+)"', theme_txt)
+    desktop_name = desktop_match.group(1) if desktop_match else ""
+    bg_file = theme_dir / desktop_name if desktop_name else theme_dir
+    image_format = "jpeg" if desktop_name.endswith(".jpg") else "png"
+    errors = validate_fat32_grub_branding(mount_root, grub_text, image_format=image_format)
     evidence_path = mount_root / "setuphelfer/rescue/evidence.json"
     bootx64_modules: list[str] = []
     if evidence_path.is_file():
@@ -163,9 +167,9 @@ def evaluate_grub_branding_on_mount(mount_root: Path) -> dict[str, Any]:
         "branding_ok": not errors,
         "theme_dir_exists": theme_dir.is_dir(),
         "theme_txt_exists": theme_file.is_file(),
-        "background_exists": bg_file.is_file(),
+        "background_exists": bg_file.is_file() if desktop_name else False,
         "grub_references_theme": grub_cfg_references_theme(grub_text),
-        "grub_loads_gfx": grub_cfg_loads_gfx_modules(grub_text),
+        "grub_loads_gfx": grub_cfg_loads_gfx_modules(grub_text, image_format=image_format),
         "errors": errors,
     }
 

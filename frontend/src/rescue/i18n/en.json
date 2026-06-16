@@ -1,16 +1,37 @@
 {
-  "title": "Setuphelfer Rescue Stick",
+  "title": "Setuphelfer",
   "subtitle": "Analyze first. Backup second. Act safely.",
   "hint": "Nothing is repaired or installed unless you explicitly confirm.",
   "menuPrompt": "What would you like to do?",
-  "actions": {
-    "safe_check": "Recommended: Check system safely",
-    "backup_find": "Rescue data / Find backup",
-    "network": "Connect network",
-    "export_logs": "Export logs & diagnostics",
-    "media_ram": "Media check / Boot to RAM",
-    "advanced": "Advanced options",
-    "power": "Reboot / Power off"
+  "menu": {
+    "system_analyze": {
+      "title": "Analyze system",
+      "subtitle": "Check hardware, drives and system"
+    },
+    "backup_create": {
+      "title": "Create backup",
+      "subtitle": "Create a complete system backup"
+    },
+    "backup_verify": {
+      "title": "Verify backup",
+      "subtitle": "Verify backup and integrity"
+    },
+    "restore": {
+      "title": "Restore",
+      "subtitle": "Restore your system from a backup"
+    },
+    "malware_scan": {
+      "title": "Check malware",
+      "subtitle": "Scan for malware and rootkits"
+    },
+    "cloudserver_manage": {
+      "title": "Manage cloud server",
+      "subtitle": "Analyze and secure your cloud server"
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Language, network and more options"
+    }
   },
   "status": {
     "medium": "Medium",
@@ -18,6 +39,15 @@
     "telemetry": "Telemetry",
     "optional": "optional",
     "off": "off"
+  },
+  "footer": {
+    "help": "Help",
+    "language": "Language",
+    "network": "Network",
+    "debug": "Debug",
+    "reboot": "Restart",
+    "shutdown": "Shut down",
+    "select": "Select"
   },
   "lang": "Language"
 }

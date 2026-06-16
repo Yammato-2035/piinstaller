@@ -26,6 +26,7 @@ FORBIDDEN_PACKAGES=(
   avahi-daemon
   nginx
   openssh-server
+  x-www-browser
 )
 
 SCAN_GLOBS=(

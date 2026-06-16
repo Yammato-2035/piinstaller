@@ -20,7 +20,8 @@ CONFIRM_PHRASE_GRUB_BRANDING = "UPDATE SETUPHELFER FAT32 ESP GRUB BRANDING"
 ALLOWED_GRUB_BRANDING_REL_PATHS: tuple[str, ...] = (
     "boot/grub/grub.cfg",
     "boot/grub/themes/setuphelfer/theme.txt",
-    "boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.png",
+    "boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.jpg",
+    "boot/grub/themes/setuphelfer/unicode.pf2",
     "EFI/BOOT/BOOTX64.EFI",
     "setuphelfer/rescue/evidence.json",
     "setuphelfer/rescue/boot-branding.txt",
@@ -123,6 +124,7 @@ def apply_grub_branding_on_mount(
         mount_root,
         grub_text,
         bootx64_modules=evidence.get("bootx64_modules_requested"),
+        image_format=str(stage_meta.get("background_format") or "jpeg"),
     )
     return {
         "stage_meta": stage_meta,

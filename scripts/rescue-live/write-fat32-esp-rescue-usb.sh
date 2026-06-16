@@ -15,7 +15,7 @@ EXECUTE_WRITE=false
 CONFIRM_PHRASE=""
 ESP_SIZE_MIB=4096
 STAGING_DIR="${REPO_ROOT}/build/rescue/fat32-esp-staging"
-EXPECTED_ISO_SHA256="c9de3751f7fafe51c836d112bac99331c06252a01430b41f2a50b432ca63f194"
+EXPECTED_ISO_SHA256="2a54a3cfc9b2e13da45beff7d9409669eab81814b8d9ef8e26c0df5a424151cf"
 
 RUN_ID=""
 EVIDENCE_DIR=""
@@ -47,6 +47,66 @@ EOF
 }
 
 die() { echo "ERROR: $*" >&2; exit "${2:-1}"; }
+
+clear_staging_dir() {
+  [[ -d "${STAGING_DIR}" ]] || return 0
+  if [[ -z "$(ls -A "${STAGING_DIR}" 2>/dev/null || true)" ]]; then
+    return 0
+  fi
+  if rm -rf "${STAGING_DIR:?}"/* 2>/dev/null; then
+    return 0
+  fi
+  echo "=== Clearing root-owned staging files (sudo) ==="
+  sudo rm -rf "${STAGING_DIR:?}"/*
+}
+
+rebuild_staging_layout() {
+  local reason="$1"
+  echo "=== Rebuilding staging layout (${reason}) ==="
+  clear_staging_dir
+  "${SCRIPT_DIR}/build-fat32-esp-usb-layout.sh" --iso "$ISO" --output-dir "$STAGING_DIR"
+}
+
+warn_if_target_mounted() {
+  local part mounts
+  mounts="$(lsblk -n -o MOUNTPOINTS "${TARGET}" 2>/dev/null | grep -v '^$' || true)"
+  for part in "${PART_DEV}" "$(partition_path_for_target "$TARGET" 2)"; do
+    [[ -b "$part" ]] || continue
+    mounts+=$'\n'"$(lsblk -n -o MOUNTPOINTS "$part" 2>/dev/null | grep -v '^$' || true)"
+  done
+  if [[ -n "$(echo "$mounts" | grep -v '^$' || true)" ]]; then
+    echo ""
+    echo "=== HINWEIS: Ziel-Stick ist gemountet (Write wird blockiert) ==="
+    lsblk -o NAME,LABEL,MOUNTPOINTS "${TARGET}" 2>/dev/null || true
+    echo "Vor --execute-write ausmounten:"
+    echo "  udisksctl unmount -b ${PART_DEV} 2>/dev/null || true"
+    echo "  udisksctl unmount -b $(partition_path_for_target "$TARGET" 2) 2>/dev/null || true"
+    echo "Dateimanager schließen, falls der Stick dort geöffnet ist."
+    echo ""
+  fi
+}
+
+print_plan_blocker_help() {
+  python3 - <<PY
+import json
+from pathlib import Path
+
+plan = json.loads(Path(${PLAN_JSON@Q}).read_text())
+blockers = plan.get("safety", {}).get("blockers") or []
+hints = {
+    "MOUNTED_BACKUP_TARGET": "Stick-Partition ist unter /media/... gemountet — ausmounten (siehe HINWEIS oben).",
+    "TARGET_DEVICE_MOUNTED": "Gesamtes Zielgerät gemountet — alle Partitionen ausmounten.",
+    "TARGET_PARTITION_MOUNTED": "Mindestens eine Stick-Partition gemountet — udisksctl unmount -b /dev/sdb1 und sdb2.",
+    "OPERATOR_EVIDENCE_WRITE_NOT_ALLOWED": "Operator-Auswahl im Cockpit erneut bestätigen (usb_operator_selection_latest.json).",
+    "CONFIRM_PHRASE_MISMATCH": "Confirm-Phrase exakt: WRITE SETUPHELFER FAT32 ESP USB",
+    "OPERATOR_CONFIRMATIONS_INCOMPLETE": "Alle Operator-Checkboxen im Cockpit setzen.",
+}
+print("Blocker:", ", ".join(blockers) or "(unbekannt)")
+for code in blockers:
+    if code in hints:
+        print(f"  → {hints[code]}")
+PY
+}
 
 partition_path_for_target() {
   python3 - <<PY
@@ -171,16 +231,35 @@ PY
   run_step wipefs_full sudo wipefs -a "$TARGET"
   run_step sgdisk_zap sudo sgdisk --zap-all "$TARGET"
   run_step sgdisk_create_esp sudo sgdisk -n "1:0:+${ESP_SIZE_MIB}MiB" -t "1:EF00" -c "1:${gpt_name}" "$TARGET"
+  # Partition 2 = dedicated, always-writable log/diagnostics partition over the
+  # remaining space. live-boot never touches it (no /live), so the rescue system
+  # can mount it read-write and persist boot diagnostics even though the ESP/live
+  # medium is mounted read-only. Without this, a boot that hangs cannot be
+  # diagnosed offline (the ESP remount-rw fails on some firmware/USB combos).
+  run_step sgdisk_create_logs sudo sgdisk -n "2:0:0" -t "2:0700" -c "2:SETUPHELFER_LOGS" "$TARGET"
   run_step partprobe sudo partprobe "$TARGET" || true
   run_step udev_settle sudo udevadm settle --timeout=30 || true
   sleep 2
   run_step mkfs_vfat sudo mkfs.vfat -F 32 -n "${fat_label}" "$PART_DEV"
+  local LOGS_PART_DEV
+  LOGS_PART_DEV="$(partition_path_for_target "$TARGET" 2)"
+  # FAT volume labels are limited to 11 chars; "SETUPHELFER_LOGS" (16) is rejected
+  # by mkfs.vfat and would leave the partition WITHOUT a filesystem (-> kernel
+  # "FAT-fs bogus" spam on the rescue console and lost diagnostics). The GPT
+  # partition name (sgdisk -c) stays "SETUPHELFER_LOGS" (16 chars allowed there),
+  # which is how the rescue diagnostics locate it via /dev/disk/by-partlabel/.
+  run_step mkfs_logs sudo mkfs.vfat -F 32 -n "SETUP_LOGS" "$LOGS_PART_DEV"
   run_step partprobe_after_mkfs sudo partprobe "$TARGET" || true
   run_step udev_settle_after_mkfs sudo udevadm settle --timeout=30 || true
   sleep 1
 
   FSTYPE="$(lsblk -no FSTYPE "$PART_DEV" 2>/dev/null | head -1 || true)"
   [[ "$FSTYPE" == "vfat" ]] || die "${PART_DEV} not vfat (${FSTYPE})" 31
+
+  # The dedicated logs partition MUST carry a valid filesystem — without it the
+  # rescue diagnostics cannot persist (and the kernel spams "FAT-fs bogus").
+  LOGS_FSTYPE="$(lsblk -no FSTYPE "$LOGS_PART_DEV" 2>/dev/null | head -1 || true)"
+  [[ "$LOGS_FSTYPE" == "vfat" ]] || die "${LOGS_PART_DEV} (SETUPHELFER_LOGS) not vfat (${LOGS_FSTYPE}) — mkfs failed" 31
 
   LABEL="$(sudo blkid -p -s LABEL -o value "$PART_DEV" 2>/dev/null || true)"
   if [[ "$LABEL" != "$fat_label" ]]; then
@@ -273,6 +352,7 @@ print(json.dumps(plan, indent=2))
 PY
 
 echo "=== FAT32 ESP USB Writer Plan ==="
+warn_if_target_mounted
 cat "$PLAN_JSON"
 
 if [[ "$DRY_RUN" == true ]]; then
@@ -291,6 +371,7 @@ PY
 
 if [[ "$BLOCKED" == "yes" ]]; then
   echo "ERROR: write blocked by safety checks — see plan JSON" >&2
+  print_plan_blocker_help >&2
   exit 27
 fi
 
@@ -300,8 +381,37 @@ if [[ "$CONFIRM_WRITE" != true ]]; then
 fi
 
 if [[ ! -f "${STAGING_DIR}/EFI/BOOT/BOOTX64.EFI" ]]; then
-  echo "=== Building staging layout ==="
-  "${SCRIPT_DIR}/build-fat32-esp-usb-layout.sh" --iso "$ISO" --output-dir "$STAGING_DIR"
+  rebuild_staging_layout "missing BOOTX64.EFI"
+else
+  STAGING_ISO_SHA="$(python3 - <<PY 2>/dev/null || true
+import json
+from pathlib import Path
+p = Path(${STAGING_DIR@Q}) / "setuphelfer" / "rescue" / "evidence.json"
+if p.is_file():
+    print(json.loads(p.read_text()).get("iso_sha256") or "")
+PY
+)"
+  CURRENT_ISO_SHA="$(sha256sum "$ISO" | awk '{print $1}')"
+  STAGING_VERSION_DRIFT="$(python3 - <<PY 2>/dev/null || true
+import json
+from pathlib import Path
+ws = Path(${REPO_ROOT@Q}) / "config" / "version.json"
+st = Path(${STAGING_DIR@Q}) / "setuphelfer" / "rescue" / "version.json"
+if not ws.is_file() or not st.is_file():
+    print("yes")
+else:
+    wv = json.loads(ws.read_text()).get("project_version") or ""
+    sv = json.loads(st.read_text()).get("project_version") or ""
+    print("yes" if wv != sv else "no")
+PY
+)"
+  if [[ -z "$STAGING_ISO_SHA" || "$STAGING_ISO_SHA" != "$CURRENT_ISO_SHA" ]]; then
+    rebuild_staging_layout "ISO changed: ${STAGING_ISO_SHA:-none} -> ${CURRENT_ISO_SHA}"
+  elif [[ "$STAGING_VERSION_DRIFT" == "yes" ]]; then
+    WORKSPACE_VER="$(python3 -c "import json; print(json.load(open('${REPO_ROOT}/config/version.json'))['project_version'])")"
+    STAGING_VER="$(python3 -c "import json; print(json.load(open('${STAGING_DIR}/setuphelfer/rescue/version.json'))['project_version'])" 2>/dev/null || echo none)"
+    rebuild_staging_layout "workspace version drift: ${STAGING_VER} -> ${WORKSPACE_VER}"
+  fi
 fi
 
 if [[ "$EXECUTE_WRITE" != true ]]; then

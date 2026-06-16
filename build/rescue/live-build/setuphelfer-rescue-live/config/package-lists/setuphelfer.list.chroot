@@ -32,6 +32,7 @@ rfkill
 iw
 pciutils
 usbutils
+dmidecode
 dnsutils
 ethtool
 whiptail
@@ -44,5 +45,4 @@ x11-xserver-utils
 unclutter
 fonts-dejavu
 fonts-noto
-x-www-browser
 wireless-tools

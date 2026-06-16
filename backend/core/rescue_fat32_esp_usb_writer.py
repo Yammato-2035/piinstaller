@@ -39,7 +39,7 @@ FAT_RSYNC_OPTIONS = (
 BOOTX64_SOURCE_MKSTANDALONE = "grub_mkstandalone"
 BOOTX64_MKSTANDALONE_MODULES = (
     "part_gpt fat search search_fs_uuid search_label normal linux gzio configfile boot "
-    "gfxterm png all_video efi_gop"
+    "gfxterm gfxmenu jpeg png all_video efi_gop efi_uga video font"
 )
 BOOTX64_ERROR_MKSTANDALONE_MISSING = "RESCUE-FAT32-BOOTX64-MKSTANDALONE-MISSING"
 BOOTX64_ERROR_ISO_COPIED = "RESCUE-FAT32-BOOTX64-ISO-COPIED-001"
@@ -184,6 +184,12 @@ insmod normal
 insmod linux
 insmod gzio
 insmod configfile
+insmod gfxterm
+insmod gfxmenu
+insmod jpeg
+insmod all_video
+insmod efi_gop
+insmod video
 
 search --no-floppy --label {fat_label} --set=root
 
@@ -381,15 +387,15 @@ def generate_fat32_esp_grub_cfg(
         "",
         entry(
             "Setuphelfer Rettung starten",
-            "boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1",
+            "boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
         ),
         entry(
             "Setuphelfer Rettung starten - Netzwerk-Assistent",
-            "boot=live components setuphelfer.network=1 quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1",
+            "boot=live components setuphelfer.network=1 quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
         ),
         entry(
             "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus",
-            "boot=live components pci=noaer nouveau.modeset=0 nomodeset quiet setuphelfer_rescue=1 setuphelfer_msi_compat=1",
+            "boot=live components pci=noaer nouveau.modeset=0 nomodeset quiet setuphelfer_rescue=1 setuphelfer_msi_compat=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
         ),
         entry(
             "Setuphelfer Diagnosemodus",
@@ -397,7 +403,7 @@ def generate_fat32_esp_grub_cfg(
         ),
         entry(
             "Setuphelfer RAM-Modus / toram + Media-Check",
-            "boot=live components toram setuphelfer.media_check=1 quiet setuphelfer_rescue=1",
+            "boot=live components toram setuphelfer.media_check=1 quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
         ),
         'menuentry "Neustart" { reboot }',
         'menuentry "Herunterfahren" { halt }',
@@ -453,7 +459,7 @@ def generate_grub_cfg(params: LiveBootParams) -> str:
             _menu_append(
                 params,
                 "setuphelfer-rescue-msi-compat",
-                f"{base} pci=noaer nomodeset setuphelfer_msi_compat=1",
+                f"{base} pci=noaer nomodeset setuphelfer_msi_compat=1 setuphelfer_start_assistant=1",
             ),
         ),
         entry(
@@ -469,7 +475,7 @@ def generate_grub_cfg(params: LiveBootParams) -> str:
             _menu_append(
                 params,
                 "setuphelfer-rescue-toram",
-                f"toram {base} setuphelfer_media_check=1",
+                f"toram {base} setuphelfer_media_check=1 setuphelfer_start_assistant=1",
             ),
         ),
         'menuentry "Neustart" { reboot }',

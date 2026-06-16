@@ -6,6 +6,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 export PYTHONPATH="${REPO_ROOT}/backend:${REPO_ROOT}:${PYTHONPATH:-}"
 
+SYSTEMD_UNIT="setuphelfer-rescue-telemetry-lan-proxy.service"
+if command -v systemctl >/dev/null 2>&1 \
+  && systemctl list-unit-files "${SYSTEMD_UNIT}" >/dev/null 2>&1 \
+  && systemctl is-enabled --quiet "${SYSTEMD_UNIT}" 2>/dev/null; then
+  sudo systemctl start "${SYSTEMD_UNIT}"
+  exec "$SCRIPT_DIR/status-rescue-telemetry-lan-proxy.sh"
+fi
+
 PORT="${SETUPHELFER_RESCUE_TELEMETRY_PORT:-8001}"
 UPSTREAM="${SETUPHELFER_RESCUE_TELEMETRY_UPSTREAM:-http://127.0.0.1:8000}"
 PID_FILE="/tmp/setuphelfer-rescue-telemetry-lan-proxy.pid"

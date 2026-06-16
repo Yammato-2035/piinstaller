@@ -25,6 +25,29 @@ upstream = DEFAULT_UPSTREAM
 bind = detect_lan_ip()
 pid = read_pid_file()
 running = pid is not None
+
+# Prefer systemd MainPID when the unit is installed and active.
+try:
+    import subprocess
+
+    unit = "setuphelfer-rescue-telemetry-lan-proxy.service"
+    proc = subprocess.run(
+        ["systemctl", "show", unit, "-p", "ActiveState", "-p", "MainPID", "--value"],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=3,
+    )
+    if proc.returncode == 0:
+        lines = [line.strip() for line in proc.stdout.splitlines() if line.strip()]
+        if len(lines) >= 2 and lines[0] == "active":
+            main_pid = int(lines[1])
+            if main_pid > 0:
+                pid = main_pid
+                running = True
+except (OSError, subprocess.SubprocessError, ValueError):
+    pass
+
 backend_ok = backend_local_health_ok(upstream)
 lan_ok = probe_lan_health(bind, port) if running and bind else False
 blockers = []

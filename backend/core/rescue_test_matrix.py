@@ -7,6 +7,7 @@ Written to /setuphelfer-evidence/matrix/ on each boot or menu start.
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
@@ -181,15 +182,19 @@ def build_r4_static_matrix_entries(*, repo_root: Path | None = None) -> list[dic
 
     theme_dir = repo / _GRUB_THEME_REL
     theme_txt = theme_dir / "theme.txt"
-    theme_png = theme_dir / "setuphelfer-boot-menu-de.png"
-    theme_ok = theme_txt.is_file() and theme_png.is_file()
+    desktop_name = ""
+    if theme_txt.is_file():
+        match = re.search(r'desktop-image:\s*"([^"]+)"', theme_txt.read_text(encoding="utf-8"))
+        desktop_name = match.group(1) if match else ""
+    theme_bg = theme_dir / desktop_name if desktop_name else theme_dir / "setuphelfer-boot-menu-de.jpg"
+    theme_ok = theme_txt.is_file() and theme_bg.is_file()
     entries.append(
         _entry(
             "R4-GRUB-THEME-001",
             "bootloader",
             "GRUB-Theme konfiguriert (Staging)",
             "green" if theme_ok else "yellow",
-            observed=f"theme.txt={theme_txt.is_file()} png={theme_png.is_file()}",
+            observed=f"theme.txt={theme_txt.is_file()} bg={theme_bg.name}:{theme_bg.is_file()}",
             evidence_path=str(_GRUB_THEME_REL),
             next_action="stage-rescue-graphical-assets.sh ausführen" if not theme_ok else "grub.cfg nach Build prüfen",
         )

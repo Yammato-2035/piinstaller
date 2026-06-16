@@ -1,0 +1,5 @@
+# BR-001: externes Ziel /media/setuphelfer (nach /etc/systemd/system/setuphelfer-backup@.service.d/)
+# Installieren: cp nach backup-target.conf && systemctl daemon-reload
+[Service]
+ReadWritePaths=/media/setuphelfer /mnt/setuphelfer /var/lib/setuphelfer /var/log/setuphelfer
+Environment=PYTHONPATH=/opt/setuphelfer/backend

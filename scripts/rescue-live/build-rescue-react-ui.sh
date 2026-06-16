@@ -40,19 +40,26 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 
+repo = Path(${REPO_ROOT@Q})
+version = json.loads((repo / "config/version.json").read_text(encoding="utf-8")).get("project_version", "1.7.10.0")
 out = Path(${OUT_DIR@Q})
 manifest = {
     "schema_version": 1,
+    "ui": "react-rescue-shell",
     "build_status": "success",
     "built_at": datetime.now(tz=timezone.utc).isoformat(),
+    "version": version,
     "output_dir": str(out),
     "entry_html": str(out / "rescue.html") if (out / "rescue.html").is_file() else None,
     "entry_sha256": ${SHA@Q} or None,
     "profile": "rescue_ui",
+    "offline_first": True,
+    "network_required": False,
+    "telemetry_required": False,
     "no_fake_green": True,
 }
 (out / "rescue-ui-manifest.json").write_text(json.dumps(manifest, indent=2) + "\\n", encoding="utf-8")
-print(json.dumps({"build_status": "success", "output_dir": str(out)}))
+print(json.dumps({"build_status": "success", "output_dir": str(out), "version": version}))
 PY
 
 echo "OK: Rescue React UI built -> ${OUT_DIR}"

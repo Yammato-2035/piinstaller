@@ -1,0 +1,123 @@
+# Setuphelfer – Workflow Rules
+
+## Arbeitsweise
+Es wird abschnittsweise gearbeitet. Jeder Abschnitt ist in sich abgeschlossen und endet mit einem Prüfpunkt.
+
+## Pflichtablauf je Abschnitt
+1. Repo-Ist-Stand prüfen
+2. Ziel des Abschnitts zusammenfassen
+3. Dateien und Architekturpfad benennen
+4. Offene Fragen stellen
+5. Umsetzung in kleinen, kontrollierten Schritten
+6. Tests ausführen oder Testlücken offen benennen
+7. Logdatei ergänzen
+8. FAQ-/Tutorial-Notizen ergänzen
+9. Abschlussbericht ausgeben
+10. Auf Freigabe für den nächsten Abschnitt warten
+
+## Fragenpflicht
+Cursor darf und soll Fragen stellen, wenn:
+- Anforderungen unklar sind,
+- mehrere UX-Varianten plausibel sind,
+- Sicherheits- oder Datenrisiken bestehen,
+- vorhandene Codepfade widersprüchlich sind.
+
+Fragen sollen konkret sein:
+- nicht allgemein,
+- nicht mehrfach dieselbe Frage,
+- nur die Punkte, die für die nächste sichere Entscheidung nötig sind.
+
+## Logging-Pflicht
+Jede relevante Ergänzung und jedes Problem wird mitgeschrieben in:
+- docs/implementation-log.md
+- docs/faq-source-notes.md
+- docs/diagnostics-notes.md
+
+## Format für docs/implementation-log.md
+Für jeden Arbeitsschritt:
+- Datum/Uhrzeit
+- Abschnitt
+- Ziel
+- geänderte Dateien
+- umgesetzte Punkte
+- Probleme
+- offene Punkte
+- nächste sinnvolle Schritte
+
+## Format für docs/faq-source-notes.md
+Eintrag nur, wenn aus Fehlern, Rückfragen oder Nutzerproblemen Wissen entsteht:
+- Thema
+- Problem
+- Ursache
+- Lösung
+- Kandidat für FAQ? ja/nein
+- Kandidat für Tutorial? ja/nein
+
+## Format für docs/diagnostics-notes.md
+Eintrag nur für diagnostisch relevante Erkenntnisse:
+- betroffene Funktion
+- beobachtetes Fehlerbild
+- technische Ursache
+- prüfbarer Zustand
+- sinnvoller Diagnosecheck
+- sinnvolle Nutzerempfehlung
+
+## Sicherheitsregel
+Bei Funktionen mit Risiko für:
+- Datenverlust,
+- Bootfähigkeit,
+- Netzwerkzugang,
+- Benutzerzugang,
+- Verschlüsselung,
+muss Cursor einen sicheren Default wählen und Risiken sichtbar ausgeben.
+
+## Verboten
+- Features als fertig markieren ohne Test oder klar benannte Testlücke
+- neue Architektur einführen ohne Begründung
+- große Umbenennungen ohne Notwendigkeit
+- stilles Löschen bestehender Logik
+- Vermischung mehrerer Abschnitte in einem Arbeitsschritt
+
+## Internationalisierung (i18n) – Pflichtregel
+
+Jede Änderung in:
+- UI-Texten
+- Fehlermeldungen
+- Statusmeldungen
+- Warnhinweisen
+- Dokumentation
+- FAQ
+- Diagnosehinweisen
+
+muss gleichzeitig in Deutsch und Englisch berücksichtigt werden.
+
+## Grundregeln
+1. Keine hartcodierten Texte im Code (Frontend oder Backend).
+2. Alle Texte müssen über ein zentrales i18n-System laufen.
+3. Jeder neue Text benötigt:
+   - deutsche Version (DE)
+   - englische Version (EN)
+4. Texte müssen fachlich korrekt übersetzt sein, nicht nur wortwörtlich.
+
+## Pflicht bei jeder Änderung
+Cursor muss:
+- neue Texte identifizieren
+- passende i18n-Keys anlegen oder erweitern
+- deutsche und englische Texte liefern
+- bestehende Texte prüfen und ggf. vereinheitlichen
+
+## Verboten
+- Texte nur in einer Sprache hinzufügen
+- UI-Text direkt im Code einbauen
+- Übersetzungen nachträglich „irgendwann“ ergänzen
+
+## Dokumentationspflicht
+Neue Texte müssen zusätzlich geprüft werden auf:
+- Verständlichkeit für Anfänger
+- technische Korrektheit für Fortgeschrittene
+
+## Abschlussprüfung je Abschnitt
+Am Ende jedes Abschnitts muss Cursor bestätigen:
+- alle neuen Texte sind i18n-konform
+- DE und EN sind vollständig
+- keine Hardcoded Strings vorhanden

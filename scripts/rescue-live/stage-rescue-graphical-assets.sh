@@ -34,20 +34,20 @@ for rel in \
 done
 
 mkdir -p "$THEME_DIR"
-install -m 0644 "${ASSETS_SRC}/boot-menu/setuphelfer-boot-menu-de.png" "${THEME_DIR}/setuphelfer-boot-menu-de.png"
-if [[ ! -f "${THEME_DIR}/theme.txt" ]]; then
-  cat >"${THEME_DIR}/theme.txt" <<'EOF'
-# Setuphelfer GRUB theme — background/branding only; menu entries remain in grub.cfg
-desktop-image: "setuphelfer-boot-menu-de.png"
-title-text: "Setuphelfer Rettung"
-title-color: "#ffffff"
-message-color: "#e2e8f0"
-EOF
-fi
-GRUB_THEME_DST="${BUILD_ROOT}/config/includes.binary/boot/grub/themes/setuphelfer"
-mkdir -p "$GRUB_THEME_DST"
-install -m 0644 "${THEME_DIR}/theme.txt" "${GRUB_THEME_DST}/theme.txt"
-install -m 0644 "${ASSETS_SRC}/boot-menu/setuphelfer-boot-menu-de.png" "${GRUB_THEME_DST}/setuphelfer-boot-menu-de.png"
+GRUB_BINARY_STAGING="${BUILD_ROOT}/config/includes.binary"
+export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
+python3 - <<PY
+from pathlib import Path
+from rescue.rescue_grub_branding import stage_grub_theme_to_fat32_staging
+
+repo = Path(${REPO_ROOT@Q})
+staging = Path(${GRUB_BINARY_STAGING@Q})
+meta = stage_grub_theme_to_fat32_staging(staging, repo)
+if not meta.get("complete"):
+    raise SystemExit(f"GRUB theme staging incomplete: {meta}")
+print(meta)
+PY
+cp -a "${GRUB_BINARY_STAGING}/boot/grub/themes/setuphelfer/." "${THEME_DIR}/"
 
 if [[ -d "${REPO_ROOT}/build/rescue/ui" ]]; then
   mkdir -p "${BUILD_ROOT}/config/includes.chroot/usr/share/setuphelfer/rescue/ui"

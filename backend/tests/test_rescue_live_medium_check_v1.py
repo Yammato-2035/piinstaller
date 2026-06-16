@@ -90,6 +90,27 @@ class RescueLiveMediumCheckTests(unittest.TestCase):
             self.assertTrue(result["live_media_runtime_stable"])
             self.assertTrue(result["squashfs_hash_ok"])
 
+    def test_fat32_esp_hash_ok_overrides_spot_check_false_positive(self) -> None:
+        # Regression: `unsquashfs -cat` spot checks fail on some unsquashfs builds
+        # and on symlinked targets (nmcli/curl), but a matching full-image sha256
+        # proves the medium is intact. The spot-check must then be advisory only
+        # and NOT mark the medium unstable.
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._fat32_layout(Path(tmp), squashfs_sha="deadbeef")
+            result = self.mod.evaluate_live_medium_check(
+                proc_cmdline="boot=live setuphelfer_rescue=1",
+                medium_roots=[root],
+                path_exists=lambda p: p.is_file(),
+                squashfs_reader=lambda _p: True,
+                spot_reader=lambda _sq, _inner: False,
+                sha256_fn=lambda _p: "deadbeef",
+            )
+            self.assertTrue(result["squashfs_hash_ok"])
+            self.assertFalse(result["spot_checks_ok"])
+            self.assertTrue(result["spot_check_failures"])
+            self.assertTrue(result["live_media_runtime_stable"])
+            self.assertIsNone(result["error_code"])
+
     def test_fat32_esp_without_squashfs_unstable(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             root = self._fat32_layout(Path(tmp), omit_squashfs=True)

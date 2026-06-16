@@ -1,10 +1,13 @@
 # Payload Fix — Controlled Build
 
-**Status:** `blocked`
+**Status:** `build_ok`
 
 | Feld | Wert |
 |------|------|
-| `build_exit` | **nicht ausgeführt** |
-| Grund | Phase 4 clean + Phase 6 validate_tree fehlgeschlagen; `sudo` für `run-controlled-iso-build-with-logging.sh` erforderlich |
+| `build_exit` | **0** |
+| `LB_EXIT` | **0** |
+| `build_profile` | `developer-qemu` |
+| ISO | `binary.hybrid.iso` (~488 MB) |
+| `sha256` | `1899f5cabf9d40c9581805def9a765557a2168fc11ac181b0f71bfc0b1ff0691` |
 
-`build_profile` (geplant): `developer-qemu`
+Evidence: `payload_fix_controlled_build_summary_latest.json`, `controlled_iso_build_latest_summary.json`

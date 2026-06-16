@@ -1,0 +1,48 @@
+# Setuphelfer – Testing and Stop Rules
+
+## Grundsatz
+Keine Funktion im Bereich Backup, Restore, Verschlüsselung, Systemeingriff oder Diagnose darf als fertig markiert werden, wenn:
+- keine nachvollziehbare Testaussage vorliegt,
+- Risiken nicht dokumentiert sind,
+- Logeinträge fehlen,
+- UI und Backend-Verhalten nicht abgeglichen wurden.
+
+## Pflicht für risikoreiche Abschnitte
+Für Abschnitte mit:
+- Backup
+- Restore
+- Verschlüsselung
+- Bootverhalten
+- Netzwerkzugang
+- Benutzerzugang
+- Systemdiensten
+
+gilt:
+1. Testmatrix vorhalten
+2. Risiken offen dokumentieren
+3. Stop-Regeln beachten
+4. keine stillen Annahmen
+5. keine Freigabe ohne Abschlussbewertung
+
+## Abschlussbewertung
+Jeder Abschnitt endet mit genau einer Bewertung:
+- freigabefähig
+- freigabefähig mit Restrisiken
+- nicht freigabefähig
+
+## Nicht freigabefähig, wenn
+- kritische Tests fehlschlagen
+- zentrale Tests nicht ausführbar sind und hohes Risiko bleibt
+- Restore/Backup-Verhalten unklar ist
+- Verschlüsselung unsauber ist
+- Logs/Doku fehlen
+
+## Pflichtinhalt der Abschlussausgabe
+- Ist-Stand
+- Änderungen
+- Testergebnisse
+- nicht testbare Punkte
+- Risiken
+- FAQ-Kandidaten
+- Diagnosebausteine
+- Freigabestatus

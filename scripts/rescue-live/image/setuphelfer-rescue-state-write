@@ -1,0 +1,27 @@
+#!/bin/bash
+# Write rescue boot state snapshot (best effort, read-only policy).
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export PYTHONPATH="/opt/setuphelfer-rescue/backend:/usr/local/lib/setuphelfer:${PYTHONPATH:-}"
+STATE_DIR="/run/setuphelfer-rescue"
+mkdir -p "$STATE_DIR"
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+try:
+    from rescue.rescue_state import build_rescue_state_snapshot
+except ImportError:
+    snapshot = {
+        "schema_version": 1,
+        "boot_status": {"ui": {"mode": "react", "status": "module_missing"}},
+        "offline_first": {"network_blocks_boot": False, "telemetry_blocks_boot": False},
+        "secrets_exposed": False,
+    }
+else:
+    snapshot = build_rescue_state_snapshot(ui_mode="react", ui_status="ready", rs001_ready=False)
+
+out = Path("/run/setuphelfer-rescue/rescue-state.json")
+out.write_text(json.dumps(snapshot, indent=2) + "\n", encoding="utf-8")
+print(json.dumps({"written": str(out), "ui_mode": snapshot.get("boot_status", {}).get("ui", {}).get("mode")}))
+PY

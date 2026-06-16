@@ -1,0 +1,17 @@
+{
+    "run_id": "qemu_rescue_developer_autopilot_20260603_212528",
+    "status": "failed",
+    "autopilot": true,
+    "manual_guest_input_required": false,
+    "qemu_exit_code": 124,
+    "host_dev_server_url": "http://10.0.2.2:8001",
+    "lab_proxy_enabled": true,
+    "guest_smoke_from_serial": null,
+    "dev_server_reports_before": 0,
+    "dev_server_reports_after": 0,
+    "dev_server_report_new": false,
+    "usb_write_started": false,
+    "dd_executed": false,
+    "backup_started": false,
+    "restore_started": false
+}

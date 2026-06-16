@@ -74,7 +74,7 @@ fi
 
 GRAPHICAL_BROWSER=""
 TEXT_BROWSER=""
-for candidate in chromium chromium-browser firefox-esr firefox; do
+for candidate in chromium chromium-browser firefox-esr firefox x-www-browser; do
   if command -v "$candidate" >/dev/null 2>&1; then
     GRAPHICAL_BROWSER="$candidate"
     break
@@ -90,7 +90,33 @@ done
 if [[ -n "$GRAPHICAL_BROWSER" ]]; then
   write_status "kiosk" "ready" "graphical_browser_starting" "$GRAPHICAL_BROWSER" true true true
   if [[ -c /dev/tty1 ]]; then chvt 1 2>/dev/null || true; fi
-  exec "$GRAPHICAL_BROWSER" --kiosk --app="$UI_URL"
+  BROWSER_ARGS=(--kiosk --app="$UI_URL")
+  case "$GRAPHICAL_BROWSER" in
+    chromium|chromium-browser)
+      # The rescue system runs as root. Chromium's setuid/namespace sandbox
+      # (zygote) refuses to start as root and exits immediately -> the kiosk
+      # service crash-loops every few seconds (blank screen on real hardware,
+      # endless "Running as root without --no-sandbox is not supported"). See
+      # crbug.com/638180. --no-sandbox is mandatory for a root kiosk.
+      #
+      # --disable-gpu: rescue boots on arbitrary GPUs (e.g. NVIDIA GTX 1070
+      # with only nouveau/modesetting, or nomodeset/MSI-compat). HW GL can hang
+      # or black-screen there; software rendering is the safe, driver-free path.
+      CHROMIUM_PROFILE="/run/setuphelfer/chromium-profile"
+      mkdir -p "$CHROMIUM_PROFILE" 2>/dev/null || true
+      BROWSER_ARGS=(
+        --no-sandbox
+        --no-first-run
+        --no-default-browser-check
+        --disable-gpu
+        --disable-dev-shm-usage
+        --user-data-dir="$CHROMIUM_PROFILE"
+        --kiosk
+        --app="$UI_URL"
+      )
+      ;;
+  esac
+  exec "$GRAPHICAL_BROWSER" "${BROWSER_ARGS[@]}"
 fi
 
 run_fallback_tui() {

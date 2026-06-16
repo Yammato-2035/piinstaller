@@ -471,6 +471,7 @@ class RescueIsoDashboardRouteRegistrationTests(unittest.TestCase):
         self.assertIn("/api/dev-dashboard/rescue-iso/status", text)
         self.assertIn("/api/dev-dashboard/rescue-iso/step", text)
         self.assertIn("/api/dev-dashboard/rescue-iso/operator-commands/sudo-clean", text)
+        self.assertIn("/api/dev-dashboard/rescue-iso/logs", text)
 
 
 if __name__ == "__main__":

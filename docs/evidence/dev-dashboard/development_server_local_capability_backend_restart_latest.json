@@ -1,0 +1,124 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-06-06T15:15:00+02:00",
+  "prompt_id": "DEVELOPMENT_SERVER_LOCAL_CAPABILITY_BACKEND_RESTART_OPERATOR_RUN",
+  "classification": "success_after_operator_restart",
+  "status": "green",
+  "git": {
+    "head_before": "345187b",
+    "head_after": "345187b",
+    "branch": "main",
+    "commit_created_in_run": false,
+    "push": false
+  },
+  "version": {
+    "workspace_project_version": "1.7.4.1",
+    "live_api_project_version": "1.7.4.1",
+    "install_profile": "release",
+    "backend_runtime_path": "/opt/setuphelfer/backend"
+  },
+  "deploy": {
+    "deploy_executed_in_run": false,
+    "manual_cp_sync_in_run": false,
+    "verify_deploy_to_opt_all": true
+  },
+  "restart": {
+    "agent_sudo_restart_attempted": true,
+    "agent_sudo_restart_blocked": true,
+    "operator_restart_observed": true,
+    "active_enter_timestamp_backend": "2026-06-06T15:11:58+02:00",
+    "active_enter_timestamp_web_ui": "2026-06-06T15:11:58+02:00",
+    "backend_pid_after": 1063863,
+    "web_ui_pid_after": 1063873,
+    "backend_service_active": true,
+    "web_ui_service_active": true
+  },
+  "gates": {
+    "check_backend_version_gate": "ok",
+    "check_packaging_version_gate": "ok",
+    "packaging_semver_projection_warn": true,
+    "verify_deploy_to_opt_all": true
+  },
+  "token": {
+    "configured": true,
+    "length_chars": 64,
+    "value_logged": false
+  },
+  "openapi_dev_server_routes": {
+    "before_restart_count": 0,
+    "after_restart_count": 14,
+    "after_restart_sample": [
+      "/api/dev-server/health",
+      "/api/dev-server/summary",
+      "/api/dev-server/nodes"
+    ],
+    "also_present": [
+      "/api/dev-dashboard/compact-status",
+      "/api/dev-dashboard/capability-status",
+      "/api/rescue/telemetry/health",
+      "/api/rescue/telemetry/v1/ingest"
+    ]
+  },
+  "api_without_token": {
+    "dev_dashboard_status_http": 404,
+    "capability_status_http": 200,
+    "capability_reason": "DEVELOPER_CAPABILITY_REQUIRED",
+    "developer_capability_valid": false,
+    "dcc_visible": false
+  },
+  "api_with_token": {
+    "capability_status_http": 200,
+    "developer_capability_valid": true,
+    "dcc_visible": true,
+    "dev_server_locally_allowed": true,
+    "dev_dashboard_status_http": 200,
+    "dev_server_health_http": 200,
+    "dev_server_health_enabled": true,
+    "dev_server_health_mode": "local_lab",
+    "dev_server_summary_http": 200,
+    "profile_route_blocked": false
+  },
+  "compact_status_with_token": {
+    "status": "ok",
+    "dcc_visible": true,
+    "developer_capability_valid": true,
+    "dev_server_present": true,
+    "dev_server_enabled": true,
+    "dev_server_mode": "local_lab",
+    "dev_server_host_locally_allowed": true,
+    "dev_server_routes_available": true,
+    "telemetry_health_ok": true,
+    "telemetry_ingest_enabled": true
+  },
+  "telemetry": {
+    "health_http": 200
+  },
+  "browser_dcc": {
+    "url": "http://127.0.0.1:3001/?window=cockpit",
+    "http_status": 200,
+    "automated_ui_snapshot": false,
+    "api_implies_dcc_ready_with_stored_token": true
+  },
+  "prior_classification_resolved": [
+    "DEPLOY_NOT_APPLIED_OR_OLD_RUNTIME_PROCESS",
+    "DEVSERVER_ROUTER_NOT_REGISTERED_AFTER_DEPLOY"
+  ],
+  "error_classification": [],
+  "success_criteria_all_green": true,
+  "next_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_OPERATOR_RUN",
+  "parallel_rescue_prompt_id": "RESCUE_ISO_MSI_FIRMWARE_SERIAL_MARKER_REBUILD_OPERATOR_RUN",
+  "actions_not_executed": [
+    "commit",
+    "push",
+    "deploy_to_opt",
+    "manual_cp_sync",
+    "iso_rebuild",
+    "usb_write",
+    "backup",
+    "restore",
+    "windows_inspect",
+    "apt_install_upgrade",
+    "token_value_logging",
+    "version_bump"
+  ]
+}

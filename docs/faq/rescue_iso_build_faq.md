@@ -121,6 +121,8 @@ Freigabe: `VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1`. Plan: `RESCUE_ISO_VISUAL_LIVE_
 
 **Ursache (2026-05-30):** Bootappend ohne `init=/lib/systemd/systemd`. Fix im Build-Tree; Validator Exit **15** auf alter ISO. Evidence: `RESCUE_ISO_SYSTEMD_INIT_STATIC_ANALYSIS.md`.
 
+**Login-Regression (2026-05-30, systemd-Rebuild):** Mit `init=/lib/systemd/systemd` läuft `live-config` (SysV) nicht — Konto `user` wird nicht angelegt. Fix: Hook `config/hooks/005-setuphelfer-live-user.chroot` (live-build ignoriert `hooks/normal/*.hook.chroot`). Validator Exit **18** ohne Konto.
+
 ## Warum legt Setuphelfer keinen globalen Symlink nach `/usr/bin/rsvg` an?
 
 Weil das eine globale Systemänderung wäre. Setuphelfer soll den Host nicht stillschweigend verändern. Deshalb wird ein projektlokaler Wrapper bevorzugt.
@@ -176,3 +178,45 @@ Weil ARM andere Bootloader-, Firmware- und Image-Anforderungen hat als der x86-I
 ## Warum bleibt USB-Write trotz verbessertem Preflight blockiert?
 
 Weil USB-Write, `dd`, `mkfs` und Partition-Writes weiterhin ein separates Safety-Gate benötigen und nicht Teil dieser Triage sind.
+
+---
+
+## Setuphelfer Rettungsstick 1.7.7.0 — Boot-Menü und Start Assistant (2026-06-07)
+
+### Warum fehlten Custom-Menüeinträge in älteren ISOs?
+
+Der Binary-Hook `020-setuphelfer-rescue-boot-menu.hook.binary` nutzte **ISOLINUX-Großschreibung** (`LABEL`, `LINUX`, `APPEND`). Debian-Live erwartet **`label`**, **`kernel`**, **`append`** in `isolinux/live.cfg`.
+
+Symptom: ISO bootet, aber nur Default-Einträge „Live / Live failsafe“ — kein MSI-/Diagnose-/toram-Menü.
+
+### Fix im Build-Tree (1.7.7.0)
+
+1. **`live.cfg.in`:** Snippet `scripts/rescue-live/image/setuphelfer-rescue-boot-menu-snippet.cfg` wird beim `prepare-controlled-live-build-tree.sh` angehängt.
+2. **Binary-Hook:** korrigierte lowercase-Syntax + mehr Suchpfade (`binary/isolinux/live.cfg`, …).
+3. **`isolinux.cfg`:** `MENU TITLE Setuphelfer Rettungsstick`.
+
+Validator prüft: `grep label setuphelfer-rescue-default` in `config/bootloaders/isolinux/live.cfg.in`.
+
+### Start Assistant
+
+Neue SquashFS-Scripts (erst nach Rebuild in ISO):
+
+- `setuphelfer-rescue-start-assistant` — TUI-Wizard auf tty1  
+- `setuphelfer-rescue-disk-discovery.py` — read-only Geräteklassifikation  
+- `setuphelfer-rescue-plan-builder.py` — Aktionspläne ohne Ausführung  
+
+Evidence: `docs/knowledge-base/rescue/RESCUE_START_ASSISTANT_OVERVIEW.md`
+
+### ISO-Rebuild nach 1.7.7.0
+
+```bash
+sudo bash scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean
+./scripts/rescue-live/prepare-controlled-live-build-tree.sh
+./scripts/rescue-live/validate-controlled-live-build-tree.sh build/rescue/live-build/setuphelfer-rescue-live
+export RESCUE_START_ASSISTANT_REBUILD_FREIGEGEBEN=1
+sudo ./scripts/rescue-live/run-controlled-iso-build-with-logging.sh --operator-confirm-build
+```
+
+**Validate blockiert** oft wegen root-owned `chroot/` — Clean zuerst (siehe oben).
+
+Nächster Prompt: `RESCUE_START_ASSISTANT_ISO_REBUILD_OPERATOR_COMPLETION`.

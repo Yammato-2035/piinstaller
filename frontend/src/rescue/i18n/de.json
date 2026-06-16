@@ -1,16 +1,37 @@
 {
-  "title": "Setuphelfer Rettungsstick",
+  "title": "Setuphelfer",
   "subtitle": "Erst analysieren. Dann sichern. Dann handeln.",
   "hint": "Es wird nichts repariert oder installiert, solange du es nicht ausdrücklich bestätigst.",
   "menuPrompt": "Was möchtest du tun?",
-  "actions": {
-    "safe_check": "Empfohlen: System sicher prüfen",
-    "backup_find": "Daten retten / Backup finden",
-    "network": "Netzwerk verbinden",
-    "export_logs": "Logs & Diagnose exportieren",
-    "media_ram": "Media-Check / Start in RAM",
-    "advanced": "Erweiterte Optionen",
-    "power": "Neustart / Ausschalten"
+  "menu": {
+    "system_analyze": {
+      "title": "System analysieren",
+      "subtitle": "Hardware, Laufwerke und System prüfen"
+    },
+    "backup_create": {
+      "title": "Backup erstellen",
+      "subtitle": "Ein vollständiges System-Backup erstellen"
+    },
+    "backup_verify": {
+      "title": "Backup prüfen",
+      "subtitle": "Backup und Integrität überprüfen"
+    },
+    "restore": {
+      "title": "Wiederherstellen",
+      "subtitle": "System aus einem Backup wiederherstellen"
+    },
+    "malware_scan": {
+      "title": "Malware prüfen",
+      "subtitle": "System auf Malware und Rootkits prüfen"
+    },
+    "cloudserver_manage": {
+      "title": "Cloudserver verwalten",
+      "subtitle": "Cloudserver analysieren und absichern"
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "subtitle": "Sprache, Netzwerk und weitere Optionen"
+    }
   },
   "status": {
     "medium": "Medium",
@@ -18,6 +39,15 @@
     "telemetry": "Telemetrie",
     "optional": "optional",
     "off": "aus"
+  },
+  "footer": {
+    "help": "Hilfe",
+    "language": "Sprache",
+    "network": "Netzwerk",
+    "debug": "Debug",
+    "reboot": "Neustart",
+    "shutdown": "Ausschalten",
+    "select": "Auswählen"
   },
   "lang": "Sprache"
 }

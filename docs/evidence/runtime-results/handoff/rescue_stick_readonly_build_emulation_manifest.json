@@ -3,42 +3,57 @@
   "emulation_files": [
     {
       "path": "build/rescue/emulation/rescue_stick_build_workspace_snapshot.json",
-      "sha256": "9e74a7228a839f31d12519ddffb62d343554c2cd5af760d50210cf384cbe8c43",
+      "sha256": "917f171a1e2a237de5e291693fc48b81b76736992ade860c32602cecf867e84e",
       "size_bytes": 592
     },
     {
       "path": "build/rescue/emulation/rescue_stick_expected_debian_live_tree.json",
-      "sha256": "e4446c046022015ecae729d5805560d271dc0028a90c6c0de28a5908c103f093",
+      "sha256": "8c24170eeee080b54709aeb07094ae317ae038f7c80b0682a92d911ae5bfaf5f",
       "size_bytes": 3037
     },
     {
       "path": "build/rescue/emulation/rescue_stick_package_list_preview.json",
-      "sha256": "aabc81169ca7305daf9712fe80e26979d455c5c0808aac9f488fcfdc5580b723",
+      "sha256": "dc133bb6cdfef79171909fe3a7dae2a990d0c34a4ffa41948b61fef674466339",
       "size_bytes": 4872
     },
     {
       "path": "build/rescue/emulation/rescue_stick_runtime_bundle_preview.json",
-      "sha256": "0f81a13653410d16a211e24ab0c4cee485714a0e0f4c4276c077180d117b035b",
+      "sha256": "dd2b3a8275310e56609822b1cede5ba1ebb96e17581f48af7652d72fb9c99adf",
       "size_bytes": 1000
     },
     {
       "path": "build/rescue/emulation/rescue_stick_frontend_bundle_preview.json",
-      "sha256": "81513d6734b2c6944da1db7e26f8192a9921b0bad54960a376b1932dd4ee7da1",
+      "sha256": "4559416d1e0c71b5eadf82b90d7865105a08648618874845c3e2383fa6f2d859",
       "size_bytes": 895
     },
     {
       "path": "build/rescue/emulation/rescue_stick_systemd_service_preview.json",
-      "sha256": "b3f6fb32c0ee064875c5c901b6b1c7159c9020112719a441c08e18a525d30984",
+      "sha256": "c41a6b80af60a0b60e54ba8f6d257d9d3e87961f885c6d737f84370f98b4d9fb",
       "size_bytes": 1820
     },
     {
       "path": "build/rescue/emulation/rescue_stick_network_webui_preview.json",
-      "sha256": "923461cb4d64162f6d0c0b684c5c95482a7faefb51e7561affc4909f07cfc7d7",
+      "sha256": "f3c34be27d09aebd3f4890080455a1b2a6480fad8ab0ce6579341f5d7bac83ec",
       "size_bytes": 951
     }
   ],
-  "errors": [],
-  "forbidden_artifacts_scan": [],
+  "errors": [
+    "RESCUE_STICK_MANIFEST_FORBIDDEN_ARTIFACTS_PRESENT"
+  ],
+  "forbidden_artifacts_scan": [
+    {
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/boot/initrd.img-6.1.0-48-amd64",
+      "reason": "forbidden_artifact"
+    },
+    {
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/chroot/boot/vmlinuz-6.1.0-48-amd64",
+      "reason": "forbidden_artifact"
+    },
+    {
+      "path": "build/rescue/live-build/setuphelfer-rescue-live/binary/live/filesystem.squashfs",
+      "reason": "forbidden_artifact"
+    }
+  ],
   "forbidden_tokens_scan": {
     "documented_or_review": [
       {
@@ -99,8 +114,8 @@
     "execution_context": []
   },
   "generated": false,
-  "generated_at": "2026-05-24T20:17:59.235324+00:00",
-  "manifest_status": "review_required",
+  "generated_at": "2026-05-25T12:05:26.539972+00:00",
+  "manifest_status": "blocked",
   "missing_emulation_files": [],
   "no_real_build_execution": true,
   "readonly_emulated": true,

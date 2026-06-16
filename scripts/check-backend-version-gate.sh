@@ -175,8 +175,11 @@ if [[ -f "$CONSISTENCY_PY" ]]; then
   fi
 fi
 
-if ! grep -q "/api/version" "$OPT_APP" 2>/dev/null; then
-  log "check-backend-version-gate: Unerwarteter Inhalt in $OPT_APP (Marker /api/version)"
+# /api/version was extracted from app.py into the modular router
+# backend/api/routes/version.py — search app.py AND the route modules so the
+# marker check does not false-fail on the refactored layout.
+if ! grep -rqs "/api/version" "$OPT_APP" "$OPT_ROOT/backend/api/routes" 2>/dev/null; then
+  log "check-backend-version-gate: Marker /api/version weder in $OPT_APP noch in backend/api/routes/ gefunden"
   exit 20
 fi
 

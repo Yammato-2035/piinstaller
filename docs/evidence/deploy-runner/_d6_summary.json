@@ -1,0 +1,26 @@
+{
+  "routes_py_lines": 4821,
+  "routes_py_runner_imports": 103,
+  "routes_py_direct_routes": 218,
+  "subrouter_routes": 19,
+  "subrouter_by_module": {
+    "routes_registry.py": 5,
+    "routes_risk_gate.py": 5,
+    "routes_evidence.py": 6,
+    "routes_governance.py": 3
+  },
+  "subrouter_methods": {
+    "GET": 10,
+    "POST": 9
+  },
+  "routes_py_domains": {
+    "runtime": 13,
+    "unknown": 17,
+    "governance": 31,
+    "evidence": 32,
+    "versioning": 16,
+    "rescue": 91,
+    "rescue_build": 18
+  },
+  "total_api_routes": 237
+}

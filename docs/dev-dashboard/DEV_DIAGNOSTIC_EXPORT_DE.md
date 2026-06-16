@@ -30,3 +30,21 @@ Standard: `redacted=true`. Unredigiert nur mit
 ## Keine Steuerfunktionen
 
 Der Export startet **kein** QEMU, kein Backup, kein Deploy.
+
+## Phase-1 Fleet Session Hinweis
+
+Der Diagnose-Export sollte bei Fleet-/QEMU-Läufen die Host-Session-Sicht ergänzen:
+
+- `qemu_exit_code` (insb. `124` => Timeout)
+- `serial_size_bytes`
+- `classification.primary`
+- `guest_report_seen` / `report_new`
+
+Wichtig: In Phase 1 kann eine Session bereits korrekt sichtbar sein, obwohl kein Gast-Node ingestet wurde.
+Das ist ein valider Zustand und kein UI-Fehler.
+
+## Typische Diagnosebilder
+
+- **Timeout-Lauf sichtbar:** Session vorhanden, `status=timeout`, `qemu_exit_code=124`, `guest_report_seen=false`
+- **Serial leer:** `serial_size_bytes=0` => `serial_empty` (Warning, nicht automatisch Hard-Fail)
+- **Ingest fehlt:** Host-Session bleibt sichtbar, Guest-Node bleibt aus

@@ -20,10 +20,11 @@ class TestNetworkInfoCoreCleanupG3(unittest.TestCase):
     def test_get_system_info_uses_facade(self) -> None:
         text = APP_PY.read_text(encoding="utf-8")
         start = text.index("async def get_system_info")
-        block = text[start : start + 15000]
-        self.assertIn("network_info_facade", block)
-        self.assertIn("build_network_info", block)
-        self.assertIn("build_demo_network_info", block)
+        block = text[start : start + 400]
+        self.assertIn("system_info_facade", block)
+        self.assertIn("build_system_info", block)
+        self.assertNotIn("network_info_facade", block)
+        self.assertNotIn("build_network_info", block)
         self.assertNotIn("_demo_network(", block)
         self.assertNotIn("get_network_info(", block)
 
@@ -98,8 +99,14 @@ class TestNetworkInfoCoreCleanupG3(unittest.TestCase):
         import core.network_info_facade as facade
 
         diag = facade.build_network_info_diagnostics()
-        self.assertIn("GET /api/system-info", diag["routes_migrated_to_facade"])
-        self.assertIn("GET /api/webserver/status", diag["routes_migrated_to_facade"])
+        self.assertIn("GET /api/status", diag["routes_migrated_to_facade"])
+        self.assertIn("GET /api/system/network", diag["routes_migrated_to_facade"])
+        self.assertNotIn("GET /api/system-info", diag["routes_migrated_to_facade"])
+
+        import core.system_info_facade as system_facade
+
+        sys_diag = system_facade.build_system_info_diagnostics()
+        self.assertIn("GET /api/system-info", sys_diag["routes_migrated_to_facade"])
 
 
 if __name__ == "__main__":
