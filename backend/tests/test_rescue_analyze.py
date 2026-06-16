@@ -39,7 +39,7 @@ class TestRescueAnalyzeModule(unittest.TestCase):
     def test_inspect_storage_uuid_conflicts(self):
         from modules.inspect_storage import detect_uuid_conflicts
 
-        with patch("modules.inspect_storage._blkid_detect_filesystems", return_value={}):
+        with patch("modules.inspect_storage.detect_filesystems", return_value={}):
             out = detect_uuid_conflicts()
         self.assertFalse(out.get("has_conflicts"))
 
@@ -47,7 +47,7 @@ class TestRescueAnalyzeModule(unittest.TestCase):
             "/dev/sda1": {"uuid": "duplicate-uuid", "type": "ext4"},
             "/dev/sdb1": {"uuid": "duplicate-uuid", "type": "ext4"},
         }
-        with patch("modules.inspect_storage._blkid_detect_filesystems", return_value=dup):
+        with patch("modules.inspect_storage.detect_filesystems", return_value=dup):
             out2 = detect_uuid_conflicts()
         self.assertTrue(out2.get("has_conflicts"))
         self.assertIn("duplicate-uuid", out2.get("conflicts", {}))

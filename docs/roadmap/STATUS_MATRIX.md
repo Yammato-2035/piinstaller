@@ -43,7 +43,7 @@
 | Cloudserver Edition | Schwarz | nach Modularisierung; **Handoff 2026-06-16** — proprietär, nur privates Repo | `docs/private-handoff/CLOUDSERVER_PRIVATE_REPO_HANDOFF.md` |
 | **Public/Private Boundary Gate** | **Grün** | Skript Exit 0; keine privaten Pfade im Tree | `docs/evidence/public-private/PUBLIC_PRIVATE_BOUNDARY_FINAL_RESULT.md` |
 | **Monolith Audit (Pre-Cloud)** | **Gelb** | Inventar + Duplikat-Audit; app.py 15k Zeilen | `docs/evidence/monolith/MONOLITH_PRE_CLOUD_FINAL_RESULT.md` |
-| **Core Facade Freeze** | **Grün** | storage/mount/safety + Contracts; **Rescue B.2** Restore-Pipeline delegiert | `CORE_FACADE_RESCUE_MIGRATION_B2.md` |
+| **Core Facade Freeze** | **Grün** | Rescue B.2 Restore + **B.3** Inspect/Identity/Persistence | `CORE_FACADE_RESCUE_MIGRATION_B3.md` |
 | **Telemetry Client Contract** | **Grün** | public-safe, opt-in, redaction-before-send | `backend/core/telemetry_client_contract.py` |
 | **Telemetry Internal Server** | **Schwarz** | Handoff only, kein Public-Implementierung | `docs/private-handoff/TELEMETRY_INTERNAL_SERVER_HANDOFF.md` |
 | **Cloudserver Private Handoff** | **Gelb** | Doku + OpenAPI-Stubs; privates Repo pending | `docs/evidence/cloud-private/CLOUDSERVER_PRIVATE_HANDOFF_RESULT.md` |

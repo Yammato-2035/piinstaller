@@ -15,6 +15,20 @@ from typing import Any, Callable
 
 Runner = Callable[..., subprocess.CompletedProcess[str]] | None
 
+
+def _run_subprocess(
+    cmd: list[str],
+    *,
+    runner: Runner = None,
+    timeout: int = 30,
+) -> subprocess.CompletedProcess[str]:
+    run = runner or subprocess.run
+    try:
+        return run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
+    except TypeError:
+        return run(cmd, timeout=timeout)  # type: ignore[misc,call-arg]
+
+
 _FACADE_VERSION = 1
 FACADE_CONTRACT_VERSION = 1
 _SOURCE_MODULES = ("core.mount_facade", "core.safe_device (resolve_mount_source_for_path)")
@@ -271,7 +285,6 @@ def get_mount_source_for_path(path: str, *, runner: Runner = None) -> str | None
     """
     run = runner or subprocess.run
     target = str(path).strip() or "/"
-    run = runner or subprocess.run
     try:
         try:
             proc = run(
@@ -289,3 +302,33 @@ def get_mount_source_for_path(path: str, *, runner: Runner = None) -> str | None
         return None
     lines = (proc.stdout or "").strip().splitlines()
     return lines[0].strip() if lines else None
+
+
+def is_block_device_mounted(device: str, *, runner: Runner = None) -> bool:
+    """True when ``findmnt -S device`` reports an active mount (read-only)."""
+    dev = str(device).strip()
+    if not dev.startswith("/dev/"):
+        return False
+    try:
+        proc = _run_subprocess(["findmnt", "-n", "-S", dev], runner=runner, timeout=15)
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+    return proc.returncode == 0 and bool((proc.stdout or "").strip())
+
+
+def get_findmnt_json_by_source(device: str, *, runner: Runner = None) -> dict[str, Any] | None:
+    """Parse ``findmnt -J -S device`` or None when unmounted / invalid."""
+    dev = str(device).strip()
+    if not dev.startswith("/dev/"):
+        return None
+    try:
+        proc = _run_subprocess(["findmnt", "-J", "-S", dev], runner=runner, timeout=20)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0 or not (proc.stdout or "").strip():
+        return None
+    try:
+        data = json.loads(proc.stdout or "{}")
+    except json.JSONDecodeError:
+        return None
+    return data if isinstance(data, dict) else None

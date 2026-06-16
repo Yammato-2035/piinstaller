@@ -9,6 +9,20 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.2.0] — 2026-06-16
+
+### Changed
+
+- **Core Facade Rescue Migration B.3:** `inspect_storage`, `device_identity`, `rescue_persistence` delegieren an `storage_facade` / `mount_facade`.
+- Neue Helfer: `probe_block_device_identity`, `is_block_device_mounted`, `get_findmnt_json_by_source`.
+
+### Added
+
+- `docs/architecture/CORE_FACADE_RESCUE_MIGRATION_B3.md`
+- `backend/tests/test_core_facade_rescue_migration_b3_v1.py`
+
+---
+
 ## [1.8.1.0] — 2026-06-16
 
 ### Changed

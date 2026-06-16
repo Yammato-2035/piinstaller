@@ -9,7 +9,6 @@ bezüglich RO/RW klassifiziert.
 
 from __future__ import annotations
 
-import json
 import os
 import re
 import subprocess
@@ -17,7 +16,6 @@ from collections import defaultdict
 from typing import Any, Callable, Mapping, Sequence
 
 from modules.storage_detection import detect_block_devices
-from modules.storage_detection import detect_filesystems as _blkid_detect_filesystems
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
@@ -54,12 +52,11 @@ def _flatten_block_nodes(nodes: Sequence[Mapping[str, Any]]) -> list[dict[str, A
 
 
 def _parent_disk(devpath: str, *, runner: Runner | None = None) -> str:
-    """Liefert die Basis-Blockdevice-URL für Partitionstabellen (lsblk PKNAME)."""
-    r = _run_capture(["lsblk", "-n", "-o", "PKNAME", "-p", devpath], runner=runner, timeout=30)
-    pk = (r.stdout or "").strip()
-    if r.returncode == 0 and pk.startswith("/dev/"):
-        return pk
-    return devpath
+    """Liefert die Basis-Blockdevice-URL für Partitionstabellen (delegiert storage_facade)."""
+    from core.storage_facade import get_parent_block_device
+
+    parent = get_parent_block_device(devpath, runner=runner)
+    return parent or devpath
 
 
 def list_block_devices(*, runner: Runner | None = None) -> list[dict[str, Any]]:
@@ -71,8 +68,10 @@ def list_block_devices(*, runner: Runner | None = None) -> list[dict[str, Any]]:
 
 
 def detect_filesystems(*, runner: Runner | None = None) -> dict[str, dict[str, str]]:
-    """blkid-basiert, nur lesen (siehe ``storage_detection.detect_filesystems``)."""
-    return _blkid_detect_filesystems(runner=runner)
+    """blkid-basiert, nur lesen (delegiert storage_facade)."""
+    from core.storage_facade import detect_filesystems_for_inspect
+
+    return detect_filesystems_for_inspect(runner=runner)
 
 
 def check_mountability(*, read_only: bool = True, runner: Runner | None = None) -> list[dict[str, Any]]:
@@ -90,8 +89,9 @@ def check_mountability(*, read_only: bool = True, runner: Runner | None = None) 
         dev = node.get("device")
         if not isinstance(dev, str) or not dev.startswith("/dev/"):
             continue
-        r = _run_capture(["findmnt", "-J", "-S", dev], runner=runner, timeout=20)
-        mounted = r.returncode == 0 and bool((r.stdout or "").strip())
+        from core.mount_facade import get_findmnt_json_by_source, is_block_device_mounted
+
+        mounted = is_block_device_mounted(dev, runner=runner)
         entry: dict[str, Any] = {
             "device": dev,
             "mounted": mounted,
@@ -105,9 +105,8 @@ def check_mountability(*, read_only: bool = True, runner: Runner | None = None) 
         if not mounted:
             rows.append(entry)
             continue
-        try:
-            data = json.loads(r.stdout or "{}")
-        except json.JSONDecodeError:
+        data = get_findmnt_json_by_source(dev, runner=runner)
+        if data is None:
             entry["mountable"] = "unknown"
             entry["policy_code"] = "rescue.storage.findmnt_json_invalid"
             rows.append(entry)
@@ -161,7 +160,7 @@ def read_partition_table(device: str, *, runner: Runner | None = None) -> dict[s
 
 def detect_uuid_conflicts(*, runner: Runner | None = None) -> dict[str, Any]:
     """Erkennt doppelte UUIDs laut blkid (Lesen)."""
-    fsmap = _blkid_detect_filesystems(runner=runner)
+    fsmap = detect_filesystems(runner=runner)
     uuid_index: dict[str, list[str]] = defaultdict(list)
     for dev, meta in fsmap.items():
         u = meta.get("uuid")
@@ -237,8 +236,9 @@ def readonly_fs_check(device: str, fstype: str | None, *, runner: Runner | None 
     """
     fst = (fstype or "").lower()
     res: dict[str, Any] = {"device": device, "fstype": fst or None, "skipped": False, "code": None, "detail": None}
-    r_m = _run_capture(["findmnt", "-n", "-S", device], runner=runner, timeout=15)
-    if r_m.returncode == 0 and (r_m.stdout or "").strip():
+    from core.mount_facade import is_block_device_mounted
+
+    if is_block_device_mounted(device, runner=runner):
         res["skipped"] = True
         res["code"] = "rescue.fs.skipped_mounted"
         return res

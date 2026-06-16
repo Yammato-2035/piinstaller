@@ -573,6 +573,43 @@ def get_root_block_parent(*, runner: Runner = None) -> str | None:
     return get_parent_block_device(src, runner=runner)
 
 
+def probe_block_device_identity(device_path: str, *, runner: Runner = None) -> dict[str, Any] | None:
+    """
+    Single-device lsblk JSON node for Rescue identity (read-only).
+
+    Returns the parsed blockdevice dict or None when lsblk fails.
+    """
+    dev = str(device_path).strip()
+    if not dev.startswith("/dev/"):
+        return None
+    try:
+        proc = _run_subprocess(
+            [
+                "lsblk",
+                "-J",
+                "-o",
+                "PATH,SIZE,TYPE,MODEL,SERIAL,TRAN,UUID,PARTUUID,PKNAME,FSTYPE",
+                "-p",
+                dev,
+            ],
+            runner=runner,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0 or not (proc.stdout or "").strip():
+        return None
+    try:
+        data = json.loads(proc.stdout or "{}")
+    except json.JSONDecodeError:
+        return None
+    bds = data.get("blockdevices")
+    if not isinstance(bds, list) or len(bds) != 1:
+        return None
+    node = bds[0]
+    return node if isinstance(node, dict) else None
+
+
 def get_partition_uuid(partition_path: str, *, runner: Runner = None) -> str | None:
     """Canonical blkid UUID lookup for a partition path (read-only)."""
     return get_device_uuid(partition_path, runner=runner)

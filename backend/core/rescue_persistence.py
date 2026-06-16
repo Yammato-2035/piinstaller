@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from core.storage_discovery import Runner, discover_findmnt_mounts_flat, discover_lsblk_json_tree
+from core.storage_discovery import Runner, discover_findmnt_mounts_flat
 
 RESCUE_PERSISTENCE_VERSION = 4
 
@@ -89,12 +89,14 @@ def _reject_internal_system_source(source: str, *, runner: Runner = None) -> boo
 
 
 def _label_for_mount(target: str, *, runner: Runner = None) -> str:
-    """Best-effort label lookup via lsblk mountpoints."""
+    """Best-effort label lookup via storage facade inventory."""
     tgt = (target or "").rstrip("/")
     if not tgt:
         return ""
-    data = discover_lsblk_json_tree(runner=runner)
-    devices = data.get("blockdevices", []) or []
+    from core.storage_facade import build_storage_inventory_snapshot
+
+    snap = build_storage_inventory_snapshot(runner=runner, mode="rescue", include_tree_devices=True)
+    devices = snap.get("lsblk_tree") or snap.get("blockdevices") or []
 
     def walk(nodes: list[dict[str, Any]]) -> str:
         for node in nodes:

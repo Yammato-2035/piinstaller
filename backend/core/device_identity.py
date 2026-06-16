@@ -4,17 +4,12 @@ Stabile Blockgeräte-Identität für Rescue-Restore (lsblk/blkid, keine neuen Pa
 
 from __future__ import annotations
 
-import json
-import subprocess
 from pathlib import Path
 from typing import Any, Callable
 
-Runner = Callable[..., subprocess.CompletedProcess[str]] | None
+from core.storage_facade import probe_block_device_identity
 
-
-def _run(argv: list[str], *, runner: Runner = None, timeout: int = 45) -> subprocess.CompletedProcess[str]:
-    run = runner or subprocess.run
-    return run(argv, capture_output=True, text=True, timeout=timeout, check=False)
+Runner = Callable[..., Any] | None
 
 
 def build_device_identity(device_path: str | None, *, runner: Runner = None) -> dict[str, Any]:
@@ -30,11 +25,7 @@ def build_device_identity(device_path: str | None, *, runner: Runner = None) -> 
     if not Path(dev).exists():
         return {"device_path": dev, "weak_identity": True, "codes": ["rescue.restore.target_not_found"]}
 
-    r = _run(
-        ["lsblk", "-J", "-o", "PATH,SIZE,TYPE,MODEL,SERIAL,TRAN,UUID,PARTUUID,PKNAME,FSTYPE", "-p", dev],
-        runner=runner,
-        timeout=30,
-    )
+    node = probe_block_device_identity(dev, runner=runner)
     out: dict[str, Any] = {
         "device_path": dev,
         "size_human": None,
@@ -49,20 +40,7 @@ def build_device_identity(device_path: str | None, *, runner: Runner = None) -> 
         "weak_identity": True,
         "codes": [],
     }
-    if r.returncode != 0 or not (r.stdout or "").strip():
-        out["codes"].append("rescue.restore.target_ambiguous")
-        return out
-    try:
-        data = json.loads(r.stdout)
-    except json.JSONDecodeError:
-        out["codes"].append("rescue.restore.target_ambiguous")
-        return out
-    bds = data.get("blockdevices")
-    if not isinstance(bds, list) or len(bds) != 1:
-        out["codes"].append("rescue.restore.target_ambiguous")
-        return out
-    node = bds[0]
-    if not isinstance(node, dict):
+    if node is None:
         out["codes"].append("rescue.restore.target_ambiguous")
         return out
     out["size_human"] = node.get("size")
