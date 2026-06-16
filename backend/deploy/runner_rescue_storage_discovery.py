@@ -4,7 +4,11 @@ import json
 from datetime import datetime, timezone
 from typing import Any
 
-from core.storage_facade import build_storage_inventory_snapshot, classify_storage_devices
+from core.storage_facade import (
+    build_storage_inventory_snapshot,
+    classify_storage_devices,
+    get_readonly_storage_probe_contract,
+)
 from deploy.runner_rescue_io import (
     ensure_rescue_workspace_dirs,
     guard_handoff_overwrite,
@@ -51,14 +55,17 @@ def build_rescue_storage_discovery_plan(*, explicit_overwrite: bool = False) -> 
         return _emit_plan("blocked", {}, wrote=False, warnings=[], errors=[gerr])
 
     ensure_rescue_workspace_dirs()
+    probe_contract = get_readonly_storage_probe_contract()
     body: dict[str, Any] = {
         "rescue_storage_discovery_plan_schema_version": 1,
         "strict_mode": "rescue_live_storage_readonly",
         "generated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-        "storage_facade": "core.storage_facade.build_storage_inventory_snapshot",
+        "storage_facade": probe_contract["storage_inventory"],
+        "facade_contract": probe_contract,
         "allowed_readonly_commands": [
             {"cmd": "lsblk", "args": ["-J", "-o", "NAME,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINT,SIZE,MODEL,TRAN"]},
             {"cmd": "blkid"},
+            {"cmd": "findmnt", "args": ["-J"]},
         ],
         "forbidden": ["mkfs", "fdisk", "parted", "dd", "wipefs", "mount", "-o", "rw", "fsck", "--repair"],
         "classification_targets": [

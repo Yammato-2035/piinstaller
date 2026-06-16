@@ -15,8 +15,6 @@ import subprocess
 from collections import defaultdict
 from typing import Any, Callable, Mapping, Sequence
 
-from modules.storage_detection import detect_block_devices
-
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
@@ -60,11 +58,10 @@ def _parent_disk(devpath: str, *, runner: Runner | None = None) -> str:
 
 
 def list_block_devices(*, runner: Runner | None = None) -> list[dict[str, Any]]:
-    """Klassifizierte Blockbaum-Struktur (wie ``classify_devices``)."""
-    from modules.storage_detection import classify_devices
+    """Klassifizierte Blockbaum-Struktur (delegiert storage_facade)."""
+    from core.storage_facade import list_classified_block_devices_for_inspect
 
-    raw = detect_block_devices(runner=runner)
-    return classify_devices(raw)
+    return list_classified_block_devices_for_inspect(runner=runner)
 
 
 def detect_filesystems(*, runner: Runner | None = None) -> dict[str, dict[str, str]]:
@@ -82,7 +79,9 @@ def check_mountability(*, read_only: bool = True, runner: Runner | None = None) 
     dann ``unknown`` (Policy Phase 1).
     """
     _ = read_only  # reserviert für spätere explizite RO-Test-Mounts
-    devices = detect_block_devices(runner=runner)
+    from core.storage_facade import list_classified_block_devices_for_inspect
+
+    devices = list_classified_block_devices_for_inspect(runner=runner)
     flat = _flatten_block_nodes(devices)
     rows: list[dict[str, Any]] = []
     for node in flat:
@@ -215,17 +214,9 @@ def smart_classify_disk(disk_dev: str, *, runner: Runner | None = None) -> dict[
 
 def list_physical_disks(*, runner: Runner | None = None) -> list[str]:
     """Nur Top-Level-Disk-Geräte (TYPE=disk) für SMART."""
-    devices = detect_block_devices(runner=runner)
-    out: list[str] = []
-    for n in devices:
-        if not isinstance(n, dict):
-            continue
-        if (n.get("type") or "").lower() != "disk":
-            continue
-        d = n.get("device")
-        if isinstance(d, str) and d.startswith("/dev/"):
-            out.append(d)
-    return out
+    from core.storage_facade import list_physical_disk_paths
+
+    return list_physical_disk_paths(runner=runner, mode="rescue")
 
 
 def readonly_fs_check(device: str, fstype: str | None, *, runner: Runner | None = None) -> dict[str, Any]:

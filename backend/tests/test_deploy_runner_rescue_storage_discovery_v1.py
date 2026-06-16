@@ -10,6 +10,7 @@ from deploy.runner_rescue_storage_discovery import (
     build_rescue_storage_discovery_result,
     execute_rescue_storage_discovery,
 )
+from core.storage_facade import classify_storage_devices
 
 _REPO = Path(__file__).resolve().parents[2]
 _H = _REPO / "docs/evidence/runtime-results/handoff"
@@ -33,43 +34,18 @@ class DeployRunnerRescueStorageDiscoveryV1Tests(unittest.TestCase):
 
     def test_plan_and_execute_mock_lsblk(self) -> None:
         build_rescue_storage_discovery_plan(explicit_overwrite=True)
-        fake = json.dumps(
-            {
-                "blockdevices": [
-                    {
-                        "name": "nvme0n1",
-                        "type": "disk",
-                        "children": [
-                            {
-                                "name": "nvme0n1p1",
-                                "type": "part",
-                                "fstype": "vfat",
-                                "label": "EFI",
-                                "uuid": "AAA",
-                                "mountpoint": "/boot/efi",
-                            },
-                            {
-                                "name": "nvme0n1p2",
-                                "type": "part",
-                                "fstype": "ext4",
-                                "uuid": "BBB",
-                                "mountpoint": "/",
-                            },
-                        ],
-                    }
-                ]
-            }
-        )
-        with mock.patch("core.storage_facade.subprocess.run") as m:
-            m.side_effect = [
-                mock.MagicMock(returncode=0, stdout=fake, stderr=""),
-                mock.MagicMock(returncode=0, stdout="/dev/foo: UUID=\"AAA\"\n", stderr=""),
-            ]
-            with mock.patch("core.storage_facade.detect_block_devices", return_value=[]):
-                with mock.patch("core.storage_facade.detect_filesystems", return_value={}):
-                    r = execute_rescue_storage_discovery(
-                        explicit_overwrite=True, explicit_execute_storage_discovery=True
-                    )
+        with mock.patch(
+            "core.storage_facade.build_storage_inventory_snapshot",
+            return_value={
+                "status": "ok",
+                "lsblk_rows": [{"name": "nvme0n1p1", "type": "part", "fstype": "vfat", "uuid": "AAA"}],
+                "classification": classify_storage_devices([{"name": "nvme0n1p1", "type": "part", "fstype": "vfat", "uuid": "AAA"}]),
+                "warnings": [],
+            },
+        ):
+            r = execute_rescue_storage_discovery(
+                explicit_overwrite=True, explicit_execute_storage_discovery=True
+            )
         self.assertEqual(r.get("rescue_storage_discovery_result_status"), "ok")
         body = r.get("rescue_storage_discovery_result") or {}
         self.assertTrue((body.get("evaluation") or {}).get("readonly_analysis_only"))

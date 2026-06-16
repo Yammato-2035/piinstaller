@@ -332,3 +332,14 @@ def get_findmnt_json_by_source(device: str, *, runner: Runner = None) -> dict[st
     except json.JSONDecodeError:
         return None
     return data if isinstance(data, dict) else None
+
+
+def discover_mounts_flat(*, runner: Runner = None) -> list[dict[str, Any]]:
+    """
+    Flat findmnt inventory (SOURCE, TARGET, FSTYPE, OPTIONS).
+
+    Canonical entry for rescue persistence and inspect mount scans.
+    """
+    from core.storage_discovery import discover_findmnt_mounts_flat
+
+    return discover_findmnt_mounts_flat(runner=runner)

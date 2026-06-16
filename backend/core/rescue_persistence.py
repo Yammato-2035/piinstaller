@@ -14,7 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable
 
-from core.storage_discovery import Runner, discover_findmnt_mounts_flat
+from core.storage_discovery import Runner
 
 RESCUE_PERSISTENCE_VERSION = 4
 
@@ -125,7 +125,9 @@ def _label_for_mount(target: str, *, runner: Runner = None) -> str:
 
 def detect_rescue_stick_mount(*, runner: Runner = None) -> dict[str, Any]:
     """Detect live-medium or labeled Setuphelfer stick mount (read-only discovery)."""
-    mounts = discover_findmnt_mounts_flat(runner=runner)
+    from core.mount_facade import discover_mounts_flat
+
+    mounts = discover_mounts_flat(runner=runner)
     candidates: list[dict[str, Any]] = []
 
     for fs in mounts:

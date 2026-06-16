@@ -676,6 +676,51 @@ def classify_devices_for_inspect(devices_raw: list[dict[str, Any]]) -> list[dict
     return classify_devices(devices_raw)
 
 
+def list_classified_block_devices_for_inspect(*, runner: Runner = None) -> list[dict[str, Any]]:
+    """Classified block device tree for Rescue inspect (facade-only lsblk path)."""
+    raw = detect_block_devices_for_inspect(runner=runner)
+    return classify_devices_for_inspect(raw)
+
+
+def list_physical_disk_paths(*, runner: Runner = None, mode: str = "rescue") -> list[str]:
+    """Top-level disk device paths (``/dev/...``) for SMART and target assessment."""
+    out: list[str] = []
+    for node in list_disk_blockdevice_nodes(runner=runner, mode=mode):
+        if not isinstance(node, dict):
+            continue
+        d = node.get("device") or node.get("path")
+        if not d:
+            name = node.get("name")
+            if isinstance(name, str):
+                d = name if name.startswith("/dev/") else f"/dev/{name}"
+        if isinstance(d, str) and d.startswith("/dev/"):
+            out.append(d)
+    if out:
+        return out
+    for node in list_classified_block_devices_for_inspect(runner=runner):
+        if not isinstance(node, dict):
+            continue
+        if (node.get("type") or "").lower() != "disk":
+            continue
+        d = node.get("device")
+        if isinstance(d, str) and d.startswith("/dev/"):
+            out.append(d)
+    return out
+
+
+def get_readonly_storage_probe_contract() -> dict[str, Any]:
+    """Public-safe metadata for deploy-runner handoffs (no shell execution)."""
+    return {
+        "facade_contract_version": FACADE_CONTRACT_VERSION,
+        "storage_inventory": "core.storage_facade.build_storage_inventory_snapshot",
+        "classified_devices": "core.storage_facade.list_classified_block_devices_for_inspect",
+        "physical_disks": "core.storage_facade.list_physical_disk_paths",
+        "mount_inventory": "core.mount_facade.build_mount_inventory_snapshot",
+        "mounts_flat": "core.mount_facade.discover_mounts_flat",
+        "implementation_note": "lsblk/blkid/findmnt only inside core facades",
+    }
+
+
 def collect_inspect_storage_bundle(*, runner: Runner = None) -> dict[str, Any]:
     """
     Read-only storage bundle for inspect/collector (no mountability/uuid conflicts).

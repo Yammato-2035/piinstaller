@@ -9,6 +9,20 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.3.0] — 2026-06-16
+
+### Changed
+
+- **Core Facade Rescue Migration B.4:** `inspect_storage` listen vollständig über Facade; `rescue_persistence` Mount-Scan via `discover_mounts_flat`; Deploy-Runner-Plan mit `facade_contract`.
+- Neue Helfer: `list_classified_block_devices_for_inspect`, `list_physical_disk_paths`, `get_readonly_storage_probe_contract`, `discover_mounts_flat`.
+
+### Added
+
+- `docs/architecture/CORE_FACADE_RESCUE_MIGRATION_B4.md`
+- `backend/tests/test_core_facade_rescue_migration_b4_v1.py`
+
+---
+
 ## [1.8.2.0] — 2026-06-16
 
 ### Changed

@@ -25,7 +25,7 @@ class TestRescuePersistenceR3(unittest.TestCase):
     def test_detect_fallback_when_no_mounts(self) -> None:
         import core.rescue_persistence as rp
 
-        with mock.patch.object(rp, "discover_findmnt_mounts_flat", return_value=[]):
+        with mock.patch("core.mount_facade.discover_mounts_flat", return_value=[]):
             det = rp.detect_rescue_stick_mount()
         self.assertTrue(det["fallback"])
         self.assertIn("RAM", det.get("warning") or "")
