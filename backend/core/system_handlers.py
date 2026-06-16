@@ -6,6 +6,7 @@ Extracted from app.py; delegates via system_runtime adapters.
 
 from __future__ import annotations
 
+import asyncio
 import os
 import shutil
 
@@ -200,3 +201,109 @@ async def get_system_updates():
             "updates": [],
             "message": str(e),
         }
+
+
+async def system_status():
+    """
+    Zentrale Systemstatus-API.
+    Liefert Ampelwerte für Backup, Restore, Security, Updates.
+    """
+    from core.system_status_facade import build_system_status
+
+    try:
+        return await asyncio.to_thread(build_system_status)
+    except Exception as e:
+        rt.logger().error(f"Fehler beim Lesen des Systemstatus: {e}", exc_info=True)
+        return rt.json_response(
+            status_code=200,
+            content={
+                "status": "error",
+                "api_status": "error",
+                "message": str(e),
+                "data": {},
+            },
+        )
+
+
+async def get_freenove_detection():
+    """Erkennt Freenove Computer Case Kit Pro – für TFT-Bereich im App Store."""
+    from core.hardware_discovery import detect_freenove_case
+    data = detect_freenove_case(run_command_fn=rt.run_command)
+    return {"status": "success", **data}
+
+
+async def get_asus_fan_profiles():
+    """Holt verfügbare ASUS ROG Lüfter-Profile"""
+    try:
+        result = rt.get_asus_fan_profiles()
+        return rt.json_response(status_code=200, content=result)
+    except Exception as e:
+        rt.logger().error(f"Fehler beim Abrufen der Lüfter-Profile: {str(e)}", exc_info=True)
+        return rt.json_response(status_code=500, content={"available": False, "profiles": [], "error": str(e)})
+
+
+async def get_asus_fan_status():
+    """Holt aktuellen ASUS ROG Lüfter-Status"""
+    try:
+        result = rt.get_asus_fan_status()
+        return rt.json_response(status_code=200, content=result)
+    except Exception as e:
+        rt.logger().error(f"Fehler beim Abrufen des Lüfter-Status: {str(e)}", exc_info=True)
+        return rt.json_response(status_code=500, content={"available": False, "status": None, "error": str(e)})
+
+
+async def set_asus_fan_profile(request: Request):
+    """Setzt ASUS ROG Lüfter-Profil (Performance, Balanced, Quiet)"""
+    try:
+        try:
+            data = await request.json()
+        except:
+            data = {}
+        
+        profile = data.get("profile", "")
+        if not profile:
+            return rt.json_response(status_code=400, content={"success": False, "error": "Profil-Parameter fehlt"})
+        
+        # Hole sudo_password aus Request oder Store
+        sudo_password = data.get("sudo_password", "") or (rt.sudo_store().get_password() or "")
+        
+        # Prüfe ob sudo benötigt wird
+        if not sudo_password:
+            sudo_test = rt.run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return rt.json_response(
+                    status_code=200,
+                    content={
+                        "success": False,
+                        "error": "Sudo-Passwort erforderlich",
+                        "requires_sudo_password": True
+                    }
+                )
+        
+        # Speichere sudo_password im Store falls vorhanden
+        if sudo_password and not rt.sudo_store().has_password():
+            rt.sudo_store().store_password(sudo_password)
+        
+        result = rt.set_asus_fan_profile(profile, sudo_password)
+        if result.get("success"):
+            return rt.json_response(status_code=200, content=result)
+        else:
+            return rt.json_response(status_code=400, content=result)
+    except Exception as e:
+        rt.logger().error(f"Fehler beim Setzen des Lüfter-Profils: {str(e)}", exc_info=True)
+        return rt.json_response(status_code=500, content={"success": False, "error": str(e)})
+
+
+async def get_asus_rog_detection():
+    """Prüft ob ASUS ROG System erkannt wurde und ob asusctl verfügbar ist"""
+    try:
+        is_rog = rt.is_asus_rog_system()
+        has_asusctl = rt.is_asusctl_available()
+        return rt.json_response(status_code=200, content={
+            "is_asus_rog": is_rog,
+            "asusctl_available": has_asusctl,
+            "can_control_fans": is_rog and has_asusctl
+        })
+    except Exception as e:
+        rt.logger().error(f"Fehler bei ASUS ROG Erkennung: {str(e)}", exc_info=True)
+        return rt.json_response(status_code=500, content={"error": str(e)})

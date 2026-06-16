@@ -175,3 +175,143 @@ async def run_command_async(cmd, sudo: bool = False, sudo_password: str | None =
 
 def sudo_store():
     return _app().sudo_store
+
+
+def clone_disk_info(sudo_password: str | None = None) -> dict[str, Any]:
+    return _app()._clone_disk_info(sudo_password=sudo_password)
+
+
+def invalidate_clone_disk_info_cache() -> None:
+    _app()._clone_disk_info_cache_ts = 0
+
+
+def has_active_long_running_job() -> bool:
+    return _app()._has_active_long_running_job()
+
+
+def new_job_id() -> str:
+    return _app()._new_job_id()
+
+
+def now_iso() -> str:
+    return _app()._now_iso()
+
+
+def do_clone_logic(
+    target_device: str,
+    sudo_password: str,
+    job: dict[str, Any],
+    cancel_event=None,
+) -> dict[str, Any]:
+    return _app()._do_clone_logic(target_device, sudo_password, job, cancel_event=cancel_event)
+
+
+def normalize_path(path_str: str) -> Path:
+    return _app()._normalize_path(path_str)
+
+
+def is_under_allowed_root(p: Path) -> bool:
+    return _app()._is_under_allowed_root(p)
+
+
+def detect_active_package_operations() -> list[dict[str, Any]]:
+    return _app()._detect_active_package_operations()
+
+
+def private_tmp_isolation_active() -> bool:
+    return _app()._private_tmp_isolation_active()
+
+
+def backup_create_needs_sudo_precheck(*args, **kwargs) -> bool:
+    return _app()._backup_create_needs_sudo_precheck(*args, **kwargs)
+
+
+def sudo_n_true_failed_due_to_nnp(sudo_test: dict) -> bool:
+    return _app()._sudo_n_true_failed_due_to_nnp(sudo_test)
+
+
+def normalize_backup_create_crypto_payload(data: dict) -> dict:
+    return _app()._normalize_backup_create_crypto_payload(data)
+
+
+def merge_backup_realtest_state(**kwargs) -> None:
+    _app()._merge_backup_realtest_state(**kwargs)
+
+
+def do_backup_logic(*args, **kwargs):
+    return _app()._do_backup_logic(*args, **kwargs)
+
+
+def backup_runner_mode() -> str:
+    return _app()._backup_runner_mode()
+
+
+def backup_start_mode() -> str:
+    return _app()._backup_start_mode()
+
+
+def start_backup_via_helper(job_id: str):
+    return _app()._start_backup_via_helper(job_id)
+
+
+def backup_runner_status_dir() -> Path:
+    return _app()._backup_runner_status_dir()
+
+
+def backup_runner_status_file(job_id: str) -> Path:
+    return _app()._backup_runner_status_file(job_id)
+
+
+def backup_runner_job_file(job_id: str) -> Path:
+    return _app()._backup_runner_job_file(job_id)
+
+
+def systemctl_run_argv(argv: list[str], *, timeout: int) -> dict[str, Any]:
+    return _app()._systemctl_run_argv(argv, timeout=timeout)
+
+
+def backup_path_looks_encrypted(path: str) -> bool:
+    return _app()._backup_path_looks_encrypted(path)
+
+
+def curl_put_with_progress(*args, **kwargs):
+    return _app()._curl_put_with_progress(*args, **kwargs)
+
+
+def plan_data_backup_sources():
+    return _app()._plan_data_backup_sources()
+
+
+def data_required_source_candidates() -> list:
+    return _app()._data_required_source_candidates()
+
+
+def data_optional_source_candidates() -> list:
+    return _app()._data_optional_source_candidates()
+
+
+def validate_restore_target_dir(path_str: str) -> str:
+    return _app()._validate_restore_target_dir(path_str)
+
+
+def analyze_tar_members(backup_file: str) -> dict:
+    return _app()._analyze_tar_members(backup_file)
+
+
+def cleanup_old_preview_dirs(keep_dir: Path, max_age_seconds: int | None = None) -> None:
+    if max_age_seconds is None:
+        _app()._cleanup_old_preview_dirs(keep_dir)
+    else:
+        _app()._cleanup_old_preview_dirs(keep_dir, max_age_seconds=max_age_seconds)
+
+
+def restore_preview_base() -> Path:
+    return _app().RESTORE_PREVIEW_BASE
+
+
+def root_restore_allowed_prefixes() -> list[str]:
+    return _app().ROOT_RESTORE_ALLOWED_PREFIXES
+
+
+def root_restore_blocked_prefixes() -> list[str]:
+    return _app().ROOT_RESTORE_BLOCKED_PREFIXES

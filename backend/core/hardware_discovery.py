@@ -835,6 +835,57 @@ def discover_raspberry_pi_info() -> dict[str, Any]:
     }
 
 
+def detect_freenove_case(*, run_command_fn=None) -> dict[str, Any]:
+    """Erkennt Freenove Computer Case Kit Pro (DSI, I2C-Expansion-Board, Audio)."""
+    run = run_command_fn or run_command
+    result: dict[str, Any] = {
+        "detected": False,
+        "expansion_board": False,
+        "dsi_display": False,
+        "audio_available": False,
+        "hint": "",
+    }
+    try:
+        for bus in (1, 0, 6, 7, 2, 3, 4, 5):
+            r = run(f"i2cget -y {bus} 0x21 0xfd 2>/dev/null", timeout=2)
+            if r.get("success") and r.get("stdout", "").strip():
+                result["expansion_board"] = True
+                break
+        if not result["expansion_board"]:
+            try:
+                for dev in Path("/sys/bus/i2c/devices").iterdir():
+                    if dev.name.endswith("-0021"):
+                        result["expansion_board"] = True
+                        break
+            except Exception:
+                pass
+        try:
+            for p in Path("/sys/class/drm").iterdir():
+                if "DSI" in p.name:
+                    status_file = p / "status"
+                    if status_file.exists():
+                        try:
+                            if status_file.read_text().strip() == "connected":
+                                result["dsi_display"] = True
+                                break
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+        if not result["dsi_display"]:
+            r = run("wlr-randr 2>/dev/null | grep -i dsi || true", timeout=2)
+            if r.get("success") and r.get("stdout", "").strip():
+                result["dsi_display"] = True
+        r = run("cat /proc/asound/cards 2>/dev/null | grep -E '^[[:space:]]*[0-9]' || true", timeout=2)
+        result["audio_available"] = bool(r.get("success") and r.get("stdout", "").strip())
+        result["detected"] = result["dsi_display"] or result["expansion_board"]
+        if result["detected"]:
+            result["hint"] = "TFT-Modi im App Store nutzbar. Lautsprecher: System-Sound → Ausgabegerät wählen."
+    except Exception as e:
+        result["hint"] = str(e)
+    return result
+
+
 def build_hardware_discovery_diagnostics() -> dict[str, Any]:
     """Lightweight discovery diagnostics — read-only."""
     return {

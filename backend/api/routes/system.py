@@ -60,3 +60,33 @@ async def get_security_config_route(request: Request):
 async def get_system_updates_route():
     return await handlers.get_system_updates()
 
+
+@router.get("/api/system/status")
+async def system_status_route():
+    return await handlers.system_status()
+
+
+@router.get("/api/system/freenove-detection")
+async def get_freenove_detection_route():
+    return await handlers.get_freenove_detection()
+
+
+@router.get("/api/system/asus-rog/fan/profiles")
+async def get_asus_fan_profiles_route():
+    return await handlers.get_asus_fan_profiles()
+
+
+@router.get("/api/system/asus-rog/fan/status")
+async def get_asus_fan_status_route():
+    return await handlers.get_asus_fan_status()
+
+
+@router.post("/api/system/asus-rog/fan/set-profile")
+async def set_asus_fan_profile_route(request: Request):
+    return await handlers.set_asus_fan_profile(request)
+
+
+@router.get("/api/system/asus-rog/detection")
+async def get_asus_rog_detection_route():
+    return await handlers.get_asus_rog_detection()
+

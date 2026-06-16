@@ -1,7 +1,7 @@
 """
-Backup execute router — POST handlers without full backup create/restore (Phase B.4).
+Backup execute router — POST handlers (Phase B.4–B.8).
 
-Job cancel, evidence collect, profiles list/preview.
+Job cancel, evidence, profiles, settings/cloud, USB, clone, create/verify/delete/restore.
 """
 
 from __future__ import annotations
@@ -71,3 +71,28 @@ async def backup_usb_prepare_route(request: Request):
 @router.post("/api/backup/usb/eject")
 async def backup_usb_eject_route(request: Request):
     return await handlers.backup_usb_eject(request)
+
+
+@router.post("/api/backup/clone")
+async def clone_disk_route(request: Request):
+    return await handlers.clone_disk(request)
+
+
+@router.post("/api/backup/create")
+async def create_backup_route(request: Request):
+    return await handlers.create_backup(request)
+
+
+@router.post("/api/backup/verify")
+async def verify_backup_route(request: Request):
+    return await handlers.verify_backup(request)
+
+
+@router.post("/api/backup/delete")
+async def delete_backup_route(request: Request):
+    return await handlers.delete_backup(request)
+
+
+@router.post("/api/backup/restore")
+async def restore_backup_route(request: Request):
+    return await handlers.restore_backup(request)

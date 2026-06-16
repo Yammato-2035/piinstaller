@@ -41,10 +41,10 @@ class TestBackupReadonlyRouterB3(unittest.TestCase):
         self.assertIn("rt.findmnt_mounts", text)
         self.assertIn("rt.validate_backup_dir", text)
 
-    def test_thirteen_get_routes_on_backup_readonly(self) -> None:
+    def test_fourteen_get_routes_on_backup_readonly(self) -> None:
         tbl = _route_table(backup_readonly_router)
         get_routes = [p for m, p in tbl if m == "GET"]
-        self.assertEqual(len(get_routes), 13)
+        self.assertEqual(len(get_routes), 14)
 
     def test_no_backup_get_routes_left_in_app(self) -> None:
         app_text = (_backend / "app.py").read_text(encoding="utf-8")

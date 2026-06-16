@@ -66,3 +66,23 @@ def get_security_config():
 
 def list_running_processes():
     return _app().get_running_processes()
+
+
+def get_asus_fan_profiles():
+    return _app().get_asus_fan_profiles()
+
+
+def get_asus_fan_status():
+    return _app().get_asus_fan_status()
+
+
+def set_asus_fan_profile(profile: str, sudo_password: str = ""):
+    return _app().set_asus_fan_profile(profile, sudo_password)
+
+
+def is_asus_rog_system():
+    return _app().is_asus_rog_system()
+
+
+def is_asusctl_available():
+    return _app().is_asusctl_available()

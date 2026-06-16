@@ -1,7 +1,7 @@
 """
 Backup readonly router — safe GET inventory/status routes (Phase B.2).
 
-No create, restore, clone, USB mount/prepare, or verify POST handlers.
+No create, restore, or verify POST handlers. Clone disk-info (GET/POST) is read-only.
 """
 
 from __future__ import annotations
@@ -87,3 +87,8 @@ async def backup_target_check_route(
         auto_prepare=auto_prepare,
         label=label,
     )
+
+
+@router.api_route("/api/backup/clone/disk-info", methods=["GET", "POST"])
+async def clone_disk_info_route(request: Request, refresh: int = 0):
+    return await handlers.clone_disk_info(request, refresh=refresh)

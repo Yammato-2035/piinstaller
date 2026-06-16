@@ -2,18 +2,28 @@
 
 from __future__ import annotations
 
+import asyncio
+import json
 import os
 import shlex
 import shutil
 import signal
+import tarfile
+import tempfile
 import threading
+import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
 from fastapi import Request
 
 from core import backup_readonly_runtime as rt
-from core.backup_profiles import build_profile_preview
+from core.backup_profiles import (
+    build_profile_preview,
+    normalize_backup_profile,
+    resolve_profile_request,
+)
 
 
 async def backup_job_cancel(job_id: str):
@@ -1402,4 +1412,2492 @@ async def backup_usb_eject(request: Request):
         return rt.json_response(
             status_code=200,
             content=rt.with_backup_contract({"status": "error", "message": str(e)}, "backup.usb_eject_failed", "error", {"detail": str(e)}),
+        )
+
+
+async def clone_disk(request: Request):
+    """System von SD-Karte auf Ziellaufwerk klonen (async Job)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+
+        sudo_password = (data.get("sudo_password") or "").strip() or (rt.sudo_store().get_password() or "")
+        target_device = (data.get("target_device") or "").strip()
+
+        if not target_device or not target_device.startswith("/dev/"):
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {"status": "error", "message": "target_device (/dev/...) erforderlich"},
+                    "backup.clone_missing_target",
+                    "error",
+                ),
+            )
+        if not sudo_password:
+            sudo_test = rt.run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                        "backup.sudo_required",
+                        "error",
+                    ),
+                )
+
+        if rt.has_active_long_running_job():
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                    },
+                    "backup.job_conflict",
+                    "error",
+                ),
+            )
+
+        job_id = rt.new_job_id()
+        rt.get_backup_jobs()[job_id] = {
+            "job_id": job_id,
+            "status": "queued",
+            "type": "clone",
+            "target_device": target_device,
+            "started_at": rt.now_iso(),
+            "finished_at": None,
+            "message": "Wartet…",
+            "code": "backup.clone_job_queued",
+            "severity": "info",
+            "results": [],
+        }
+
+        def _runner():
+            try:
+                ev = rt.get_backup_job_cancel().get(job_id)
+                if not ev:
+                    ev = threading.Event()
+                    rt.get_backup_job_cancel()[job_id] = ev
+                rt.get_backup_jobs()[job_id]["status"] = "running"
+                rt.get_backup_jobs()[job_id]["message"] = "Klon läuft…"
+                rt.get_backup_jobs()[job_id]["code"] = "backup.clone_job_running"
+                rt.get_backup_jobs()[job_id]["severity"] = "info"
+                result = rt.do_clone_logic(target_device, sudo_password, rt.get_backup_jobs()[job_id], cancel_event=ev)
+                rt.get_backup_jobs()[job_id]["results"] = result.get("results") or []
+                rt.get_backup_jobs()[job_id]["finished_at"] = rt.now_iso()
+                rt.get_backup_jobs()[job_id]["status"] = result.get("status", "error")
+                rt.get_backup_jobs()[job_id]["message"] = result.get("message", "Fertig")
+                if isinstance(result.get("code"), str):
+                    rt.get_backup_jobs()[job_id]["code"] = result["code"]
+                if isinstance(result.get("severity"), str):
+                    rt.get_backup_jobs()[job_id]["severity"] = result["severity"]
+            except Exception as e:
+                rt.logger().exception("clone job failed")
+                rt.get_backup_jobs()[job_id]["status"] = "error"
+                rt.get_backup_jobs()[job_id]["message"] = str(e)
+                rt.get_backup_jobs()[job_id]["code"] = "backup.clone_failed"
+                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                rt.get_backup_jobs()[job_id]["finished_at"] = rt.now_iso()
+            finally:
+                rt.get_backup_job_cancel().pop(job_id, None)
+
+        t = threading.Thread(target=_runner, daemon=True)
+        t.start()
+
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {"status": "accepted", "job_id": job_id, "message": "Klon-Job gestartet"},
+                "backup.clone_started",
+                "success",
+                {"job_id": job_id},
+            ),
+        )
+    except Exception as e:
+        rt.logger().exception("clone endpoint failed")
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract({"status": "error", "message": str(e)}, "backup.clone_failed", "error", {"detail": str(e)}),
+        )
+
+
+async def create_backup(request: Request):
+    """Backup erstellen (optional async job)."""
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+        data = rt.normalize_backup_create_crypto_payload(data if isinstance(data, dict) else {})
+        encrypt_requested = bool((data.get("encryption_method") or "").strip())
+        enc_flag = data.get("encryption")
+        wants_enc_flag = enc_flag is True or (isinstance(enc_flag, str) and enc_flag.strip().lower() in ("true", "1", "yes"))
+        if wants_enc_flag and not (data.get("encryption_key") or "").strip():
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Verschlüsselung angefordert, aber kein Passwort/Schlüssel (password oder encryption_key).",
+                    },
+                    "backup.encrypt_password_required",
+                    "error",
+                ),
+            )
+
+        sudo_password = data.get("sudo_password", "") or (rt.sudo_store().get_password() or "")
+        raw_type_f = data.get("type")
+        if raw_type_f is None or str(raw_type_f).strip() == "":
+            raw_type = "profile"
+        else:
+            raw_type = str(raw_type_f).strip().lower()
+        profile_in = str(data.get("profile") or data.get("backup_profile") or "").strip()
+
+        allowed_create_types = frozenset({"profile", "full", "data", "incremental"})
+        if raw_type not in allowed_create_types:
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {"status": "error", "message": f"Ungültiger Backup-Typ: {raw_type}"},
+                    "backup.create_unknown_type",
+                    "error",
+                    {"allowed": sorted(allowed_create_types)},
+                ),
+            )
+
+        create_warning_codes: list[str] = []
+        needs_full_confirm = False
+        normalized_profile = ""
+
+        if raw_type == "incremental":
+            backup_type = "incremental"
+            normalized_profile, w = normalize_backup_profile(profile_in or None)
+            create_warning_codes.extend(w)
+        elif raw_type == "data":
+            backup_type = "data"
+            normalized_profile, w = normalize_backup_profile(profile_in or None)
+            create_warning_codes.extend(w)
+        elif raw_type == "full":
+            r = resolve_profile_request(request_type="full", profile_raw=None)
+            backup_type = str(r["runner_backup_type"])
+            normalized_profile = str(r["normalized_profile"])
+            create_warning_codes.extend(list(r.get("warning_codes") or []))
+            needs_full_confirm = bool(r.get("requires_expert_confirmation"))
+        else:
+            r = resolve_profile_request(request_type="profile", profile_raw=profile_in or None)
+            backup_type = str(r["runner_backup_type"])
+            normalized_profile = str(r["normalized_profile"])
+            create_warning_codes.extend(list(r.get("warning_codes") or []))
+            needs_full_confirm = bool(r.get("requires_expert_confirmation"))
+
+        run_async = bool(data.get("async", False))
+        target = (data.get("target") or "local").strip()  # local | cloud_only | local_and_cloud
+
+        backup_dir = data.get("backup_dir") or ""
+        try:
+            backup_dir = rt.validate_backup_dir(backup_dir)
+        except Exception as ve:
+            from core.backup_target_service_access import extract_backup_target_diagnosis_id
+
+            det: dict[str, Any] = {"reason": str(ve)}
+            btd = extract_backup_target_diagnosis_id(str(ve))
+            if btd:
+                det["diagnosis_id"] = btd
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
+                    "backup.path_invalid",
+                    "error",
+                    det,
+                ),
+            )
+
+        if needs_full_confirm and not bool(data.get("confirm_full_expert")):
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Vollständiges System-Backup (Root) erfordert explizite Bestätigung.",
+                        "warning_codes": create_warning_codes,
+                    },
+                    "backup.full_expert_confirmation_required",
+                    "error",
+                    {
+                        "requires_confirm_full_expert": True,
+                        "warning_codes": create_warning_codes,
+                        "normalized_profile": normalized_profile,
+                    },
+                ),
+            )
+
+        active_pkg_ops = rt.detect_active_package_operations()
+        if active_pkg_ops:
+            rt.logger().warning(
+                "backup_preflight_blocked_package_activity",
+                extra={"action": "backup_preflight", "active_package_processes": active_pkg_ops[:5]},
+            )
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "message": "Backup-Start blockiert: laufende Paket-/Update-Aktivität erkannt",
+                    },
+                    "backup.blocked_package_activity",
+                    "error",
+                    {
+                        "diagnosis_id": "UPDATE-CONFLICT-041",
+                        "active_package_processes": active_pkg_ops[:10],
+                    },
+                ),
+            )
+
+        runner_mode = rt.backup_runner_mode()
+        backup_start_mode = rt.backup_start_mode()
+        use_full_template_runner = backup_type == "full" and (
+            backup_start_mode == "helper"
+            or backup_start_mode == "systemd"
+            or runner_mode == "systemd-template"
+        )
+
+        needs_sudo_precheck = rt.backup_create_needs_sudo_precheck(
+            backup_type,
+            target,
+            skip_full_when_systemd_template=use_full_template_runner,
+        )
+
+        if needs_sudo_precheck and not sudo_password:
+            sudo_test = rt.run_command("sudo -n true", sudo=False)
+            if not sudo_test.get("success"):
+                if rt.sudo_n_true_failed_due_to_nnp(sudo_test):
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {
+                                "status": "error",
+                                "message": "sudo ist in diesem Dienstkontext nicht verfügbar (NoNewPrivileges). / sudo is not available in this service context (NoNewPrivileges).",
+                                "requires_sudo_password": False,
+                            },
+                            "backup.sudo_blocked_by_nnp",
+                            "error",
+                            {"diagnosis_id": "SYSTEMD-NNP-031"},
+                        ),
+                    )
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
+                        "backup.sudo_required",
+                        "error",
+                    ),
+                )
+
+        timestamp = rt.run_command("date +%Y%m%d_%H%M%S").get("stdout", "").strip()
+
+        if needs_sudo_precheck:
+            mkdir_result = rt.run_command(f"mkdir -p {shlex.quote(backup_dir)}", sudo=True, sudo_password=sudo_password, timeout=60)
+            if not mkdir_result.get("success"):
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {"status": "error", "message": f"Backup-Verzeichnis konnte nicht erstellt werden: {backup_dir}"},
+                        "backup.mkdir_failed",
+                        "error",
+                        {"path": backup_dir},
+                    ),
+                )
+        else:
+            try:
+                os.makedirs(backup_dir, exist_ok=True)
+            except OSError as e:
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": f"Backup-Verzeichnis konnte nicht erstellt oder nicht beschrieben werden: {backup_dir}",
+                        },
+                        "backup.mkdir_failed",
+                        "error",
+                        {"path": backup_dir, "reason": str(e), "diagnosis_id": "PERM-GROUP-008"},
+                    ),
+                )
+
+        # precompute backup file name for UI
+        bf = None
+        if backup_type == "full":
+            bf = f"{backup_dir}/pi-backup-full-{timestamp}.tar.gz"
+        elif backup_type == "incremental":
+            bf = f"{backup_dir}/pi-backup-inc-{timestamp}.tar.gz"
+        elif backup_type == "data":
+            bf = f"{backup_dir}/pi-backup-data-{timestamp}.tar.gz"
+
+        last_hint = str(data.get("last_backup", "") or "")
+        # cloud settings from persisted backup settings
+        backup_settings = rt.read_backup_settings()
+        cloud = backup_settings.get("cloud") or {}
+
+        use_data_template_runner = backup_type == "data" and (
+            backup_start_mode == "helper"
+            or backup_start_mode == "systemd"
+            or runner_mode == "systemd-template"
+        )
+        use_helper_for_start = backup_type == "data" and backup_start_mode == "helper"
+
+        def _cloud_remote_url(local_file: str, cloud_settings: dict = None) -> Optional[str]:
+            # Verwende übergebene Cloud-Einstellungen oder die aus dem äußeren Scope
+            cloud_to_use = cloud_settings if cloud_settings is not None else cloud
+            # Prüfe ob Cloud aktiviert ist
+            if not cloud_to_use.get("enabled"):
+                return None
+            provider = cloud_to_use.get("provider") or "seafile_webdav"
+            # Für WebDAV-basierte Provider: URL konstruieren
+            if provider in ("seafile_webdav", "webdav", "nextcloud_webdav"):
+                url = (cloud_to_use.get("webdav_url") or "").strip().rstrip("/")
+                user = (cloud_to_use.get("username") or "").strip()
+                pw = (cloud_to_use.get("password") or "").strip()
+                if not url or not user or not pw:
+                    return None
+                remote_path = (cloud_to_use.get("remote_path") or "").strip().strip("/")
+                base = f"{url}/{remote_path}" if remote_path else url
+                if not base.endswith("/"):
+                    base += "/"
+                return f"{base}{Path(local_file).name}"
+            # Für andere Provider wird die URL vom Backup-Modul generiert
+            return None
+
+        def _cloud_upload_and_verify(local_file: str, cloud_settings: dict = None, job_id: str = "") -> tuple[bool, str]:
+            """Cloud-Upload mit Verifizierung. job_id für Fortschritt und 1‑Min‑Prüfung bei Timeout."""
+            # Verwende übergebene Cloud-Einstellungen oder die aus dem äußeren Scope
+            cloud_to_use = cloud_settings if cloud_settings is not None else cloud
+            rt.logger().info(f"[Cloud-Upload] _cloud_upload_and_verify: local_file={local_file}, cloud.enabled={cloud_to_use.get('enabled')}, target={target}")
+            if not cloud_to_use.get("enabled"):
+                rt.logger().warning("[Cloud-Upload] Cloud-Upload ist deaktiviert (cloud.enabled=False)")
+                return False, "Cloud-Upload ist deaktiviert"
+            provider = cloud_to_use.get("provider") or "seafile_webdav"
+            url_ok = bool((cloud_to_use.get("webdav_url") or "").strip())
+            user_ok = bool((cloud_to_use.get("username") or "").strip())
+            pw_ok = bool((cloud_to_use.get("password") or "").strip())
+            rt.logger().info(f"[Cloud-Upload] Provider={provider}, url={url_ok}, user={user_ok}, pw={pw_ok}, file_exists={Path(local_file).exists()}")
+            
+            webdav_providers = ("seafile_webdav", "webdav", "nextcloud_webdav")
+            if provider not in webdav_providers:
+                try:
+                    backup_mod = rt.get_backup_module()
+                    backup_mod.rt.run_command = rt.run_command
+                    ok, info = backup_mod.upload_to_cloud(local_file, provider, cloud_to_use, sudo_password)
+                    if ok:
+                        return True, info
+                except Exception as e:
+                    rt.logger().error(f"Backup-Modul Upload (non-WebDAV): {e}", exc_info=True)
+                return False, f"Provider '{provider}' wird für Cloud-Upload nicht unterstützt (nur WebDAV)"
+            # WebDAV: eigene Logik mit Fortschritt und 1‑Min‑Prüfung bei Timeout
+            url = (cloud_to_use.get("webdav_url") or "").strip().rstrip("/")
+            user = (cloud_to_use.get("username") or "").strip()
+            pw = (cloud_to_use.get("password") or "").strip()
+            if not url or not user or not pw:
+                rt.logger().error("[Cloud-Upload] Cloud-Settings fehlen: url=%s, user=%s, pw=%s", bool(url), bool(user), bool(pw))
+                return False, "Cloud-Settings fehlen (URL/User/Passwort)"
+            remote = _cloud_remote_url(local_file, cloud_to_use)
+            if not remote:
+                rt.logger().error("[Cloud-Upload] Cloud-Ziel konnte nicht bestimmt werden; provider=%s, url_len=%s", provider, len(url))
+                return False, f"Cloud-Ziel konnte nicht bestimmt werden (Provider: {provider}, URL: {url[:50]}...)"
+            upload_timeout = 7200  # 2 h für große Backups / langsame Verbindungen
+            # Parent-Collection (Verzeichnis) für MKCOL: null -> 409 vermeiden
+            remote_path = (cloud_to_use.get("remote_path") or "").strip().strip("/")
+            if remote_path:
+                base = f"{url}/{remote_path}".rstrip("/") + "/"
+                parts = [p for p in base.rstrip("/").replace(url.rstrip("/"), "", 1).strip("/").split("/") if p]
+                mkcol_base = url.rstrip("/") + "/"
+                for seg in parts:
+                    mkcol_base = mkcol_base.rstrip("/") + "/" + seg + "/"
+                    mc = rt.run_command(
+                        f"curl -sS -o /dev/null -w '%{{http_code}}' -u {shlex.quote(user)}:{shlex.quote(pw)} -X MKCOL {shlex.quote(mkcol_base)}",
+                        timeout=60,
+                    )
+                    code_mk = (mc.get("stdout") or "").strip()
+                    try:
+                        c = int(code_mk) if code_mk else None
+                    except Exception:
+                        c = None
+                    if c in (201, 204):
+                        rt.logger().info("[Cloud-Upload] MKCOL %s -> %s", mkcol_base, code_mk)
+                    elif c == 405:
+                        pass  # existiert bereits
+                    elif c not in (200, 201, 204, 405):
+                        rt.logger().warning("[Cloud-Upload] MKCOL %s -> HTTP %s (weiter mit PUT)", mkcol_base, c)
+            rt.logger().info("[Cloud-Upload] WebDAV PUT → %s (timeout=%ds)", remote, upload_timeout)
+            ok, put_code, err = rt.curl_put_with_progress(
+                local_file, remote, user, pw, job_id, upload_timeout
+            )
+            if not ok:
+                rt.logger().error("[Cloud-Upload] PUT fehlgeschlagen: %s", err)
+                return False, err or "Upload fehlgeschlagen"
+            if put_code is not None and put_code not in (200, 201, 204):
+                hint = " (Datei existiert evtl. oder übergeordnetes Verzeichnis fehlt – MKCOL/Overwrite prüfen)" if put_code == 409 else ""
+                rt.logger().error("[Cloud-Upload] PUT HTTP %s (erwartet 200/201/204)%s", put_code, hint)
+                return False, f"Upload fehlgeschlagen (HTTP {put_code or '—'}){hint}"
+            if put_code is None:
+                return True, remote  # Timeout, 1‑Min‑Prüfung war erfolgreich
+            # verify via PROPFIND (optional; manche Server liefern 404 für PROPFIND auf Datei)
+            cmd_v = (
+                "curl -sS -o /dev/null -w '%{http_code}' "
+                f"-u {shlex.quote(user)}:{shlex.quote(pw)} "
+                "-X PROPFIND -H 'Depth: 0' "
+                f"{shlex.quote(remote)}"
+            )
+            vr = rt.run_command(cmd_v, timeout=120)
+            code_str = (vr.get("stdout") or "").strip()
+            try:
+                code = int(code_str) if code_str else None
+            except Exception:
+                code = None
+            if vr.get("success") and code in (200, 201, 204, 207):
+                rt.logger().info("[Cloud-Upload] Erfolgreich (PUT %s, PROPFIND %s): %s", put_code, code, remote)
+                return True, remote
+            # PROPFIND 404 ist bei einigen WebDAV-Servern normal; PUT war erfolgreich
+            if put_code in (200, 201, 204):
+                rt.logger().info("[Cloud-Upload] PUT ok, PROPFIND %s (ignoriert): %s", code, remote)
+                return True, remote
+            rt.logger().error("[Cloud-Upload] PROPFIND HTTP %s; PUT war %s", code, put_code)
+            return False, f"Remote Verifizierung fehlgeschlagen (HTTP {code or '—'})"
+
+        if use_data_template_runner:
+            if rt.has_active_long_running_job():
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                        },
+                        "backup.job_conflict",
+                        "error",
+                    ),
+                )
+
+            data_sources, skipped_optional, unreadable_required = rt.plan_data_backup_sources()
+            required_sources = [str(p) for p in rt.data_required_source_candidates()]
+            optional_sources = [str(p) for p in rt.data_optional_source_candidates()]
+            if unreadable_required or not data_sources:
+                unreadable_txt = ", ".join(str(x.get("path")) for x in unreadable_required if x.get("path"))
+                results = []
+                if unreadable_txt:
+                    results.append(f"Pflichtquelle nicht lesbar: {unreadable_txt}")
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Datenquelle nicht lesbar",
+                            "results": results,
+                            "backup_file": None,
+                            "timestamp": timestamp,
+                        },
+                        "backup.source_permission_denied",
+                        "error",
+                        {
+                            "selected_sources": data_sources,
+                            "unreadable_sources": unreadable_required,
+                            "skipped_sources": skipped_optional,
+                            "required_sources": required_sources,
+                            "optional_sources": optional_sources,
+                            "required_permission": "read_execute",
+                            "diagnosis_id": "BACKUP-SOURCE-PERM-032",
+                        },
+                    ),
+                )
+
+            source = data_sources[0]
+            job_id = rt.new_job_id()
+            unit_name = f"setuphelfer-backup@{job_id}.service"
+            status_dir = rt.backup_runner_status_dir()
+            job_file = rt.backup_runner_job_file(job_id)
+            status_file = rt.backup_runner_status_file(job_id)
+            status_file.parent.mkdir(parents=True, exist_ok=True)
+            job_payload = {
+                "job_id": job_id,
+                "backup_type": "data",
+                "backup_dir": backup_dir,
+                "source": source,
+                "lang": str(data.get("lang") or ""),
+                "requested_by": "api",
+                "created_at": rt.now_iso(),
+                "backup_profile": normalized_profile,
+                "profile_warning_codes": create_warning_codes,
+            }
+            job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            initial_status = {
+                "job_id": job_id,
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status": "queued",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "diagnosis_id": None,
+                "backup_started_at": rt.now_iso(),
+                "backup_finished_at": None,
+                "backup_type": "data",
+                "backup_dir": backup_dir,
+                "source": source,
+                "archive_path": bf,
+                "partial_path": f"{bf}.partial",
+                "abort_reason": None,
+                "progress_optional": None,
+            }
+            status_file.write_text(json.dumps(initial_status, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            rt.get_backup_jobs()[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "type": backup_type,
+                "backup_dir": backup_dir,
+                "backup_file": bf,
+                "target": target,
+                "started_at": rt.now_iso(),
+                "finished_at": None,
+                "message": "Wartet…",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "results": [],
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status_source": "systemd_runner",
+            }
+
+            if use_helper_for_start:
+                ok, hcode, hraw = rt.start_backup_via_helper(job_id)
+                if not ok:
+                    rt.get_backup_jobs()[job_id]["status"] = "error"
+                    rt.get_backup_jobs()[job_id]["message"] = "Backup-Starter fehlgeschlagen"
+                    rt.get_backup_jobs()[job_id]["code"] = hcode
+                    rt.get_backup_jobs()[job_id]["severity"] = "error"
+                    try:
+                        status_file.write_text(
+                            json.dumps(
+                                {
+                                    **initial_status,
+                                    "status": "error",
+                                    "code": hcode,
+                                    "severity": "error",
+                                    "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                    "abort_reason": "starter_failed",
+                                    "backup_finished_at": rt.now_iso(),
+                                    "starter_response": hraw,
+                                    "unit_scope": "system",
+                                },
+                                ensure_ascii=False,
+                                indent=2,
+                            ),
+                            encoding="utf-8",
+                        )
+                    except Exception:
+                        pass
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {"status": "error", "message": "Backup-Starter fehlgeschlagen"},
+                            hcode,
+                            "error",
+                            {"diagnosis_id": "SYSTEMD-RUNNER-001", **(hraw if isinstance(hraw, dict) else {})},
+                        ),
+                    )
+                return rt.with_backup_contract(
+                    {
+                        "status": "accepted",
+                        "job_id": job_id,
+                        "backup_file": bf,
+                        "message": "Backup gestartet",
+                    },
+                    "backup.job_started",
+                    "success",
+                    {
+                        "job_id": job_id,
+                        "unit_name": unit_name,
+                        "runner_mode": "helper",
+                        "starter_code": hcode,
+                        "starter": hraw,
+                        "start_mode": backup_start_mode,
+                        "unit_scope": "system",
+                    },
+                )
+
+            run_res = rt.systemctl_run_argv(["systemctl", "start", unit_name], timeout=60)
+            if not run_res.get("success"):
+                rt.get_backup_jobs()[job_id]["status"] = "error"
+                rt.get_backup_jobs()[job_id]["message"] = "Backup-Runner konnte nicht gestartet werden"
+                rt.get_backup_jobs()[job_id]["code"] = "backup.runner_start_failed"
+                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                try:
+                    status_file.write_text(
+                        json.dumps(
+                            {
+                                **initial_status,
+                                "status": "error",
+                                "code": "backup.runner_start_failed",
+                                "severity": "error",
+                                "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                "abort_reason": "runner_start_failed",
+                                "backup_finished_at": rt.now_iso(),
+                                "stderr_excerpt": (run_res.get("stderr") or run_res.get("error") or "")[:300],
+                                "unit_scope": "system",
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                except Exception:
+                    pass
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {"status": "error", "message": "Backup-Runner konnte nicht gestartet werden"},
+                        "backup.runner_start_failed",
+                        "error",
+                        {"diagnosis_id": "SYSTEMD-RUNNER-001", "stderr": (run_res.get("stderr") or run_res.get("error") or "")[:300]},
+                    ),
+                )
+
+            return rt.with_backup_contract(
+                {
+                    "status": "accepted",
+                    "job_id": job_id,
+                    "backup_file": bf,
+                    "message": "Backup gestartet",
+                },
+                "backup.job_started",
+                "success",
+                {
+                    "job_id": job_id,
+                    "unit_name": unit_name,
+                    "runner_mode": "systemd-template",
+                    "start_mode": backup_start_mode,
+                    "unit_scope": "system",
+                },
+            )
+
+        elif use_full_template_runner:
+            if rt.has_active_long_running_job():
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                        },
+                        "backup.job_conflict",
+                        "error",
+                    ),
+                )
+
+            job_id = rt.new_job_id()
+            unit_name = f"setuphelfer-backup@{job_id}.service"
+            status_dir = rt.backup_runner_status_dir()
+            job_file = rt.backup_runner_job_file(job_id)
+            status_file = rt.backup_runner_status_file(job_id)
+            status_file.parent.mkdir(parents=True, exist_ok=True)
+            job_payload = {
+                "job_id": job_id,
+                "backup_type": "full",
+                "backup_dir": backup_dir,
+                "source": "/",
+                "lang": str(data.get("lang") or ""),
+                "requested_by": "api",
+                "created_at": rt.now_iso(),
+                "backup_profile": normalized_profile,
+                "profile_warning_codes": create_warning_codes,
+            }
+            job_file.write_text(json.dumps(job_payload, ensure_ascii=False, indent=2), encoding="utf-8")
+            initial_status = {
+                "job_id": job_id,
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status": "queued",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "diagnosis_id": None,
+                "backup_started_at": rt.now_iso(),
+                "backup_finished_at": None,
+                "backup_type": "full",
+                "backup_dir": backup_dir,
+                "source": "/",
+                "archive_path": bf,
+                "partial_path": f"{bf}.partial",
+                "abort_reason": None,
+                "progress_optional": None,
+            }
+            status_file.write_text(json.dumps(initial_status, ensure_ascii=False, indent=2), encoding="utf-8")
+
+            rt.get_backup_jobs()[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "type": backup_type,
+                "backup_dir": backup_dir,
+                "backup_file": bf,
+                "target": target,
+                "started_at": rt.now_iso(),
+                "finished_at": None,
+                "message": "Wartet…",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "results": [],
+                "unit_name": unit_name,
+                "unit_scope": "system",
+                "status_source": "systemd_runner",
+            }
+
+            if backup_start_mode == "helper":
+                ok, hcode, hraw = rt.start_backup_via_helper(job_id)
+                if not ok:
+                    rt.get_backup_jobs()[job_id]["status"] = "error"
+                    rt.get_backup_jobs()[job_id]["message"] = "Backup-Starter fehlgeschlagen"
+                    rt.get_backup_jobs()[job_id]["code"] = hcode
+                    rt.get_backup_jobs()[job_id]["severity"] = "error"
+                    try:
+                        status_file.write_text(
+                            json.dumps(
+                                {
+                                    **initial_status,
+                                    "status": "error",
+                                    "code": hcode,
+                                    "severity": "error",
+                                    "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                    "abort_reason": "starter_failed",
+                                    "backup_finished_at": rt.now_iso(),
+                                    "starter_response": hraw,
+                                    "unit_scope": "system",
+                                },
+                                ensure_ascii=False,
+                                indent=2,
+                            ),
+                            encoding="utf-8",
+                        )
+                    except Exception:
+                        pass
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {"status": "error", "message": "Backup-Starter fehlgeschlagen"},
+                            hcode,
+                            "error",
+                            {"diagnosis_id": "SYSTEMD-RUNNER-001", **(hraw if isinstance(hraw, dict) else {})},
+                        ),
+                    )
+                return rt.with_backup_contract(
+                    {
+                        "status": "accepted",
+                        "job_id": job_id,
+                        "backup_file": bf,
+                        "message": "Backup gestartet",
+                    },
+                    "backup.job_started",
+                    "success",
+                    {
+                        "job_id": job_id,
+                        "unit_name": unit_name,
+                        "runner_mode": "helper",
+                        "starter_code": hcode,
+                        "starter": hraw,
+                        "start_mode": backup_start_mode,
+                        "unit_scope": "system",
+                    },
+                )
+
+            run_res = rt.systemctl_run_argv(["systemctl", "start", unit_name], timeout=60)
+            if not run_res.get("success"):
+                rt.get_backup_jobs()[job_id]["status"] = "error"
+                rt.get_backup_jobs()[job_id]["message"] = "Backup-Runner konnte nicht gestartet werden"
+                rt.get_backup_jobs()[job_id]["code"] = "backup.runner_start_failed"
+                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                try:
+                    status_file.write_text(
+                        json.dumps(
+                            {
+                                **initial_status,
+                                "status": "error",
+                                "code": "backup.runner_start_failed",
+                                "severity": "error",
+                                "diagnosis_id": "SYSTEMD-RUNNER-001",
+                                "abort_reason": "runner_start_failed",
+                                "backup_finished_at": rt.now_iso(),
+                                "stderr_excerpt": (run_res.get("stderr") or run_res.get("error") or "")[:300],
+                                "unit_scope": "system",
+                            },
+                            ensure_ascii=False,
+                            indent=2,
+                        ),
+                        encoding="utf-8",
+                    )
+                except Exception:
+                    pass
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {"status": "error", "message": "Backup-Runner konnte nicht gestartet werden"},
+                        "backup.runner_start_failed",
+                        "error",
+                        {"diagnosis_id": "SYSTEMD-RUNNER-001", "stderr": (run_res.get("stderr") or run_res.get("error") or "")[:300]},
+                    ),
+                )
+
+            return rt.with_backup_contract(
+                {
+                    "status": "accepted",
+                    "job_id": job_id,
+                    "backup_file": bf,
+                    "message": "Backup gestartet",
+                },
+                "backup.job_started",
+                "success",
+                {
+                    "job_id": job_id,
+                    "unit_name": unit_name,
+                    "runner_mode": "systemd-template",
+                    "start_mode": backup_start_mode,
+                    "unit_scope": "system",
+                },
+            )
+
+        if run_async:
+            if rt.has_active_long_running_job():
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "message": "Es läuft bereits ein Backup- oder Klon-Auftrag.",
+                        },
+                        "backup.job_conflict",
+                        "error",
+                    ),
+                )
+            job_id = rt.new_job_id()
+            rt.get_backup_jobs()[job_id] = {
+                "job_id": job_id,
+                "status": "queued",
+                "type": backup_type,
+                "backup_dir": backup_dir,
+                "backup_file": bf,
+                "target": target,
+                "started_at": rt.now_iso(),
+                "finished_at": None,
+                "message": "Wartet…",
+                "code": "backup.job.queued",
+                "severity": "info",
+                "results": [],
+            }
+
+            def _runner_thread():
+                try:
+                    cancel_ev = rt.get_backup_job_cancel().get(job_id)
+                    if not cancel_ev:
+                        cancel_ev = threading.Event()
+                        rt.get_backup_job_cancel()[job_id] = cancel_ev
+                    rt.get_backup_jobs()[job_id]["status"] = "running"
+                    rt.get_backup_jobs()[job_id]["message"] = "Backup läuft…"
+                    rt.get_backup_jobs()[job_id]["code"] = "backup.job.running"
+                    rt.get_backup_jobs()[job_id]["severity"] = "info"
+                    result = rt.do_backup_logic(
+                        sudo_password=sudo_password,
+                        backup_type=backup_type,
+                        backup_dir=backup_dir,
+                        timestamp=timestamp,
+                        target=target,
+                        last_backup_hint=last_hint,
+                        cancel_event=cancel_ev,
+                        job=rt.get_backup_jobs()[job_id],
+                    )
+                    rt.get_backup_jobs()[job_id]["results"] = result.get("results") or []
+                    if isinstance(result.get("code"), str):
+                        rt.get_backup_jobs()[job_id]["code"] = result.get("code")
+                    if isinstance(result.get("severity"), str):
+                        rt.get_backup_jobs()[job_id]["severity"] = result.get("severity")
+                    backup_file_path = result.get("backup_file") or bf
+                    
+                    # Optional: Verschlüsselung
+                    encryption_method = data.get("encryption_method")
+                    encryption_key = data.get("encryption_key")
+                    if encryption_method and backup_file_path and result.get("status") == "success":
+                        try:
+                            backup_mod = rt.get_backup_module()
+                            backup_mod.rt.run_command = rt.run_command
+                            rt.get_backup_jobs()[job_id]["message"] = "Verschlüsselung läuft…"
+                            rt.get_backup_jobs()[job_id]["code"] = "backup.job.encrypting"
+                            rt.get_backup_jobs()[job_id]["severity"] = "info"
+                            enc_success, enc_file, enc_error = backup_mod.encrypt_backup(
+                                backup_file_path,
+                                encryption_key,
+                                encryption_method,
+                                sudo_password
+                            )
+                            if enc_success:
+                                backup_file_path = enc_file
+                                rt.get_backup_jobs()[job_id]["backup_file"] = enc_file
+                                rt.get_backup_jobs()[job_id]["encrypted"] = True
+                                rt.get_backup_jobs()[job_id]["results"].append(f"verschlüsselt: {enc_file}")
+                                rt.logger().info(f"Backup verschlüsselt: {enc_file}")
+                            elif encrypt_requested:
+                                try:
+                                    if backup_file_path and Path(backup_file_path).exists():
+                                        Path(backup_file_path).unlink()
+                                except OSError:
+                                    pass
+                                rt.get_backup_jobs()[job_id]["status"] = "error"
+                                rt.get_backup_jobs()[job_id]["backup_file"] = None
+                                rt.get_backup_jobs()[job_id]["message"] = f"Verschlüsselung fehlgeschlagen: {enc_error or 'Unbekannter Fehler'}"
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.encrypt_failed"
+                                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                                rt.get_backup_jobs()[job_id]["results"].append(f"Verschlüsselung fehlgeschlagen: {enc_error}")
+                            else:
+                                rt.get_backup_jobs()[job_id]["results"].append(f"Verschlüsselung fehlgeschlagen: {enc_error}")
+                                rt.get_backup_jobs()[job_id]["warning"] = f"Verschlüsselung fehlgeschlagen: {enc_error}"
+                        except Exception as e:
+                            if encrypt_requested:
+                                try:
+                                    if backup_file_path and Path(backup_file_path).exists():
+                                        Path(backup_file_path).unlink()
+                                except OSError:
+                                    pass
+                                rt.get_backup_jobs()[job_id]["status"] = "error"
+                                rt.get_backup_jobs()[job_id]["backup_file"] = None
+                                rt.get_backup_jobs()[job_id]["message"] = f"Verschlüsselung fehlgeschlagen: {str(e)}"
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.encrypt_failed"
+                                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                                rt.get_backup_jobs()[job_id]["results"].append(f"Verschlüsselung Fehler: {str(e)}")
+                            else:
+                                rt.get_backup_jobs()[job_id]["results"].append(f"Verschlüsselung Fehler: {str(e)}")
+                                rt.get_backup_jobs()[job_id]["warning"] = f"Verschlüsselung Fehler: {str(e)}"
+                    else:
+                        rt.get_backup_jobs()[job_id]["backup_file"] = backup_file_path
+
+                    if result.get("status") == "success" and rt.get_backup_jobs()[job_id].get("code") == "backup.job.encrypting":
+                        rt.get_backup_jobs()[job_id]["code"] = str(result.get("code") or "backup.success")
+                        rt.get_backup_jobs()[job_id]["severity"] = str(result.get("severity") or "success")
+                    
+                    # optional cloud upload nur wenn explizit gewünscht (cloud_only oder local_and_cloud)
+                    # Bei target="local" (z.B. USB-Stick) NIEMALS in die Cloud hochladen
+                    backup_settings_thread = rt.read_backup_settings()
+                    cloud_thread = backup_settings_thread.get("cloud") or {}
+                    cloud_should_upload = target in ("cloud_only", "local_and_cloud")
+                    rt.logger().info(f"Cloud-Upload-Prüfung: target={target}, cloud.enabled={cloud_thread.get('enabled')}, cloud_should_upload={cloud_should_upload}, backup_file={rt.get_backup_jobs()[job_id].get('backup_file')}")
+                    if result.get("status") == "success" and cloud_should_upload:
+                        # Verwende Cloud-Einstellungen aus Thread
+                        cloud = cloud_thread
+                        backup_file_to_upload = rt.get_backup_jobs()[job_id]["backup_file"]
+                        rt.logger().info(f"Cloud-Upload gestartet für {backup_file_to_upload}, Provider: {cloud.get('provider')}, Enabled: {cloud.get('enabled')}, Target: {target}")
+                        
+                        # Prüfe Cloud-Credentials VOR dem Upload
+                        provider = cloud.get("provider") or "seafile_webdav"
+                        webdav_providers = ("seafile_webdav", "webdav", "nextcloud_webdav")
+                        credentials_ok = False
+                        if provider in webdav_providers:
+                            url_ok = bool((cloud.get("webdav_url") or "").strip())
+                            user_ok = bool((cloud.get("username") or "").strip())
+                            pw_ok = bool((cloud.get("password") or "").strip())
+                            credentials_ok = url_ok and user_ok and pw_ok
+                        else:
+                            # Für andere Provider: Prüfe Provider-spezifische Settings
+                            if provider in ("s3", "s3_compatible"):
+                                credentials_ok = bool(cloud.get("bucket") and cloud.get("access_key_id") and cloud.get("secret_access_key"))
+                            elif provider == "google_cloud":
+                                credentials_ok = bool(cloud.get("bucket"))
+                            elif provider == "azure":
+                                credentials_ok = bool(cloud.get("account_name") and cloud.get("container") and cloud.get("account_key"))
+                            else:
+                                credentials_ok = False
+                        
+                        if not credentials_ok:
+                            error_msg = f"Cloud-Credentials fehlen für Provider '{provider}'. Backup wurde nur lokal gespeichert."
+                            rt.get_backup_jobs()[job_id]["results"].append(f"⚠️ Cloud-Upload übersprungen: {error_msg}")
+                            rt.get_backup_jobs()[job_id]["warning"] = error_msg
+                            rt.logger().warning(f"[Cloud-Upload] {error_msg}")
+                            # Bei cloud_only ist das ein Fehler, bei local_and_cloud nur eine Warnung
+                            if target == "cloud_only":
+                                rt.get_backup_jobs()[job_id]["status"] = "error"
+                                rt.get_backup_jobs()[job_id]["message"] = "Cloud-Upload fehlgeschlagen: Credentials fehlen"
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.cloud_credentials_missing"
+                                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                            else:
+                                # Backup lokal erfolgreich, Cloud-Upload fehlgeschlagen
+                                rt.get_backup_jobs()[job_id]["status"] = "success"
+                                rt.get_backup_jobs()[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload übersprungen)"
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.cloud_upload_skipped"
+                                rt.get_backup_jobs()[job_id]["severity"] = "warning"
+                        # Prüfe ob Datei existiert
+                        elif not Path(backup_file_to_upload).exists():
+                            error_msg = f"Backup-Datei nicht gefunden: {backup_file_to_upload}"
+                            rt.get_backup_jobs()[job_id]["results"].append(f"upload failed: {error_msg}")
+                            rt.get_backup_jobs()[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {error_msg}"
+                            if target == "cloud_only":
+                                rt.get_backup_jobs()[job_id]["status"] = "error"
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.cloud_upload_file_missing"
+                                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                            else:
+                                rt.get_backup_jobs()[job_id]["status"] = "success"
+                                rt.get_backup_jobs()[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.partial_success"
+                                rt.get_backup_jobs()[job_id]["severity"] = "warning"
+                            rt.logger().error(error_msg)
+                        else:
+                            rt.get_backup_jobs()[job_id]["message"] = "Upload läuft…"
+                            rt.get_backup_jobs()[job_id]["code"] = "backup.job.uploading"
+                            rt.get_backup_jobs()[job_id]["severity"] = "info"
+                            try:
+                                ok, info = _cloud_upload_and_verify(backup_file_to_upload, cloud, job_id)
+                                rt.logger().info(f"Cloud-Upload Ergebnis: ok={ok}, info={info}")
+                                if ok:
+                                    rt.get_backup_jobs()[job_id].pop("upload_progress_pct", None)
+                                    rt.get_backup_jobs()[job_id]["remote_file"] = info
+                                    rt.get_backup_jobs()[job_id]["results"].append(f"✅ uploaded: {info}")
+                                    rt.get_backup_jobs()[job_id]["location"] = "Cloud"
+                                    rt.get_backup_jobs()[job_id]["message"] = "Backup erfolgreich hochgeladen"
+                                    rt.get_backup_jobs()[job_id]["code"] = "backup.cloud_upload_ok"
+                                    rt.get_backup_jobs()[job_id]["severity"] = "success"
+                                    if target == "cloud_only":
+                                        try:
+                                            rt.run_command(f"rm -f {shlex.quote(backup_file_to_upload)}", sudo=True, sudo_password=sudo_password)
+                                            rt.get_backup_jobs()[job_id]["results"].append("Lokale Datei gelöscht (cloud_only)")
+                                        except Exception as e:
+                                            rt.logger().warning(f"Lokale Datei konnte nicht gelöscht werden: {e}")
+                                else:
+                                    rt.get_backup_jobs()[job_id].pop("upload_progress_pct", None)
+                                    rt.get_backup_jobs()[job_id]["results"].append(f"❌ upload failed: {info}")
+                                    rt.get_backup_jobs()[job_id]["warning"] = f"Cloud-Upload fehlgeschlagen: {info}"
+                                    if target == "cloud_only":
+                                        rt.get_backup_jobs()[job_id]["status"] = "error"
+                                        rt.get_backup_jobs()[job_id]["message"] = "Cloud-Upload fehlgeschlagen"
+                                        rt.get_backup_jobs()[job_id]["code"] = "backup.cloud_upload_failed"
+                                        rt.get_backup_jobs()[job_id]["severity"] = "error"
+                                    else:
+                                        rt.get_backup_jobs()[job_id]["status"] = "success"
+                                        rt.get_backup_jobs()[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                        rt.get_backup_jobs()[job_id]["code"] = "backup.partial_success"
+                                        rt.get_backup_jobs()[job_id]["severity"] = "warning"
+                                    rt.logger().error(f"Cloud-Upload fehlgeschlagen: {info}")
+                            except Exception as e:
+                                error_msg = f"Cloud-Upload Fehler: {str(e)}"
+                                rt.logger().error(f"[Cloud-Upload] Unerwarteter Fehler: {e}", exc_info=True)
+                                rt.get_backup_jobs()[job_id]["results"].append(f"❌ upload exception: {error_msg}")
+                                rt.get_backup_jobs()[job_id]["warning"] = error_msg
+                                if target == "cloud_only":
+                                    rt.get_backup_jobs()[job_id]["status"] = "error"
+                                    rt.get_backup_jobs()[job_id]["message"] = "Cloud-Upload fehlgeschlagen"
+                                    rt.get_backup_jobs()[job_id]["code"] = "backup.cloud_upload_failed"
+                                    rt.get_backup_jobs()[job_id]["severity"] = "error"
+                                else:
+                                    rt.get_backup_jobs()[job_id]["status"] = "success"
+                                    rt.get_backup_jobs()[job_id]["message"] = "Backup lokal erfolgreich (Cloud-Upload fehlgeschlagen)"
+                                    rt.get_backup_jobs()[job_id]["code"] = "backup.partial_success"
+                                    rt.get_backup_jobs()[job_id]["severity"] = "warning"
+                    rt.get_backup_jobs()[job_id]["finished_at"] = rt.now_iso()
+                    # Status wird bereits oben gesetzt, nur noch finalisieren
+                    if rt.get_backup_jobs()[job_id]["status"] not in ("error", "cancelled"):
+                        if result.get("status") == "cancelled":
+                            rt.get_backup_jobs()[job_id]["status"] = "cancelled"
+                            rt.get_backup_jobs()[job_id]["message"] = "Abgebrochen"
+                            rt.get_backup_jobs()[job_id]["code"] = "backup.cancelled"
+                            rt.get_backup_jobs()[job_id]["severity"] = "info"
+                        elif result.get("status") == "success":
+                            # Status bleibt success (auch wenn Upload fehlgeschlagen ist, außer bei cloud_only)
+                            if rt.get_backup_jobs()[job_id]["status"] != "error":
+                                rt.get_backup_jobs()[job_id]["status"] = "success"
+                                rt.get_backup_jobs()[job_id]["message"] = "Fertig"
+                                if rt.get_backup_jobs()[job_id].get("code") not in (
+                                    "backup.cloud_upload_ok",
+                                    "backup.cloud_upload_skipped",
+                                    "backup.cloud_upload_failed",
+                                    "backup.partial_success",
+                                    "backup.cloud_upload_file_missing",
+                                    "backup.cloud_credentials_missing",
+                                ):
+                                    rt.get_backup_jobs()[job_id]["code"] = "backup.success"
+                                    rt.get_backup_jobs()[job_id]["severity"] = (
+                                        "warning" if result.get("warning") or rt.get_backup_jobs()[job_id].get("warning") else "success"
+                                    )
+                            if result.get("warning"):
+                                rt.get_backup_jobs()[job_id]["warning"] = result.get("warning")
+                        else:
+                            rt.get_backup_jobs()[job_id]["status"] = "error"
+                            rt.get_backup_jobs()[job_id]["message"] = result.get("message") or "Fehler"
+                            if isinstance(result.get("code"), str):
+                                rt.get_backup_jobs()[job_id]["code"] = result.get("code")
+                                rt.get_backup_jobs()[job_id]["severity"] = result.get("severity") or "error"
+                            else:
+                                rt.get_backup_jobs()[job_id]["code"] = "backup.error"
+                                rt.get_backup_jobs()[job_id]["severity"] = "error"
+                except Exception as e:
+                    rt.get_backup_jobs()[job_id]["status"] = "error"
+                    rt.get_backup_jobs()[job_id]["message"] = str(e)
+                    rt.get_backup_jobs()[job_id]["code"] = "backup.error"
+                    rt.get_backup_jobs()[job_id]["severity"] = "error"
+                    rt.get_backup_jobs()[job_id]["finished_at"] = rt.now_iso()
+                finally:
+                    # cleanup cancel event
+                    try:
+                        rt.get_backup_job_cancel().pop(job_id, None)
+                    except Exception:
+                        pass
+
+            threading.Thread(target=_runner_thread, daemon=True).start()
+            return rt.with_backup_contract(
+                {"status": "accepted", "job_id": job_id, "backup_file": bf, "message": "Backup gestartet"},
+                "backup.job_started",
+                "success",
+                {"job_id": job_id},
+            )
+
+        # sync mode
+        result = await asyncio.to_thread(
+            rt.do_backup_logic,
+            sudo_password=sudo_password,
+            backup_type=backup_type,
+            backup_dir=backup_dir,
+            timestamp=timestamp,
+            target=target,
+            last_backup_hint=last_hint,
+        )
+        
+        # Optional: Verschlüsselung
+        encryption_method = data.get("encryption_method")
+        encryption_key = data.get("encryption_key")
+        backup_file_path = result.get("backup_file") or bf
+        if encryption_method and backup_file_path and result.get("status") == "success":
+            try:
+                backup_mod = rt.get_backup_module()
+                backup_mod.rt.run_command = rt.run_command
+                enc_success, enc_file, enc_error = backup_mod.encrypt_backup(
+                    backup_file_path,
+                    encryption_key,
+                    encryption_method,
+                    sudo_password
+                )
+                if enc_success:
+                    backup_file_path = enc_file
+                    result["backup_file"] = enc_file
+                    result["results"] = (result.get("results") or []) + [f"verschlüsselt: {enc_file}"]
+                    result["encrypted"] = True
+                elif encrypt_requested:
+                    try:
+                        if backup_file_path and Path(backup_file_path).exists():
+                            Path(backup_file_path).unlink()
+                    except OSError:
+                        pass
+                    result = {
+                        "status": "error",
+                        "message": f"Verschlüsselung fehlgeschlagen: {enc_error or 'Unbekannter Fehler'}",
+                        "results": result.get("results") or [],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    }
+                    result = rt.with_backup_contract(
+                        result,
+                        "backup.encrypt_failed",
+                        "error",
+                        {"reason": (enc_error or "")[:300]},
+                    )
+                else:
+                    result["warning"] = (result.get("warning") or "") + f" Verschlüsselung fehlgeschlagen: {enc_error}"
+            except Exception as e:
+                if encrypt_requested:
+                    try:
+                        if backup_file_path and Path(backup_file_path).exists():
+                            Path(backup_file_path).unlink()
+                    except OSError:
+                        pass
+                    result = {
+                        "status": "error",
+                        "message": f"Verschlüsselung fehlgeschlagen: {str(e)}",
+                        "results": result.get("results") or [],
+                        "backup_file": None,
+                        "timestamp": timestamp,
+                    }
+                    result = rt.with_backup_contract(
+                        result,
+                        "backup.encrypt_failed",
+                        "error",
+                        {"reason": str(e)[:300]},
+                    )
+                else:
+                    result["warning"] = (result.get("warning") or "") + f" Verschlüsselung Fehler: {str(e)}"
+        
+        # Cloud-Upload nur bei explizitem Cloud-Ziel; bei target="local" (z.B. USB) nie hochladen
+        cloud_should_upload = target in ("cloud_only", "local_and_cloud")
+        if result.get("status") == "success" and cloud_should_upload:
+            ok, info = _cloud_upload_and_verify(result.get("backup_file") or bf)
+            if ok:
+                result["remote_file"] = info
+                if target == "cloud_only":
+                    try:
+                        rt.run_command(f"rm -f {shlex.quote(str(result.get('backup_file') or bf))}", sudo=True, sudo_password=sudo_password)
+                    except Exception:
+                        pass
+            else:
+                result["warning"] = f"Upload fehlgeschlagen: {info}"
+                detail = {"cloud_error": str(info)[:500]}
+                if target == "cloud_only":
+                    result = rt.with_backup_contract(result, "backup.cloud_upload_failed", "error", detail)
+                else:
+                    result = rt.with_backup_contract(result, "backup.partial_success", "warning", detail)
+        if isinstance(result, dict) and "code" not in result:
+            sev = "success"
+            if result.get("status") == "error":
+                sev = "error"
+            elif result.get("status") == "cancelled":
+                sev = "info"
+            cd = (
+                "backup.success"
+                if result.get("status") == "success"
+                else ("backup.cancelled" if result.get("status") == "cancelled" else "backup.error")
+            )
+            result = rt.with_backup_contract(result, cd, sev)
+        return result
+    except Exception as e:
+        rt.logger().error(f"💥 Fehler bei Backup-Erstellung: {str(e)}", exc_info=True)
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {"status": "error", "message": f"Fehler bei der Backup-Erstellung: {str(e)}"},
+                "backup.error",
+                "error",
+                {"detail": str(e)},
+            ),
+        )
+
+
+async def verify_backup(request: Request):
+    """Verifiziert ein Backup-Archiv. Unterstützt Basis- und Tiefenprüfung (für verschlüsselte Backups)."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    backup_file = (data.get("backup_file") or data.get("file") or "").strip()
+    mode = (data.get("mode") or "basic").strip().lower()
+    encryption_key = data.get("encryption_key") or data.get("password") or None
+
+    if mode not in ("basic", "deep"):
+        mode = "basic"
+
+    if not backup_file:
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "backup_file erforderlich",
+                    "data": {},
+                },
+                "backup.verify_missing_file",
+                "error",
+            ),
+        )
+
+    # Sicherheitsprüfung: Pfad-Validierung (realpath + Allowlist)
+    try:
+        bf = rt.normalize_path(backup_file)
+        if not rt.is_under_allowed_root(bf):
+            rt.logger().warning("Backup-Verify blockiert: Pfad außerhalb erlaubter Wurzeln", extra={"action": "backup_verify", "path": str(bf)})
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_path_disallowed",
+                last_failure_message="Pfad außerhalb Allowlist",
+            )
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                        "data": {"results": {"valid": False, "file": str(bf), "error": "Pfad außerhalb Allowlist"}},
+                    },
+                    "backup.permission_denied",
+                    "error",
+                    {"file": str(bf)},
+                ),
+            )
+    except Exception as e:
+        rt.logger().warning("Backup-Verify blockiert: ungültiger Pfad", extra={"action": "backup_verify", "error": str(e)})
+        rt.merge_backup_realtest_state(
+            last_verify_ok=False,
+            last_failure_kind="verify_path_invalid",
+            last_failure_message=str(e)[:300],
+        )
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": f"Ungültiger Pfad: {str(e)}",
+                    "data": {"results": {"valid": False, "file": backup_file, "error": str(e)[:300]}},
+                },
+                "backup.path_invalid",
+                "error",
+                {"reason": str(e)},
+            ),
+        )
+
+    if not bf.exists():
+        rt.merge_backup_realtest_state(
+            last_verify_ok=False,
+            last_verify_path=str(bf),
+            last_failure_kind="verify_not_found",
+            last_failure_message="Datei existiert nicht",
+        )
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei existiert nicht",
+                    "data": {"results": {"valid": False, "file": str(bf), "error": "Datei existiert nicht"}},
+                },
+                "backup.backup_not_found",
+                "error",
+                {"file": str(bf)},
+            ),
+        )
+
+    if str(bf).endswith(".partial"):
+        rt.merge_backup_realtest_state(
+            last_verify_ok=False,
+            last_verify_path=str(bf),
+            last_failure_kind="verify_partial_blocked",
+            last_failure_message="Partial-Archiv ist kein gültiges Backup",
+        )
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Partial-Archive dürfen nicht verifiziert werden",
+                    "data": {"results": {"valid": False, "file": str(bf), "error": "partial_archive_not_allowed"}},
+                },
+                "backup.verify_partial_not_allowed",
+                "error",
+                {"file": str(bf), "diagnosis_id": "BACKUP-ARCHIVE-003"},
+            ),
+        )
+
+    # Prüfe, ob verschlüsselt
+    is_encrypted = backup_file.endswith('.gpg') or backup_file.endswith('.enc') or '.tar.gz.gpg' in backup_file or '.tar.gz.enc' in backup_file
+
+    # Unverschlüsseltes .tar.gz: Archiv-Einträge prüfen (Traversal, Symlinks, Sonderdateien)
+    plain_tar_gz = str(bf).endswith(".tar.gz") and not is_encrypted
+    plain_arch_analysis: Optional[dict] = None
+    if plain_tar_gz:
+        try:
+            arch_analysis = rt.analyze_tar_members(str(bf))
+        except Exception as e:
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_archive_read",
+                last_failure_message=str(e)[:300],
+            )
+            rt.logger().warning("Backup-Verify: Archiv nicht lesbar", extra={"action": "backup_verify", "path": str(bf), "error": str(e)[:200]})
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": f"Backup-Archiv konnte nicht gelesen werden (beschädigt oder kein gültiges tar.gz): {str(e)[:200]}",
+                        "data": {
+                            "results": {
+                                "valid": False,
+                                "file": str(bf),
+                                "error": str(e)[:300],
+                                "verification_mode": mode,
+                            }
+                        },
+                    },
+                    "backup.verify_archive_unreadable",
+                    "error",
+                    {"reason": str(e)[:200], "diagnosis_id": "BACKUP-ARCHIVE-002"},
+                ),
+            )
+        if arch_analysis.get("blocked_entries"):
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_blocked_entries",
+                last_failure_message="Archiv enthält gesperrte Einträge",
+                open_critical_risks=["verify_blocked_archive"],
+                last_verify_shallow_ok=False,
+            )
+            rt.logger().warning(
+                "Backup-Verify: gesperrte Archiv-Einträge",
+                extra={"action": "backup_verify", "path": str(bf), "blocked": arch_analysis.get("blocked_entries")},
+            )
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Archiv enthält gesperrte Einträge (Traversal, absolute Pfade oder nicht unterstützte Sonderdateien wie Geräte/FIFOs).",
+                        "data": {"results": {"valid": False, "blocked_entries": arch_analysis.get("blocked_entries"), "analysis": arch_analysis}},
+                        "results": {
+                            "file": str(bf),
+                            "exists": True,
+                            "encrypted": False,
+                            "valid": False,
+                            "blocked_entries": arch_analysis.get("blocked_entries"),
+                            "analysis": arch_analysis,
+                            "error": "Gesperrte Archiv-Einträge",
+                            "verification_mode": mode,
+                        },
+                    },
+                    "backup.verify_blocked_entries",
+                    "error",
+                    {"diagnosis_id": "RESTORE-PATH-004"},
+                ),
+            )
+        plain_arch_analysis = arch_analysis
+
+        if mode == "deep":
+            from core.backup_recovery_i18n import (
+                K_ARCHIVE_CORRUPT,
+                K_EXTRACT_FAILED,
+                K_MISSING_MANIFEST,
+                K_VERIFY_INTEGRITY_FAILED,
+            )
+            from modules.backup_verify import verify_deep
+
+            vd_ok, vd_key, vd_details = verify_deep(
+                str(bf),
+                verify_checksums=True,
+                strict_archive_manifest=False,
+                try_loop_mount_image=False,
+                runner=None,
+            )
+            if not vd_ok:
+                details_err: dict = vd_details or {}
+                errs = details_err.get("errors") or []
+                err_msg = ""
+                if details_err.get("gzip_error"):
+                    err_msg = str(details_err.get("gzip_error"))[:300]
+                elif errs:
+                    err_msg = str((errs[0] or {}).get("detail") or (errs[0] or {}).get("kind") or "")[:300]
+                else:
+                    err_msg = str(details_err.get("error") or vd_key or "")[:300]
+                diag_id: Optional[str] = None
+                api_code = "backup.verify_failed"
+                if vd_key == K_MISSING_MANIFEST:
+                    api_code = "backup.failed_manifest_missing"
+                    diag_id = "BACKUP-MANIFEST-001"
+                elif vd_key == K_VERIFY_INTEGRITY_FAILED:
+                    api_code = "backup.verify_integrity_failed"
+                    if any(
+                        isinstance(x, dict)
+                        and x.get("kind") in ("hash_mismatch", "manifest_metadata_mismatch")
+                        for x in errs
+                    ):
+                        api_code = "backup.failed_integrity_mismatch"
+                    if any(isinstance(x, dict) and x.get("kind") == "hash_mismatch" for x in errs):
+                        diag_id = "BACKUP-HASH-003"
+                    else:
+                        diag_id = "BACKUP-ARCHIVE-002"
+                elif vd_key == K_ARCHIVE_CORRUPT:
+                    api_code = "backup.verify_archive_unreadable"
+                    diag_id = "BACKUP-ARCHIVE-002"
+                elif vd_key == K_EXTRACT_FAILED:
+                    api_code = "backup.verify_archive_unreadable"
+                    diag_id = "BACKUP-ARCHIVE-002"
+
+                rt.merge_backup_realtest_state(
+                    last_verify_ok=False,
+                    last_verify_path=str(bf),
+                    last_failure_kind="verify_deep_integrity",
+                    last_failure_message=err_msg[:300],
+                )
+                msg = tr(vd_key) if vd_key else "Tiefenprüfung fehlgeschlagen"
+                res_payload = {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": msg,
+                    "data": {
+                        "results": {
+                            "valid": False,
+                            "file": str(bf),
+                            "exists": True,
+                            "encrypted": False,
+                            "error": err_msg,
+                            "verification_mode": mode,
+                            "verify_details": details_err,
+                        }
+                    },
+                    "results": {
+                        "file": str(bf),
+                        "exists": True,
+                        "encrypted": False,
+                        "valid": False,
+                        "error": err_msg,
+                        "verification_mode": mode,
+                        "verify_details": details_err,
+                    },
+                }
+                det_kw = {"diagnosis_id": diag_id, "verify_key": vd_key} if diag_id else {"verify_key": vd_key}
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(res_payload, api_code, "error", det_kw),
+                )
+
+    results = {
+        "file": backup_file,
+        "exists": True,
+        "encrypted": is_encrypted,
+        "valid": False,
+        "size_bytes": 0,
+        "size_human": "",
+        "file_count": 0,
+        "sample_files": [],
+        "error": None,
+        "verification_mode": mode,
+    }
+
+    try:
+        st = Path(backup_file).stat()
+        results["size_bytes"] = st.st_size
+
+        def human(n: int) -> str:
+            for unit in ["B", "KB", "MB", "GB", "TB"]:
+                if n < 1024:
+                    return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+                n /= 1024
+            return f"{n:.1f} TB"
+
+        results["size_human"] = human(st.st_size)
+    except Exception as e:
+        results["error"] = f"Fehler beim Lesen der Dateigröße: {str(e)}"
+        # Logging gemäß Audit-Regeln – keine Credentials
+        rt.logger().error("Backup-Verify fehlgeschlagen (Dateigröße)", extra={"action": "backup_verify", "path": backup_file, "error": str(e)})
+        rt.merge_backup_realtest_state(
+            last_verify_ok=False,
+            last_verify_path=str(bf),
+            last_failure_kind="verify_stat_error",
+            last_failure_message=str(e)[:300],
+        )
+        return rt.with_backup_contract(
+            {
+                "status": "success",
+                "api_status": "error",
+                "message": "Fehler beim Lesen der Dateigröße",
+                "data": {"results": results},
+                "results": results,
+            },
+            "backup.verify_stat_error",
+            "error",
+        )
+
+    # Basisprüfung für verschlüsselte Backups (ohne Schlüssel)
+    if is_encrypted and mode == "basic":
+        results["valid"] = results["size_bytes"] > 0
+        if results["valid"]:
+            results["error"] = "Nur Basisprüfung: Datei existiert und ist > 0 Bytes, Inhalt wurde nicht entschlüsselt."
+            api_status = "ok"
+            msg = "Backup oberflächlich geprüft (verschlüsselt, nur Größen-Check)."
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_shallow_ok=True,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_shallow_only",
+                last_failure_message="Verschlüsselt: nur Größen-Check, kein Archiv-Inhalt geprüft",
+            )
+        else:
+            results["error"] = "Verschlüsselte Backup-Datei ist leer oder nicht gefunden"
+            api_status = "error"
+            msg = "Verschlüsseltes Backup scheint leer oder defekt."
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_shallow_ok=False,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_encrypted_basic_fail",
+                last_failure_message=msg,
+            )
+
+        rt.logger().info(
+            "Backup-Verify (basic, encrypted)",
+            extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"])},
+        )
+        vcode = "backup.verify_shallow_encrypted_ok" if results["valid"] else "backup.verify_shallow_encrypted_fail"
+        vsev = "warning" if results["valid"] else "error"
+        return rt.with_backup_contract(
+            {
+                "status": "warning" if results["valid"] else "error",
+                "api_status": api_status,
+                "message": msg,
+                "data": {"results": results},
+                "results": results,
+            },
+            vcode,
+            vsev,
+        )
+
+    # Tiefenprüfung für verschlüsselte Backups
+    if is_encrypted and mode == "deep":
+        try:
+            module = rt.get_backup_module()
+        except Exception as e:
+            results["error"] = f"Backup-Modul konnte nicht geladen werden: {str(e)}"
+            rt.logger().error("Backup-Verify tief fehlgeschlagen (BackupModule)", extra={"action": "backup_verify", "path": backup_file, "error": str(e)})
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_module_load",
+                last_failure_message=str(e)[:300],
+            )
+            return rt.with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": "error",
+                    "message": "Backup-Modul konnte nicht geladen werden",
+                    "data": {"results": results},
+                    "results": results,
+                },
+                "backup.verify_module_load_failed",
+                "error",
+            )
+
+        module.rt.run_command = rt.run_command
+
+        # Temporäres Verzeichnis für Entschlüsselung
+        tmp_root = Path("/tmp/pi-installer-backup-verify")
+        tmp_root.mkdir(parents=True, exist_ok=True)
+        tmp_dir = tempfile.mkdtemp(prefix="verify-", dir=str(tmp_root))
+        tmp_dir_path = Path(tmp_dir)
+        decrypted_path = tmp_dir_path / "decrypted.tar.gz"
+
+        try:
+            ok, out_file, err = module.decrypt_backup(
+                encrypted_file=backup_file,
+                encryption_key=encryption_key,
+                encryption_method="gpg" if backup_file.endswith(".gpg") or ".gpg" in backup_file else "openssl",
+                output_file=str(decrypted_path),
+                sudo_password="",
+            )
+            if not ok:
+                results["error"] = f"Entschlüsselung fehlgeschlagen: {err or 'Unbekannter Fehler'}"
+                rt.logger().warning("Backup-Verify tief: Entschlüsselung fehlgeschlagen", extra={"action": "backup_verify", "path": backup_file})
+                rt.merge_backup_realtest_state(
+                    last_verify_ok=False,
+                    last_verify_path=str(bf),
+                    last_failure_kind="verify_decrypt_fail",
+                    last_failure_message=(err or "")[:300],
+                )
+                return rt.with_backup_contract(
+                    {
+                        "status": "success",
+                        "api_status": "error",
+                        "message": "Entschlüsselung des Backups fehlgeschlagen",
+                        "data": {"results": results},
+                        "results": results,
+                    },
+                    "backup.verify_decrypt_failed",
+                    "error",
+                )
+
+            if not decrypted_path.exists():
+                results["error"] = "Entschlüsselte Datei wurde nicht erstellt"
+                rt.logger().error("Backup-Verify tief: entschlüsselte Datei fehlt", extra={"action": "backup_verify", "path": backup_file})
+                rt.merge_backup_realtest_state(
+                    last_verify_ok=False,
+                    last_verify_path=str(bf),
+                    last_failure_kind="verify_decrypt_missing",
+                    last_failure_message="Entschlüsselte Datei fehlt",
+                )
+                return rt.with_backup_contract(
+                    {
+                        "status": "success",
+                        "api_status": "error",
+                        "message": "Entschlüsselte Datei wurde nicht erstellt",
+                        "data": {"results": results},
+                        "results": results,
+                    },
+                    "backup.verify_decrypt_missing",
+                    "error",
+                )
+
+            # Integritätsprüfung auf entschlüsselter Datei
+            cmd = f"tar -tzf {shlex.quote(str(decrypted_path))} 2>&1 | head -100"
+            res = await rt.run_command_async(cmd, timeout=60)
+
+            if res.get("success") and res.get("stdout"):
+                results["valid"] = True
+                files = [line.strip() for line in res.get("stdout", "").split("\n") if line.strip()]
+                results["file_count"] = len(files)
+                results["sample_files"] = files[:20]
+            else:
+                results["valid"] = False
+                error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
+                results["error"] = f"Backup-Archiv ist beschädigt oder ungültig: {error_msg[:200]}"
+
+            rt.logger().info(
+                "Backup-Verify tief abgeschlossen",
+                extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"]), "files": results.get("file_count")},
+            )
+            api_status = "ok" if results["valid"] else "error"
+            msg = "Backup erfolgreich tief geprüft" if results["valid"] else "Backup-Archiv ist beschädigt oder ungültig"
+            if results["valid"]:
+                rt.merge_backup_realtest_state(
+                    last_verify_ok=True,
+                    last_verify_path=str(bf),
+                    last_failure_kind="",
+                    last_failure_message="",
+                    open_critical_risks=[],
+                    last_verify_shallow_ok=False,
+                )
+            else:
+                rt.merge_backup_realtest_state(
+                    last_verify_ok=False,
+                    last_verify_path=str(bf),
+                    last_failure_kind="verify_deep_tar_invalid",
+                    last_failure_message=(results.get("error") or "")[:300],
+                )
+            vcode = "backup.verify_success" if results["valid"] else "backup.verify_failed"
+            vsev = "success" if results["valid"] else "error"
+            return rt.with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": api_status,
+                    "message": msg,
+                    "data": {"results": results},
+                    "results": results,
+                },
+                vcode,
+                vsev,
+            )
+        finally:
+            # Cleanup: entschlüsselte Datei und Temp-Verzeichnis entfernen
+            try:
+                if decrypted_path.exists():
+                    decrypted_path.unlink()
+            except Exception:
+                pass
+            try:
+                # Entferne gesamtes temp-Verzeichnis
+                import shutil
+
+                if tmp_dir_path.exists():
+                    shutil.rmtree(tmp_dir_path, ignore_errors=True)
+            except Exception:
+                pass
+
+    # Unverschlüsselte Backups (oder deep ohne is_encrypted) — immer normalisierten Pfad (bf) verwenden
+    cmd = f"tar -tzf {shlex.quote(str(bf))} 2>&1 | head -100"
+    res = await rt.run_command_async(cmd, timeout=60)
+
+    if res.get("success") and res.get("stdout"):
+        results["valid"] = True
+        files = [line.strip() for line in res.get("stdout", "").split("\n") if line.strip()]
+        results["sample_files"] = files[:20]
+        # Member-Gesamtzahl aus Voranalyse (plain .tar.gz): unabhängig von head -100 / wc -l
+        if plain_arch_analysis is not None:
+            results["file_count"] = (
+                int(plain_arch_analysis.get("total_files") or 0)
+                + int(plain_arch_analysis.get("total_dirs") or 0)
+                + int(plain_arch_analysis.get("total_other") or 0)
+            )
+        else:
+            results["file_count"] = len(files)
+            # Zähle alle Einträge (nur wenn nicht plain .tar.gz mit Analyse)
+            if results["file_count"] < 100:
+                cmd_count = f"tar -tzf {shlex.quote(str(bf))} 2>/dev/null | wc -l"
+                res_count = await rt.run_command_async(cmd_count, timeout=30)
+                if res_count.get("success"):
+                    try:
+                        results["file_count"] = int(res_count.get("stdout", "0").strip())
+                    except Exception:
+                        pass
+    else:
+        results["valid"] = False
+        error_msg = res.get("stderr") or res.get("error") or "Unbekannter Fehler"
+        results["error"] = f"Backup-Archiv ist beschädigt oder ungültig: {error_msg[:200]}"
+
+    rt.logger().info(
+        "Backup-Verify abgeschlossen",
+        extra={"action": "backup_verify", "path": backup_file, "mode": mode, "valid": bool(results["valid"]), "files": results.get("file_count")},
+    )
+    api_status = "ok" if results["valid"] else "error"
+    msg = "Backup erfolgreich geprüft" if results["valid"] else "Backup-Archiv ist beschädigt oder ungültig"
+    if plain_tar_gz:
+        if results["valid"]:
+            rt.merge_backup_realtest_state(
+                last_verify_ok=True,
+                last_verify_path=str(bf),
+                last_failure_kind="",
+                last_failure_message="",
+                open_critical_risks=[],
+                last_verify_shallow_ok=False,
+            )
+        else:
+            rt.merge_backup_realtest_state(
+                last_verify_ok=False,
+                last_verify_path=str(bf),
+                last_failure_kind="verify_tar_list_fail",
+                last_failure_message=(results.get("error") or "")[:300],
+            )
+    vcode = "backup.verify_success" if results["valid"] else "backup.verify_failed"
+    vsev = "success" if results["valid"] else "error"
+    return rt.with_backup_contract(
+        {
+            "status": "success",
+            "api_status": api_status,
+            "message": msg,
+            "data": {"results": results},
+            "results": results,
+        },
+        vcode,
+        vsev,
+    )
+
+
+async def delete_backup(request: Request):
+    """Löscht ein Backup (.tar.gz, auch verschlüsselte .tar.gz.gpg/.tar.gz.enc) sicher (mit sudo fallback)."""
+    try:
+        data = await request.json()
+    except Exception:
+        data = {}
+
+    backup_file = (data.get("backup_file") or "").strip()
+    sudo_password = data.get("sudo_password", "") or (rt.sudo_store().get_password() or "")
+
+    # Erlaube auch verschlüsselte Backups (.tar.gz.gpg, .tar.gz.enc)
+    if not backup_file or not (backup_file.endswith(".tar.gz") or backup_file.endswith(".tar.gz.gpg") or backup_file.endswith(".tar.gz.enc")):
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "backup_file (.tar.gz, .tar.gz.gpg oder .tar.gz.enc) erforderlich",
+                    "data": {},
+                },
+                "backup.delete_missing_param",
+                "error",
+            ),
+        )
+
+    # Allowlist + Normalisierung
+    try:
+        bf = rt.normalize_path(backup_file)
+        if not rt.is_under_allowed_root(bf):
+            rt.logger().warning("Backup-Delete blockiert: Pfad außerhalb erlaubter Wurzeln", extra={"action": "backup_delete", "path": str(bf)})
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                        "data": {},
+                    },
+                    "backup.permission_denied",
+                    "error",
+                    {"file": str(bf)},
+                ),
+            )
+    except Exception as e:
+        rt.logger().warning("Backup-Delete blockiert: ungültiger Pfad", extra={"action": "backup_delete", "path": backup_file, "error": str(e)})
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": f"Ungültiger Pfad: {str(e)}",
+                    "data": {},
+                },
+                "backup.path_invalid",
+                "error",
+                {"reason": str(e)},
+            ),
+        )
+
+    # Prüfe ob Datei existiert
+    if not bf.exists():
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": "Backup-Datei existiert nicht",
+                    "data": {},
+                },
+                "backup.backup_not_found",
+                "error",
+                {"file": str(bf)},
+            ),
+        )
+
+    # Versuche zuerst ohne sudo zu löschen
+    cmd = f"rm -f {shlex.quote(str(bf))}"
+    res = await rt.run_command_async(cmd, sudo=False, timeout=30)
+    
+    # Wenn fehlgeschlagen und sudo verfügbar, versuche mit sudo
+    if not res.get("success"):
+        if sudo_password:
+            res = await rt.run_command_async(cmd, sudo=True, sudo_password=sudo_password, timeout=30)
+        else:
+            # Versuche es nochmal mit sudo -n (falls NOPASSWD konfiguriert)
+            res_sudo_n = await rt.run_command_async(cmd, sudo=True, sudo_password="", timeout=30)
+            if res_sudo_n.get("success"):
+                res = res_sudo_n
+
+    # verify gone
+    test = await rt.run_command_async(f"test -e {shlex.quote(str(bf))}", timeout=10)
+    if test.get("success"):
+        # Datei existiert noch - sammle Fehlerdetails
+        error_parts = []
+        if res.get("stderr"):
+            stderr_text = (res.get("stderr") or "").strip()
+            if stderr_text:
+                error_parts.append(f"Fehler: {stderr_text[:300]}")
+        if res.get("error"):
+            error_text = (res.get("error") or "").strip()
+            if error_text:
+                error_parts.append(f"Details: {error_text[:300]}")
+        
+        # Prüfe Dateiberechtigungen
+        perm_check = await rt.run_command_async(f"ls -la {shlex.quote(backup_file)} 2>&1", timeout=10)
+        if perm_check.get("success") and perm_check.get("stdout"):
+            error_parts.append(f"Berechtigungen: {perm_check.get('stdout')[:200]}")
+        
+        error_message = "Backup konnte nicht gelöscht werden."
+        if error_parts:
+            error_message += " " + " ".join(error_parts)
+        else:
+            error_message += " Möglicherweise fehlen Berechtigungen oder die Datei ist gesperrt."
+        
+        rt.logger().error(
+            "Backup-Delete fehlgeschlagen",
+            extra={"action": "backup_delete", "path": str(bf), "error": error_message},
+        )
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": error_message,
+                    "data": {},
+                },
+                "backup.delete_failed",
+                "error",
+            ),
+        )
+    
+    # Erfolgreich gelöscht
+    rt.logger().info("Backup gelöscht", extra={"action": "backup_delete", "path": str(bf)})
+    return rt.with_backup_contract(
+        {
+            "status": "success",
+            "api_status": "ok",
+            "message": "Backup gelöscht",
+            "data": {},
+        },
+        "backup.delete_ok",
+        "success",
+    )
+
+
+async def restore_backup(request: Request):
+    """
+    Backup wiederherstellen.
+    Phase 1: Standard = Preview-Mode (sicherer Test-Restore nach /mnt/setuphelfer-restore-preview/<ts>).
+    Root-Restore bleibt vorerst gesperrt, bis Whitelist-Logik vollständig getestet ist.
+    """
+    try:
+        try:
+            data = await request.json()
+        except Exception:
+            data = {}
+
+        backup_file = (data.get("backup_file") or data.get("file") or "").strip()
+        mode = (data.get("mode") or "preview").strip().lower()
+        target_dir = (data.get("target_dir") or "").strip()
+        restore_key = data.get("encryption_key") or data.get("password")
+        if isinstance(restore_key, str):
+            restore_key = restore_key.strip() or None
+        else:
+            restore_key = None
+
+        if mode not in ("preview", "restore"):
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Ungültiger Restore-Modus. Erlaubt sind nur 'preview' oder 'restore'.",
+                        "data": {"mode": mode},
+                    },
+                    "backup.restore_invalid_mode",
+                    "error",
+                    {"mode": mode},
+                ),
+            )
+
+        if not backup_file:
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei erforderlich",
+                        "data": {},
+                    },
+                    "backup.restore_missing_file",
+                    "error",
+                ),
+            )
+
+        # Pfad-Validierung wie bei verify (realpath + Allowlist)
+        try:
+            bf = rt.normalize_path(backup_file)
+            if not rt.is_under_allowed_root(bf):
+                rt.logger().warning("Restore blockiert: Backup-Datei außerhalb erlaubter Pfade", extra={"action": "backup_restore", "path": str(bf)})
+                rt.merge_backup_realtest_state(
+                    last_failure_kind="restore_path_disallowed",
+                    last_failure_message="Restore: Pfad außerhalb Allowlist",
+                )
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Backup-Datei liegt außerhalb erlaubter Pfade",
+                            "data": {"results": {"valid": False, "file": str(bf), "error": "Pfad außerhalb Allowlist"}},
+                        },
+                        "backup.permission_denied",
+                        "error",
+                        {"file": str(bf)},
+                    ),
+                )
+        except Exception as e:
+            rt.logger().warning("Restore blockiert: ungültiger Backup-Pfad", extra={"action": "backup_restore", "path": backup_file, "error": str(e)})
+            rt.merge_backup_realtest_state(
+                last_failure_kind="restore_path_invalid",
+                last_failure_message=str(e)[:300],
+            )
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": f"Ungültiger Pfad: {str(e)}",
+                        "data": {"results": {"valid": False, "file": backup_file, "error": str(e)[:300]}},
+                    },
+                    "backup.path_invalid",
+                    "error",
+                    {"reason": str(e)},
+                ),
+            )
+
+        if not bf.exists():
+            rt.merge_backup_realtest_state(
+                last_failure_kind="restore_not_found",
+                last_failure_message="Backup-Datei existiert nicht",
+            )
+            return rt.json_response(
+                status_code=200,
+                content=rt.with_backup_contract(
+                    {
+                        "status": "error",
+                        "api_status": "error",
+                        "message": "Backup-Datei existiert nicht",
+                        "data": {"results": {"valid": False, "file": str(bf), "error": "Datei existiert nicht"}},
+                    },
+                    "backup.backup_not_found",
+                    "error",
+                    {"file": str(bf)},
+                ),
+            )
+
+        import shutil as _shutil_restore
+        import tempfile as _tmpfile_restore
+
+        decrypt_temp_dir: Optional[str] = None
+        work_archive = str(bf)
+        try:
+            if rt.backup_path_looks_encrypted(work_archive):
+                if not restore_key:
+                    rt.merge_backup_realtest_state(
+                        last_failure_kind="restore_encrypted_no_password",
+                        last_failure_message="Verschlüsseltes Backup: Passwort erforderlich",
+                    )
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": "Verschlüsseltes Backup: Passwort (password oder encryption_key) erforderlich.",
+                                "data": {},
+                            },
+                            "backup.restore_decrypt_password_required",
+                            "error",
+                        ),
+                    )
+                tmp_root_restore = Path("/tmp/pi-installer-backup-restore")
+                tmp_root_restore.mkdir(parents=True, exist_ok=True)
+                decrypt_temp_dir = _tmpfile_restore.mkdtemp(prefix="restore-dec-", dir=str(tmp_root_restore))
+                decrypted_restore_path = Path(decrypt_temp_dir) / "decrypted.tar.gz"
+                try:
+                    restore_mod = rt.get_backup_module()
+                except Exception as e_mod:
+                    rt.merge_backup_realtest_state(
+                        last_failure_kind="restore_decrypt_module",
+                        last_failure_message=str(e_mod)[:300],
+                    )
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": f"Backup-Modul konnte nicht geladen werden: {str(e_mod)[:200]}",
+                                "data": {},
+                            },
+                            "backup.restore_decrypt_module_failed",
+                            "error",
+                            {"reason": str(e_mod)[:200]},
+                        ),
+                    )
+                restore_mod.rt.run_command = rt.run_command
+                enc_method_restore = "gpg" if ".gpg" in work_archive.lower() else "openssl"
+                ok_dec_r, _dec_out_r, err_dec_r = restore_mod.decrypt_backup(
+                    work_archive,
+                    restore_key,
+                    enc_method_restore,
+                    str(decrypted_restore_path),
+                    "",
+                )
+                if not ok_dec_r or not decrypted_restore_path.exists():
+                    rt.merge_backup_realtest_state(
+                        last_failure_kind="restore_decrypt_fail",
+                        last_failure_message=(err_dec_r or "")[:300],
+                    )
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": "Backup konnte nicht entschlüsselt werden.",
+                                "data": {"error": (err_dec_r or "")[:300]},
+                            },
+                            "backup.restore_decrypt_failed",
+                            "error",
+                            {"reason": (err_dec_r or "")[:200]},
+                        ),
+                    )
+                work_archive = str(decrypted_restore_path)
+
+            # Analyse des Archivs – gemeinsam für Preview/Root
+            try:
+                analysis = rt.analyze_tar_members(work_archive)
+            except Exception as e:
+                # Kein last_preview_ok / last_dry_run_ok überschreiben: Analysefehler ist kein fehlgeschlagener Lauf.
+                rt.merge_backup_realtest_state(
+                    last_failure_kind="restore_analyze_fail",
+                    last_failure_message=str(e)[:300],
+                )
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": f"Backup-Archiv konnte nicht analysiert werden: {str(e)}",
+                            "data": {"analysis_error": str(e)[:300]},
+                        },
+                        "backup.restore_analyze_failed",
+                        "error",
+                        {"reason": str(e)[:300]},
+                    ),
+                )
+
+            if analysis["blocked_entries"]:
+                rt.logger().warning(
+                    "Restore blockiert: problematische Archiv-Einträge",
+                    extra={
+                        "action": "backup_restore",
+                        "path": str(bf),
+                        "blocked_count": len(analysis.get("blocked_entries") or []),
+                    },
+                )
+                # Gesperrte Archive: kein Extraktionsversuch — last_*_ok nicht zurücksetzen (vgl. Real-Test-Reihenfolge).
+                rt.merge_backup_realtest_state(
+                    last_failure_kind="restore_blocked_entries",
+                    last_failure_message="Archiv enthält gesperrte Einträge",
+                )
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Backup-Archiv enthält problematische Einträge (Pfad-Traversal, absolute Pfade oder nicht unterstützte Sonderdateien).",
+                            "data": {"analysis": analysis},
+                            "analysis": analysis,
+                        },
+                        "backup.restore_blocked_entries",
+                        "error",
+                        {"diagnosis_id": "RESTORE-PATH-004"},
+                    ),
+                )
+
+            # Preview-Modus: sicherer Test-Restore in eigenes Verzeichnis (Sandbox unter /tmp, kein sudo nötig)
+            if mode == "preview":
+                ts = datetime.utcnow().strftime("%Y%m%d-%H%M%S")
+                rt.restore_preview_base().mkdir(parents=True, exist_ok=True)
+                preview_dir = rt.restore_preview_base() / ts
+                preview_dir.mkdir(parents=True, exist_ok=True)
+
+                restore_cmd = f"tar -xzf {shlex.quote(work_archive)} -C {shlex.quote(str(preview_dir))}"
+                # Sandbox liegt unter /tmp/setuphelfer-restore-test – hier ist kein sudo erforderlich
+                restore_result = await rt.run_command_async(restore_cmd, sudo=False, sudo_password=None, timeout=7200)
+
+                if not restore_result.get("success"):
+                    rt.logger().error(
+                        "Preview-Restore fehlgeschlagen",
+                        extra={
+                            "action": "backup_restore_preview",
+                            "path": str(bf),
+                            "preview_dir": str(preview_dir),
+                            "error": (restore_result.get("stderr") or restore_result.get("error") or "")[:200],
+                        },
+                    )
+                    rt.merge_backup_realtest_state(
+                        last_preview_ok=False,
+                        last_preview_dir=str(preview_dir),
+                        last_preview_backup=str(bf),
+                        last_failure_kind="restore_preview_extract_fail",
+                        last_failure_message=(restore_result.get("stderr") or restore_result.get("error") or "")[:300],
+                    )
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": f"Preview-Restore fehlgeschlagen: {restore_result.get('stderr', 'Unbekannter Fehler')[:200]}",
+                                "data": {
+                                    "preview_dir": str(preview_dir),
+                                    "analysis": analysis,
+                                },
+                                "preview_dir": str(preview_dir),
+                                "analysis": analysis,
+                            },
+                            "backup.restore_failed",
+                            "error",
+                        ),
+                    )
+
+                # Metadaten für Preview-Antwort
+                total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
+                rt.logger().info(
+                    "Preview-Restore erfolgreich",
+                    extra={
+                        "action": "backup_restore_preview",
+                        "path": str(bf),
+                        "preview_dir": str(preview_dir),
+                        "total_entries": total_entries,
+                    },
+                )
+                rt.merge_backup_realtest_state(
+                    last_preview_ok=True,
+                    last_preview_dir=str(preview_dir),
+                    last_preview_backup=str(bf),
+                    last_failure_kind="",
+                    last_failure_message="",
+                )
+                rt.cleanup_old_preview_dirs(preview_dir)
+                private_tmp_isolation = rt.private_tmp_isolation_active()
+                preview_visibility_note = (
+                    "Preview-Dateien liegen im PrivateTmp-Namespace des Backend-Dienstes und sind im normalen Host-/tmp ggf. nicht sichtbar."
+                    if private_tmp_isolation
+                    else "Preview-Dateien liegen im normalen /tmp-Namespace."
+                )
+                private_tmp_hint_key = "backup.messages.preview_private_tmp_hint" if private_tmp_isolation else ""
+                return rt.with_backup_contract(
+                    {
+                        "status": "success",
+                        "api_status": "ok",
+                        "mode": "preview",
+                        "message": "Test-Restore erfolgreich. System wurde nicht überschrieben.",
+                        "preview_dir": str(preview_dir),
+                        "private_tmp_isolation": private_tmp_isolation,
+                        "preview_dir_visibility_note": preview_visibility_note,
+                        "service_private_tmp_hint": private_tmp_hint_key,
+                        "analysis": analysis,
+                        "total_entries": total_entries,
+                        "data": {
+                            "mode": "preview",
+                            "preview_dir": str(preview_dir),
+                            "private_tmp_isolation": private_tmp_isolation,
+                            "preview_dir_visibility_note": preview_visibility_note,
+                            "service_private_tmp_hint": private_tmp_hint_key,
+                            "analysis": analysis,
+                            "total_entries": total_entries,
+                        },
+                    },
+                    "backup.restore_preview_ok",
+                    "success",
+                    {
+                        "total_entries": total_entries,
+                        "private_tmp_isolation": private_tmp_isolation,
+                        "preview_dir_visibility_note": preview_visibility_note,
+                        "service_private_tmp_hint": private_tmp_hint_key,
+                    },
+                )
+
+            # Restore-Modus: target_dir ist Pflicht und wird strikt validiert.
+            if not target_dir:
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Restore-Zielpfad fehlt (target_dir ist bei mode=restore erforderlich).",
+                            "data": {"mode": mode},
+                        },
+                        "backup.restore_target_missing",
+                        "error",
+                    ),
+                )
+
+            if target_dir.strip() == "/":
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": "Restore-Ziel '/' ist aus Sicherheitsgründen gesperrt.",
+                            "data": {"target_dir": target_dir},
+                        },
+                        "backup.restore_target_invalid",
+                        "error",
+                        {"diagnosis_id": "RESTORE-RUNTIME-006", "target": target_dir},
+                    ),
+                )
+
+            try:
+                validated_target_dir = rt.validate_restore_target_dir(target_dir)
+            except Exception as ve:
+                reason = str(ve)
+                diagnosis_id = ""
+                code = "backup.restore_target_invalid"
+                if "PERM-GROUP-008" in reason or "not writable" in reason.lower() or "nicht beschreibbar" in reason.lower():
+                    code = "backup.restore_not_writable"
+                    diagnosis_id = "PERM-GROUP-008"
+                elif "STORAGE-PROTECTION-005" in reason:
+                    diagnosis_id = "STORAGE-PROTECTION-005"
+                elif "STORAGE-PROTECTION-004" in reason:
+                    diagnosis_id = "STORAGE-PROTECTION-004"
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": f"Ungültiges Restore-Ziel: {reason}",
+                            "data": {"target_dir": target_dir},
+                        },
+                        code,
+                        "error",
+                        {"reason": reason, "target": target_dir, "diagnosis_id": diagnosis_id},
+                    ),
+                )
+
+            restore_cmd = f"tar -xzf {shlex.quote(work_archive)} -C {shlex.quote(str(validated_target_dir))}"
+            restore_result = await rt.run_command_async(restore_cmd, sudo=False, sudo_password=None, timeout=7200)
+            if not restore_result.get("success"):
+                err_txt = str(restore_result.get("stderr") or restore_result.get("error") or restore_result.get("stdout") or "")
+                if "Permission denied" in err_txt or "Keine Berechtigung" in err_txt:
+                    return rt.json_response(
+                        status_code=200,
+                        content=rt.with_backup_contract(
+                            {
+                                "status": "error",
+                                "api_status": "error",
+                                "message": "Restore-Ziel ist nicht beschreibbar.",
+                                "data": {"target_dir": validated_target_dir, "error": err_txt[:300]},
+                            },
+                            "backup.restore_not_writable",
+                            "error",
+                            {"diagnosis_id": "PERM-GROUP-008", "target": validated_target_dir},
+                        ),
+                    )
+                return rt.json_response(
+                    status_code=200,
+                    content=rt.with_backup_contract(
+                        {
+                            "status": "error",
+                            "api_status": "error",
+                            "message": f"Restore fehlgeschlagen: {err_txt[:200] or 'Unbekannter Fehler'}",
+                            "data": {"target_dir": validated_target_dir, "error": err_txt[:300]},
+                        },
+                        "backup.restore_failed",
+                        "error",
+                    ),
+                )
+
+            total_entries = analysis["total_files"] + analysis["total_dirs"] + analysis["total_other"]
+            return rt.with_backup_contract(
+                {
+                    "status": "success",
+                    "api_status": "ok",
+                    "mode": "restore",
+                    "message": "Restore erfolgreich ausgeführt.",
+                    "target_dir": validated_target_dir,
+                    "analysis": analysis,
+                    "total_entries": total_entries,
+                    "data": {
+                        "mode": "restore",
+                        "target_dir": validated_target_dir,
+                        "analysis": analysis,
+                        "total_entries": total_entries,
+                    },
+                },
+                "backup.restore_success",
+                "success",
+                {"target_dir": validated_target_dir, "total_entries": total_entries},
+            )
+        finally:
+            if decrypt_temp_dir:
+                _shutil_restore.rmtree(decrypt_temp_dir, ignore_errors=True)
+    except Exception as e:
+        rt.logger().error(f"💥 Fehler bei Backup-Restore: {str(e)}", exc_info=True)
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {
+                    "status": "error",
+                    "api_status": "error",
+                    "message": f"Fehler beim Restore: {str(e)}",
+                    "data": {},
+                },
+                "backup.restore_failed",
+                "error",
+                {"detail": str(e)},
+            ),
         )

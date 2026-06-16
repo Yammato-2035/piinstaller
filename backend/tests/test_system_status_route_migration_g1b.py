@@ -12,7 +12,7 @@ _BACKEND = Path(__file__).resolve().parent.parent
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
-APP_PY = _BACKEND / "app.py"
+HANDLERS_PY = _BACKEND / "core" / "system_handlers.py"
 FACADE_PATH = _BACKEND / "core" / "system_status_facade.py"
 
 LEGACY_RESPONSE_KEYS = frozenset(
@@ -32,7 +32,7 @@ LEGACY_RESPONSE_KEYS = frozenset(
 
 class TestSystemStatusRouteMigrationG1b(unittest.TestCase):
     def test_system_status_handler_uses_facade(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        text = HANDLERS_PY.read_text(encoding="utf-8")
         start = text.index("async def system_status")
         block = text[start : start + 600]
         self.assertIn("build_system_status", block)
@@ -112,11 +112,11 @@ class TestSystemStatusRouteMigrationG1b(unittest.TestCase):
         self.assertEqual(out["realtest_state"], {"x": 1})
 
     def test_compute_system_status_still_defined_for_tests(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        text = (_BACKEND / "app.py").read_text(encoding="utf-8")
         self.assertIn("def _compute_system_status", text)
 
     def test_error_response_shape_unchanged(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        text = HANDLERS_PY.read_text(encoding="utf-8")
         self.assertIn('"status": "error"', text)
         self.assertIn('"api_status": "error"', text)
         self.assertIn('"data": {}', text)

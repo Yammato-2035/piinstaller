@@ -771,3 +771,34 @@ async def list_backups(backup_dir: str = "/mnt/setuphelfer/backups"):
             ),
         )
 
+
+async def clone_disk_info(request: Request, refresh: int = 0):
+    """Quell- und Ziel-Laufwerke für System-Clone auflisten. POST mit sudo_password nutzt dieses für blkid. refresh=1 umgeht Cache."""
+    try:
+        
+        if refresh:
+            rt.invalidate_clone_disk_info_cache()
+        sudo_password = (rt.sudo_store().get_password() or "") or ""
+        if request.method == "POST":
+            try:
+                body = await request.json()
+                pw = (body.get("sudo_password") or "").strip()
+                if pw:
+                    sudo_password = pw
+                    if not rt.sudo_store().has_password():
+                        rt.sudo_store().store_password(pw)
+            except Exception:
+                pass
+        info = rt.clone_disk_info(sudo_password=sudo_password)
+        return rt.with_backup_contract({"status": "success", **info}, "backup.clone_disk_info_ok", "success")
+    except Exception as e:
+        rt.logger().exception("clone disk-info failed")
+        return rt.json_response(
+            status_code=200,
+            content=rt.with_backup_contract(
+                {"status": "error", "message": str(e), "source": {}, "boot": {}, "targets": []},
+                "backup.clone_disk_info_failed",
+                "error",
+                {"detail": str(e)},
+            ),
+        )

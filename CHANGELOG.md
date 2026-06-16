@@ -9,6 +9,38 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.10.0] — 2026-06-16
+
+### Changed
+
+- **Backup B.8:** create/verify/delete/restore POST aus `app.py` extrahiert (18 POST execute gesamt; kein Backup-POST mehr in app.py).
+- **APP Router Slice E.12:** system/status, freenove-detection, ASUS-ROG (3 GET + set-profile POST).
+- **Security:** `detect_freenove_case` wiederhergestellt; sudo_store-Guard-Test für Handler.
+
+### Added
+
+- `detect_freenove_case` in `core/hardware_discovery.py`
+- Runtime-Adapter für Backup-Core und ASUS-ROG
+- Tests: `test_backup_execute_router_b8_v1.py`, `test_app_router_slice_e12.py`, `test_security_sudo_store_has_password_guard_v1.py`
+- Doku: `BACKUP_EXECUTE_ROUTER_B8.md`, `APP_ROUTER_SLICE_E12.md`
+
+---
+
+## [1.8.9.0] — 2026-06-16
+
+### Changed
+
+- **Backup B.7:** `POST /api/backup/clone` und `GET/POST /api/backup/clone/disk-info` aus `app.py` extrahiert (14 POST execute, disk-info readonly).
+- **Security:** `clone_disk_info` speichert Sudo-Passwort nur bei `has_password() == false`.
+
+### Added
+
+- Runtime-Adapter: `clone_disk_info`, `invalidate_clone_disk_info_cache`, `do_clone_logic`, Job-Helfer.
+- Tests: `test_backup_execute_router_b7_v1.py`, `test_backup_readonly_router_b7_v1.py`
+- Doku: `BACKUP_EXECUTE_ROUTER_B7.md`
+
+---
+
 ## [1.8.8.0] — 2026-06-16
 
 ### Changed

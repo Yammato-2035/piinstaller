@@ -1,4 +1,4 @@
-"""Backup execute router B.6 — target-prepare + USB mount/prepare/eject."""
+"""Backup execute router B.8 — create/verify/delete/restore POST slice."""
 
 from __future__ import annotations
 
@@ -24,36 +24,30 @@ def _route_table(router) -> list[tuple[str, str]]:
     return out
 
 
-class TestBackupExecuteRouterB6(unittest.TestCase):
-    def test_b6_routes_subset(self) -> None:
+class TestBackupExecuteRouterB8(unittest.TestCase):
+    def test_eighteen_post_routes(self) -> None:
         tbl = _route_table(backup_execute_router)
-        self.assertGreaterEqual(len(tbl), 13)
+        self.assertEqual(len(tbl), 18)
 
-    def test_b6_routes_present(self) -> None:
+    def test_b8_routes_present(self) -> None:
         tbl = _route_table(backup_execute_router)
         for key in (
-            ("POST", "/api/backup/target-prepare"),
-            ("POST", "/api/backup/usb/mount"),
-            ("POST", "/api/backup/usb/prepare"),
-            ("POST", "/api/backup/usb/eject"),
+            ("POST", "/api/backup/create"),
+            ("POST", "/api/backup/verify"),
+            ("POST", "/api/backup/delete"),
+            ("POST", "/api/backup/restore"),
         ):
             self.assertIn(key, tbl)
 
-    def test_no_duplicates_in_app(self) -> None:
+    def test_no_backup_post_left_in_app(self) -> None:
         app_text = (_backend / "app.py").read_text(encoding="utf-8")
-        for dup in (
-            '@app.post("/api/backup/target-prepare")',
-            '@app.post("/api/backup/usb/mount")',
-            '@app.post("/api/backup/usb/prepare")',
-            '@app.post("/api/backup/usb/eject")',
-        ):
-            self.assertNotIn(dup, app_text)
+        self.assertNotIn('@app.post("/api/backup/', app_text)
 
     def test_handlers_use_runtime(self) -> None:
         text = (_backend / "core/backup_execute_handlers.py").read_text(encoding="utf-8")
-        self.assertIn("rt.mountpoints_for_disk", text)
-        self.assertIn("rt.sanitize_label", text)
-        self.assertIn("rt.find_lsblk_by_name", text)
+        self.assertIn("rt.do_backup_logic", text)
+        self.assertIn("rt.analyze_tar_members", text)
+        self.assertIn("rt.validate_restore_target_dir", text)
 
 
 if __name__ == "__main__":
