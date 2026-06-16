@@ -11,6 +11,8 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core.device_identity import build_device_identity, compare_device_identity
+from core.mount_facade import get_mount_source_for_path
+from core.storage_facade import get_parent_block_device
 from modules.rescue_target_assessment import assess_target_device, compare_backup_to_target
 
 Runner = Callable[..., Any] | None
@@ -26,34 +28,6 @@ class RestoreHardStopContext:
     restore_risk_level: str
     encryption_key_hex: str | None
     runner: Runner = None
-
-
-def _parent_disk(dev: str, *, runner: Runner = None) -> str | None:
-    import subprocess
-
-    run = runner or subprocess.run
-    r = run(["lsblk", "-n", "-o", "PKNAME", "-p", dev], capture_output=True, text=True, timeout=30, check=False)
-    pk = (r.stdout or "").strip()
-    if r.returncode == 0 and pk.startswith("/dev/"):
-        return pk
-    return dev if dev.startswith("/dev/") else None
-
-
-def _findmnt_source(path: Path, *, runner: Runner = None) -> str | None:
-    import subprocess
-
-    run = runner or subprocess.run
-    r = run(
-        ["findmnt", "-n", "-o", "SOURCE", "-T", str(path)],
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
-    if r.returncode != 0:
-        return None
-    line = (r.stdout or "").strip().splitlines()
-    return line[0].strip() if line else None
 
 
 def evaluate_restore_hardstops(ctx: RestoreHardStopContext) -> list[str]:
@@ -111,10 +85,10 @@ def evaluate_restore_hardstops(ctx: RestoreHardStopContext) -> list[str]:
             codes.append("rescue.restore.target_too_small")
 
     if td:
-        src_m = _findmnt_source(ctx.backup_path, runner=ctx.runner)
+        src_m = get_mount_source_for_path(str(ctx.backup_path), runner=ctx.runner)
         if src_m and src_m.startswith("/dev/"):
-            t_parent = _parent_disk(td, runner=ctx.runner)
-            s_parent = _parent_disk(src_m, runner=ctx.runner)
+            t_parent = get_parent_block_device(td, runner=ctx.runner)
+            s_parent = get_parent_block_device(src_m, runner=ctx.runner)
             if t_parent and s_parent:
                 try:
                     if Path(t_parent).resolve() == Path(s_parent).resolve():

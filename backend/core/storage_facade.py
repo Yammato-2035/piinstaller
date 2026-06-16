@@ -21,6 +21,21 @@ from modules.storage_detection import classify_devices
 
 Runner = Callable[..., subprocess.CompletedProcess[str]] | None
 
+
+def _run_subprocess(
+    cmd: list[str],
+    *,
+    runner: Runner = None,
+    timeout: int = 30,
+) -> subprocess.CompletedProcess[str]:
+    """Support both ``subprocess.run``-style and legacy ``runner(cmd, timeout=…)`` callables."""
+    run = runner or subprocess.run
+    try:
+        return run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
+    except TypeError:
+        return run(cmd, timeout=timeout)  # type: ignore[misc,call-arg]
+
+
 _FACADE_VERSION = 1
 FACADE_CONTRACT_VERSION = 1
 _SOURCE_MODULES = (
@@ -440,6 +455,122 @@ def classify_storage_target(path_or_device: str, *, runner: Runner = None) -> St
 def is_external_target(path_or_device: str, *, runner: Runner = None) -> bool:
     """True when classification marks target as external (USB/removable heuristic)."""
     return classify_storage_target(path_or_device, runner=runner).external
+
+
+def get_parent_block_device(device_path: str, *, runner: Runner = None) -> str | None:
+    """
+    Canonical entry: resolve whole-disk path for a partition (lsblk PKNAME, read-only).
+
+    Used by Rescue restore hard-stops and gate checks instead of direct lsblk calls.
+    """
+    dev = str(device_path).strip()
+    if not dev:
+        return None
+    if not dev.startswith("/dev/"):
+        dev = f"/dev/{dev}"
+    run = runner or subprocess.run
+    try:
+        proc = _run_subprocess(
+            ["lsblk", "-n", "-o", "PKNAME", "-p", dev],
+            runner=runner,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return dev if dev.startswith("/dev/") else None
+    pk = (proc.stdout or "").strip()
+    if proc.returncode == 0 and pk.startswith("/dev/"):
+        return pk
+    return dev if dev.startswith("/dev/") else None
+
+
+def get_block_device_size_bytes(device_path: str, *, runner: Runner = None) -> int | None:
+    """Canonical entry: block device size in bytes (read-only lsblk SIZE)."""
+    dev = str(device_path).strip()
+    if not dev.startswith("/dev/"):
+        dev = f"/dev/{dev}" if dev else ""
+    if not dev:
+        return None
+    try:
+        proc = _run_subprocess(
+            ["lsblk", "-n", "-b", "-o", "SIZE", "-p", dev],
+            runner=runner,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0:
+        return None
+    line = (proc.stdout or "").strip().splitlines()
+    if not line:
+        return None
+    try:
+        return int(line[0].strip())
+    except ValueError:
+        return None
+
+
+def list_disk_blockdevice_nodes(*, runner: Runner = None, mode: str = "live") -> list[dict[str, Any]]:
+    """Top-level ``disk`` nodes from storage inventory (USB operator selection, diagnostics)."""
+    snap = build_storage_inventory_snapshot(runner=runner, mode=mode, include_tree_devices=True)
+    tree = snap.get("lsblk_tree") or []
+    out: list[dict[str, Any]] = []
+    for node in tree:
+        if isinstance(node, dict) and node.get("type") == "disk":
+            out.append(node)
+    if out:
+        return out
+    for row in snap.get("lsblk_rows") or []:
+        if isinstance(row, dict) and row.get("type") == "disk":
+            out.append(row)
+    return out
+
+
+def get_lsblk_field(device_path: str, field: str, *, runner: Runner = None) -> str:
+    """Single-field lsblk probe (read-only). Prefer inventory helpers when possible."""
+    dev = str(device_path).strip()
+    if not dev.startswith("/dev/"):
+        dev = f"/dev/{dev}" if dev else ""
+    if not dev or not str(field).strip():
+        return ""
+    try:
+        proc = _run_subprocess(
+            ["lsblk", "-no", str(field).strip(), dev],
+            runner=runner,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return ""
+    if proc.returncode != 0:
+        return ""
+    text = (proc.stdout or "").strip()
+    return text.splitlines()[0].strip() if text else ""
+
+
+def get_device_label(device_path: str, *, runner: Runner = None) -> str | None:
+    """Volume/filesystem label via blkid LABEL (read-only)."""
+    for cmd in (
+        ["sudo", "blkid", "-p", "-s", "LABEL", "-o", "value", str(device_path)],
+        ["blkid", "-p", "-s", "LABEL", "-o", "value", str(device_path)],
+        ["blkid", "-o", "value", "-s", "LABEL", str(device_path)],
+    ):
+        try:
+            proc = _run_subprocess(cmd, runner=runner, timeout=15)
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if proc.returncode == 0 and (proc.stdout or "").strip():
+            return (proc.stdout or "").strip()
+    fallback = get_lsblk_field(device_path, "LABEL", runner=runner)
+    return fallback or None
+
+
+def get_root_block_parent(*, runner: Runner = None) -> str | None:
+    """Whole-disk parent of the running root filesystem (Rescue gate)."""
+    from core.mount_facade import get_mount_source_for_path
+
+    src = get_mount_source_for_path("/", runner=runner)
+    if not src or not src.startswith("/dev/"):
+        return None
+    return get_parent_block_device(src, runner=runner)
 
 
 def get_partition_uuid(partition_path: str, *, runner: Runner = None) -> str | None:

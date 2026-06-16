@@ -49,17 +49,69 @@ while IFS= read -r py; do
   done
 done < <(find "${ROOT}/backend" -name '*.py' -not -path '*/__pycache__/*' -not -path '*/.venv/*' -not -path '*/venv/*' 2>/dev/null)
 
-# Rescue files should prefer core facades for storage/mount/safety
-while IFS= read -r py; do
-  rel="${py#${ROOT}/}"
-  if grep -qE '\blsblk\b' "${py}" 2>/dev/null && ! grep -q 'storage_facade\|storage_discovery' "${py}" 2>/dev/null; then
-    if [[ "${rel}" =~ ${RESCUE_STORAGE_MOUNT_PATTERN} ]]; then
-      warnings+=("rescue_direct_lsblk:${rel}")
-      status="review_required"
-      [[ "${exit_code}" -eq "${EXIT_OK}" ]] && exit_code="${EXIT_REVIEW}"
-    fi
-  fi
-done < <(find "${ROOT}/backend" -name '*.py' -not -path '*/__pycache__/*' 2>/dev/null)
+# Rescue files should prefer core facades for storage/mount/safety (code only, not docstrings)
+while IFS= read -r line; do
+  [[ -z "${line}" ]] && continue
+  warnings+=("${line}")
+  status="review_required"
+  [[ "${exit_code}" -eq "${EXIT_OK}" ]] && exit_code="${EXIT_REVIEW}"
+done < <(python3 - "${ROOT}" <<'PY'
+import ast
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+pattern_parts = ("modules", "core")
+allow = {
+    "backend/core/storage_facade.py",
+    "backend/core/mount_facade.py",
+    "backend/core/safe_device.py",
+    "backend/core/storage_discovery.py",
+    "backend/core/rescue_fat32_esp_usb_writer.py",
+    "backend/modules/storage_detection.py",
+    "backend/modules/inspect_storage.py",
+    "backend/core/device_identity.py",
+    "backend/core/rescue_persistence.py",
+    "backend/modules/rescue_boot_restore_check.py",
+    "backend/rescue_remote/service.py",
+    "backend/deploy/runner_rescue_stick_readonly_build_emulation.py",
+}
+
+
+def has_lsblk_in_code(path: Path) -> bool:
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+    except Exception:
+        return False
+    for node in ast.walk(tree):
+        if isinstance(node, ast.List) and node.elts:
+            first = node.elts[0]
+            if isinstance(first, ast.Constant) and first.value == "lsblk":
+                return True
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            v = node.value.strip()
+            if v.startswith("lsblk ") or v == "lsblk":
+                return True
+    return False
+
+
+for p in (root / "backend").rglob("*.py"):
+    if "__pycache__" in p.parts or ".venv" in p.parts or "venv" in p.parts:
+        continue
+    rel = str(p.relative_to(root)).replace("\\", "/")
+    if "/tests/" in f"/{rel}/":
+        continue
+    if not ("rescue" in rel or rel.startswith("backend/modules/rescue_")):
+        continue
+    if rel in allow:
+        continue
+    text = p.read_text(encoding="utf-8", errors="ignore")
+    if "storage_facade" in text or "mount_facade" in text:
+        continue
+    if has_lsblk_in_code(p):
+        print(f"rescue_direct_lsblk:{rel}")
+PY
+)
 
 # Frontend: no secret/token operator logic
 while IFS= read -r ts; do

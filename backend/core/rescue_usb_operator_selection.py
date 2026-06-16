@@ -65,21 +65,9 @@ def _load_rescue_usb_gate(workspace: Path | None = None) -> dict[str, Any]:
 
 
 def _lsblk_disks_raw(*, runner: Runner | None = None) -> list[dict[str, Any]]:
-    from core.safe_device import _run
+    from core.storage_facade import list_disk_blockdevice_nodes
 
-    cols = "PATH,NAME,TYPE,SIZE,FSTYPE,MOUNTPOINTS,RM,RO,MODEL,TRAN,PKNAME,PARTLABEL,SERIAL,LABEL"
-    r = _run(["lsblk", "-J", "-o", cols], runner=runner, timeout=30)
-    if r.returncode != 0 or not (r.stdout or "").strip():
-        return []
-    try:
-        data = json.loads(r.stdout or "{}")
-    except json.JSONDecodeError:
-        return []
-    out: list[dict[str, Any]] = []
-    for node in data.get("blockdevices") or []:
-        if isinstance(node, dict) and node.get("type") == "disk":
-            out.append(node)
-    return out
+    return list_disk_blockdevice_nodes(runner=runner, mode="rescue")
 
 
 def _partition_rows(node: Mapping[str, Any]) -> list[dict[str, Any]]:

@@ -236,13 +236,19 @@ def evaluate_verify_probe(
 
 def probe_fat_volume_label(partition: str, *, runner: Runner | None = None) -> str:
     """Read FAT volume label from partition device only (never parent disk)."""
-    attempts: list[list[str]] = [
+    for cmd in (
         ["sudo", "blkid", "-p", "-s", "LABEL", "-o", "value", partition],
         ["blkid", "-p", "-s", "LABEL", "-o", "value", partition],
-    ]
-    for cmd in attempts:
+    ):
         proc = _run(cmd, runner=runner)
         label = parse_blkid_label_output(proc.stdout or "")
+        if label:
+            return label
+
+    if runner is None:
+        from core.storage_facade import get_device_label
+
+        label = get_device_label(partition, runner=runner)
         if label:
             return label
 
@@ -252,12 +258,8 @@ def probe_fat_volume_label(partition: str, *, runner: Runner | None = None) -> s
         label = parse_blkid_label_output(proc.stdout or "")
         if label:
             return label
-
-    proc = _run(["lsblk", "-no", "LABEL", partition], runner=runner)
-    label = parse_blkid_label_output(proc.stdout or "")
-    if label:
-        return label
-    return ""
+    label = lsblk_field(partition, "LABEL", runner=runner)
+    return label or ""
 
 
 def probe_parent_signature_types(target_device: str, *, runner: Runner | None = None) -> list[str]:
@@ -268,10 +270,9 @@ def probe_parent_signature_types(target_device: str, *, runner: Runner | None = 
 
 
 def lsblk_field(device: str, field: str, *, runner: Runner | None = None) -> str:
-    proc = _run(["lsblk", "-no", field, device], runner=runner)
-    if proc.returncode != 0:
-        return ""
-    return (proc.stdout or "").strip().splitlines()[0] if (proc.stdout or "").strip() else ""
+    from core.storage_facade import get_lsblk_field as _facade_lsblk_field
+
+    return _facade_lsblk_field(device, field, runner=runner)
 
 
 def _grub_active_lines(grub_text: str) -> list[str]:
@@ -294,6 +295,11 @@ def _grub_path_to_rel(grub_path: str) -> str:
 
 
 def probe_fat_filesystem_uuid(partition: str, *, runner: Runner | None = None) -> str:
+    from core.storage_facade import get_device_uuid
+
+    uuid = get_device_uuid(partition, runner=runner)
+    if uuid:
+        return uuid
     for cmd in (
         ["sudo", "blkid", "-p", "-s", "UUID", "-o", "value", partition],
         ["blkid", "-p", "-s", "UUID", "-o", "value", partition],

@@ -261,3 +261,31 @@ def validate_not_live_root(mountpoint: str) -> dict[str, Any]:
         "reason_code": "MOUNT_FACADE_LIVE_ROOT" if blocked else "MOUNT_FACADE_NOT_LIVE_ROOT",
         "facade_version": FACADE_CONTRACT_VERSION,
     }
+
+
+def get_mount_source_for_path(path: str, *, runner: Runner = None) -> str | None:
+    """
+    Canonical entry: findmnt SOURCE for ``path`` (read-only).
+
+    Rescue restore modules use this instead of direct findmnt subprocess calls.
+    """
+    run = runner or subprocess.run
+    target = str(path).strip() or "/"
+    run = runner or subprocess.run
+    try:
+        try:
+            proc = run(
+                ["findmnt", "-n", "-o", "SOURCE", "-T", target],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                check=False,
+            )
+        except TypeError:
+            proc = run(["findmnt", "-n", "-o", "SOURCE", "-T", target], timeout=30)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0:
+        return None
+    lines = (proc.stdout or "").strip().splitlines()
+    return lines[0].strip() if lines else None

@@ -19,6 +19,8 @@ from core.rescue_allowlist import (
     assert_restore_live_target_directory,
     path_under_prefixes,
 )
+from core.mount_facade import get_mount_source_for_path
+from core.storage_facade import get_parent_block_device
 from models.diagnosis import RescueRestoreRequest, RescueRestoreResponse, RestoreResultCode
 
 from modules.backup_crypto import MAGIC, decrypt_file_to_path
@@ -62,34 +64,6 @@ def _log(line: str, *, sensitive: bool = False) -> None:
         pass
 
 
-def _findmnt_source_for_path(path: Path, *, runner: Runner = None) -> str | None:
-    import subprocess
-
-    run = runner or subprocess.run
-    r = run(
-        ["findmnt", "-n", "-o", "SOURCE", "-T", str(path)],
-        capture_output=True,
-        text=True,
-        timeout=30,
-        check=False,
-    )
-    if r.returncode != 0:
-        return None
-    line = (r.stdout or "").strip().splitlines()
-    return line[0].strip() if line else None
-
-
-def _parent_disk(dev: str, *, runner: Runner = None) -> str | None:
-    import subprocess
-
-    run = runner or subprocess.run
-    r = run(["lsblk", "-n", "-o", "PKNAME", "-p", dev], capture_output=True, text=True, timeout=30, check=False)
-    pk = (r.stdout or "").strip()
-    if r.returncode == 0 and pk.startswith("/dev/"):
-        return pk
-    return dev if dev.startswith("/dev/") else None
-
-
 def validate_mount_matches_target_device(
     restore_dir: Path,
     target_device: str | None,
@@ -98,11 +72,11 @@ def validate_mount_matches_target_device(
 ) -> tuple[bool, str]:
     if not target_device or not str(target_device).strip():
         return True, "rescue.restore.mount_check_skipped"
-    src = _findmnt_source_for_path(restore_dir, runner=runner)
+    src = get_mount_source_for_path(str(restore_dir), runner=runner)
     if not src or not src.startswith("/dev/"):
         return False, "rescue.restore.RESTORE_BLOCKED_INVALID_STATE"
-    t_parent = _parent_disk(str(target_device).strip(), runner=runner)
-    s_parent = _parent_disk(src, runner=runner)
+    t_parent = get_parent_block_device(str(target_device).strip(), runner=runner)
+    s_parent = get_parent_block_device(src, runner=runner)
     if t_parent and s_parent and Path(t_parent).resolve() == Path(s_parent).resolve():
         return True, "rescue.restore.mount_matches_target"
     return False, "rescue.restore.RESTORE_BLOCKED_INVALID_STATE"

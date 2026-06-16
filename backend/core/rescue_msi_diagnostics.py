@@ -97,31 +97,39 @@ def collect_msi_hardware_snapshot(*, runner: Runner = None) -> dict[str, Any]:
         devices = [{"error": str(exc)}]
 
     partitions: list[dict[str, str]] = []
-    rc, lsblk_out = _run_capture("lsblk -J -o NAME,TYPE,SIZE,FSTYPE,MOUNTPOINTS,RM,RO,MODEL,TRAN 2>/dev/null", runner=runner)
-    if rc == 0 and lsblk_out.strip():
-        try:
-            tree = json.loads(lsblk_out)
-            parts = tree.get("blockdevices") or []
+    from core.storage_facade import build_storage_inventory_snapshot
 
-            def walk(nodes: list[Any]) -> None:
-                for n in nodes:
-                    if not isinstance(n, dict):
-                        continue
-                    if n.get("type") == "part":
-                        partitions.append(
-                            {
-                                "name": str(n.get("name") or ""),
-                                "fstype": str(n.get("fstype") or ""),
-                                "size": str(n.get("size") or ""),
-                                "mountpoints": json.dumps(n.get("mountpoints") or n.get("mountpoint")),
-                            }
-                        )
-                    walk(n.get("children") or [])
+    snap = build_storage_inventory_snapshot(runner=runner, mode="rescue", include_tree_devices=True)
+    tree = snap.get("lsblk_tree") or []
 
-            if isinstance(parts, list):
-                walk(parts)
-        except json.JSONDecodeError:
-            partitions = [{"parse_error": True}]
+    def walk(nodes: list[Any]) -> None:
+        for n in nodes:
+            if not isinstance(n, dict):
+                continue
+            if n.get("type") == "part":
+                partitions.append(
+                    {
+                        "name": str(n.get("name") or ""),
+                        "fstype": str(n.get("fstype") or ""),
+                        "size": str(n.get("size") or ""),
+                        "mountpoints": json.dumps(n.get("mountpoints") or n.get("mountpoint")),
+                    }
+                )
+            walk(n.get("children") or [])
+
+    if isinstance(tree, list) and tree:
+        walk(tree)
+    else:
+        for row in snap.get("lsblk_rows") or []:
+            if isinstance(row, dict) and row.get("type") == "part":
+                partitions.append(
+                    {
+                        "name": str(row.get("name") or ""),
+                        "fstype": str(row.get("fstype") or ""),
+                        "size": str(row.get("size") or ""),
+                        "mountpoints": json.dumps(row.get("mountpoints") or row.get("mountpoint")),
+                    }
+                )
 
     bitlocker_hints: list[str] = []
     for p in partitions:

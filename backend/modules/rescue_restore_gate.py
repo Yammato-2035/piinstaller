@@ -10,38 +10,16 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core.rescue_allowlist import RESCUE_DRYRUN_STATE_DIR, normalize_rescue_abs_path
+from core.storage_facade import get_parent_block_device, get_root_block_parent as facade_get_root_block_parent
 
 Runner = Callable[..., Any] | None
 
 DRYRUN_GRANT_MAX_AGE_SECONDS = 3600
 
 
-def _run_capture(
-    argv: list[str],
-    *,
-    runner: Runner = None,
-    timeout: int = 30,
-) -> Any:
-    import subprocess
-
-    run = runner or subprocess.run
-    return run(argv, capture_output=True, text=True, timeout=timeout, check=False)
-
-
 def get_root_block_parent(*, runner: Runner = None) -> str | None:
     """Parent-Blockgerät des laufenden Root-Dateisystems (Whole-Disk), z. B. /dev/sda."""
-    r = _run_capture(["findmnt", "-n", "-o", "SOURCE", "-T", "/"], runner=runner, timeout=15)
-    line = (r.stdout or "").strip().splitlines()
-    if not line:
-        return None
-    dev = line[0].strip()
-    if not dev.startswith("/dev/"):
-        return None
-    r2 = _run_capture(["lsblk", "-n", "-o", "PKNAME", "-p", dev], runner=runner, timeout=15)
-    pk = (r2.stdout or "").strip()
-    if r2.returncode == 0 and pk.startswith("/dev/"):
-        return pk
-    return dev
+    return facade_get_root_block_parent(runner=runner)
 
 
 def is_running_system_disk(target_device: str | None, *, runner: Runner = None) -> bool:
@@ -52,8 +30,7 @@ def is_running_system_disk(target_device: str | None, *, runner: Runner = None) 
     if not rootp:
         return False
     td = str(target_device).strip()
-    r3 = _run_capture(["lsblk", "-n", "-o", "PKNAME", "-p", td], runner=runner, timeout=15)
-    tparent = (r3.stdout or "").strip() if r3.returncode == 0 and (r3.stdout or "").strip().startswith("/dev/") else td
+    tparent = get_parent_block_device(td, runner=runner) or td
     try:
         return normalize_rescue_abs_path(tparent) == normalize_rescue_abs_path(rootp) or normalize_rescue_abs_path(
             td

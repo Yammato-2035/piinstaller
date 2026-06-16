@@ -11,6 +11,7 @@ from typing import Any, Callable
 
 from core.block_device_allowlist import is_allowed_block_device
 from core.rescue_allowlist import path_under_prefixes, RESCUE_DRYRUN_WRITE_PREFIXES
+from core.storage_facade import get_block_device_size_bytes
 from modules.inspect_storage import (
     detect_uuid_conflicts,
     list_physical_disks,
@@ -37,18 +38,7 @@ def _estimate_tar_uncompressed_bytes(archive_path: Path, *, cap_members: int = 5
 
 
 def _block_device_size_bytes(dev: str, *, runner: Runner = None) -> int | None:
-    from modules.inspect_storage import _run_capture
-
-    r = _run_capture(["lsblk", "-n", "-b", "-o", "SIZE", "-p", dev], runner=runner, timeout=30)
-    if r.returncode != 0:
-        return None
-    line = (r.stdout or "").strip().splitlines()
-    if not line:
-        return None
-    try:
-        return int(line[0].strip())
-    except ValueError:
-        return None
+    return get_block_device_size_bytes(dev, runner=runner)
 
 
 def assess_target_device(

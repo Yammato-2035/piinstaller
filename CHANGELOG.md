@@ -9,6 +9,20 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.1.0] — 2026-06-16
+
+### Changed
+
+- **Core Facade Rescue Migration B.2:** Rescue-Restore-Hard-Stops, Gate, Execute, Target-Assessment, USB-Operator-Auswahl, MSI-Diagnostics und FAT32-Verify delegieren `lsblk`/`findmnt` an `storage_facade` / `mount_facade`.
+- Neue Facade-Helfer: `get_parent_block_device`, `get_block_device_size_bytes`, `get_root_block_parent`, `get_mount_source_for_path`, `list_disk_blockdevice_nodes`, `get_device_label`, `get_lsblk_field`.
+
+### Added
+
+- `docs/architecture/CORE_FACADE_RESCUE_MIGRATION_B2.md`
+- `backend/tests/test_core_facade_rescue_migration_b2_v1.py`
+
+---
+
 ## [1.8.0.0] — 2026-06-16
 
 ### Added
