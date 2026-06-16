@@ -131,3 +131,15 @@ def sudo_password() -> str:
 
 def backup_target_err_to_api() -> dict[str, str]:
     return _app()._BACKUP_TARGET_ERR_TO_API
+
+
+def systemctl_run_argv(argv: list[str], *, timeout: int) -> dict[str, Any]:
+    return _app()._systemctl_run_argv(argv, timeout=timeout)
+
+
+def get_backup_job_cancel() -> dict[str, Any]:
+    return _app().BACKUP_JOB_CANCEL
+
+
+def run_backup_evidence_collect(job_id: str):
+    return _app()._run_backup_evidence_collect(job_id)

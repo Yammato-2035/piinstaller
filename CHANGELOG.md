@@ -9,6 +9,21 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.6.0] — 2026-06-16
+
+### Changed
+
+- **APP Router Slice E.9:** 33 `/api/control-center/*` Routen aus `app.py` nach `control_center.py` extrahiert.
+- **Backup Execute B.4:** Erste 4 Backup-POST-Routen (cancel, evidence, profiles, profile-preview) in `backup_execute` Router.
+
+### Added
+
+- `backend/api/routes/control_center.py`, `core/control_center_handlers.py`, `core/control_center_runtime.py`
+- `backend/api/routes/backup_execute.py`, `core/backup_execute_handlers.py`
+- Tests: `test_app_router_slice_e9.py`, `test_backup_execute_router_b4_v1.py`
+
+---
+
 ## [1.8.5.0] — 2026-06-16
 
 ### Changed

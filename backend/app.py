@@ -2234,144 +2234,6 @@ def _do_backup_logic(
     )
 
 
-@app.post("/api/backup/jobs/{job_id}/cancel")
-async def backup_job_cancel(job_id: str):
-    job_id = (job_id or "").strip()
-    runner_status = _read_backup_runner_status(job_id)
-    if runner_status:
-        rs_st = str(runner_status.get("status") or "").strip().lower()
-        _sync_ram_job_from_runner(job_id)
-        if rs_st == "cancelled":
-            return with_backup_contract(
-                {"status": "success", "message": "Job bereits abgebrochen"},
-                "backup.job_already_done",
-                "info",
-                {"job_id": job_id},
-            )
-        if rs_st in ("success", "error", "failed"):
-            return with_backup_contract(
-                {"status": "success", "message": "Job ist bereits abgeschlossen"},
-                "backup.job_already_done",
-                "info",
-                {"job_id": job_id, "runner_status": rs_st},
-            )
-        unit_name = str(runner_status.get("unit_name") or "").strip()
-        unit_scope = str(runner_status.get("unit_scope") or "system").strip().lower()
-        if not unit_name:
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract({"status": "error", "message": "Runner-Unit unbekannt"}, "backup.cancel_failed", "error"),
-            )
-        if unit_scope == "user":
-            stop_argv = ["systemctl", "--user", "stop", unit_name]
-        else:
-            stop_argv = ["systemctl", "stop", unit_name]
-        stop_res = _systemctl_run_argv(stop_argv, timeout=30)
-        if not stop_res.get("success"):
-            return JSONResponse(
-                status_code=200,
-                content=with_backup_contract(
-                    {"status": "error", "message": "Abbruch fehlgeschlagen"},
-                    "backup.cancel_failed",
-                    "error",
-                    {"unit_name": unit_name, "stderr": (stop_res.get("stderr") or "")[:300]},
-                ),
-            )
-        return with_backup_contract(
-            {"status": "success", "message": "Abbruch angefordert"},
-            "backup.cancel_requested",
-            "success",
-            {"unit_name": unit_name, "unit_scope": unit_scope},
-        )
-
-    job = BACKUP_JOBS.get(job_id)
-    if not job:
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract({"status": "error", "message": "Job nicht gefunden"}, "backup.job_not_found", "error"),
-        )
-
-    if job.get("status") in ("success", "error", "cancelled"):
-        return with_backup_contract(
-            {"status": "success", "message": "Job ist bereits abgeschlossen"},
-            "backup.job_already_done",
-            "info",
-        )
-
-    ev = BACKUP_JOB_CANCEL.get(job_id)
-    if not ev:
-        ev = threading.Event()
-        BACKUP_JOB_CANCEL[job_id] = ev
-    ev.set()
-    job["status"] = "cancel_requested"
-    job["message"] = "Abbruch angefordert…"
-    job["code"] = "backup.cancel_requested"
-    job["severity"] = "info"
-
-    # best-effort kill running process group if available
-    try:
-        pgid = job.get("pgid")
-        if isinstance(pgid, int) and pgid > 1:
-            os.killpg(pgid, signal.SIGTERM)
-    except Exception:
-        pass
-
-    return with_backup_contract({"status": "success", "message": "Abbruch angefordert"}, "backup.cancel_requested", "success")
-
-
-@app.post("/api/backup/jobs/{job_id}/evidence")
-async def backup_job_evidence_collect(job_id: str):
-    """Sammelt Diagnose-Artefakte erneut ein (kein Backup-/Restore-Start)."""
-    jid = (job_id or "").strip()
-    if not _BACKUP_JOB_ID_RE.fullmatch(jid):
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {
-                    "status": "error",
-                    "message": "Ungültige job_id",
-                    "evidence": {
-                        "evidence_status": "invalid_job_id",
-                        "evidence_dir": None,
-                        "manifest_path": None,
-                        "collected_sources": [],
-                        "permission_denied_sources": [],
-                        "errors": ["invalid_job_id"],
-                    },
-                },
-                "backup.evidence.invalid_job_id",
-                "error",
-                {"job_id": jid},
-            ),
-        )
-    manifest, err = _run_backup_evidence_collect(jid)
-    if err:
-        ev = _normalize_evidence_api_payload(None, None)
-        ev["evidence_status"] = "error"
-        ev["errors"] = [err]
-        return with_backup_contract(
-            {"status": "success", "evidence": ev},
-            "backup.evidence.collect_failed",
-            "info",
-            {"job_id": jid},
-        )
-    mdir = manifest.get("output_dir") if isinstance(manifest, dict) else None
-    mp = Path(str(mdir)) / "manifest.json" if mdir else None
-    mp_resolved: Optional[Path] = mp if mp and mp.is_file() else None
-    ev = _normalize_evidence_api_payload(manifest if isinstance(manifest, dict) else None, mp_resolved)
-    if ev.get("permission_denied_sources"):
-        return with_backup_contract(
-            {"status": "success", "evidence": ev},
-            "backup.evidence.ok_with_permissions_denied",
-            "info",
-            {"job_id": jid},
-        )
-    return with_backup_contract(
-        {"status": "success", "evidence": ev},
-        "backup.evidence.ok",
-        "success",
-        {"job_id": jid},
-    )
 
 
 def _load_or_init_config() -> dict:
@@ -2812,9 +2674,11 @@ except ImportError:
     pass
 
 try:
+    from api.routes.backup_execute import router as backup_execute_router
     from api.routes.backup_readonly import router as backup_readonly_router
     from api.routes.capabilities import router as capabilities_router
     from api.routes.catalog import router as catalog_router
+    from api.routes.control_center import router as control_center_router
     from api.routes.control_center_readonly import router as control_center_readonly_router
     from api.routes.dev_dashboard_readonly import router as dev_dashboard_readonly_router
     from api.routes.dev_dashboard_roadmap import router as dev_dashboard_roadmap_router
@@ -2825,6 +2689,7 @@ try:
     from api.routes.version import router as version_router
 
     app.include_router(backup_readonly_router)
+    app.include_router(backup_execute_router)
     app.include_router(health_router)
     app.include_router(version_router)
     app.include_router(network_router)
@@ -2833,6 +2698,7 @@ try:
     app.include_router(capabilities_router)
     app.include_router(catalog_router)
     app.include_router(control_center_readonly_router)
+    app.include_router(control_center_router)
     app.include_router(dev_dashboard_readonly_router)
     app.include_router(dev_dashboard_roadmap_router)
 except ImportError:
@@ -10380,54 +10246,6 @@ def _backup_profiles_list_payload() -> dict[str, Any]:
     )
 
 
-@app.post("/api/backup/profiles")
-async def backup_profiles_list_post():
-    return _backup_profiles_list_payload()
-
-
-@app.post("/api/backup/profile-preview")
-async def backup_profile_preview(request: Request):
-    """Read-only: Profilbeschreibung und Zielgroesse, kein Backup-Start."""
-    try:
-        body = await request.json()
-    except Exception:
-        body = {}
-    if not isinstance(body, dict):
-        body = {}
-    prof = str(body.get("profile") or "recommended").strip()
-    bd_raw = body.get("backup_dir", "")
-    try:
-        bd = _validate_backup_dir(str(bd_raw))
-    except Exception as ve:
-        from core.backup_target_service_access import extract_backup_target_diagnosis_id
-
-        det = {"reason": str(ve)}
-        btd = extract_backup_target_diagnosis_id(str(ve))
-        if btd:
-            det["diagnosis_id"] = btd
-        return JSONResponse(
-            status_code=200,
-            content=with_backup_contract(
-                {"status": "error", "message": f"Ungültiges Backup-Ziel: {str(ve)}"},
-                "backup.path_invalid",
-                "error",
-                det,
-            ),
-        )
-    tf: Optional[int] = None
-    try:
-        p = Path(bd)
-        if p.is_dir():
-            tf = int(shutil.disk_usage(str(p)).free)
-    except Exception:
-        pass
-    preview = build_profile_preview(profile_raw=prof, backup_dir=bd, target_free_bytes=tf)
-    return with_backup_contract(
-        {"status": "success", "preview": preview},
-        "backup.profile_preview",
-        "success",
-        {"profile": prof, "backup_dir": bd},
-    )
 
 
 def _lsblk_tree() -> dict:
@@ -14214,489 +14032,34 @@ def _get_control_center_module():
 control_center_module = None
 
 
-@app.get("/api/control-center/wifi/networks")
-async def get_wifi_networks():
-    """Listet verfügbare WiFi-Netzwerke auf (verwendet sudo_store)."""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_wifi_networks(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen der WiFi-Netzwerke: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/wifi/scan")
-async def wifi_scan_post(request: Request):
-    """WiFi-Scan mit explizitem sudo-Passwort (um Session/Worker-Probleme zu umgehen)."""
-    try:
-        data = {}
-        if "application/json" in (request.headers.get("content-type") or ""):
-            try:
-                data = await request.json() or {}
-            except Exception:
-                pass
-        sudo_password = (data.get("sudo_password") or "").strip()
-        if not sudo_password:
-            sudo_password = (sudo_store.get_password() or "")
-        if not sudo_password:
-            return JSONResponse(
-                status_code=200,
-                content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
-            )
-        if sudo_password and not sudo_store.has_password():
-            sudo_store.store_password(sudo_password)
-        module = _get_control_center_module()
-        return module.get_wifi_networks(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim WiFi-Scan: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/control-center/wifi/config")
-async def get_wifi_config():
-    """Liest aktuelle WiFi-Konfiguration"""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_wifi_config(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen der WiFi-Konfiguration: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/control-center/wifi/status")
-async def get_wifi_status():
-    """Aktuell verbundenes WLAN, Interface, Signal, WLAN aktiviert (rfkill)."""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_wifi_status(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim WiFi-Status: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/wifi/disconnect")
-async def wifi_disconnect(request: Request):
-    """WLAN-Verbindung trennen."""
-    try:
-        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.wifi_disconnect(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim WLAN-Trennen: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/wifi/enabled")
-async def wifi_set_enabled(request: Request):
-    """WLAN aktivieren/deaktivieren (rfkill)."""
-    try:
-        data = await request.json()
-        enabled = data.get("enabled", True)
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.wifi_set_enabled(bool(enabled), sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim WLAN aktivieren/deaktivieren: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/wifi/add")
-async def add_wifi_network(request: Request):
-    """Fügt ein WiFi-Netzwerk hinzu"""
-    try:
-        data = await request.json()
-        ssid = data.get("ssid", "")
-        password = data.get("password", "")
-        security = data.get("security", "WPA2")
-        
-        if not ssid:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "SSID erforderlich"})
-        
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.add_wifi_network(ssid, password, security, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Hinzufügen des WiFi-Netzwerks: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/wifi/connect")
-async def wifi_connect(request: Request):
-    """Verbindung zu einem konfigurierten WLAN-Netzwerk herstellen"""
-    try:
-        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        ssid = (data.get("ssid") or "").strip()
-        if not ssid:
-            return JSONResponse(status_code=200, content={"status": "error", "message": "SSID erforderlich"})
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.wifi_connect(ssid, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim WLAN-Verbinden: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/control-center/ssh/status")
-async def get_ssh_status():
-    """Prüft SSH-Status"""
-    try:
-        module = _get_control_center_module()
-        return module.get_ssh_status()
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen des SSH-Status: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/ssh/set")
-async def set_ssh_enabled(request: Request):
-    """Aktiviert/deaktiviert SSH"""
-    try:
-        data = await request.json()
-        enabled = data.get("enabled", False)
-        
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.set_ssh_enabled(enabled, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen des SSH-Status: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/ssh/start")
-async def start_ssh(request: Request):
-    """SSH-Dienst starten"""
-    try:
-        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.start_ssh_service(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim SSH-Start: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/control-center/vnc/status")
-async def get_vnc_status():
-    """Prüft VNC-Status"""
-    try:
-        module = _get_control_center_module()
-        return module.get_vnc_status()
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen des VNC-Status: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/vnc/set")
-async def set_vnc_enabled(request: Request):
-    """Aktiviert/deaktiviert VNC"""
-    try:
-        data = await request.json()
-        enabled = data.get("enabled", False)
-        password = data.get("password", "")
-        
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.set_vnc_enabled(enabled, password, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen des VNC-Status: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.post("/api/control-center/vnc/start")
-async def start_vnc(request: Request):
-    """VNC-Dienst starten"""
-    try:
-        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.start_vnc_service(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim VNC-Start: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/control-center/keyboard")
-async def get_keyboard_layout():
-    """Liest Tastatur-Layout"""
-    try:
-        module = _get_control_center_module()
-        return module.get_keyboard_layout()
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen des Tastatur-Layouts: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/keyboard/set")
-async def set_keyboard_layout(request: Request):
-    """Setzt Tastatur-Layout"""
-    try:
-        data = await request.json()
-        layout = data.get("layout", "de")
-        variant = data.get("variant", "")
-        options = data.get("options", "")
-        
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.set_keyboard_layout(layout, variant, options, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen des Tastatur-Layouts: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/locale")
-async def get_locale():
-    """Liest Locale-Einstellungen"""
-    try:
-        module = _get_control_center_module()
-        return module.get_locale()
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen der Locale: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/locale/set")
-async def set_locale(request: Request):
-    """Setzt Locale und Timezone"""
-    try:
-        data = await request.json()
-        locale = data.get("locale", "de_DE.UTF-8")
-        timezone = data.get("timezone", "")
-        
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.set_locale(locale, timezone, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen der Locale: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/desktop")
-async def get_desktop_settings():
-    """Liest Desktop-Einstellungen"""
-    try:
-        module = _get_control_center_module()
-        return module.get_desktop_settings()
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen der Desktop-Einstellungen: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/desktop/boot-target")
-async def get_desktop_boot_target():
-    """Liest das Boot-Ziel (Desktop vs. Kommandozeile)."""
-    try:
-        module = _get_control_center_module()
-        return module.get_boot_target()
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen des Boot-Ziels: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/desktop/boot-target")
-async def set_desktop_boot_target(request: Request):
-    """Setzt das Boot-Ziel: graphical (Desktop) oder multi-user (Kommandozeile)."""
-    try:
-        try:
-            data = await request.json()
-        except Exception:
-            data = {}
-        data = data or {}
-        target = data.get("target", "").strip()
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        if not sudo_password:
-            return JSONResponse(
-                status_code=200,
-                content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True},
-            )
-        module = _get_control_center_module()
-        return module.set_boot_target(target, sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen des Boot-Ziels: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/display")
-async def get_display_settings():
-    """Liest Display-Einstellungen (xrandr: Outputs, Modi, Rotation)."""
-    try:
-        module = _get_control_center_module()
-        return module.get_display_settings()
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen der Display-Einstellungen: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/display")
-async def set_display_settings(request: Request):
-    """Setzt Display (xrandr: Output, Modus, Wiederholrate, Rotation). Kein sudo."""
-    try:
-        try:
-            data = await request.json()
-        except Exception:
-            data = {}
-        data = data or {}
-        output = (data.get("output") or "").strip()
-        mode = (data.get("mode") or "").strip()
-        rate = data.get("rate")
-        if rate is not None:
-            try:
-                rate = float(rate)
-            except (TypeError, ValueError):
-                rate = None
-        rotation = (data.get("rotation") or "").strip() or "normal"
-        module = _get_control_center_module()
-        return module.set_display_settings(
-            output=output or "HDMI-1",
-            mode=mode or "1920x1080",
-            rate=rate,
-            rotation=rotation,
-            sudo_password="",
-        )
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen der Display-Einstellungen: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/display/telemetry")
-async def get_display_telemetry_settings():
-    """Liest OLED/Display-Telemetrieeinstellungen inkl. Runner-Status. Nutzt ggf. Sudo-Passwort für I2C-OLED-Erkennung."""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_display_telemetry_settings(sudo_password=sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Lesen der OLED-Telemetrie: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/display/telemetry")
-async def set_display_telemetry_settings(request: Request):
-    """Speichert OLED/Display-Telemetrieeinstellungen."""
-    try:
-        try:
-            data = await request.json()
-        except Exception:
-            data = {}
-        data = data or {}
-        target = str(data.get("target") or "auto")
-        metrics = data.get("metrics") if isinstance(data.get("metrics"), dict) else None
-        enabled = data.get("enabled")
-        autostart = data.get("autostart")
-        if enabled is not None:
-            enabled = bool(enabled)
-        if autostart is not None:
-            autostart = bool(autostart)
-        sudo_password = (data.get("sudo_password") or "").strip() or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.set_display_telemetry_settings(
-            target=target,
-            metrics=metrics,
-            enabled=enabled,
-            autostart=autostart,
-            sudo_password=sudo_password,
-        )
-    except Exception as e:
-        logger.error(f"Fehler beim Speichern der OLED-Telemetrie: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/display/telemetry/runner")
-async def set_display_telemetry_runner(request: Request):
-    """Startet/stoppt/neustartet den OLED-Runner."""
-    try:
-        try:
-            data = await request.json()
-        except Exception:
-            data = {}
-        action = str((data or {}).get("action") or "restart").strip().lower()
-        module = _get_control_center_module()
-        if action == "start":
-            return module.start_display_telemetry_runner()
-        if action == "stop":
-            return module.stop_display_telemetry_runner()
-        if action == "restart":
-            module.stop_display_telemetry_runner()
-            return module.start_display_telemetry_runner()
-        return {"status": "error", "message": "Ungültige Aktion. Erlaubt: start, stop, restart."}
-    except Exception as e:
-        logger.error(f"Fehler beim Steuern des OLED-Runners: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/printers")
-async def get_printers():
-    """Listet Drucker auf"""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_printers(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen der Drucker: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/scanners")
-async def get_scanners():
-    """Listet SANE-Scanner auf"""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_scanners(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen der Scanner: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.get("/api/control-center/performance")
-async def get_performance():
-    """Performance: CPU-Governor, GPU/Overclocking (config.txt), Swap."""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_performance(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Abrufen der Performance-Daten: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/performance")
-async def set_performance(request: Request):
-    """Performance setzen: Governor, GPU-Mem, Overclocking, Swap-Größe."""
-    try:
-        try:
-            data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        except Exception:
-            data = {}
-        data = data or {}
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        if not sudo_password:
-            sudo_ok = run_command("sudo -n true", sudo=False)
-            if not sudo_ok.get("success"):
-                return JSONResponse(status_code=200, content={"status": "error", "message": "Sudo-Passwort erforderlich", "requires_sudo_password": True})
-        module = _get_control_center_module()
-        swap_mb = data.get("swap_size_mb")
-        if swap_mb is not None:
-            try:
-                swap_mb = int(swap_mb)
-            except (TypeError, ValueError):
-                swap_mb = None
-        result = module.set_performance(
-            sudo_password=sudo_password,
-            governor=data.get("governor"),
-            gpu_mem=data.get("gpu_mem"),
-            arm_freq=data.get("arm_freq"),
-            over_voltage=data.get("over_voltage"),
-            force_turbo=data.get("force_turbo"),
-            swap_size_mb=swap_mb,
-        )
-        return result
-    except Exception as e:
-        logger.error(f"Fehler beim Setzen der Performance: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
 @app.post("/api/system/reboot")
@@ -14774,43 +14137,7 @@ async def stop_packagekit(request: Request):
         return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
-@app.get("/api/control-center/bluetooth/status")
-async def get_bluetooth_status():
-    """Bluetooth-Status: aktiviert/deaktiviert, verbundene Geräte."""
-    try:
-        sudo_password = (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.get_bluetooth_status(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Bluetooth-Status: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
-
-@app.post("/api/control-center/bluetooth/scan")
-async def bluetooth_scan(request: Request):
-    """Bluetooth-Geräte scannen."""
-    try:
-        data = await request.json() if request.headers.get("content-type", "").startswith("application/json") else {}
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.bluetooth_scan(sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Bluetooth-Scan: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
-
-
-@app.post("/api/control-center/bluetooth/enabled")
-async def bluetooth_set_enabled(request: Request):
-    """Bluetooth aktivieren/deaktivieren."""
-    try:
-        data = await request.json()
-        enabled = data.get("enabled", True)
-        sudo_password = data.get("sudo_password", "") or (sudo_store.get_password() or "")
-        module = _get_control_center_module()
-        return module.bluetooth_set_enabled(bool(enabled), sudo_password)
-    except Exception as e:
-        logger.error(f"Fehler beim Bluetooth aktivieren/deaktivieren: {str(e)}", exc_info=True)
-        return JSONResponse(status_code=200, content={"status": "error", "message": str(e)})
 
 
 if __name__ == "__main__":

@@ -45,7 +45,9 @@
 | **Monolith Audit (Pre-Cloud)** | **Gelb** | Inventar + Duplikat-Audit; app.py 15k Zeilen | `docs/evidence/monolith/MONOLITH_PRE_CLOUD_FINAL_RESULT.md` |
 | **Core Facade Freeze** | **Grün** | Rescue B.2–**B.5** inkl. `app.py` Storage/Safety-Delegation | `CORE_FACADE_RESCUE_MIGRATION_B5.md` |
 | **App Router Slices (DCC)** | **Grün** | E.1–**E.8** readonly (9 GET in `dev_dashboard_readonly`) | `APP_ROUTER_SLICE_E8.md` |
+| **App Router Slices (Control Center)** | **Grün** | **E.9** — 33 `/api/control-center/*` extrahiert | `APP_ROUTER_SLICE_E9.md` |
 | **Backup Readonly Router** | **Grün** | B.2–**B.3** alle Backup-GETs extrahiert (13) | `BACKUP_READONLY_ROUTER_B3.md` |
+| **Backup Execute Router** | **Gelb** | **B.4** — 4 POST (cancel/evidence/profiles) | `BACKUP_EXECUTE_ROUTER_B4.md` |
 | **Telemetry Client Contract** | **Grün** | public-safe + **Set C** Rescue-Client-Preview | `RESCUE_TELEMETRY_CLIENT_C.md` |
 | **Telemetry Internal Server** | **Schwarz** | Handoff only, kein Public-Implementierung | `docs/private-handoff/TELEMETRY_INTERNAL_SERVER_HANDOFF.md` |
 | **Cloudserver Private Handoff** | **Gelb** | Doku + OpenAPI-Stubs; privates Repo pending | `docs/evidence/cloud-private/CLOUDSERVER_PRIVATE_HANDOFF_RESULT.md` |

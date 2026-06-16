@@ -15,16 +15,18 @@ if str(_backend) not in sys.path:
 try:
     from fastapi.testclient import TestClient
 
-    from app import app as fastapi_app
-    from app import _normalize_evidence_api_payload, _runner_status_to_job
-
     _HAS_TC = True
 except Exception:  # noqa: BLE001
     TestClient = None  # type: ignore[misc, assignment]
+    _HAS_TC = False
+
+try:
+    from app import app as fastapi_app
+    from app import _normalize_evidence_api_payload, _runner_status_to_job
+except Exception:  # noqa: BLE001
     fastapi_app = None
     _normalize_evidence_api_payload = None  # type: ignore[misc, assignment]
     _runner_status_to_job = None  # type: ignore[misc, assignment]
-    _HAS_TC = False
 
 
 class BackupJobEvidenceApiV1Tests(unittest.TestCase):
