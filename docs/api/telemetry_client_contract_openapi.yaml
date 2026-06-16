@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Setuphelfer Telemetry Client Contract
+  description: |
+    Public-safe client contract for optional telemetry. Server implementation is private-only.
+    Example domains only — never use real production hosts in client builds.
+  version: "1.0.0"
+  contact:
+    name: Setuphelfer Architecture
+    url: https://github.com/example/setuphelfer-public-docs
+
+servers:
+  - url: https://telemetry.internal.setuphelfer.example/v1
+    description: Example telemetry endpoint (placeholder)
+
+paths:
+  /report:
+    post:
+      operationId: submitTelemetryReport
+      summary: Submit redacted telemetry envelope (opt-in required)
+      description: |
+        Client must set opt_in_state to enabled, redaction_applied to true,
+        and local_preview_ok to true before calling. Mirrors telemetry_client_contract.py.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelemetryClientEnvelope"
+            example:
+              schema_version: 1
+              opt_in_state: enabled
+              data_categories:
+                - version
+                - runtime_health
+              redaction_applied: true
+              local_preview_ok: true
+              contract_version: 1
+              payload:
+                project_version: "1.0.0.0"
+                runtime_health: ok
+      responses:
+        "202":
+          description: Accepted for processing (server behavior defined in private repo)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryAcceptResponse"
+        "400":
+          description: Validation failed (e.g. opt_in_required, redaction_required)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized — token from configuration only
+
+  /preview:
+    post:
+      operationId: previewTelemetryEnvelope
+      summary: Local preview helper (may be client-only; stub for documentation)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TelemetryPreviewRequest"
+      responses:
+        "200":
+          description: Redacted preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TelemetryClientEnvelope"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Placeholder — real tokens must not appear in public documentation
+
+  schemas:
+    TelemetryOptInState:
+      type: string
+      enum:
+        - disabled
+        - enabled
+        - pending_consent
+
+    TelemetryDataCategory:
+      type: string
+      enum:
+        - version
+        - runtime_health
+        - error_summary
+        - hardware_class
+        - rescue_session_meta
+
+    TelemetryClientEnvelope:
+      type: object
+      required:
+        - schema_version
+        - opt_in_state
+        - data_categories
+        - redaction_applied
+        - local_preview_ok
+        - contract_version
+        - payload
+      properties:
+        schema_version:
+          type: integer
+          minimum: 1
+        opt_in_state:
+          $ref: "#/components/schemas/TelemetryOptInState"
+        data_categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/TelemetryDataCategory"
+        redaction_applied:
+          type: boolean
+        local_preview_ok:
+          type: boolean
+        contract_version:
+          type: integer
+        payload:
+          type: object
+          additionalProperties: true
+          description: Must be redacted; no secrets or real internal domains
+
+    TelemetryPreviewRequest:
+      type: object
+      properties:
+        raw_text:
+          type: string
+          description: Input for redaction preview (client-local)
+
+    TelemetryAcceptResponse:
+      type: object
+      properties:
+        accepted:
+          type: boolean
+        correlation_id:
+          type: string
+          description: Opaque ID for support reference
+
+    ErrorResponse:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: string
+          example:
+            - opt_in_required
+            - redaction_required

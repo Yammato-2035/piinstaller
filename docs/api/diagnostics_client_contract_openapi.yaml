@@ -1,0 +1,130 @@
+openapi: 3.0.3
+info:
+  title: Setuphelfer Diagnostics Client Contract
+  description: |
+    Plan-only diagnostics client contract. No execute/repair endpoints in public API.
+    Internal diagnostics server rules remain private.
+  version: "1.0.0"
+
+servers:
+  - url: https://diagnose.internal.setuphelfer.example/v1
+    description: Example diagnostics endpoint (placeholder)
+
+paths:
+  /findings:
+    get:
+      operationId: listDiagnosticFindings
+      summary: List plan-only findings for local or synced session
+      parameters:
+        - name: session_id
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Opaque session reference
+      responses:
+        "200":
+          description: Findings (plan-only)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  findings:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DiagnosticFinding"
+
+  /analyze:
+    post:
+      operationId: analyzeSignalsPlanOnly
+      summary: Submit signals for plan-only analysis (no auto-fix)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AnalyzeRequest"
+      responses:
+        "200":
+          description: Analysis result — recommendations are plan-only
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AnalyzeResponse"
+        "400":
+          description: Invalid or unredacted input
+
+components:
+  schemas:
+    FindingSeverity:
+      type: string
+      enum:
+        - info
+        - warning
+        - error
+        - critical
+
+    RecommendationMode:
+      type: string
+      enum:
+        - plan_only
+        - documentation
+
+    DiagnosticFinding:
+      type: object
+      required:
+        - code
+        - title
+        - message
+        - severity
+        - area
+        - recommendation_mode
+        - execute_allowed
+        - contract_version
+      properties:
+        code:
+          type: string
+        title:
+          type: string
+        message:
+          type: string
+        severity:
+          $ref: "#/components/schemas/FindingSeverity"
+        area:
+          type: string
+        evidence_refs:
+          type: array
+          items:
+            type: string
+        recommendation_mode:
+          $ref: "#/components/schemas/RecommendationMode"
+        execute_allowed:
+          type: boolean
+          enum: [false]
+          description: Always false in public contract
+        contract_version:
+          type: integer
+
+    AnalyzeRequest:
+      type: object
+      required:
+        - signals
+        - redaction_applied
+      properties:
+        signals:
+          type: object
+          additionalProperties: true
+        redaction_applied:
+          type: boolean
+
+    AnalyzeResponse:
+      type: object
+      properties:
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/DiagnosticFinding"
+        plan_only:
+          type: boolean
+          enum: [true]

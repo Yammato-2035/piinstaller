@@ -1,0 +1,119 @@
+openapi: 3.0.3
+info:
+  title: Setuphelfer Cloud Public Contract Stubs
+  description: |
+    Neutral stubs for future Cloudserver Edition integration.
+    Implementation is proprietary and lives in a private repository only.
+    All endpoints are plan-only unless explicitly marked otherwise in private docs.
+  version: "0.1.0"
+
+servers:
+  - url: https://cloud.private.setuphelfer.example/v1
+    description: Example cloud API (placeholder)
+
+paths:
+  /capabilities:
+    get:
+      operationId: getCloudCapabilities
+      summary: Feature capability stub (no license enforcement in public stub)
+      responses:
+        "200":
+          description: Capability flags
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudCapabilities"
+
+  /backup/plan:
+    post:
+      operationId: createBackupPlan
+      summary: Create backup plan only — does not execute
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CloudBackupPlanRequest"
+      responses:
+        "200":
+          description: Plan-only response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CloudBackupPlanResponse"
+
+  /snapshot/plan:
+    post:
+      operationId: createSnapshotPlan
+      summary: Snapshot plan stub (private implementation required)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target_id:
+                  type: string
+                safety_context:
+                  type: string
+                  enum:
+                    - cloudserver_future
+      responses:
+        "200":
+          description: Plan stub
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlanOnlyResponse"
+
+components:
+  schemas:
+    CloudCapabilities:
+      type: object
+      properties:
+        cloudserver_edition_available:
+          type: boolean
+          description: Product flag — not authoritative for licensing
+        incremental_backup:
+          type: boolean
+        snapshot_provider:
+          type: boolean
+        contract_version:
+          type: integer
+
+    CloudBackupPlanRequest:
+      type: object
+      required:
+        - target_classification
+        - plan_only
+      properties:
+        target_classification:
+          type: string
+        plan_only:
+          type: boolean
+          enum: [true]
+
+    CloudBackupPlanResponse:
+      type: object
+      properties:
+        plan_id:
+          type: string
+        steps:
+          type: array
+          items:
+            type: string
+        execute_allowed:
+          type: boolean
+          enum: [false]
+
+    PlanOnlyResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum:
+            - plan_only
+            - not_implemented_in_public_repo
+        message:
+          type: string

@@ -1,0 +1,1397 @@
+backend/api/routes/backup_readonly.py:async def backup_targets():
+backend/api/routes/backup_readonly.py:async def backup_external_targets_list():
+backend/.venv/lib64/python3.12/site-packages/_pytest/pathlib.py:def _force_symlink(root: Path, target: str | PurePath, link_to: str | Path) -> None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/capture.py:    def __init__(self, targetfd: int) -> None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/_py/path.py:    def move(self, target):
+backend/.venv/lib64/python3.12/site-packages/_pytest/_py/path.py:    def copy(self, target, mode=False, stat=False):
+backend/.venv/lib64/python3.12/site-packages/_pytest/_py/path.py:    def rename(self, target):
+backend/.venv/lib64/python3.12/site-packages/packaging/specifiers.py:def _left_pad(split: list[str], target_numeric_len: int) -> list[str]:
+backend/.venv/lib64/python3.12/site-packages/requests/sessions.py:    def get_redirect_target(self, resp):
+backend/.venv/lib64/python3.12/site-packages/charset_normalizer/cd.py:def get_target_features(language: str) -> tuple[bool, bool]:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/sessions.py:    def get_redirect_target(self, resp):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/packages/six.py:    def find_spec(self, fullname, path, target=None):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/util/url.py:def _encode_target(target):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/six.py:    def find_spec(self, fullname, path, target=None):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/util.py:    def newer(self, source, target):
+backend/.venv/lib64/python3.12/site-packages/pip/__pip-runner__.py:    def find_spec(self, fullname, path=None, target=None):  # type: ignore
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/models/format_control.py:    def handle_mutual_excludes(value: str, target: Set[str], other: Set[str]) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/index/package_finder.py:    def target_python(self) -> TargetPython:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/cmdoptions.py:def check_dist_restriction(options: Values, check_target: bool = False) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/cmdoptions.py:def add_target_python_options(cmd_opts: OptionGroup) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/cmdoptions.py:def make_target_python(options: Values) -> TargetPython:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/utils/unpacking.py:def is_within_directory(directory: str, target: str) -> bool:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/commands/install.py:    def _handle_target_dir(
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/operations/install/wheel.py:    def assert_no_path_traversal(dest_dir_path: str, target_path: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/cffi/api.py:    def compile(self, tmpdir='.', verbose=0, target=None, debug=None):
+backend/.venv/lib64/python3.12/site-packages/cffi/recompiler.py:    def __init__(self, ffi, module_name, target_is_python=False):
+backend/.venv/lib64/python3.12/site-packages/cffi/recompiler.py:def _make_c_or_py_source(ffi, module_name, preamble, target_file, verbose):
+backend/.venv/lib64/python3.12/site-packages/cffi/recompiler.py:def make_c_source(ffi, module_name, preamble, target_c_file, verbose=False):
+backend/.venv/lib64/python3.12/site-packages/cffi/recompiler.py:def make_py_source(ffi, module_name, target_py_file, verbose=False):
+backend/.venv/lib64/python3.12/site-packages/cffi/recompiler.py:def _patch_for_target(patchlist, target):
+backend/.venv/lib64/python3.12/site-packages/urllib3/util/url.py:def _encode_target(target: str) -> str:
+backend/.venv/lib64/python3.12/site-packages/jinja2/idtracking.py:    def find_load(self, target: str) -> t.Optional[t.Any]:
+backend/.venv/lib64/python3.12/site-packages/jinja2/idtracking.py:    def dump_param_targets(self) -> t.Set[str]:
+backend/.venv/lib64/python3.12/site-packages/jinja2/parser.py:    def parse_assign_target(
+backend/.venv/lib64/python3.12/site-packages/jinja2/parser.py:    def parse_assign_target(
+backend/.venv/lib64/python3.12/site-packages/jinja2/parser.py:    def parse_assign_target(
+backend/.venv/lib64/python3.12/site-packages/jinja2/compiler.py:    def mark_parameter_stored(self, target: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/jinja2/compiler.py:    def push_context_reference(self, target: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/jinja2/compiler.py:    def parameter_is_undeclared(self, target: str) -> bool:
+backend/.venv/lib64/python3.12/site-packages/anyio/_core/_fileio.py:        async def move(self, target: str | os.PathLike[str]) -> Path:
+backend/.venv/lib64/python3.12/site-packages/anyio/_core/_fileio.py:    async def rename(self, target: str | pathlib.PurePath | Path) -> Path:
+backend/.venv/lib64/python3.12/site-packages/anyio/_core/_fileio.py:    async def replace(self, target: str | pathlib.PurePath | Path) -> Path:
+backend/.venv/lib64/python3.12/site-packages/uvicorn/supervisors/multiprocess.py:    def target(self, sockets: list[socket] | None = None) -> Any:  # pragma: no cover
+backend/.venv/lib/python3.12/site-packages/_pytest/pathlib.py:def _force_symlink(root: Path, target: str | PurePath, link_to: str | Path) -> None:
+backend/.venv/lib/python3.12/site-packages/_pytest/capture.py:    def __init__(self, targetfd: int) -> None:
+backend/.venv/lib/python3.12/site-packages/_pytest/_py/path.py:    def move(self, target):
+backend/.venv/lib/python3.12/site-packages/_pytest/_py/path.py:    def copy(self, target, mode=False, stat=False):
+backend/.venv/lib/python3.12/site-packages/_pytest/_py/path.py:    def rename(self, target):
+backend/.venv/lib/python3.12/site-packages/packaging/specifiers.py:def _left_pad(split: list[str], target_numeric_len: int) -> list[str]:
+backend/.venv/lib/python3.12/site-packages/requests/sessions.py:    def get_redirect_target(self, resp):
+backend/.venv/lib/python3.12/site-packages/charset_normalizer/cd.py:def get_target_features(language: str) -> tuple[bool, bool]:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/requests/sessions.py:    def get_redirect_target(self, resp):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/packages/six.py:    def find_spec(self, fullname, path, target=None):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/url.py:def _encode_target(target):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/six.py:    def find_spec(self, fullname, path, target=None):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/util.py:    def newer(self, source, target):
+backend/.venv/lib/python3.12/site-packages/pip/__pip-runner__.py:    def find_spec(self, fullname, path=None, target=None):  # type: ignore
+backend/.venv/lib/python3.12/site-packages/pip/_internal/models/format_control.py:    def handle_mutual_excludes(value: str, target: Set[str], other: Set[str]) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/index/package_finder.py:    def target_python(self) -> TargetPython:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/cmdoptions.py:def check_dist_restriction(options: Values, check_target: bool = False) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/cmdoptions.py:def add_target_python_options(cmd_opts: OptionGroup) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/cmdoptions.py:def make_target_python(options: Values) -> TargetPython:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/utils/unpacking.py:def is_within_directory(directory: str, target: str) -> bool:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/commands/install.py:    def _handle_target_dir(
+backend/.venv/lib/python3.12/site-packages/pip/_internal/operations/install/wheel.py:    def assert_no_path_traversal(dest_dir_path: str, target_path: str) -> None:
+backend/.venv/lib/python3.12/site-packages/cffi/api.py:    def compile(self, tmpdir='.', verbose=0, target=None, debug=None):
+backend/.venv/lib/python3.12/site-packages/cffi/recompiler.py:    def __init__(self, ffi, module_name, target_is_python=False):
+backend/.venv/lib/python3.12/site-packages/cffi/recompiler.py:def _make_c_or_py_source(ffi, module_name, preamble, target_file, verbose):
+backend/.venv/lib/python3.12/site-packages/cffi/recompiler.py:def make_c_source(ffi, module_name, preamble, target_c_file, verbose=False):
+backend/.venv/lib/python3.12/site-packages/cffi/recompiler.py:def make_py_source(ffi, module_name, target_py_file, verbose=False):
+backend/.venv/lib/python3.12/site-packages/cffi/recompiler.py:def _patch_for_target(patchlist, target):
+backend/.venv/lib/python3.12/site-packages/urllib3/util/url.py:def _encode_target(target: str) -> str:
+backend/.venv/lib/python3.12/site-packages/jinja2/idtracking.py:    def find_load(self, target: str) -> t.Optional[t.Any]:
+backend/.venv/lib/python3.12/site-packages/jinja2/idtracking.py:    def dump_param_targets(self) -> t.Set[str]:
+backend/.venv/lib/python3.12/site-packages/jinja2/parser.py:    def parse_assign_target(
+backend/.venv/lib/python3.12/site-packages/jinja2/parser.py:    def parse_assign_target(
+backend/.venv/lib/python3.12/site-packages/jinja2/parser.py:    def parse_assign_target(
+backend/.venv/lib/python3.12/site-packages/jinja2/compiler.py:    def mark_parameter_stored(self, target: str) -> None:
+backend/.venv/lib/python3.12/site-packages/jinja2/compiler.py:    def push_context_reference(self, target: str) -> None:
+backend/.venv/lib/python3.12/site-packages/jinja2/compiler.py:    def parameter_is_undeclared(self, target: str) -> bool:
+backend/.venv/lib/python3.12/site-packages/anyio/_core/_fileio.py:        async def move(self, target: str | os.PathLike[str]) -> Path:
+backend/.venv/lib/python3.12/site-packages/anyio/_core/_fileio.py:    async def rename(self, target: str | pathlib.PurePath | Path) -> Path:
+backend/.venv/lib/python3.12/site-packages/anyio/_core/_fileio.py:    async def replace(self, target: str | pathlib.PurePath | Path) -> Path:
+backend/.venv/lib/python3.12/site-packages/uvicorn/supervisors/multiprocess.py:    def target(self, sockets: list[socket] | None = None) -> Any:  # pragma: no cover
+backend/recovery/activation_execute.py:def _safe_target_root(target_path: str) -> Path:
+backend/recovery/activation_execute.py:def _safe_under_target(target_root: Path, rel_path: str, *, create_parent: bool = False) -> Path:
+backend/recovery/activation_execute.py:def _step_prepare_ssh_key_auth(target_root: Path, ssh_public_key: str) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/activation_execute.py:def _step_disable_password_login(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/activation_execute.py:def _step_create_recovery_user_secure(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/activation_execute.py:def _step_enable_ssh_service(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/activation_execute.py:def _step_enable_setuphelfer_backend(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/activation_execute.py:def _step_bind_backend_interface(target_root: Path, allow_lan_backend_bind: bool) -> tuple[bool, str, dict[str, Any], list[str]]:
+backend/recovery/activation_execute.py:def _step_configure_basic_firewall(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/activation_execute.py:def _step_log_remote_access_details(target_root: Path, selected_steps: list[str], warnings: list[str]) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/minimal_execute.py:def _safe_under_target(target_root: Path, rel_path: str, *, create_parent: bool = False) -> Path:
+backend/recovery/minimal_execute.py:def _validated_target(target_path: str) -> Path:
+backend/recovery/minimal_execute.py:def _write_recovery_notes(target_root: Path, selected_steps: list[str], performed: list[dict[str, Any]], blocked: list[str], warnings: list[str]) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/minimal_execute.py:def _prepare_setuphelfer_agent(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/minimal_execute.py:def _prepare_backend_unit(target_root: Path) -> tuple[bool, str, dict[str, Any]]:
+backend/recovery/minimal_execute.py:def _record_plan_step(target_root: Path, step_code: str, result_code: str) -> tuple[bool, str, dict[str, Any]]:
+backend/tests/test_boot_capability_v1.py:    def test_target_missing_failed(self):
+backend/tests/test_backup_runner_write_io_v1.py:def test_stderr_target_write_io_gzip_eio() -> None:
+backend/tests/test_backup_runner_write_io_v1.py:def test_stderr_target_write_io_tar_short_write() -> None:
+backend/tests/test_backup_runner_write_io_v1.py:def test_stderr_target_write_io_combined_head_tail() -> None:
+backend/tests/test_backup_before_write_gate_v1.py:    def test_empty_target_satisfied(self) -> None:
+backend/tests/test_backup_target_service_access_v1.py:def test_extract_backup_target_diagnosis_id() -> None:
+backend/tests/test_backup_target_service_access_v1.py:def test_assert_backup_target_writable_for_service_ok(tmp_path: Path) -> None:
+backend/tests/test_backup_target_service_access_v1.py:def test_assert_backup_target_writable_for_service_readonly(tmp_path: Path) -> None:
+backend/tests/test_backup_target_service_access_v1.py:def test_preview_backup_target_access_empty() -> None:
+backend/tests/test_write_guard_v1.py:    def test_summary_contains_targets(self):
+backend/tests/test_write_guard_v1.py:    def test_get_safety_targets_http(self):
+backend/tests/test_deploy_plan_v1.py:def _safety(targets: list[dict]) -> dict:
+backend/tests/test_deploy_write_runner_runtime_v1.py:    def test_manipulated_target_hash_mismatch(self):
+backend/tests/test_deploy_runner_rescue_persistent_evidence_export_v1.py:    def test_internal_target_blocked(self) -> None:
+backend/tests/test_deploy_runner_rescue_sandbox_controlled_copy_v1.py:    def test_precheck_blocks_target_outside_sandbox(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_validate_backup_target_alias(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_validate_restore_target_contract(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_validate_partition_target_contract(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_validate_preflight_backup_target_preserves_reason_codes(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_validate_backup_target_for_write_and_restore_for_write_present(self) -> None:
+backend/tests/test_partitions_phase2_safety_contracts_v1.py:def test_target_equals_backup_source_blocked():
+backend/tests/test_partitions_phase2_safety_contracts_v1.py:def test_missing_target_blocked():
+backend/tests/test_deploy_cache_execute_v1.py:    def _mk_plan(self, cache_target: str, status: str = "ok") -> dict:
+backend/tests/test_deploy_runner_manual_runtime_failure_test_result_capture_v1.py:    def test_keine_produktiven_targets(self) -> None:
+backend/tests/test_recovery_activation_execute_v1.py:    def _create_session(self, target_path: str, selected_steps: list[str]):
+backend/tests/test_recovery_activation_execute_v1.py:    def _execute(self, session: dict[str, object], target_path: str, **extra):
+backend/tests/test_recovery_activation_execute_v1.py:    def test_valid_ssh_key_written_under_target_only(self):
+backend/tests/test_recovery_activation_execute_v1.py:    def test_target_root_blocked(self):
+backend/tests/test_recovery_activation_execute_v1.py:    def test_password_and_root_login_disabled_only_in_target(self):
+backend/tests/test_deploy_runner_manual_runtime_failure_injection_matrix_v1.py:    def test_keine_produktiven_targets_erlaubt(self) -> None:
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:def _base_request(target_device: str, inspect_result: dict, safety_summary: dict) -> dict:
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:    def test_parent_disk_metadata_is_used_for_child_target(self):
+backend/tests/test_partitions_hardstop_preview_v2.py:    def _eval_with_facade(self, target: str, **facade_kw):
+backend/tests/test_post_restore_validation_v1.py:    def test_target_missing_failed(self):
+backend/tests/test_post_restore_validation_v1.py:    def test_target_not_readable_behavior(self):
+backend/tests/test_post_restore_validation_v1.py:    def test_minimal_linux_target_valid_or_warning(self):
+backend/tests/test_rescue_orchestrator_execute_v1.py:    def test_execute_mismatch_backup_or_target(self):
+backend/tests/test_deploy_final_confirmation_v1.py:    def test_target_mismatch(self):
+backend/tests/test_storage_facade_contracts_v1.py:    def test_classify_storage_target_heuristic_mocked(self) -> None:
+backend/tests/test_rescue_restore_dryrun.py:    def test_2_target_capacity_red(self):
+backend/tests/test_deploy_write_harness_v1.py:    def test_target_dev_blocked(self):
+backend/tests/test_deploy_write_harness_v1.py:    def test_target_symlink_blocked(self):
+backend/tests/test_deploy_write_harness_v1.py:    def test_target_mismatch(self):
+backend/tests/test_rescue_usb_operator_selection_v1.py:    def test_setup_logs_mount_is_not_backup_target(self) -> None:
+backend/tests/test_deploy_real_write_failure_injection_v1.py:def _write_exec_result(target: str, image_path: str, ws_id: str = "ws123456") -> dict:
+backend/tests/test_deploy_real_write_failure_injection_v1.py:    def _bootstrap_fc(self, target: str, image_path: str) -> tuple[str, str, dict]:
+backend/tests/test_deploy_real_write_failure_injection_v1.py:    def _request(self, target: str, ip: str, chk: str) -> dict:
+backend/tests/test_deploy_real_write_failure_injection_v1.py:    def test_mounted_flip_target_remounted(self):
+backend/tests/test_recovery_minimal_execute_v1.py:    def _mk_target(self) -> str:
+backend/tests/test_recovery_minimal_execute_v1.py:    def _create_session(self, target: str, steps: list[str], plan: dict):
+backend/tests/test_recovery_minimal_execute_v1.py:    def test_write_recovery_notes_under_target(self):
+backend/tests/test_recovery_minimal_execute_v1.py:    def test_target_root_blocked(self):
+backend/tests/test_deploy_preview_v1.py:    def test_target_mismatch(self):
+backend/tests/test_deploy_runner_manual_runtime_failure_operator_checklists_v1.py:    def test_keine_produktiven_targets(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_failure_execution_preview_v1.py:    def test_keine_produktiven_targets(self) -> None:
+backend/tests/test_safe_device_storage_protection_v1.py:    def test_inspect_write_target_mount_predicts_007(self) -> None:
+backend/tests/test_deploy_write_execute_v1.py:    def test_target_mismatch(self):
+backend/tests/test_tauri_config_schema_v1.py:    def test_rename_script_target_deb_name_matches_projection(self) -> None:
+backend/tests/test_core_safety_facade_v1.py:    def test_external_like_target_allowed(self) -> None:
+backend/tests/test_core_safety_facade_v1.py:    def test_restore_target_contract(self) -> None:
+backend/tests/test_core_safety_facade_v1.py:    def test_backup_target_for_write_contract(self) -> None:
+backend/tests/test_rs001_stick_acceptance_v1.py:    def test_target_blocked_for_sda(self) -> None:
+backend/tests/test_rescue_orchestrator_preview_v1.py:    def test_blocked_target(self):
+backend/tests/test_deploy_runner_device_reenumeration_test_plan_v1.py:    def test_required_evidence_contains_target_realpath_fingerprint_before_after(self):
+backend/tests/test_deploy_runner_rescue_recovery_target_validation_v1.py:    def test_wrong_internal_target_blocked(self) -> None:
+backend/tests/test_backup_profiles_v1.py:    def test_filter_excludes_target_overlap(self) -> None:
+backend/tests/test_recovery_minimal_plan_v1.py:    def test_target_missing(self):
+backend/tests/test_deploy_real_write_guard_v1.py:def _inspect(system_type: str = "EMPTY", target_device: str = "/dev/sdz", removable: bool = True, transport: str = "usb", partitions: list[dict] | None = None):
+backend/tests/test_deploy_real_write_guard_v1.py:    def test_ready_on_valid_removable_target(self):
+backend/tests/test_deploy_runner_setuphelfer_runtime_identifier_elimination_v1.py:    def test_targets_keine_tests_und_keine_docs(self) -> None:
+backend/tests/test_storage_detection_fix8_runtime_v1.py:    def test_validate_backup_target_uses_resolved_mount_source(self) -> None:
+backend/tests/test_storage_detection_fix8_runtime_v1.py:    def test_validate_backup_target_non_block_source_detail(self) -> None:
+backend/tests/test_storage_detection_fix8_runtime_v1.py:    def test_validate_backup_target_not_mounted_reason_passthrough(self) -> None:
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:def _report(inspect_result: dict, safety_summary: dict, target_device: str = "/dev/sdz") -> dict:
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_global_dualboot_does_not_hard_block_clean_target(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_global_unknown_only_review_required_for_clean_target(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_target_dualboot_still_blocked(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_target_windows_still_blocked(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_target_mounted_still_blocked(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_clean_removable_target_can_be_test_ready(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_partition_target_resolves_parent_disk(self):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:    def test_multiple_devices_are_scoped_by_target(self):
+backend/tests/test_deploy_real_write_prototype_v1.py:def _write_exec_result(target: str, image_path: str, ws_id: str = "ws123456") -> dict:
+backend/tests/test_deploy_real_write_prototype_v1.py:    def _bootstrap_fc(self, target: str, image_path: str) -> tuple[str, str, dict]:
+backend/tests/test_restore_enforcement_fix12_v1.py:    def test_restore_without_target_dir_returns_missing_error(self) -> None:
+backend/tests/test_restore_enforcement_fix12_v1.py:    def test_restore_with_valid_target_returns_restore_success(self) -> None:
+backend/tests/test_restore_enforcement_fix12_v1.py:    def test_restore_media_target_maps_to_storage_protection(self) -> None:
+backend/tests/test_restore_enforcement_fix12_v1.py:    def test_restore_nowrite_target_maps_to_perm_group(self) -> None:
+backend/tests/test_restore_enforcement_fix12_v1.py:    def test_restore_root_target_is_blocked(self) -> None:
+backend/tests/test_deploy_execute_v1.py:    def _create(self, plan: dict, target_device: str = "/dev/sdx", selected_profile: str = "DEPLOY_PROFILE_MINIMAL_LINUX"):
+backend/tests/test_deploy_execute_v1.py:    def test_target_mismatch(self):
+backend/tests/test_rescue_iso_build_dashboard_state_v1.py:    def test_target_architecture_matrix_contains_candidates_without_final_green(self) -> None:
+backend/tests/test_backup_progress_merge_v1.py:def test_quick_target_preflight_tmp() -> None:
+backend/tests/test_backup_target_permission_diagnostics_v1.py:    def test_target_check_api_maps_006_to_backup_target_traverse_denied(self) -> None:
+backend/tests/test_rescue_offline_backup_plan_v1.py:    def test_ready_valid_external_target(self) -> None:
+backend/tests/test_rescue_offline_backup_plan_v1.py:    def test_blocked_missing_target_path(self) -> None:
+backend/tests/test_rescue_offline_backup_plan_v1.py:    def test_blocked_target_under_source(self) -> None:
+backend/tests/test_deploy_write_plan_v1.py:    def test_target_mismatch_blocked(self):
+backend/tests/test_deploy_write_plan_v1.py:    def test_unknown_target_blocked(self):
+backend/tests/test_deploy_write_plan_v1.py:    def test_valid_empty_target_and_valid_image(self):
+backend/api/routes/partitions.py:async def get_safety_check(
+backend/.venv/lib64/python3.12/site-packages/_pytest/assertion/rewrite.py:def _saferepr(obj: object) -> str:
+backend/.venv/lib64/python3.12/site-packages/_pytest/assertion/rewrite.py:def _get_maxsize_for_saferepr(config: Config | None) -> int | None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/compat.py:def safe_getattr(object: Any, name: str, default: Any) -> Any:
+backend/.venv/lib64/python3.12/site-packages/_pytest/compat.py:def safe_isclass(obj: object) -> bool:
+backend/.venv/lib64/python3.12/site-packages/_pytest/pathlib.py:def safe_exists(p: Path) -> bool:
+backend/.venv/lib64/python3.12/site-packages/_pytest/_io/saferepr.py:def safeformat(obj: object) -> str:
+backend/.venv/lib64/python3.12/site-packages/_pytest/_io/saferepr.py:def saferepr(
+backend/.venv/lib64/python3.12/site-packages/_pytest/_io/saferepr.py:def saferepr_unlimited(obj: object, use_ascii: bool = True) -> str:
+backend/.venv/lib64/python3.12/site-packages/_pytest/_io/pprint.py:def _safe_tuple(t):
+backend/.venv/lib64/python3.12/site-packages/_pytest/_io/pprint.py:    def _safe_repr(
+backend/.venv/lib64/python3.12/site-packages/packaging/direct_url.py:def _strip_auth_from_netloc(netloc: str, safe_user_passwords: Collection[str]) -> str:
+backend/.venv/lib64/python3.12/site-packages/packaging/direct_url.py:def _strip_url(url: str, safe_user_passwords: Collection[str]) -> str:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_validators.py:def _safe_repr(v: Any) -> int | float | str:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_typing_extra.py:def safe_get_annotations(obj: Any) -> dict[str, Any]:
+backend/.venv/lib64/python3.12/site-packages/fastapi/openapi/docs.py:def _html_safe_json(value: Any) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/cachecontrol/filewrapper.py:    def _safe_read(self, amt: int) -> bytes:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/tomli/_parser.py:def make_safe_parse_float(parse_float: ParseFloat) -> ParseFloat:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/tomli/_parser.py:    def safe_parse_float(float_str: str) -> Any:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pygments/formatters/latex.py:    def _find_safe_escape_tokens(self, text):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:    def _warn_unsafe_extraction_path(path):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_name(name):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_version(version):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def _safe_segment(segment):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_extra(extra):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_listdir(path):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:    def safe_sys_path_index(entry):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/rich/traceback.py:        def safe_str(_object: Any) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/rich/_inspect.py:        def safe_getattr(attr_name: str) -> Tuple[Any, Any]:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/rich/pretty.py:def _safe_isinstance(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/rich/box.py:    def substitute(self, options: "ConsoleOptions", safe: bool = True) -> "Box":
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/metadata.py:    def get_fullname(self, filesafe=False):
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/utils/packaging.py:def safe_extra(extra: str) -> NormalizedExtra:
+backend/.venv/lib64/python3.12/site-packages/jinja2/sandbox.py:def safe_range(*args: int) -> range:
+backend/.venv/lib64/python3.12/site-packages/jinja2/sandbox.py:def unsafe(f: F) -> F:
+backend/.venv/lib64/python3.12/site-packages/jinja2/sandbox.py:    def is_safe_attribute(self, obj: t.Any, attr: str, value: t.Any) -> bool:
+backend/.venv/lib64/python3.12/site-packages/jinja2/sandbox.py:    def is_safe_callable(self, obj: t.Any) -> bool:
+backend/.venv/lib64/python3.12/site-packages/jinja2/sandbox.py:    def unsafe_undefined(self, obj: t.Any, attribute: str) -> Undefined:
+backend/.venv/lib64/python3.12/site-packages/jinja2/sandbox.py:    def is_safe_attribute(self, obj: t.Any, attr: str, value: t.Any) -> bool:
+backend/.venv/lib64/python3.12/site-packages/jinja2/filters.py:def do_mark_safe(value: str) -> Markup:
+backend/.venv/lib64/python3.12/site-packages/jinja2/filters.py:def do_mark_unsafe(value: str) -> str:
+backend/.venv/lib64/python3.12/site-packages/jinja2/compiler.py:def has_safe_repr(value: t.Any) -> bool:
+backend/.venv/lib64/python3.12/site-packages/jinja2/utils.py:def htmlsafe_json_dumps(
+backend/.venv/lib64/python3.12/site-packages/jinja2/bccache.py:        def _unsafe_dir() -> "te.NoReturn":
+backend/.venv/lib64/python3.12/site-packages/click/testing.py:        def _safe_fileno(stream: t.IO[t.Any]) -> int:
+backend/.venv/lib64/python3.12/site-packages/click/utils.py:def safecall(func: t.Callable[P, R]) -> t.Callable[P, R | None]:
+backend/.venv/lib64/python3.12/site-packages/click/_compat.py:        def _safe_write(s: str) -> int:
+backend/.venv/lib64/python3.12/site-packages/pygments/formatters/latex.py:    def _find_safe_escape_tokens(self, text):
+backend/.venv/lib64/python3.12/site-packages/starlette/formparsers.py:def _user_safe_decode(src: bytes | bytearray, codec: str) -> str:
+backend/.venv/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:def _saferepr(obj: object) -> str:
+backend/.venv/lib/python3.12/site-packages/_pytest/assertion/rewrite.py:def _get_maxsize_for_saferepr(config: Config | None) -> int | None:
+backend/.venv/lib/python3.12/site-packages/_pytest/compat.py:def safe_getattr(object: Any, name: str, default: Any) -> Any:
+backend/.venv/lib/python3.12/site-packages/_pytest/compat.py:def safe_isclass(obj: object) -> bool:
+backend/.venv/lib/python3.12/site-packages/_pytest/pathlib.py:def safe_exists(p: Path) -> bool:
+backend/.venv/lib/python3.12/site-packages/_pytest/_io/saferepr.py:def safeformat(obj: object) -> str:
+backend/.venv/lib/python3.12/site-packages/_pytest/_io/saferepr.py:def saferepr(
+backend/.venv/lib/python3.12/site-packages/_pytest/_io/saferepr.py:def saferepr_unlimited(obj: object, use_ascii: bool = True) -> str:
+backend/.venv/lib/python3.12/site-packages/_pytest/_io/pprint.py:def _safe_tuple(t):
+backend/.venv/lib/python3.12/site-packages/_pytest/_io/pprint.py:    def _safe_repr(
+backend/.venv/lib/python3.12/site-packages/packaging/direct_url.py:def _strip_auth_from_netloc(netloc: str, safe_user_passwords: Collection[str]) -> str:
+backend/.venv/lib/python3.12/site-packages/packaging/direct_url.py:def _strip_url(url: str, safe_user_passwords: Collection[str]) -> str:
+backend/.venv/lib/python3.12/site-packages/pydantic/_internal/_validators.py:def _safe_repr(v: Any) -> int | float | str:
+backend/.venv/lib/python3.12/site-packages/pydantic/_internal/_typing_extra.py:def safe_get_annotations(obj: Any) -> dict[str, Any]:
+backend/.venv/lib/python3.12/site-packages/fastapi/openapi/docs.py:def _html_safe_json(value: Any) -> str:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/cachecontrol/filewrapper.py:    def _safe_read(self, amt: int) -> bytes:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/tomli/_parser.py:def make_safe_parse_float(parse_float: ParseFloat) -> ParseFloat:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/tomli/_parser.py:    def safe_parse_float(float_str: str) -> Any:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pygments/formatters/latex.py:    def _find_safe_escape_tokens(self, text):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:    def _warn_unsafe_extraction_path(path):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_name(name):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_version(version):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def _safe_segment(segment):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_extra(extra):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:def safe_listdir(path):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pkg_resources/__init__.py:    def safe_sys_path_index(entry):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/rich/traceback.py:        def safe_str(_object: Any) -> str:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/rich/_inspect.py:        def safe_getattr(attr_name: str) -> Tuple[Any, Any]:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/rich/pretty.py:def _safe_isinstance(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/rich/box.py:    def substitute(self, options: "ConsoleOptions", safe: bool = True) -> "Box":
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/metadata.py:    def get_fullname(self, filesafe=False):
+backend/.venv/lib/python3.12/site-packages/pip/_internal/utils/packaging.py:def safe_extra(extra: str) -> NormalizedExtra:
+backend/.venv/lib/python3.12/site-packages/jinja2/sandbox.py:def safe_range(*args: int) -> range:
+backend/.venv/lib/python3.12/site-packages/jinja2/sandbox.py:def unsafe(f: F) -> F:
+backend/.venv/lib/python3.12/site-packages/jinja2/sandbox.py:    def is_safe_attribute(self, obj: t.Any, attr: str, value: t.Any) -> bool:
+backend/.venv/lib/python3.12/site-packages/jinja2/sandbox.py:    def is_safe_callable(self, obj: t.Any) -> bool:
+backend/.venv/lib/python3.12/site-packages/jinja2/sandbox.py:    def unsafe_undefined(self, obj: t.Any, attribute: str) -> Undefined:
+backend/.venv/lib/python3.12/site-packages/jinja2/sandbox.py:    def is_safe_attribute(self, obj: t.Any, attr: str, value: t.Any) -> bool:
+backend/.venv/lib/python3.12/site-packages/jinja2/filters.py:def do_mark_safe(value: str) -> Markup:
+backend/.venv/lib/python3.12/site-packages/jinja2/filters.py:def do_mark_unsafe(value: str) -> str:
+backend/.venv/lib/python3.12/site-packages/jinja2/compiler.py:def has_safe_repr(value: t.Any) -> bool:
+backend/.venv/lib/python3.12/site-packages/jinja2/utils.py:def htmlsafe_json_dumps(
+backend/.venv/lib/python3.12/site-packages/jinja2/bccache.py:        def _unsafe_dir() -> "te.NoReturn":
+backend/.venv/lib/python3.12/site-packages/click/testing.py:        def _safe_fileno(stream: t.IO[t.Any]) -> int:
+backend/.venv/lib/python3.12/site-packages/click/utils.py:def safecall(func: t.Callable[P, R]) -> t.Callable[P, R | None]:
+backend/.venv/lib/python3.12/site-packages/click/_compat.py:        def _safe_write(s: str) -> int:
+backend/.venv/lib/python3.12/site-packages/pygments/formatters/latex.py:    def _find_safe_escape_tokens(self, text):
+backend/.venv/lib/python3.12/site-packages/starlette/formparsers.py:def _user_safe_decode(src: bytes | bytearray, codec: str) -> str:
+backend/recovery/activation_execute.py:def _safe_target_root(target_path: str) -> Path:
+backend/recovery/activation_execute.py:def _safe_under_target(target_root: Path, rel_path: str, *, create_parent: bool = False) -> Path:
+backend/recovery/minimal_execute.py:def _safe_under_target(target_root: Path, rel_path: str, *, create_parent: bool = False) -> Path:
+backend/tests/test_rescue_fat32_esp_payload_update_v1.py:    def _safe_probe(self, **overrides: object) -> dict:
+backend/tests/test_deploy_routes_orchestrator_structure_v1.py:    def test_subrouters_no_unsafe_routes(self) -> None:
+backend/tests/test_write_guard_v1.py:    def test_get_safety_targets_http(self):
+backend/tests/test_rescue_fallback_tui_menu_contract_v1.py:    def test_safe_mode_explanation(self) -> None:
+backend/tests/test_rescue_fallback_tui_menu_contract_v1.py:    def test_network_safe_wrapper(self) -> None:
+backend/tests/test_deploy_plan_v1.py:def _safety(targets: list[dict]) -> dict:
+backend/tests/test_deploy_plan_v1.py:    def test_recommended_only_when_safe(self):
+backend/tests/test_app_router_slice_e1.py:    def test_no_subprocess_storage_safety_mount_duplicates(self) -> None:
+backend/tests/test_deploy_runner_rescue_sandbox_controlled_copy_v1.py:    def _write_gate_safe(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_safety_context_enum(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_build_safety_decision_contract_wrapper(self) -> None:
+backend/tests/test_safety_facade_contracts_v1.py:    def test_normalize_legacy_safety_result(self) -> None:
+backend/tests/test_deploy_runner_permission_boundary_v1.py:    def test_absolute_safe_paths_ok(self):
+backend/tests/test_app_router_slice_e2.py:    def test_no_subprocess_storage_safety_mount_duplicates(self) -> None:
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:def _base_request(target_device: str, inspect_result: dict, safety_summary: dict) -> dict:
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:def _safety(device: str, reason_code: str = "SAFETY_EMPTY_DISK", write_allowed: bool = True) -> dict:
+backend/tests/test_partitions_hardstop_preview_v2.py:    def test_api_hardstop_includes_storage_safety(self):
+backend/tests/test_backup_archive_options_v1.py:def test_build_full_contains_safety_excludes() -> None:
+backend/tests/test_rescue_orchestrator_execute_v1.py:    def test_execute_safety_now_blocked(self):
+backend/tests/test_deploy_runner_api_facade_v1.py:    def test_read_only_route_paths_safe(self) -> None:
+backend/tests/test_devserver_prompt_candidates_v1.py:    def test_safety_rules_contain_no_write(self) -> None:
+backend/tests/test_rescue_network_menu_v1.py:    def test_safe_wrapper_in_common(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def test_safety_blocks_apt_systemctl_chroot_dd(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def test_safety_blocks_iso_img(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def test_safety_blocks_legacy_identifier(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def test_final_gate_blocked_when_safety_blocked(self) -> None:
+backend/tests/test_deploy_runner_handoff_v1.py:    def test_runner_subprocess_called_with_safe_args(self, mock_run):
+backend/tests/test_deploy_runner_rescue_build_sandbox_preparation_v1.py:    def test_safety_validation_ok(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_sandbox_preparation_v1.py:    def test_final_gate_blocked_on_sandbox_safety(self) -> None:
+backend/tests/test_backup_runtime_no_sudo_v1.py:    def test_safe_device_allows_setuphelfer_backups(self) -> None:
+backend/tests/test_deploy_real_write_failure_injection_v1.py:def _safety(device: str) -> dict:
+backend/tests/test_deploy_routes_notifications_v1.py:    def test_no_safe_d9_notifications_slice_documented(self) -> None:
+backend/tests/test_deploy_preview_v1.py:    def test_safety_blocked(self):
+backend/tests/test_deploy_runner_rescue_runtime_assembly_pipeline_v1.py:    def test_safety_validation_ok(self) -> None:
+backend/tests/test_safe_device_storage_protection_v1.py:def _lsblk_safe_usb(mount: str) -> dict:
+backend/tests/test_safe_device_storage_protection_v1.py:    def test_validate_allows_safe_test_mount(self) -> None:
+backend/tests/test_app_router_slice_e3.py:    def test_no_subprocess_storage_safety_mount_duplicates(self) -> None:
+backend/tests/test_partitions_api_v1.py:def test_safety_check_is_read_only(client):
+backend/tests/test_rescue_fallback_tui_v1.py:    def test_fallback_tui_branded_title_and_safe_mode(self) -> None:
+backend/tests/test_rescue_fallback_tui_v1.py:    def test_network_uses_safe_wrapper(self) -> None:
+backend/tests/test_deploy_runner_routes_decoupling_v1.py:    def test_no_new_unsafe_runners_post_routes(self) -> None:
+backend/tests/test_core_safety_facade_v1.py:    def test_build_safety_decision_contract(self) -> None:
+backend/tests/test_core_mount_facade_v1.py:    def test_classify_mount_safety_blocks_host_root_rw(self) -> None:
+backend/tests/test_deploy_routes_runtime_v1.py:    def test_no_unsafe_routes(self) -> None:
+backend/tests/test_deploy_runner_rescue_dry_build_orchestration_v1.py:    def test_safety_validation_ok(self) -> None:
+backend/tests/test_deploy_runner_rescue_dry_build_orchestration_v1.py:    def test_final_gate_blocked_when_safety_blocked(self) -> None:
+backend/tests/test_recovery_minimal_plan_v1.py:    def test_safety_blocked(self):
+backend/tests/test_fullbackup_tar_member_path_v1.py:    def test_is_safe_member_name_allows_dot_and_dot_slash(self) -> None:
+backend/tests/test_fullbackup_tar_member_path_v1.py:    def test_is_safe_member_name_blocks_traversal(self) -> None:
+backend/tests/test_fullbackup_tar_member_path_v1.py:    def test_is_safe_member_name_blocks_absolute(self) -> None:
+backend/tests/test_diagnostics_matcher_hw1_r01_r04_v1.py:    def test_match_restore_path_unsafe_signal(self):
+backend/tests/test_deploy_runner_install_validator_v1.py:    def test_valid_plan_and_safe_snippet_ok_or_review(self):
+backend/tests/test_deploy_real_write_guard_v1.py:def _safety(reason: str = "SAFETY_EMPTY_DISK", allowed: bool = True, device: str = "/dev/sdz"):
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:def _safety(device: str = "/dev/sdz", reason_code: str = "SAFETY_EMPTY_DISK", write_allowed: bool = True) -> dict:
+backend/tests/test_deploy_hardware_gate_target_scoping_v1.py:def _report(inspect_result: dict, safety_summary: dict, target_device: str = "/dev/sdz") -> dict:
+backend/tests/test_deploy_hardware_gate_v1.py:def _safety(reason_code: str = "SAFETY_EMPTY_DISK", allowed: bool = True, device: str = "/dev/sdz"):
+backend/tests/test_dev_dashboard_v1.py:    def test_safe_is_file_permission_error_returns_false(self) -> None:
+backend/tests/test_dev_dashboard_v1.py:    def test_safe_mode_locked_when_runtime_gate_fails(self) -> None:
+backend/tests/test_deploy_runner_rescue_pseudo_boot_integration_v1.py:    def test_safety_validation_ok(self) -> None:
+backend/tests/test_deploy_real_write_prototype_v1.py:def _safety(device: str) -> dict:
+backend/tests/test_deploy_runner_rescue_iso_readiness_pipeline_v1.py:    def test_safety_no_destructive_defaults(self) -> None:
+backend/tests/test_rescue_iso_build_dashboard_state_v1.py:    def test_git_value_uses_safe_directory_for_workspace_repo(self) -> None:
+backend/tests/test_deploy_runner_rescue_api_routes_and_script_v1.py:    def test_controlled_build_script_safety(self) -> None:
+backend/tests/test_rescue_developer_serial_visibility_v1.py:    def test_prepare_network_manager_safety_hook(self) -> None:
+backend/tests/test_deploy_write_plan_v1.py:def _safety(device: str = "/dev/sdz", reason_code: str = "SAFETY_EMPTY_DISK", write_allowed: bool = True) -> dict:
+backend/tests/test_rescue_report_v1.py:    def test_safety_blocked_warns_and_blocks_action(self):
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_sudoers_manifest_blocks_unsafe_patterns(self):
+backend/tests/test_rescue_iso_build_executor_v1.py:    def test_path_resolution_uses_safe_directory_for_git_workspace(self) -> None:
+backend/tests/test_dev_dashboard_greenup_status_v1.py:    def test_usb_write_blocked_counts_as_green_safety_gate(self) -> None:
+backend/oled_display_runner.py:def _safe_percent(value: float) -> int:
+backend/rescue/rescue_fallback_tui.py:def fallback_tui_explains_safe_mode(script_text: str) -> bool:
+backend/rescue/rescue_fallback_tui.py:def fallback_tui_network_uses_safe_wrapper(script_text: str) -> bool:
+backend/rescue/orchestrator.py:def _safety_fingerprint(target_device: str | None, safety_result: dict[str, Any]) -> str:
+backend/rescue/orchestrator.py:def _preview_requires_preflight(safety_reason: str) -> bool:
+backend/rescue/rescue_network_menu.py:def network_common_has_safe_interactive_wrapper(common_text: str) -> bool:
+backend/app.py:        def safe_seg(s: str) -> str:
+backend/core/deploy_job_state.py:def _safe_read_text(path: Path) -> tuple[str | None, str | None]:
+backend/core/deploy_job_state.py:def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+backend/core/system_info_facade.py:def _safe_section(
+backend/core/rescue_build_dashboard_state.py:def _safe_read_text(path: Path) -> tuple[str | None, str | None]:
+backend/core/rescue_build_dashboard_state.py:def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+backend/core/rescue_build_dashboard_state.py:def _artifact_safety(repo: Path) -> dict[str, Any]:
+backend/core/safety_facade.py:def normalize_legacy_safety_result(
+backend/core/safety_facade.py:def build_safety_decision_from_legacy_result(
+backend/core/safety_facade.py:def build_safety_decision(*, target: str, context: str | SafetyContext) -> dict[str, Any]:
+backend/core/safety_facade.py:def build_safety_decision_contract(*, target: str, context: SafetyContext) -> SafetyDecision:
+backend/core/safety_facade.py:def build_write_safety_summary(inspect_result: dict[str, Any]) -> dict[str, Any]:
+backend/core/safety_facade.py:def write_safe_prefixes_resolved() -> tuple[Any, ...]:
+backend/core/system_status_facade.py:def _safe_section(
+backend/core/rescue_iso_build_state.py:def _safe_read_text(path: Path) -> tuple[str | None, str | None]:
+backend/core/rescue_iso_build_state.py:def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+backend/core/partition_storage_facade.py:def build_partition_target_safety_context(
+backend/core/rescue_iso_controlled_build_gate.py:def _safe_read_text(path: Path) -> str | None:
+backend/core/rescue_iso_controlled_build_gate.py:def _safe_read_json(path: Path) -> dict[str, Any] | None:
+backend/core/dev_dashboard_roadmap.py:def _safe_read_text_rel(repo: Path, relative_path: str) -> str:
+backend/core/dev_dashboard.py:def _safe_read_json(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+backend/core/dev_dashboard.py:def _safe_is_file(path: Path) -> bool:
+backend/core/dev_dashboard.py:def _safe_is_dir(path: Path) -> bool:
+backend/core/dev_dashboard.py:def _backup_target_preview_safe() -> dict[str, Any]:
+backend/core/network_info_facade.py:def _safe_section(
+backend/api/routes/partitions.py:async def post_manifest_layout_preview(body: ManifestLayoutPreviewBody) -> dict[str, Any]:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/scripts.py:    def get_manifest(self, exename):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/scripts.py:    def get_manifest(self, exename):
+backend/tests/test_devserver_agent_rescue_runtime_module_path_v1.py:    def test_developer_qemu_manifest_no_public_exposure(self) -> None:
+backend/tests/test_devserver_agent_rescue_iso_dry_build_v1.py:    def test_dry_build_manifest_created(self) -> None:
+backend/tests/test_devserver_agent_rescue_iso_dry_build_v1.py:    def test_repo_dry_build_manifest_ok(self) -> None:
+backend/tests/test_deploy_runner_rescue_backup_discovery_verify_v1.py:    def _write_manifest(self, *, corrupt: bool = False) -> None:
+backend/tests/test_version_consistency_v1.py:    def test_manifest_includes_compact_status_after_bump(self) -> None:
+backend/tests/test_deploy_manifest.py:    def test_build_manifest_contains_expected_fields(self) -> None:
+backend/tests/test_deploy_manifest.py:    def test_build_manifest_rejects_forbidden_path(self) -> None:
+backend/tests/test_deploy_manifest.py:    def test_build_manifest_fails_missing_required_file(self) -> None:
+backend/tests/test_deploy_manifest.py:    def test_compare_manifests_match_fixture(self) -> None:
+backend/tests/test_deploy_manifest.py:    def test_deploy_drift_tolerates_missing_runtime_manifest(self) -> None:
+backend/tests/test_deploy_manifest.py:    def test_deploy_drift_workspace_manifest_missing_warning(self) -> None:
+backend/tests/test_partitions_phase2_safety_contracts_v1.py:def test_manifest_layout_without_manifest_unavailable():
+backend/tests/test_partitions_phase2_safety_contracts_v1.py:def test_manifest_layout_simple_ok():
+backend/tests/test_partitions_phase2_safety_contracts_v1.py:def test_api_manifest_layout_preview_endpoint(api_client):
+backend/tests/test_deploy_runner_rescue_runtime_bundle_manifest_v1.py:    def test_hash_manifest_sha256_known_file(self) -> None:
+backend/tests/test_deploy_runner_rollback_runtime_test_plan_v1.py:    def test_preconditions_contain_manifest_disposable_backup(self):
+backend/tests/test_profile_deploy_manifest_v1.py:    def test_release_manifest_forbids_dev_api(self) -> None:
+backend/tests/test_profile_deploy_manifest_v1.py:    def test_local_lab_manifest_allows_dev_api(self) -> None:
+backend/tests/test_profile_deploy_manifest_v1.py:    def test_manifest_files_exist(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_manifest_includes_compact_status_module(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_manifest_includes_rescue_usb_operator_module(self) -> None:
+backend/tests/test_rescue_graphical_assets_v1.py:def _ts_item_to_manifest(block: str) -> dict[str, object]:
+backend/tests/test_rescue_graphical_assets_v1.py:    def test_asset_manifest_file_when_staged(self) -> None:
+backend/tests/test_deploy_runner_rescue_iso_artifact_preparation_v1.py:    def test_backend_manifest_detects_routes(self) -> None:
+backend/tests/test_deploy_runner_rescue_iso_artifact_preparation_v1.py:    def test_frontend_manifest_sane(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_sandbox_preparation_v1.py:    def test_final_gate_blocked_on_legacy_in_manifest(self) -> None:
+backend/tests/test_deploy_runner_rescue_stick_readonly_build_emulation_v1.py:    def test_evidence_manifest_blocks_iso(self) -> None:
+backend/tests/test_partitions_storage_facade_v1.py:    def test_read_manifest_allowlisted(self):
+backend/tests/test_partitions_storage_facade_v1.py:    def test_read_manifest_rejects_traversal(self):
+backend/tests/test_rescue_developer_qemu_profile_preflight_v1.py:    def test_prepare_manifest_documents_qemu_fields(self) -> None:
+backend/tests/test_rescue_developer_qemu_profile_preflight_v1.py:    def test_qemu_smoke_autopilot_requires_developer_qemu_manifest(self) -> None:
+backend/tests/test_rescue_developer_qemu_profile_preflight_v1.py:    def test_autopilot_rejects_standard_profile_manifest(self) -> None:
+backend/tests/test_partitions_manifest_layout_preview_v2.py:    def test_null_manifest_unavailable(self):
+backend/tests/test_partitions_manifest_layout_preview_v2.py:    def test_inline_manifest_ok(self):
+backend/tests/test_partitions_manifest_layout_preview_v2.py:    def test_file_readonly_manifest(self):
+backend/tests/test_partitions_manifest_layout_preview_v2.py:    def test_invalid_manifest_review_or_blocked(self):
+backend/tests/test_diagnostics_matcher_hw1_r01_r04_v1.py:    def test_match_manifest_missing_signal(self):
+backend/tests/test_rescue_qemu_smoke_autopilot_profile_v1.py:    def test_manifest_server_url_8001(self) -> None:
+backend/tests/test_devserver_agent_rescue_profile_v1.py:    def test_build_manifest_helper(self) -> None:
+backend/tests/test_backup_runner_finalization_v1.py:def test_rewrite_manifest_preserves_payload_hash(tmp_path: Path) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_dryrun_from_handoff_v1.py:    def _write_manifest(self, vif: list[str]) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_dryrun_from_handoff_v1.py:    def test_valid_manifest_runs_validator_dryrun(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_dryrun_from_handoff_v1.py:    def test_missing_manifest_blocked(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_dryrun_from_handoff_v1.py:    def test_manifest_outside_handoff_blocked(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_dryrun_from_handoff_v1.py:    def test_symlink_manifest_blocked(self) -> None:
+backend/tests/test_rescue_restore_preview_plan_v1.py:    def test_blocked_missing_manifest(self) -> None:
+backend/tests/test_backup_recovery_engines.py:    def test_unix_socket_is_skipped_and_manifest_skipped_members(self):
+backend/tests/test_backup_recovery_engines.py:    def test_verify_deep_fails_on_manifest_archive_mismatch(self):
+backend/tests/test_backup_recovery_engines.py:    def test_create_file_backup_fails_when_manifest_missing_in_archive_after_write(self):
+backend/tests/test_backup_recovery_engines.py:    def test_verify_deep_rejects_corrupt_manifest_json(self):
+backend/tests/test_backup_recovery_engines.py:    def test_verify_deep_hardlink_fails_when_target_sha256_wrong_in_manifest(self):
+backend/tests/test_backup_recovery_engines.py:    def test_manifest_hashes(self):
+backend/tests/test_backup_recovery_engines.py:    def test_embed_adds_manifest_to_plain_tar_gz(self):
+backend/tests/test_deploy_runner_manual_runtime_result_validator_handoff_gate_v1.py:    def test_ready_bundle_writes_manifest(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_handoff_gate_v1.py:    def test_existing_manifest_blocks_without_overwrite(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_handoff_gate_v1.py:    def test_explicit_overwrite_replaces_manifest(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_result_validator_handoff_gate_v1.py:    def test_handoff_manifest_only_under_handoff_subpath(self) -> None:
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_file_manifest_contains_runner(self):
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_directory_manifest_contains_deploy_jobs(self):
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_permission_manifest_blocks_world_writable(self):
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_sudoers_manifest_auto_install_false(self):
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_sudoers_manifest_blocks_unsafe_patterns(self):
+backend/tests/test_deploy_runner_package_blueprint_v1.py:    def test_rollback_manifest_auto_allowed_false(self):
+backend/tests/test_rescue_iso_build_executor_v1.py:    def test_validate_bundle_uses_workspace_manifest_path(self) -> None:
+backend/tests/test_backup_profiles_offline_full_v1.py:    def test_manifest_and_sha256(self) -> None:
+backend/tests/test_runtime_deploy_gate_eval_v1.py:def test_deploy_drift_manifest_mismatch() -> None:
+backend/rescue/rescue_graphical_assets.py:def build_asset_manifest_entry(source: Path, spec: RescueAssetSpec, repo_root: Path) -> dict[str, Any]:
+backend/rescue/rescue_graphical_assets.py:def build_asset_manifest(repo_root: Path) -> dict[str, Any]:
+backend/rescue/rescue_evidence_spool.py:def build_spool_layout_manifest(base: Path | None = None) -> dict[str, Any]:
+backend/devserver_agent/rescue_profile.py:def _read_manifest(path: Path) -> dict[str, Any]:
+backend/devserver_agent/rescue_profile.py:def build_developer_profile_manifest(profile_root: str | Path) -> dict[str, Any]:
+backend/devserver_agent/rescue_iso_dry_build.py:def validate_rescue_developer_iso_dry_build(manifest: dict[str, Any]) -> dict[str, Any]:
+backend/devserver_agent/rescue_iso_dry_build.py:def build_rescue_developer_iso_dry_build_manifest(
+backend/app.py:def _backup_evidence_manifest_paths(job_id: str) -> list[Path]:
+backend/app.py:def _read_backup_evidence_manifest_disk(job_id: str) -> tuple[Optional[Path], Optional[dict]]:
+backend/app.py:def _normalize_evidence_api_payload(manifest: Optional[dict], manifest_path: Optional[Path]) -> dict[str, Any]:
+backend/app.py:    def _embed_manifest_after_tar(path: Optional[str]) -> tuple[bool, str | None]:
+backend/core/update_check.py:def _runtime_manifest(runtime_root: Path) -> dict[str, Any] | None:
+backend/core/backup_readonly_runtime.py:def read_backup_evidence_manifest_disk(job_id: str):
+backend/core/backup_readonly_runtime.py:def normalize_evidence_api_payload(manifest, path):
+backend/core/partition_storage_facade.py:def read_backup_manifest_readonly(manifest_path: str | None) -> tuple[dict[str, Any] | None, str | None]:
+backend/core/profile_deploy_manifest.py:def profile_manifest_path(profile: str, root: Path | None = None) -> Path:
+backend/core/profile_deploy_manifest.py:def load_profile_manifest(profile: str, root: Path | None = None) -> dict[str, Any]:
+backend/core/profile_deploy_manifest.py:def manifest_sha256(path: Path) -> str | None:
+backend/core/profile_deploy_manifest.py:def build_profile_manifest_data(profile: str, root: Path | None = None) -> dict[str, Any]:
+backend/core/dev_dashboard.py:def _default_manifest_drift_slice() -> dict[str, Any]:
+backend/core/dev_dashboard.py:def _append_manifest_suggestions(suggested: list[str], mw: list[str]) -> None:
+backend/core/dev_dashboard.py:def _merge_manifest_into_deploy_drift(
+backend/core/rescue_telemetry_tasks.py:def validate_task_manifest(task: dict[str, Any]) -> tuple[bool, str | None]:
+backend/core/deploy_manifest.py:def workspace_manifest_path(repo_root: Path) -> Path:
+backend/core/deploy_manifest.py:def runtime_manifest_candidates(runtime_root: Path) -> tuple[Path, Path]:
+backend/core/deploy_manifest.py:def validate_manifest_relative_path(rel: str) -> str:
+backend/core/deploy_manifest.py:def build_manifest_data(repo_root: Path) -> dict[str, Any]:
+backend/core/deploy_manifest.py:def _safe_read_manifest(path: Path) -> tuple[dict[str, Any] | None, str | None]:
+backend/core/deploy_manifest.py:def file_hashes_from_manifest(data: dict[str, Any]) -> dict[str, str]:
+backend/core/deploy_manifest.py:def compare_manifest_payloads(ws: dict[str, Any] | None, rt: dict[str, Any] | None) -> tuple[bool | None, list[str]]:
+backend/core/deploy_manifest.py:def manifest_drift_for_roots(*, workspace_root: Path, runtime_root: Path | None) -> dict[str, Any]:
+backend/modules/backup_verify.py:def _manifest_path_to_staging(path_value: str, staging: Path) -> Path:
+backend/modules/backup_verify.py:def _manifest_row_key(path_value: str) -> str:
+backend/modules/backup_verify.py:def _sha256_archive_payload_without_manifest(archive_path: Path) -> str:
+backend/modules/rescue_backup_discovery.py:def classify_backup_type(manifest: dict[str, Any] | None, basename: str) -> str:
+backend/modules/backup_engine.py:def _public_manifest_entry(ent: Mapping[str, Any]) -> dict[str, Any]:
+backend/modules/backup_engine.py:def create_manifest(
+backend/modules/backup_engine.py:def write_manifest_to_file(manifest: Mapping[str, Any], path: str | Path) -> tuple[bool, str | None]:
+backend/modules/backup_engine.py:def archive_contains_manifest(archive_path: str | Path) -> bool:
+backend/modules/backup_engine.py:def embed_manifest_in_tar_gz(archive_path: str | Path) -> tuple[bool, str | None]:
+backend/tools/backup_runner.py:def _rewrite_manifest_in_archive(
+backend/venv/lib64/python3.12/site-packages/pip/_vendor/distlib/scripts.py:    def get_manifest(self, exename):
+backend/venv/lib/python3.12/site-packages/pip/_vendor/distlib/scripts.py:    def get_manifest(self, exename):
+backend/.venv-ci/lib64/python3.12/site-packages/pip/_vendor/distlib/scripts.py:    def get_manifest(self, exename):
+backend/.venv-ci/lib/python3.12/site-packages/pip/_vendor/distlib/scripts.py:    def get_manifest(self, exename):
+backend/deploy/runner_rescue_pseudo_boot_integration.py:def build_rescue_pseudo_boot_manifest(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_rescue_stick_readonly_build_emulation.py:def build_rescue_stick_evidence_manifest(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_manual_runtime_result_validator_dryrun_from_handoff.py:def _resolve_handoff_manifest_read(rel_path: str) -> tuple[Path | None, str | None]:
+backend/deploy/routes.py:async def post_deploy_rescue_stick_build_emulation_evidence_manifest(
+backend/deploy/routes.py:async def post_deploy_rescue_pseudo_boot_manifest(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_runtime_bundle_hash_manifest(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/runner_package_blueprint.py:def _manifest_file(path: str, owner: str, group: str, mode: str) -> dict[str, Any]:
+backend/deploy/runner_package_blueprint.py:def _manifest_dir(path: str, owner: str, group: str, mode: str) -> dict[str, Any]:
+backend/deploy/runner_manual_runtime_result_validator_handoff_gate.py:def _resolve_handoff_manifest_path(rel_path: str) -> tuple[Path | None, str | None]:
+backend/deploy/runner_rescue_runtime_bundle_manifest.py:def build_rescue_runtime_bundle_hash_manifest(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/.venv/lib64/python3.12/site-packages/requests/adapters.py:    def cert_verify(self, conn, url, verify, cert):
+backend/.venv/lib64/python3.12/site-packages/requests/adapters.py:    def build_connection_pool_key_attributes(self, request, verify, cert=None):
+backend/.venv/lib64/python3.12/site-packages/requests/adapters.py:    def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):
+backend/.venv/lib64/python3.12/site-packages/requests/sessions.py:    def merge_environment_settings(self, url, proxies, stream, verify, cert):
+backend/.venv/lib64/python3.12/site-packages/pydantic/functional_validators.py:        def verify_square(self) -> Self:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/actions.py:    def verify_col(strg, locn, toks):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/adapters.py:    def cert_verify(self, conn, url, verify, cert):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/sessions.py:    def merge_environment_settings(self, url, proxies, stream, verify, cert):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def verify_mode(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def verify_mode(self, value):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def set_default_verify_paths(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def load_verify_locations(self, cafile=None, capath=None, cadata=None):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:def _verify_callback(cnx, x509, err_no, err_depth, return_code):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def _custom_validate(self, verify, trust_bundle):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def verify_mode(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def verify_mode(self, value):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def set_default_verify_paths(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def load_verify_locations(self, cafile=None, capath=None, cadata=None):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/util/ssl_.py:        def load_verify_locations(self, cafile=None, capath=None, cadata=None):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_windows.py:def _verify_peercerts_impl(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_windows.py:def _get_and_verify_cert_chain(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_windows.py:def _verify_using_custom_ca_certs(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_ssl_constants.py:def _set_ssl_context_verify_mode(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_openssl.py:def _verify_peercerts_impl(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def load_verify_locations(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_flags(self) -> ssl.VerifyFlags:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_flags(self, value: ssl.VerifyFlags) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_mode(self) -> ssl.VerifyMode:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_mode(self, value: ssl.VerifyMode) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_api.py:def _verify_peercerts(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_macos.py:def _verify_peercerts_impl(
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/index.py:    def get_verify_command(self, signature_filename, data_filename,
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/index.py:    def verify_signature(self, signature_filename, data_filename,
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/wheel.py:    def __init__(self, filename=None, sign=False, verify=False):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/distlib/wheel.py:    def verify(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/network/session.py:    def cert_verify(
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/network/session.py:    def cert_verify(
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/wheel_builder.py:def _verify_one(req: InstallRequirement, wheel_path: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/cffi/api.py:    def verify(self, source='', tmpdir=None, **kwargs):
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_flags(self) -> int:
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_flags(self, value: int) -> None:
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_mode(self) -> int:
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_mode(self, value: ssl.VerifyMode) -> None:
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def set_default_verify_paths(self) -> None:
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def load_verify_locations(
+backend/.venv/lib64/python3.12/site-packages/urllib3/contrib/pyopenssl.py:def _verify_callback(
+backend/.venv/lib64/python3.12/site-packages/pluggy/_hooks.py:    def _verify_all_args_are_provided(self, kwargs: Mapping[str, object]) -> None:
+backend/.venv/lib64/python3.12/site-packages/pluggy/_manager.py:    def _verify_hook(self, hook: HookCaller, hookimpl: HookImpl) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/fernet.py:    def _verify_signature(self, data: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/x509/ocsp.py:def _verify_algorithm(algorithm: hashes.HashAlgorithm) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/x509.pyi:    def verify_directly_issued_by(self, issuer: Certificate) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/x509.pyi:    def verify(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/x509.pyi:    def verify(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/test_support.pyi:def pkcs7_verify(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/cmac.pyi:    def verify(self, signature: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/hmac.pyi:    def verify(self, signature: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify_phc_encoded(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/poly1305.pyi:    def verify_tag(key: Buffer, data: Buffer, tag: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/poly1305.pyi:    def verify(self, tag: bytes) -> None: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/openssl/binding.py:def _verify_package_version(version: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/openssl/_conditional.py:def cryptography_has_ssl_verify_client_post_handshake() -> list[str]:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/twofactor/totp.py:    def verify(self, totp: bytes, time: int) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/twofactor/hotp.py:    def verify(self, hotp: bytes, counter: int) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/pbkdf2.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/x963kdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/kbkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/kbkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/__init__.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/concatkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/kdf/concatkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/ec.py:    def verify(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/ed25519.py:    def verify(self, signature: Buffer, data: Buffer) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/ed448.py:    def verify(self, signature: Buffer, data: Buffer) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/dsa.py:    def verify(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/rsa.py:    def verify(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/rsa.py:def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/_cipheralgorithm.py:def _verify_key_size(
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/primitives/serialization/ssh.py:    def verify_cert_signature(self) -> None:
+backend/.venv/lib/python3.12/site-packages/requests/adapters.py:    def cert_verify(self, conn, url, verify, cert):
+backend/.venv/lib/python3.12/site-packages/requests/adapters.py:    def build_connection_pool_key_attributes(self, request, verify, cert=None):
+backend/.venv/lib/python3.12/site-packages/requests/adapters.py:    def get_connection_with_tls_context(self, request, verify, proxies=None, cert=None):
+backend/.venv/lib/python3.12/site-packages/requests/sessions.py:    def merge_environment_settings(self, url, proxies, stream, verify, cert):
+backend/.venv/lib/python3.12/site-packages/pydantic/functional_validators.py:        def verify_square(self) -> Self:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pyparsing/actions.py:    def verify_col(strg, locn, toks):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/requests/adapters.py:    def cert_verify(self, conn, url, verify, cert):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/requests/sessions.py:    def merge_environment_settings(self, url, proxies, stream, verify, cert):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def verify_mode(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def verify_mode(self, value):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def set_default_verify_paths(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:    def load_verify_locations(self, cafile=None, capath=None, cadata=None):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/pyopenssl.py:def _verify_callback(cnx, x509, err_no, err_depth, return_code):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def _custom_validate(self, verify, trust_bundle):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def verify_mode(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def verify_mode(self, value):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def set_default_verify_paths(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/contrib/securetransport.py:    def load_verify_locations(self, cafile=None, capath=None, cadata=None):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/ssl_.py:        def load_verify_locations(self, cafile=None, capath=None, cadata=None):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_windows.py:def _verify_peercerts_impl(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_windows.py:def _get_and_verify_cert_chain(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_windows.py:def _verify_using_custom_ca_certs(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_ssl_constants.py:def _set_ssl_context_verify_mode(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_openssl.py:def _verify_peercerts_impl(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def load_verify_locations(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_flags(self) -> ssl.VerifyFlags:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_flags(self, value: ssl.VerifyFlags) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_mode(self) -> ssl.VerifyMode:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py:    def verify_mode(self, value: ssl.VerifyMode) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_api.py:def _verify_peercerts(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_macos.py:def _verify_peercerts_impl(
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/index.py:    def get_verify_command(self, signature_filename, data_filename,
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/index.py:    def verify_signature(self, signature_filename, data_filename,
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/wheel.py:    def __init__(self, filename=None, sign=False, verify=False):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/distlib/wheel.py:    def verify(self):
+backend/.venv/lib/python3.12/site-packages/pip/_internal/network/session.py:    def cert_verify(
+backend/.venv/lib/python3.12/site-packages/pip/_internal/network/session.py:    def cert_verify(
+backend/.venv/lib/python3.12/site-packages/pip/_internal/wheel_builder.py:def _verify_one(req: InstallRequirement, wheel_path: str) -> None:
+backend/.venv/lib/python3.12/site-packages/cffi/api.py:    def verify(self, source='', tmpdir=None, **kwargs):
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_flags(self) -> int:
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_flags(self, value: int) -> None:
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_mode(self) -> int:
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def verify_mode(self, value: ssl.VerifyMode) -> None:
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def set_default_verify_paths(self) -> None:
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:    def load_verify_locations(
+backend/.venv/lib/python3.12/site-packages/urllib3/contrib/pyopenssl.py:def _verify_callback(
+backend/.venv/lib/python3.12/site-packages/pluggy/_hooks.py:    def _verify_all_args_are_provided(self, kwargs: Mapping[str, object]) -> None:
+backend/.venv/lib/python3.12/site-packages/pluggy/_manager.py:    def _verify_hook(self, hook: HookCaller, hookimpl: HookImpl) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/fernet.py:    def _verify_signature(self, data: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/x509/ocsp.py:def _verify_algorithm(algorithm: hashes.HashAlgorithm) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/x509.pyi:    def verify_directly_issued_by(self, issuer: Certificate) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/x509.pyi:    def verify(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/x509.pyi:    def verify(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/test_support.pyi:def pkcs7_verify(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/cmac.pyi:    def verify(self, signature: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/hmac.pyi:    def verify(self, signature: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify_phc_encoded(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/kdf.pyi:    def verify(self, key_material: bytes, expected_key: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/poly1305.pyi:    def verify_tag(key: Buffer, data: Buffer, tag: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/openssl/poly1305.pyi:    def verify(self, tag: bytes) -> None: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/openssl/binding.py:def _verify_package_version(version: str) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/openssl/_conditional.py:def cryptography_has_ssl_verify_client_post_handshake() -> list[str]:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/twofactor/totp.py:    def verify(self, totp: bytes, time: int) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/twofactor/hotp.py:    def verify(self, hotp: bytes, counter: int) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/pbkdf2.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/x963kdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/kbkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/kbkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/__init__.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/concatkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/kdf/concatkdf.py:    def verify(self, key_material: bytes, expected_key: bytes) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/ec.py:    def verify(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/ed25519.py:    def verify(self, signature: Buffer, data: Buffer) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/ed448.py:    def verify(self, signature: Buffer, data: Buffer) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/dsa.py:    def verify(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/rsa.py:    def verify(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/asymmetric/rsa.py:def _verify_rsa_parameters(public_exponent: int, key_size: int) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/_cipheralgorithm.py:def _verify_key_size(
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/primitives/serialization/ssh.py:    def verify_cert_signature(self) -> None:
+backend/tests/test_backup_runner_write_io_v1.py:def test_backup_codes_no_verify_on_write_io_documented() -> None:
+backend/tests/test_deploy_runner_rescue_backup_discovery_verify_v1.py:    def test_verify_ok(self) -> None:
+backend/tests/test_rescue_fat32_esp_payload_update_v1.py:    def test_script_invokes_verify_after_update(self) -> None:
+backend/tests/test_rescue_fat32_esp_payload_update_v1.py:    def test_script_removes_sqtmp_before_verify(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_environment_emulation_v1.py:    def test_verify_blocks_legacy(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_environment_emulation_v1.py:    def test_verify_blocks_real_artifact_file(self) -> None:
+backend/tests/test_diagnosis_api.py:    def test_interpret_backup_verify_failed(self):
+backend/tests/test_backup_runner_tar_exit1_integration_v1.py:    def test_volatile_final_sha256_no_verify(self) -> None:
+backend/tests/test_rescue_fat32_esp_usb_v1.py:    def test_fat32_esp_grub_verify_fails_missing_kernel(self) -> None:
+backend/tests/test_backup_tar_warning_classification_v1.py:    def test_downgrade_requires_archive_sha256_verify(self) -> None:
+backend/tests/test_deploy_runner_rescue_sandbox_controlled_copy_v1.py:    def test_verify_blocks_hash_mismatch(self) -> None:
+backend/tests/test_deploy_runner_failure_injection_hardware_test_plan_v1.py:    def test_required_evidence_contains_bytes_verify_mismatchoffset_audit(self):
+backend/tests/test_post_restore_validation_v1.py:    def test_execute_integration_post_verify_present(self):
+backend/tests/test_rescue_orchestrator_execute_v1.py:    def test_execute_verify_failed(self):
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_verify_runtime_files_detects_missing_module(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_verify_runtime_files_ok_when_sha256_matches(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_verify_app_route_markers_detects_missing_compact_route(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_verify_openapi_paths_detects_missing_route(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_run_post_rsync_verify_combines_checks(self) -> None:
+backend/tests/test_deploy_real_write_failure_injection_v1.py:    def test_fail_after_chunks_partial_verify_failed(self):
+backend/tests/test_deploy_real_write_failure_injection_v1.py:    def test_fail_verify_mismatch(self):
+backend/tests/test_rescue_fat32_esp_usb_verify_v1.py:    def test_verify_script_rejects_sqtmp_on_mount(self) -> None:
+backend/tests/test_rescue_fat32_esp_usb_verify_v1.py:    def test_bootx64_verify_fails_iso_copied(self) -> None:
+backend/tests/test_rescue_fat32_esp_usb_verify_v1.py:    def test_bootx64_verify_ok_standalone(self) -> None:
+backend/tests/test_rescue_fat32_esp_usb_verify_v1.py:    def test_verify_script_supports_expected_hash_flag(self) -> None:
+backend/tests/test_diagnostics_matcher_v1.py:    def test_verify_integrity_failed_signal(self):
+backend/tests/test_rescue_orchestrator_preview_v1.py:    def test_verify_failed(self):
+backend/tests/test_deploy_runner_manual_runtime_result_bundle_checker_v1.py:    def test_verify_mismatch_blocked(self) -> None:
+backend/tests/test_deploy_runner_runtime_runbook_bundle_v1.py:    def test_global_stop_conditions_contain_operator_systemdisk_verify(self):
+backend/tests/test_diagnostics_matcher_hw1_r01_r04_v1.py:    def test_match_verify_hash_mismatch_signal(self):
+backend/tests/test_deploy_runner_runtime_result_validator_v1.py:    def test_verify_mismatch_blocked(self) -> None:
+backend/tests/test_deploy_runner_real_write_hardware_e2e_test_plan_v1.py:    def test_test_steps_contain_verify_sha256(self):
+backend/tests/test_deploy_real_write_prototype_v1.py:    def test_verify_mismatch_failed(self):
+backend/tests/test_deploy_real_write_prototype_v1.py:    def test_verify_written_range_mismatch_unit(self):
+backend/tests/test_diagnosis_interpreter_v1.py:    def test_backup_verify_failed(self):
+backend/tests/test_rescue_restore_preview_plan_v1.py:    def test_review_required_verify_unknown(self) -> None:
+backend/tests/test_backup_target_service_access_v1.py:def test_assert_backup_user_media_classification(
+backend/tests/test_backup_runner_tar_exit1_integration_v1.py:    def test_status_json_contains_classification(self) -> None:
+backend/tests/test_notification_email_provider_limit_v1.py:    def test_classify_provider_limit_error(self) -> None:
+backend/tests/test_partitions_phase2_safety_contracts_v1.py:def test_system_disk_classification_blocked():
+backend/tests/test_deploy_runner_registry_v1.py:    def test_usb_stick_classified_rescue_usb(self) -> None:
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:    def test_usb_rotational_zero_classified_as_flash_or_ssd(self):
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:    def test_usb_rotational_one_classified_as_hdd(self):
+backend/tests/test_deploy_hardware_gate_metadata_v1.py:    def test_mmc_device_classified_as_sd_card(self):
+backend/tests/test_notification_settings_api_v1.py:    def test_classify_smtp_535(self) -> None:
+backend/tests/test_notification_settings_api_v1.py:    def test_classify_smtp_tls(self) -> None:
+backend/tests/test_storage_facade_contracts_v1.py:    def test_classify_storage_target_heuristic_mocked(self) -> None:
+backend/tests/test_storage_facade_contracts_v1.py:    def test_classify_device_from_existing_result(self) -> None:
+backend/tests/test_rescue_start_assistant_v1.py:    def test_disk_discovery_classifies_rescue_stick(self) -> None:
+backend/tests/test_dev_diagnostic_export_v1.py:    def test_serial_zero_classifies_serial_empty(self) -> None:
+backend/tests/test_dev_diagnostic_export_v1.py:    def test_markdown_contains_run_id_and_classification(self) -> None:
+backend/tests/test_service_conflict_guard_v1.py:    def test_classify_033_when_legacy_active(self, mock_port, mock_active):
+backend/tests/test_service_conflict_guard_v1.py:    def test_classify_036_newer_on_disk(self, mock_paths, mock_root):
+backend/tests/test_safe_device_storage_protection_v1.py:    def test_system_disk_classified(self) -> None:
+backend/tests/test_safe_device_storage_protection_v1.py:    def test_windows_disk_classified_foreign(self) -> None:
+backend/tests/test_core_mount_facade_v1.py:    def test_classify_mount_safety_blocks_host_root_rw(self) -> None:
+backend/tests/test_version_projection_v1.py:    def test_classify_semver_artifact_as_projection_with_warning(self) -> None:
+backend/tests/test_version_projection_v1.py:    def test_classify_project_artifact_as_ok(self) -> None:
+backend/tests/test_backup_recovery_engines.py:    def test_classify_devices_categories(self) -> None:
+backend/rescue/rescue_ui_launcher.py:def classify_browser_candidate(found: str | None) -> str:
+backend/devserver_agent/rescue_iso_dry_build.py:def _artifact_classification(path: Path) -> str:
+backend/core/service_conflict_guard.py:def classify_service_conflicts(port: int = 8000) -> list[ServiceConflict]:
+backend/core/notification_settings.py:def classify_smtp_error(error: str | None) -> str | None:
+backend/core/rescue_vm_boot_smoke.py:def classify_vm_boot_smoke_logs(
+backend/core/rescue_vm_boot_smoke.py:def classify_live_system_boot_logs(
+backend/core/rescue_vm_boot_smoke.py:def classify_visual_live_functional_validation(
+backend/core/backup_tar_warning_classification.py:def classify_tar_run(
+backend/core/backup_tar_warning_classification.py:def classification_to_job_status_fields(result: TarClassificationResult) -> dict[str, Any]:
+backend/core/backup_target_service_access.py:def _classify_not_writable(resolved: Path, detail: str) -> ValueError:
+backend/core/storage_role_classification.py:def classify_disk_storage_role(
+backend/core/storage_role_classification.py:def classify_scan_disks(
+backend/core/storage_role_classification.py:def find_classification_for_target(
+backend/core/storage_role_classification.py:def classification_to_hardstop_flags(classification: dict[str, Any]) -> dict[str, Any]:
+backend/core/partition_storage_facade.py:def _write_guard_to_classification(
+backend/core/rescue_iso_controlled_build_gate.py:def classify_rescue_iso_build_attempt(
+backend/core/rescue_iso_uefi_classify.py:def classify_uefi_iso(signals: UefiIsoSignals) -> dict[str, Any]:
+backend/core/rescue_iso_uefi_classify.py:def classify_rescue_uefi_gate(
+backend/core/storage_facade.py:def classify_storage_devices(rows: list[dict[str, Any]]) -> dict[str, Any]:
+backend/core/storage_facade.py:def classify_storage_target(path_or_device: str, *, runner: Runner = None) -> StorageTargetClassification:
+backend/core/storage_facade.py:def list_classified_devices(*, runner: Runner = None) -> list[Any]:
+backend/core/storage_facade.py:def classify_devices_for_inspect(devices_raw: list[dict[str, Any]]) -> list[dict[str, Any]]:
+backend/core/storage_facade.py:def classify_device_from_existing_result(
+backend/core/mount_facade.py:def classify_mount_safety(mounts: list[dict[str, Any]]) -> dict[str, Any]:
+backend/core/dev_diagnostic_export.py:def classify_qemu_smoke_failure(export: dict[str, Any]) -> dict[str, Any]:
+backend/core/safe_device.py:def _classify_one_disk(
+backend/core/safe_device.py:def list_classified_devices(*, runner: Runner | None = None) -> list[ClassifiedDevice]:
+backend/core/safe_device.py:def _classified_for_block(block_path: str, *, runner: Runner | None = None) -> ClassifiedDevice:
+backend/core/safe_device.py:def _fail_from_classification(cd: ClassifiedDevice) -> None:
+backend/core/windows_rescue_inspect.py:def classify_diagnostic_codes(report: dict[str, Any]) -> list[str]:
+backend/core/rescue_usb_operator_selection.py:def device_blocked_reason(*, device_path: str, classified: ClassifiedDevice, transport: str) -> str | None:
+backend/core/version_projection.py:def classify_bundle_filename(name: str, projection: VersionProjection) -> dict[str, Any]:
+backend/modules/storage_detection.py:def classify_devices(devices: Sequence[Mapping[str, Any]]) -> list[dict[str, Any]]:
+backend/modules/storage_detection.py:    def classify_one(node: Mapping[str, Any]) -> str:
+backend/modules/rescue_backup_discovery.py:def classify_backup_type(manifest: dict[str, Any] | None, basename: str) -> str:
+backend/modules/inspect_storage.py:def smart_classify_disk(disk_dev: str, *, runner: Runner | None = None) -> dict[str, Any]:
+backend/inspect/advisor.py:def generate_advice(classification: dict[str, Any], inspect_result: dict[str, Any]) -> dict[str, Any]:
+backend/inspect/classifier.py:def classify_system(inspect_result: dict[str, Any]) -> dict[str, Any]:
+backend/deploy/runner_legacy_identifier_inventory.py:def _classify(path: str, line_text: str) -> str:
+backend/deploy/runner_version_governance.py:def _classify_bump(*, changes: list[str]) -> str:
+backend/deploy/routes_evidence.py:async def post_deploy_legacy_identifier_cleanup_classification(
+backend/deploy/runner_registry.py:def _classify_category(name: str, text: str) -> RunnerCategory:
+backend/deploy/runner_registry.py:def _classify_risk(
+backend/deploy/runner_registry.py:def classify_runner_file(
+backend/deploy/runner_legacy_runtime_compatibility_validation.py:def _classify_legacy_runtime_row(path: str, tokens: list[str]) -> list[str]:
+backend/deploy/plan.py:def _merge_classification(inspect_result: dict[str, Any], classification: dict[str, Any] | None) -> dict[str, Any]:
+backend/deploy/plan.py:def _system_assessment(classification: dict[str, Any], blocked_steps: list[str]) -> dict[str, Any]:
+backend/deploy/runner_legacy_identifier_cleanup_classifier.py:def _classify_one(
+backend/deploy/runner_legacy_identifier_cleanup_classifier.py:def classify_active_legacy_identifiers(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/safety/write_guard.py:def _find_disk_node(classified: list[Any], device: str) -> dict[str, Any] | None:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesWrite(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesContext(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pygments/util.py:def surrogatepair(c):
+backend/.venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def delegate_to_executor(*attrs):
+backend/.venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def cond_delegate_to_executor(*attrs):
+backend/.venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_delegate_method(attr_name):
+backend/.venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_cond_delegate_method(attr_name):
+backend/.venv/lib64/python3.12/site-packages/pygments/util.py:def surrogatepair(c):
+backend/.venv/lib64/python3.12/site-packages/pygments/lexers/markup.py:    def delegate_tag_rules(tag_name, lexer, **lexer_kwargs):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesWrite(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesContext(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/pygments/util.py:def surrogatepair(c):
+backend/.venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def delegate_to_executor(*attrs):
+backend/.venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def cond_delegate_to_executor(*attrs):
+backend/.venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_delegate_method(attr_name):
+backend/.venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_cond_delegate_method(attr_name):
+backend/.venv/lib/python3.12/site-packages/pygments/util.py:def surrogatepair(c):
+backend/.venv/lib/python3.12/site-packages/pygments/lexers/markup.py:    def delegate_tag_rules(tag_name, lexer, **lexer_kwargs):
+backend/tests/test_deploy_runner_rescue_build_environment_emulation_v1.py:    def _write_handoffs_for_final_gate(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_environment_emulation_v1.py:    def test_final_gate_blocked_missing_seal(self) -> None:
+backend/tests/test_dcc_status_facade_delegation_f4.py:    def test_profile_gate_still_in_readonly_backend_health(self) -> None:
+backend/tests/test_system_info_without_app_dependency_g9.py:    def test_app_legacy_wrappers_delegate_to_hardware_discovery(self) -> None:
+backend/tests/test_system_info_without_app_dependency_g9.py:    def test_diagnostics_delegate_to_hardware_discovery(self) -> None:
+backend/tests/test_backend_version_gate_v1.py:    def test_api_version_success_has_gate_fields(self) -> None:
+backend/tests/test_backend_version_gate_v1.py:    def test_version_gate_script_exists(self) -> None:
+backend/tests/test_backend_version_gate_v1.py:    def test_cursor_rules_mention_gate_script(self) -> None:
+backend/tests/test_backend_version_gate_v1.py:    def test_runtime_deploy_gate_scripts_exist(self) -> None:
+backend/tests/test_backend_version_gate_v1.py:    def test_runtime_deploy_gate_shell_syntax(self) -> None:
+backend/tests/test_backend_version_gate_v1.py:    def test_backend_version_gate_shell_syntax(self) -> None:
+backend/tests/test_dcc_status_facade_router_migration_v1.py:    def test_profile_gate_preserved_in_status_service(self) -> None:
+backend/tests/test_deploy_runner_rescue_sandbox_controlled_copy_v1.py:    def _write_gate_safe(self) -> None:
+backend/tests/test_deploy_runner_rescue_sandbox_controlled_copy_v1.py:    def test_final_gate_blocks_legacy_in_result_json(self) -> None:
+backend/tests/test_rescue_iso_build_result_classification_v1.py:    def test_controlled_gate_message_maps_to_blocked_gate_error(self) -> None:
+backend/tests/test_deploy_routes_risk_gate_v1.py:    def test_risk_gate_module_no_runner_imports(self) -> None:
+backend/tests/test_deploy_routes_risk_gate_v1.py:    def test_risk_gate_router_only_get_routes(self) -> None:
+backend/tests/test_deploy_routes_risk_gate_v1.py:    def test_risk_gate_router_uses_facade(self) -> None:
+backend/tests/test_deploy_routes_risk_gate_v1.py:    def test_routes_py_no_duplicate_risk_gate_handlers(self) -> None:
+backend/tests/test_deploy_routes_risk_gate_v1.py:        self.assertNotIn("def get_deploy_runners_risk_gate_summary", routes_src)
+backend/tests/test_deploy_routes_risk_gate_v1.py:        self.assertNotIn("def get_deploy_runner_risk_gate", routes_src)
+backend/tests/test_rescue_iso_uefi_classify_v1.py:    def test_gate_blocks_windows_inspect_when_msi_failed(self) -> None:
+backend/tests/test_deploy_runner_api_facade_v1.py:    def test_risk_gate_decision_never_executes(self) -> None:
+backend/tests/test_deploy_runner_api_facade_v1.py:    def test_risk_gate_summary(self) -> None:
+backend/tests/test_dev_dashboard_rescue_build_status_v1.py:    def test_final_gate_ready_read(self) -> None:
+backend/tests/test_deploy_job_state_v1.py:    def test_success_requires_deploy_exit_zero_and_runtime_gate_zero(self) -> None:
+backend/tests/test_storage_facade_contracts_v1.py:    def test_get_block_devices_delegates_without_subprocess_in_test(self) -> None:
+backend/tests/test_storage_facade_contracts_v1.py:    def test_get_mounts_delegates_to_mount_facade(self) -> None:
+backend/tests/test_deploy_runner_hotplug_race_test_plan_v1.py:    def test_preconditions_contain_disposable_backup_gate_guard(self):
+backend/tests/test_diagnostics_rescue_build_mapping_v1.py:    def test_controlled_gate_signal_maps_to_gate_case(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def _seed_gate_handoffs_ok(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def test_final_gate_ready_when_inputs_and_handoffs_ok(self) -> None:
+backend/tests/test_deploy_runner_rescue_debian_live_build_inputs_v1.py:    def test_final_gate_blocked_when_safety_blocked(self) -> None:
+backend/tests/test_deploy_runner_handoff_v1.py:    def test_hardware_gate_not_ready_blocked(self):
+backend/tests/test_webserver_status_route_migration_g7.py:    def test_facade_delegates_network_to_network_info_facade(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_sandbox_preparation_v1.py:    def test_final_gate_blocked_on_sandbox_safety(self) -> None:
+backend/tests/test_deploy_runner_rescue_build_sandbox_preparation_v1.py:    def test_final_gate_blocked_on_legacy_in_manifest(self) -> None:
+backend/tests/test_deploy_runner_rescue_stick_readonly_build_emulation_v1.py:    def test_final_gate_ready_or_review_when_clean(self) -> None:
+backend/tests/test_deploy_runner_rescue_stick_readonly_build_emulation_v1.py:    def test_final_gate_blocked_without_no_real_build_flag(self) -> None:
+backend/tests/test_deploy_runner_rescue_runtime_assembly_pipeline_v1.py:    def test_final_gate_ready(self) -> None:
+backend/tests/test_rescue_fat32_esp_usb_verify_v1.py:    def test_expected_squashfs_hash_omitted_skips_gate(self) -> None:
+backend/tests/test_rescue_telemetry_ingest_v1.py:    def test_release_allows_telemetry_paths_in_gate(self) -> None:
+backend/tests/test_deploy_runner_routes_decoupling_v1.py:    def test_plan_only_response_uses_risk_gate(self) -> None:
+backend/tests/test_network_facade_without_app_dependency_g8.py:    def test_app_legacy_wrappers_delegate_to_discovery(self) -> None:
+backend/tests/test_network_facade_without_app_dependency_g8.py:    def test_diagnostics_delegate_to_network_discovery(self) -> None:
+backend/tests/test_deploy_runner_rescue_dry_build_orchestration_v1.py:    def test_final_gate_blocked_when_safety_blocked(self) -> None:
+backend/tests/test_network_router_extraction_g4.py:    def test_network_router_delegates_only_to_facade(self) -> None:
+backend/tests/test_rescue_build_diagnostics_mapping_v1.py:    def test_direct_lb_build_gate_maps_to_controlled_gate_diagnostic(self) -> None:
+backend/tests/test_deploy_runner_risk_gate_v1.py:    def test_runtime_gate_false_blocks_elevated(self) -> None:
+backend/tests/test_deploy_runner_risk_gate_v1.py:    def test_build_risk_gate_summary(self) -> None:
+backend/tests/test_deploy_runner_risk_gate_v1.py:    def test_risk_gate_version(self) -> None:
+backend/tests/test_system_status_core_v1.py:    def test_facade_ampel_delegates_to_core(self) -> None:
+backend/tests/test_backend_healthcheck_gate_v1.py:    def test_gate_exit_matrix_documents_hang_and_version_timeout(self) -> None:
+backend/tests/test_backend_healthcheck_gate_v1.py:    def test_runtime_gate_script_syntax(self) -> None:
+backend/tests/test_backend_healthcheck_gate_v1.py:    def test_backend_version_gate_script_syntax(self) -> None:
+backend/tests/test_backend_healthcheck_gate_v1.py:    def test_runtime_gate_script_mentions_exit_18(self) -> None:
+backend/tests/test_app_router_slice_e8.py:    def test_delegates_to_facade_for_e8_routes(self) -> None:
+backend/tests/test_dcc_status_facade_v1.py:    def test_build_dcc_status_overview_delegates_and_structures_result(self) -> None:
+backend/tests/test_dcc_status_facade_v1.py:    def test_build_dcc_roadmap_overview_delegates(self) -> None:
+backend/tests/test_backup_create_sudo_gate_v1.py:    def test_create_data_local_no_sudo_n_gate(self, mock_vdir, mock_logic) -> None:
+backend/tests/test_rescue_operator_policy_gate_v1.py:    def test_operator_policy_gate_exposes_sudo_blocker_without_greenwashing(self) -> None:
+backend/tests/test_dev_dashboard_v1.py:    def test_runtime_gate_allows_yellow_drift_without_actionable_suggestions(self) -> None:
+backend/tests/test_dev_dashboard_v1.py:    def test_safe_mode_locked_when_runtime_gate_fails(self) -> None:
+backend/tests/test_dev_dashboard_v1.py:    def test_tests_evidence_yellow_when_only_release_gates_red(self):
+backend/tests/test_dev_dashboard_v1.py:    def test_build_br001_gates_offline_primary(self):
+backend/tests/test_deploy_runner_legacy_runtime_compatibility_validation_v1.py:    def _write_gates_ok(self) -> None:
+backend/tests/test_network_info_facade_v1.py:    def test_build_network_info_delegates_to_legacy(self) -> None:
+backend/tests/test_rescue_iso_build_dashboard_state_v1.py:    def test_controlled_gate_block_is_exposed_without_fake_build_failure(self) -> None:
+backend/tests/test_deploy_runner_laptop_live_probe_execution_handoff_v1.py:    def _write_readiness(self, *, abnahme: str = "conditional_review", gate: str = "review_required") -> None:
+backend/tests/test_deploy_runner_laptop_live_probe_execution_handoff_v1.py:    def test_final_gate_chain(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_precheck_v1.py:    def test_write_runbook_without_hardware_gate_blocked(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_precheck_v1.py:    def test_hardware_gate_not_test_ready_blocked(self) -> None:
+backend/tests/test_system_info_facade_v1.py:    def test_build_network_section_delegates_to_network_facade(self) -> None:
+backend/tests/test_fat32_esp_writer_execution_mode.py:    def test_valid_usb_gates_unblocked_and_step_order(self) -> None:
+backend/tests/test_deploy_routes_governance_v1.py:        self.assertNotIn("def post_deploy_runner_next_phase_gate", routes_src)
+backend/tests/test_dev_dashboard_greenup_status_v1.py:    def test_usb_write_blocked_counts_as_green_safety_gate(self) -> None:
+backend/tests/test_deploy_runner_laptop_failure_test_execution_readiness_final_gate_v1.py:    def test_gate_writes_handoff_and_schema(self) -> None:
+backend/runtime_governance/runtime_snapshot.py:def build_profile_gate_audit(
+backend/app.py:async def install_profile_route_gate_middleware(request, call_next):
+backend/core/deploy_job_state.py:def _runtime_gate_status(exit_code: int | None) -> str:
+backend/core/deploy_job_state.py:def _runtime_gate_from_dashboard(workspace_root: Path) -> dict[str, Any]:
+backend/core/rescue_network_telemetry_gate.py:def load_gate_file() -> dict[str, Any]:
+backend/core/rescue_network_telemetry_gate.py:def derive_network_telemetry_gate(gate: dict[str, Any] | None = None) -> dict[str, Any]:
+backend/core/rescue_build_dashboard_state.py:def _run_runtime_gate(repo: Path) -> dict[str, Any]:
+backend/core/rescue_build_dashboard_state.py:def _usb_write_gate() -> dict[str, Any]:
+backend/core/rescue_build_dashboard_state.py:def _final_gate_handoff(repo: Path) -> dict[str, Any]:
+backend/core/rescue_fat32_esp_usb_writer.py:def validate_fat32_execute_write_gates(
+backend/core/rescue_iso_build_state.py:def _runtime_gate(repo: Path) -> dict[str, Any]:
+backend/core/rescue_iso_build_state.py:def build_operator_policy_gate(
+backend/core/rescue_iso_controlled_build_gate.py:def analyze_auto_build_gate(
+backend/core/rescue_iso_controlled_build_gate.py:def build_controlled_build_contract(gate_analysis: dict[str, Any]) -> dict[str, Any]:
+backend/core/rescue_iso_uefi_classify.py:def load_gate_overlay(path: Path) -> dict[str, Any]:
+backend/core/rescue_iso_uefi_classify.py:def classify_rescue_uefi_gate(
+backend/core/dev_dashboard_cockpit.py:def build_runtime_gate(
+backend/core/dev_dashboard_cockpit.py:def build_safe_test_mode(runtime_gate: dict[str, Any]) -> dict[str, Any]:
+backend/core/dev_dashboard_cockpit.py:def build_package_gate(repo: Path) -> dict[str, Any]:
+backend/core/dev_dashboard_cockpit.py:def build_br001_gates(repo: Path) -> dict[str, Any]:
+backend/core/windows_rescue_inspect.py:def _repartition_gate() -> dict[str, Any]:
+backend/core/windows_rescue_inspect.py:def _dualboot_gate() -> dict[str, Any]:
+backend/core/rescue_usb_operator_selection.py:def _load_rescue_usb_gate(workspace: Path | None = None) -> dict[str, Any]:
+backend/core/rescue_usb_operator_selection.py:def build_operator_gate_blockers(evidence: Mapping[str, Any] | None) -> list[str]:
+backend/core/install_profile.py:def profile_gate_audit_route_paths(
+backend/core/dev_dashboard_compact_status.py:def _load_rescue_usb_gate() -> dict[str, Any]:
+backend/modules/rescue_restore_dryrun.py:def _aggregate_risk(findings: list[RescueFinding]) -> RescueRiskLevel:
+backend/venv/lib64/python3.12/site-packages/pip/_vendor/pygments/util.py:def surrogatepair(c):
+backend/venv/lib64/python3.12/site-packages/PIL/TiffImagePlugin.py:def _delegate(op: str) -> Any:
+backend/venv/lib64/python3.12/site-packages/PIL/TiffImagePlugin.py:    def delegate(
+backend/venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def delegate_to_executor(*attrs):
+backend/venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def cond_delegate_to_executor(*attrs):
+backend/venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_delegate_method(attr_name):
+backend/venv/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_cond_delegate_method(attr_name):
+backend/venv/lib64/python3.12/site-packages/pygments/util.py:def surrogatepair(c):
+backend/venv/lib64/python3.12/site-packages/pygments/lexers/markup.py:    def delegate_tag_rules(tag_name, lexer, **lexer_kwargs):
+backend/venv/lib/python3.12/site-packages/pip/_vendor/pygments/util.py:def surrogatepair(c):
+backend/venv/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:def _delegate(op: str) -> Any:
+backend/venv/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:    def delegate(
+backend/venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def delegate_to_executor(*attrs):
+backend/venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def cond_delegate_to_executor(*attrs):
+backend/venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_delegate_method(attr_name):
+backend/venv/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_cond_delegate_method(attr_name):
+backend/venv/lib/python3.12/site-packages/pygments/util.py:def surrogatepair(c):
+backend/venv/lib/python3.12/site-packages/pygments/lexers/markup.py:    def delegate_tag_rules(tag_name, lexer, **lexer_kwargs):
+backend/.venv-ci/lib64/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesWrite(self):
+backend/.venv-ci/lib64/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesContext(self):
+backend/.venv-ci/lib64/python3.12/site-packages/pip/_vendor/pygments/util.py:def surrogatepair(c):
+backend/.venv-ci/lib64/python3.12/site-packages/PIL/TiffImagePlugin.py:def _delegate(op: str) -> Any:
+backend/.venv-ci/lib64/python3.12/site-packages/PIL/TiffImagePlugin.py:    def delegate(
+backend/.venv-ci/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def delegate_to_executor(*attrs):
+backend/.venv-ci/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def cond_delegate_to_executor(*attrs):
+backend/.venv-ci/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_delegate_method(attr_name):
+backend/.venv-ci/lib64/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_cond_delegate_method(attr_name):
+backend/.venv-ci/lib64/python3.12/site-packages/pygments/util.py:def surrogatepair(c):
+backend/.venv-ci/lib64/python3.12/site-packages/pygments/lexers/markup.py:    def delegate_tag_rules(tag_name, lexer, **lexer_kwargs):
+backend/.venv-ci/lib/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesWrite(self):
+backend/.venv-ci/lib/python3.12/site-packages/pip/_vendor/colorama/tests/ansitowin32_test.py:    def testDelegatesContext(self):
+backend/.venv-ci/lib/python3.12/site-packages/pip/_vendor/pygments/util.py:def surrogatepair(c):
+backend/.venv-ci/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:def _delegate(op: str) -> Any:
+backend/.venv-ci/lib/python3.12/site-packages/PIL/TiffImagePlugin.py:    def delegate(
+backend/.venv-ci/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def delegate_to_executor(*attrs):
+backend/.venv-ci/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def cond_delegate_to_executor(*attrs):
+backend/.venv-ci/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_delegate_method(attr_name):
+backend/.venv-ci/lib/python3.12/site-packages/aiofiles/threadpool/utils.py:def _make_cond_delegate_method(attr_name):
+backend/.venv-ci/lib/python3.12/site-packages/pygments/util.py:def surrogatepair(c):
+backend/.venv-ci/lib/python3.12/site-packages/pygments/lexers/markup.py:    def delegate_tag_rules(tag_name, lexer, **lexer_kwargs):
+backend/deploy/runner_rescue_build_readiness_gate.py:def build_rescue_build_readiness_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_risk_gate.py:def evaluate_runner_risk_gate(
+backend/deploy/runner_risk_gate.py:def build_risk_gate_summary(entries: list[RunnerRegistryEntry] | None = None) -> dict[str, Any]:
+backend/deploy/runner_rescue_stick_readonly_build_emulation.py:def build_rescue_stick_readonly_build_final_gate(
+backend/deploy/runner_laptop_live_probe_execution_handoff.py:def build_laptop_live_probe_final_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_hardware_gate_report(body: DeployHardwareGateReportRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_hardware_gate_operator_protocol(body: DeployHardwareGateOperatorProtocolRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_laptop_failure_test_execution_readiness_final_gate(
+backend/deploy/routes.py:async def post_deploy_laptop_live_probe_final_gate(body: DeployLaptopLiveProbeFinalGateRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_sandbox_copy_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_build_emulation_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_stick_build_emulation_final_gate(
+backend/deploy/routes.py:async def post_deploy_rescue_build_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_iso_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_live_runtime_safety_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_final_recovery_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_iso_final_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_artifact_readiness_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/routes.py:async def post_deploy_rescue_runtime_final_gate(body: DeployRescueHandoffOverwriteRequest) -> dict[str, Any]:
+backend/deploy/runner_rescue_iso_artifact_preparation.py:def build_rescue_artifact_readiness_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_rescue_mvp_scope_gate.py:def build_rescue_mvp_scope_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_rescue_runtime_assembly_pipeline.py:def build_rescue_runtime_assembly_final_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_next_phase_gate.py:def evaluate_runner_next_phase_gate(
+backend/deploy/routes_governance.py:async def post_deploy_runner_next_phase_gate(
+backend/deploy/hardware_gate.py:def build_hardware_gate_report(request: dict[str, Any]) -> dict[str, Any]:
+backend/deploy/runner_rescue_build_sandbox_preparation.py:def build_rescue_build_sandbox_final_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_rescue_build_environment_emulation.py:def build_rescue_build_emulation_final_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/routes_risk_gate.py:async def get_deploy_runners_risk_gate_summary() -> dict[str, Any]:
+backend/deploy/routes_risk_gate.py:async def get_deploy_runner_risk_gate(runner_id: str) -> dict[str, Any]:
+backend/deploy/runner_rescue_dry_build_orchestration.py:def build_rescue_dry_build_final_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_device_reenumeration_test_plan.py:def _case(code: str, result_code: str, gate_behavior: str) -> dict[str, Any]:
+backend/deploy/runner_rescue_hardware_recovery_test_chain.py:def _final_gate_step(rel: str) -> dict[str, Any]:
+backend/deploy/runner_rescue_iso_readiness_pipeline.py:def build_rescue_iso_final_readiness_gate(*, explicit_overwrite: bool = False) -> dict[str, Any]:
+backend/deploy/runner_setuphelfer_branding_guard.py:def _zero_state_gate(zero_body: dict[str, Any] | None, zerr: str | None) -> tuple[str, list[str]]:
+backend/deploy/routes_rescue_readonly.py:async def post_deploy_rescue_mvp_scope_gate(
+backend/deploy/runner_hotplug_race_test_plan.py:def _race_case(code: str, trigger_point: str, result_code: str, gate_behavior: str) -> dict[str, Any]:
+backend/deploy/runner_legacy_runtime_compatibility_validation.py:def _gate_statuses(zero: dict[str, Any] | None, brand: dict[str, Any] | None) -> dict[str, str]:
+backend/deploy/runner_laptop_failure_test_execution_readiness_final_gate.py:def build_laptop_failure_test_execution_readiness_final_gate(
+backend/rescue_telemetry/routers.py:async def rescue_telemetry_task_status() -> dict[str, Any]:
+backend/rescue_remote/service.py:    def __init__(self, code: str, errors: list[str] | None = None, http_status: int = 400) -> None:
+backend/api/routes/control_center_readonly.py:async def dev_dashboard_update_status():
+backend/api/routes/backup_readonly.py:async def backup_status():
+backend/api/routes/backup_readonly.py:async def backup_job_status(job_id: str):
+backend/api/routes/capabilities.py:async def dev_dashboard_capability_status(request: Request):
+backend/api/routes/capabilities.py:async def dev_dashboard_compact_status(request: Request):
+backend/api/routes/dev_dashboard_readonly.py:async def dev_dashboard_status(
+backend/api/routes/dev_dashboard_readonly.py:async def dev_dashboard_notifications_status():
+backend/api/routes/health.py:async def init_status():
+backend/api/routes/status.py:async def self_update_status():
+backend/api/routes/network.py:async def get_status(request: Request):
+backend/app_bootstrap/router_registry.py:    def add(self, *, router: str, status: str, prefix: str, profile: str, error: str | None = None) -> None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/subtests.py:def pytest_report_teststatus(
+backend/.venv/lib64/python3.12/site-packages/_pytest/tmpdir.py:def pytest_sessionfinish(session, exitstatus: int | ExitCode):
+backend/.venv/lib64/python3.12/site-packages/_pytest/terminal.py:def pytest_report_teststatus(report: BaseReport) -> tuple[str, str, str]:
+backend/.venv/lib64/python3.12/site-packages/_pytest/runner.py:def pytest_report_teststatus(report: BaseReport) -> tuple[str, str, str] | None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/hookspec.py:def pytest_report_teststatus(  # type:ignore[empty-body]
+backend/.venv/lib64/python3.12/site-packages/_pytest/skipping.py:def pytest_report_teststatus(report: BaseReport) -> tuple[str, str, str] | None:
+backend/.venv/lib64/python3.12/site-packages/requests/models.py:    def raise_for_status(self):
+backend/.venv/lib64/python3.12/site-packages/fastapi/utils.py:def is_body_allowed_for_status_code(status_code: int | str | None) -> bool:
+backend/.venv/lib64/python3.12/site-packages/h11/_util.py:    def __init__(self, msg: str, error_status_hint: int = 400) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/models.py:    def raise_for_status(self):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/urllib3/util/retry.py:    def is_retry(self, method, status_code, has_retry_after=False):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/truststore/_macos.py:def _handle_osstatus(result: OSStatus, _: typing.Any, args: typing.Any) -> typing.Any:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/rich/console.py:    def status(
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/network/utils.py:def raise_for_status(resp: Response) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/spinners.py:    def finish(self, final_status: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/spinners.py:    def _write(self, status: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/spinners.py:    def finish(self, final_status: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/spinners.py:    def _update(self, status: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_internal/cli/spinners.py:    def finish(self, final_status: str) -> None:
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/ocsp.pyi:    def response_status(self) -> ocsp.OCSPResponseStatus: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/ocsp.pyi:    def certificate_status(self) -> ocsp.OCSPCertStatus: ...
+backend/.venv/lib64/python3.12/site-packages/cryptography/hazmat/bindings/_rust/ocsp.pyi:    def certificate_status(self) -> ocsp.OCSPCertStatus: ...
+backend/.venv/lib64/python3.12/site-packages/starlette/exceptions.py:    def __init__(self, status_code: int, detail: str | None = None, headers: Mapping[str, str] | None = None) -> None:
+backend/.venv/lib64/python3.12/site-packages/starlette/testclient.py:    async def _run(self, *, task_status: anyio.abc.TaskStatus[anyio.CancelScope]) -> None:
+backend/.venv/lib64/python3.12/site-packages/psutil/_psposix.py:def convert_exit_code(status):
+backend/.venv/lib64/python3.12/site-packages/psutil/_psosx.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_pswindows.py:    def _query_status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_pswindows.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_pswindows.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_psaix.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_pssunos.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_common.py:def conn_to_ntuple(fd, fam, type_, laddr, raddr, status, status_map, pid=None):
+backend/.venv/lib64/python3.12/site-packages/psutil/_pslinux.py:    def _read_status_file(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_pslinux.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/__init__.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/psutil/_psbsd.py:    def status(self):
+backend/.venv/lib64/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py:def _get_status_line(status_code: int) -> bytes:
+backend/.venv/lib64/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py:def _get_status_phrase(status_code: int) -> bytes:
+backend/.venv/lib64/python3.12/site-packages/uvicorn/logging.py:    def get_status_code(self, status_code: int) -> str:
+backend/.venv/lib/python3.12/site-packages/_pytest/subtests.py:def pytest_report_teststatus(
+backend/.venv/lib/python3.12/site-packages/_pytest/tmpdir.py:def pytest_sessionfinish(session, exitstatus: int | ExitCode):
+backend/.venv/lib/python3.12/site-packages/_pytest/terminal.py:def pytest_report_teststatus(report: BaseReport) -> tuple[str, str, str]:
+backend/.venv/lib/python3.12/site-packages/_pytest/runner.py:def pytest_report_teststatus(report: BaseReport) -> tuple[str, str, str] | None:
+backend/.venv/lib/python3.12/site-packages/_pytest/hookspec.py:def pytest_report_teststatus(  # type:ignore[empty-body]
+backend/.venv/lib/python3.12/site-packages/_pytest/skipping.py:def pytest_report_teststatus(report: BaseReport) -> tuple[str, str, str] | None:
+backend/.venv/lib/python3.12/site-packages/requests/models.py:    def raise_for_status(self):
+backend/.venv/lib/python3.12/site-packages/fastapi/utils.py:def is_body_allowed_for_status_code(status_code: int | str | None) -> bool:
+backend/.venv/lib/python3.12/site-packages/h11/_util.py:    def __init__(self, msg: str, error_status_hint: int = 400) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/requests/models.py:    def raise_for_status(self):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/retry.py:    def is_retry(self, method, status_code, has_retry_after=False):
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/truststore/_macos.py:def _handle_osstatus(result: OSStatus, _: typing.Any, args: typing.Any) -> typing.Any:
+backend/.venv/lib/python3.12/site-packages/pip/_vendor/rich/console.py:    def status(
+backend/.venv/lib/python3.12/site-packages/pip/_internal/network/utils.py:def raise_for_status(resp: Response) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/spinners.py:    def finish(self, final_status: str) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/spinners.py:    def _write(self, status: str) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/spinners.py:    def finish(self, final_status: str) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/spinners.py:    def _update(self, status: str) -> None:
+backend/.venv/lib/python3.12/site-packages/pip/_internal/cli/spinners.py:    def finish(self, final_status: str) -> None:
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/ocsp.pyi:    def response_status(self) -> ocsp.OCSPResponseStatus: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/ocsp.pyi:    def certificate_status(self) -> ocsp.OCSPCertStatus: ...
+backend/.venv/lib/python3.12/site-packages/cryptography/hazmat/bindings/_rust/ocsp.pyi:    def certificate_status(self) -> ocsp.OCSPCertStatus: ...
+backend/.venv/lib/python3.12/site-packages/starlette/exceptions.py:    def __init__(self, status_code: int, detail: str | None = None, headers: Mapping[str, str] | None = None) -> None:
+backend/.venv/lib/python3.12/site-packages/starlette/testclient.py:    async def _run(self, *, task_status: anyio.abc.TaskStatus[anyio.CancelScope]) -> None:
+backend/.venv/lib/python3.12/site-packages/psutil/_psposix.py:def convert_exit_code(status):
+backend/.venv/lib/python3.12/site-packages/psutil/_psosx.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_pswindows.py:    def _query_status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_pswindows.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_pswindows.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_psaix.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_pssunos.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_common.py:def conn_to_ntuple(fd, fam, type_, laddr, raddr, status, status_map, pid=None):
+backend/.venv/lib/python3.12/site-packages/psutil/_pslinux.py:    def _read_status_file(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_pslinux.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/__init__.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/psutil/_psbsd.py:    def status(self):
+backend/.venv/lib/python3.12/site-packages/uvicorn/protocols/http/httptools_impl.py:def _get_status_line(status_code: int) -> bytes:
+backend/.venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py:def _get_status_phrase(status_code: int) -> bytes:
+backend/.venv/lib/python3.12/site-packages/uvicorn/logging.py:    def get_status_code(self, status_code: int) -> str:
+backend/tests/test_rescue_test_matrix_r3.py:    def test_status_values_valid(self) -> None:
+backend/tests/test_dcc_status_facade_delegation_f4.py:    def test_ai_prompt_stub_uses_facade_not_build_dashboard_status(self) -> None:
+backend/tests/test_dcc_status_facade_delegation_f4.py:    def test_notifications_status_api_preserves_code_wrapper(self) -> None:
+backend/tests/test_backup_runner_tar_exit1_integration_v1.py:    def test_status_json_contains_classification(self) -> None:
+backend/tests/test_dev_dashboard_compact_status_v1.py:    def test_release_compact_status_without_token_via_capability(self) -> None:
+backend/tests/test_dev_dashboard_compact_status_v1.py:    def test_release_status_with_token_not_profile_blocked_body(self) -> None:
+backend/tests/test_rescue_fallback_tui_menu_contract_v1.py:    def test_status_summary_not_raw_json(self) -> None:
+backend/tests/test_version_consistency_v1.py:    def test_manifest_includes_compact_status_after_bump(self) -> None:
+backend/tests/test_backup_status_telemetry_v1.py:    def test_sync_status_from_progress(self) -> None:
+backend/tests/test_dcc_status_facade_router_migration_v1.py:    def test_status_service_uses_facade(self) -> None:
+backend/tests/test_dcc_status_facade_router_migration_v1.py:    def test_profile_gate_preserved_in_status_service(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_finalized_export_package_v1.py:    def _write_inputs(self, acceptance_status: str) -> dict[str, str]:
+backend/tests/test_rescue_offline_first_policy_v1.py:    def test_rs001_stays_yellow_in_boot_status(self) -> None:
+backend/tests/test_deploy_cache_execute_v1.py:    def _mk_plan(self, cache_target: str, status: str = "ok") -> dict:
+backend/tests/test_dev_dashboard_roadmap_registry_v1.py:def _iter_statuses(roadmap: dict) -> list[str]:
+backend/tests/test_dev_dashboard_roadmap_registry_v1.py:    def test_status_values_only_from_allowed_list(self):
+backend/tests/test_developer_capability_v1.py:    def test_capability_status_path_always_allowed(self) -> None:
+backend/tests/test_developer_capability_v1.py:    def test_status_api_never_exposes_token(self) -> None:
+backend/tests/test_developer_capability_v1.py:    def test_capability_status_payload_no_secrets(self) -> None:
+backend/tests/test_system_status_facade_v1.py:    def test_normalize_legacy_system_status_maps_ampel(self) -> None:
+backend/tests/test_system_status_facade_v1.py:    def test_build_system_status_legacy_shape(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_failure_injection_matrix_v1.py:    def _write_acceptance(self, status: str) -> None:
+backend/tests/test_deploy_runner_lab_readiness_status_v1.py:    def test_design_status_ready_when_evidence_present(self):
+backend/tests/test_deploy_runner_lab_readiness_status_v1.py:    def test_runtime_status_not_started_without_runtime_evidence(self):
+backend/tests/test_deploy_runner_lab_readiness_status_v1.py:    def test_status_test_design_ready_when_design_complete_runtime_open(self):
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_snapshot_v1.py:    def _write_timeline(self, status: str, n: int = 1) -> bytes:
+backend/tests/test_deploy_job_state_v1.py:    def _base_drift(self, *, status: str = "green", suggested: list[str] | None = None) -> dict:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_manifest_includes_compact_status_module(self) -> None:
+backend/tests/test_deploy_runtime_verify_v1.py:    def test_critical_paths_include_compact_status(self) -> None:
+backend/tests/test_notification_dashboard_api_v1.py:    def test_status_endpoint_responds_without_persistence_file(self) -> None:
+backend/tests/test_runtime_governance_route_exposure_v1.py:def test_release_capability_status_never_profile_blocked_at_exposure_layer():
+backend/tests/test_backup_job_evidence_api_v1.py:    def test_runner_status_passes_progress_optional_dict(self) -> None:
+backend/tests/test_rescue_ui_launcher_v1.py:    def test_launcher_writes_status_and_fallback(self) -> None:
+backend/tests/test_rescue_ui_launcher_v1.py:    def test_url_only_status_is_review_required_not_ready(self) -> None:
+backend/tests/test_webserver_status_route_migration_g7.py:    def test_webserver_status_handler_uses_facade(self) -> None:
+backend/tests/test_webserver_status_route_migration_g7.py:        start = text.index("async def webserver_status")
+backend/tests/test_webserver_status_route_migration_g7.py:    def test_webserver_status_no_direct_network_or_port_calls(self) -> None:
+backend/tests/test_webserver_status_route_migration_g7.py:        start = text.index("async def webserver_status")
+backend/tests/test_webserver_status_route_migration_g7.py:        start = text.index("async def webserver_status")
+backend/tests/test_deploy_runner_lab_acceptance_report_export_v1.py:    def test_de_en_report_contains_acceptance_status(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_execution_log_validator_v1.py:    def test_observed_status_blocked(self) -> None:
+backend/tests/test_rescue_usb_operator_selection_v1.py:    def test_candidates_requires_developer_capability_on_status_routes(self) -> None:
+backend/tests/test_rescue_start_assistant_v1.py:    def test_start_assistant_writes_status_path(self) -> None:
+backend/tests/test_rescue_start_assistant_v1.py:    def test_start_assistant_status_has_no_password_fields(self) -> None:
+backend/tests/test_rescue_telemetry_lan_proxy_v1.py:    def test_status_payload_no_secrets(self) -> None:
+backend/tests/test_rescue_telemetry_lan_proxy_v1.py:    def test_compact_status_shape(self) -> None:
+backend/tests/test_deploy_write_execute_v1.py:def _write_plan(plan_status: str = "ok", blocked: list[str] | None = None, mode: str = "image_to_disk", inspect_code: str = "DEPLOY_IMAGE_INSPECT_WARNING") -> dict:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_export_package_v1.py:    def _write_inputs(self, report_status: str) -> dict[str, str]:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_export_package_v1.py:    def test_ok_status_and_hashes(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_export_package_v1.py:    def test_review_required_status(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_export_package_v1.py:    def test_blocked_status(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_report_v1.py:def _summary(status: str) -> dict:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_report_v1.py:    def _write_summary(self, status: str) -> bytes:
+backend/tests/test_rescue_fallback_tui_v1.py:    def test_status_summary_not_raw_json_only(self) -> None:
+backend/tests/test_system_status_route_migration_g1b.py:    def test_system_status_handler_uses_facade(self) -> None:
+backend/tests/test_system_status_route_migration_g1b.py:        start = text.index("async def system_status")
+backend/tests/test_system_status_route_migration_g1b.py:    def test_get_status_moved_to_network_router(self) -> None:
+backend/tests/test_system_status_route_migration_g1b.py:        status_start = router_text.index("async def get_status")
+backend/tests/test_system_status_route_migration_g1b.py:    def test_build_system_status_exact_legacy_keys(self) -> None:
+backend/tests/test_system_status_route_migration_g1b.py:    def test_compute_system_status_still_defined_for_tests(self) -> None:
+backend/tests/test_system_status_route_migration_g1b.py:        self.assertIn("def _compute_system_status", text)
+backend/tests/test_deploy_runner_manual_runtime_result_template_v1.py:def _precheck(status: str = "ready_for_manual_runtime", runbook: str = "RUNBOOK_SUDOERS_RUNTIME_DRYRUN", path: str | None = None) -> dict:
+backend/tests/test_architecture_module_boundaries_v1.py:    def test_boundary_script_runs_and_returns_status(self) -> None:
+backend/tests/test_network_router_extraction_g4.py:        self.assertIn('async def webserver_status', app_text)
+backend/tests/test_network_router_extraction_g4.py:    def test_facade_has_build_api_status_payload(self) -> None:
+backend/tests/test_webserver_status_facade_v1.py:    def test_build_webserver_status_legacy_shape(self) -> None:
+backend/tests/test_network_info_route_migration_g2b.py:    def test_get_status_handler_uses_facade(self) -> None:
+backend/tests/test_network_info_route_migration_g2b.py:        start = text.index("async def get_status")
+backend/tests/test_network_info_route_migration_g2b.py:    def test_status_network_block_shape_via_facade(self) -> None:
+backend/tests/test_rescue_agent_discovery_v1.py:    def test_not_found_returns_clean_status(self) -> None:
+backend/tests/test_system_status_providers_v1.py:    def test_system_status_core_has_no_app_import(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_acceptance_gate_v1.py:def _snapshot(status: str, event_count: int = 1) -> dict:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_final_acceptance_gate_v1.py:    def test_blocked_by_status(self) -> None:
+backend/tests/test_dashboard_ui_safety_static_v1.py:    def test_update_status_card_shows_automatic_update_allowed_flag(self) -> None:
+backend/tests/test_system_status_core_v1.py:    def test_build_backup_status_green_with_file(self) -> None:
+backend/tests/test_system_status_core_v1.py:    def test_build_overall_status_keys(self) -> None:
+backend/tests/test_system_status_core_v1.py:    def test_app_compute_system_status_wrapper(self) -> None:
+backend/tests/test_system_status_core_v1.py:        start = text.index("def _compute_system_status")
+backend/tests/test_network_info_core_cleanup_g3.py:    def test_webserver_status_uses_facade(self) -> None:
+backend/tests/test_network_info_core_cleanup_g3.py:        start = text.index("async def webserver_status")
+backend/tests/test_network_info_core_cleanup_g3.py:    def test_webserver_status_network_shape_via_facade(self) -> None:
+backend/tests/test_dcc_status_facade_v1.py:    def test_status_values_valid(self) -> None:
+backend/tests/test_dcc_status_facade_v1.py:    def test_normalize_legacy_dcc_status(self) -> None:
+backend/tests/test_dcc_status_facade_v1.py:    def test_build_dcc_status_overview_delegates_and_structures_result(self) -> None:
+backend/tests/test_deploy_runner_release_readiness_v1.py:    def test_no_production_ready_status_possible(self):
+backend/tests/test_deploy_cache_plan_v1.py:def _deploy_plan(status: str = "ok") -> dict:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_test_summary_v1.py:    def _write_validation(self, status: str, runs: list[dict]) -> None:
+backend/tests/test_dev_dashboard_v1.py:    def test_build_dashboard_status_empty_repo_no_crash(self):
+backend/tests/test_dev_dashboard_v1.py:    def test_status_200(self):
+backend/tests/test_dev_dashboard_v1.py:    def test_status_accepts_frontend_query_params(self):
+backend/tests/test_dev_dashboard_v1.py:    def test_status_includes_cockpit_sections(self):
+backend/tests/test_rescue_grub_branding_v1.py:    def test_hardware_status_remains_yellow_until_retest(self) -> None:
+backend/tests/test_fleet_session_heartbeat_payload_v1.py:    def test_heartbeat_without_status_is_valid(self) -> None:
+backend/tests/test_fleet_session_heartbeat_payload_v1.py:    def test_heartbeat_with_allowed_status_is_valid(self) -> None:
+backend/tests/test_fleet_session_heartbeat_payload_v1.py:    def test_heartbeat_status_running_is_ignored_and_maps_to_alive(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_validator_seal_index_v1.py:    def test_validator_status_not_ok_skipped(self) -> None:
+backend/tests/test_fleet_session_state_v1.py:    def test_finish_terminal_status(self) -> None:
+backend/tests/test_dev_dashboard_status_service_v1.py:    def test_release_status_blocked_without_token(self) -> None:
+backend/tests/test_dev_dashboard_status_service_v1.py:    def test_release_status_200_with_valid_developer_token(self) -> None:
+backend/tests/test_dev_dashboard_status_service_v1.py:    def test_capability_status_visible_with_token_no_secret_leak(self) -> None:
+backend/tests/test_deploy_execute_v1.py:    def test_session_invalid_plan_status(self):
+backend/tests/test_rescue_iso_build_dashboard_state_v1.py:    def test_status_separates_runtime_and_workspace_paths(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_evidence_timeline_v1.py:    def _write_inputs(self, export_status: str) -> dict[str, str]:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_evidence_timeline_v1.py:    def test_ok_status_and_hashes(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_evidence_timeline_v1.py:    def test_review_required_status(self) -> None:
+backend/tests/test_deploy_runner_manual_runtime_laptop_failure_evidence_timeline_v1.py:    def test_blocked_status(self) -> None:
+backend/tests/test_deploy_runner_laptop_live_probe_execution_handoff_v1.py:    def __init__(self, status: int, body: object) -> None:
+backend/tests/test_rescue_network_telemetry_gate_v1.py:    def test_compact_status_includes_ack_and_ingest(self) -> None:
+backend/tests/test_rescue_ui_launcher_contract_v1.py:    def test_expected_fallback_status_shape(self) -> None:
+backend/rescue_telemetry/routers.py:22:async def rescue_telemetry_health() -> dict[str, Any]:
+backend/rescue_telemetry/routers.py:28:async def rescue_telemetry_ingest_v1(request: Request) -> JSONResponse:
+backend/rescue_telemetry/routers.py:49:async def rescue_telemetry_task_next(boot_id: str = "") -> JSONResponse:
+backend/rescue_telemetry/routers.py:58:async def rescue_telemetry_task_result(request: Request) -> JSONResponse:
+backend/rescue_telemetry/routers.py:79:async def rescue_telemetry_task_status() -> dict[str, Any]:
+backend/rescue_remote/service.py:199:def mask_token(value: str) -> str:
+backend/rescue_remote/service.py:207:def redact_text(text: str, max_len: int = 8000) -> tuple[str, list[str]]:
+backend/rescue_remote/service.py:217:def redact_agent_public(agent: dict[str, Any]) -> dict[str, Any]:
+backend/debug/context.py:51:def reset_request_id(token) -> None:
+backend/debug/levels.py:24:def should_log_level(event_level, effective_level):
+backend/debug/logger.py:172:def write_event(event_dict: Dict[str, Any]) -> None:
+backend/debug/logger.py:238:def _emit(event_type: str, event_name: str, level: str, module_id: str, step_id: Optional[str],
+backend/debug/logger.py:330:def reset_request_id(token) -> None:
+backend/debug/redaction.py:23:def redact_string(s: str, patterns: List[Any]) -> str:
+backend/debug/redaction.py:38:def redact_value(obj: Any, patterns: List[Any]) -> Any:
+backend/debug/redaction.py:64:def get_redact_patterns() -> List[str]:
+backend/debug/redaction.py:77:def get_compiled_redact_patterns() -> List[re.Pattern]:
+backend/debug/redaction.py:88:def redact_recursive(obj: Any, patterns: List[Any]) -> Any:
+backend/debug/support_bundle.py:150:def _redact_text_line_by_line(text: str, patterns: List[Any]) -> str:
+backend/api/routes/diagnostics.py:22:async def post_diagnostics_analyze(body: DiagnosticsAnalyzeRequest) -> DiagnosticsAnalyzeResponse:
+backend/api/routes/diagnostics.py:27:async def get_diagnostics_catalog() -> dict:
+backend/api/routes/diagnostics.py:32:async def get_diagnostics_evidence_schema() -> dict:
+backend/api/routes/diagnostics.py:37:async def get_diagnostics_evidence_sample() -> EvidenceSampleResponse:
+backend/api/routes/settings.py:39:async def get_notification_email_settings():
+backend/api/routes/dev_dashboard_readonly.py:67:async def dev_dashboard_backend_health(
+backend/api/routes/dev_dashboard_readonly.py:118:async def dev_dashboard_notifications_status():
+backend/api/routes/dev_dashboard_readonly.py:130:async def dev_dashboard_notifications_events(limit: int = 50):
+backend/api/routes/health.py:18:async def health_check():
+backend/app_bootstrap/startup_diagnostics.py:66:def get_last_startup_diagnostics() -> dict[str, Any]:
+backend/app_bootstrap/version_router_diagnostics.py:8:def inject_router_diagnostics(body: dict[str, Any]) -> dict[str, Any]:
+backend/.venv/lib64/python3.12/site-packages/_pytest/compat.py:51:    def syntax, and doesn't contain yield), or a function decorated with
+backend/.venv/lib64/python3.12/site-packages/_pytest/fixtures.py:1696:    def pytest_generate_tests(self, metafunc: Metafunc) -> None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/python.py:121:def pytest_generate_tests(metafunc: Metafunc) -> None:
+backend/.venv/lib64/python3.12/site-packages/_pytest/hookspec.py:586:def pytest_generate_tests(metafunc: Metafunc) -> None:
+backend/.venv/lib64/python3.12/site-packages/dotenv/cli.py:24:def enumerate_env() -> Optional[str]:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_parser.py:442:    def _select_struct_union_class(self, token: str) -> type:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_parser.py:470:    def _accept(self, token_type: str) -> Optional[_Token]:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_parser.py:481:    def _expect(self, token_type: str) -> _Token:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_generator.py:394:    def _generate_struct_union_enum(
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_generator.py:422:    def _generate_struct_union_body(self, members: List[c_ast.Node]) -> str:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_generator.py:425:    def _generate_enum_body(self, members: List[c_ast.Enumerator]) -> str:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_generator.py:429:    def _generate_stmt(self, n: c_ast.Node, add_indent: bool = False) -> str:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_generator.py:471:    def _generate_decl(self, n: c_ast.Decl) -> str:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_generator.py:483:    def _generate_type(
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_lexer.py:35:            a typedef name and should be tokenized as TYPEID.
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_lexer.py:76:    def token(self) -> Optional[_Token]:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_lexer.py:141:    def _match_token(self) -> Optional[_Token]:
+backend/.venv/lib64/python3.12/site-packages/pycparser/c_lexer.py:218:    def _make_token(self, tok_type: str, value: str, pos: int) -> _Token:
+backend/.venv/lib64/python3.12/site-packages/pycparser/_ast_gen.py:32:    def generate(self, file: IO[str]) -> None:
+backend/.venv/lib64/python3.12/site-packages/pycparser/_ast_gen.py:89:    def generate_source(self):
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:102:def _parse_requirement(tokenizer: Tokenizer) -> ParsedRequirement:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:197:def _parse_extras(tokenizer: Tokenizer) -> list[str]:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:216:def _parse_extras_list(tokenizer: Tokenizer) -> list[str]:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:243:def _parse_specifier(tokenizer: Tokenizer) -> str:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:260:def _parse_version_many(tokenizer: Tokenizer) -> str:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:296:def _parse_full_marker(tokenizer: Tokenizer) -> MarkerList:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:302:def _parse_marker(tokenizer: Tokenizer) -> MarkerList:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:314:def _parse_marker_atom(tokenizer: Tokenizer) -> MarkerAtom:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:336:def _parse_marker_item(tokenizer: Tokenizer) -> MarkerItem:
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:350:def _parse_marker_var(tokenizer: Tokenizer) -> MarkerVar:  # noqa: RET503
+backend/.venv/lib64/python3.12/site-packages/packaging/_parser.py:376:def _parse_marker_op(tokenizer: Tokenizer) -> Op:
+backend/.venv/lib64/python3.12/site-packages/packaging/_tokenizer.py:173:    def enclosing_tokens(
+backend/.venv/lib64/python3.12/site-packages/packaging/direct_url.py:83:def _strip_auth_from_netloc(netloc: str, safe_user_passwords: Collection[str]) -> str:
+backend/.venv/lib64/python3.12/site-packages/requests/auth.py:25:def _basic_auth_str(username, password):
+backend/.venv/lib64/python3.12/site-packages/requests/sessions.py:128:    def should_strip_auth(self, old_url, new_url):
+backend/.venv/lib64/python3.12/site-packages/requests/sessions.py:283:    def rebuild_auth(self, prepared_request, response):
+backend/.venv/lib64/python3.12/site-packages/requests/models.py:209:    def register_hook(self, event, hook):
+backend/.venv/lib64/python3.12/site-packages/requests/models.py:220:    def deregister_hook(self, event, hook):
+backend/.venv/lib64/python3.12/site-packages/requests/models.py:590:    def prepare_auth(self, auth, url=""):
+backend/.venv/lib64/python3.12/site-packages/requests/models.py:818:        def generate():
+backend/.venv/lib64/python3.12/site-packages/requests/utils.py:206:def get_netrc_auth(url, raise_errors=False):
+backend/.venv/lib64/python3.12/site-packages/requests/utils.py:1005:def get_auth_from_url(url):
+backend/.venv/lib64/python3.12/site-packages/requests/utils.py:1051:def urldefragauth(url):
+backend/.venv/lib64/python3.12/site-packages/pydantic/aliases.py:105:    def _generate_alias(
+backend/.venv/lib64/python3.12/site-packages/pydantic/aliases.py:125:    def generate_aliases(self, field_name: str) -> tuple[str | None, str | AliasPath | AliasChoices | None, str | None]:
+backend/.venv/lib64/python3.12/site-packages/pydantic/annotated_handlers.py:84:    def generate_schema(self, source_type: Any, /) -> core_schema.CoreSchema:
+backend/.venv/lib64/python3.12/site-packages/pydantic/v1/tools.py:18:def _generate_parsing_type_name(type_: Any) -> str:
+backend/.venv/lib64/python3.12/site-packages/pydantic/v1/main.py:103:def generate_hash_function(frozen: bool) -> Optional[Callable[[Any], int]]:
+backend/.venv/lib64/python3.12/site-packages/pydantic/v1/utils.py:236:def generate_model_signature(
+backend/.venv/lib64/python3.12/site-packages/pydantic/json_schema.py:352:    def generate_definitions(
+backend/.venv/lib64/python3.12/site-packages/pydantic/json_schema.py:401:    def generate(self, schema: CoreSchema, mode: JsonSchemaMode = 'validation') -> JsonSchemaValue:
+backend/.venv/lib64/python3.12/site-packages/pydantic/json_schema.py:450:    def generate_inner(self, schema: CoreSchemaOrField) -> JsonSchemaValue:  # noqa: C901
+backend/.venv/lib64/python3.12/site-packages/pydantic/plugin/_schema_validator.py:99:def build_wrapper(func: Callable[P, R], event_handlers: list[BaseValidateHandlerProtocol]) -> Callable[P, R]:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_signature.py:81:def _generate_signature_parameters(  # noqa: C901 (ignore complexity, could use a refactor)
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_signature.py:165:def generate_pydantic_signature(
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py:31:    def __init__(self, generate_json_schema: GenerateJsonSchema, handler_override: HandlerOverride | None) -> None:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_schema_generation_shared.py:95:    def generate_schema(self, source_type: Any, /) -> core_schema.CoreSchema:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:717:    def generate_schema(
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:891:    def _generate_schema_from_get_schema_method(self, obj: Any, source: Any) -> core_schema.CoreSchema | None:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1007:    def _generate_schema_inner(self, obj: Any) -> core_schema.CoreSchema:
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1208:    def _generate_td_field_schema(
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1228:    def _generate_md_field_schema(
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1246:    def _generate_dc_field_schema(
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1569:    def _generate_parameter_schema(
+backend/.venv/lib64/python3.12/site-packages/pydantic/_internal/_generate_schema.py:1614:    def _generate_parameter_v3_schema(
+backend/.venv/lib64/python3.12/site-packages/pydantic/experimental/arguments_schema.py:14:def generate_arguments_schema(
+backend/.venv/lib64/python3.12/site-packages/fastapi/_compat/v2.py:486:def _regenerate_error_with_loc(
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:1324:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:1449:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:1561:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:1572:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:4905:    def add_event_handler(
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:4932:    def on_event(
+backend/.venv/lib64/python3.12/site-packages/fastapi/routing.py:4952:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/applications.py:1247:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/applications.py:1347:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/applications.py:4565:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/applications.py:4579:    def on_event(
+backend/.venv/lib64/python3.12/site-packages/fastapi/applications.py:4640:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/applications.py:4687:        def decorator(func: DecoratedCallable) -> DecoratedCallable:
+backend/.venv/lib64/python3.12/site-packages/fastapi/background.py:27:    def write_notification(email: str, message=""):
+backend/.venv/lib64/python3.12/site-packages/fastapi/background.py:34:    async def send_notification(email: str, background_tasks: BackgroundTasks):
+backend/.venv/lib64/python3.12/site-packages/fastapi/sse.py:146:def format_sse_event(
+backend/.venv/lib64/python3.12/site-packages/fastapi/.agents/skills/fastapi/references/streaming.md:53:async def stream_events() -> AsyncIterable[ServerSentEvent]:
+backend/.venv/lib64/python3.12/site-packages/fastapi/openapi/docs.py:301:def get_swagger_ui_oauth2_redirect_html() -> HTMLResponse:
+backend/.venv/lib64/python3.12/site-packages/fastapi/openapi/utils.py:215:def generate_operation_id(
+backend/.venv/lib64/python3.12/site-packages/fastapi/openapi/utils.py:230:def generate_operation_summary(*, route: routing.APIRoute, method: str) -> str:
+backend/.venv/lib64/python3.12/site-packages/fastapi/dependencies/models.py:54:    def oauth_scopes(self) -> list[str]:
+backend/.venv/lib64/python3.12/site-packages/fastapi/utils.py:80:def generate_operation_id_for_path(
+backend/.venv/lib64/python3.12/site-packages/fastapi/utils.py:95:def generate_unique_id(route: "APIRoute") -> str:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/open_id_connect_url.py:80:    def make_not_authenticated_error(self) -> HTTPException:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/api_key.py:31:    def make_not_authenticated_error(self) -> HTTPException:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/api_key.py:47:    def check_api_key(self, api_key: str | None) -> str | None:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/api_key.py:82:    async def read_items(api_key: str = Depends(query_scheme)):
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/oauth2.py:401:    def make_not_authenticated_error(self) -> HTTPException:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/utils.py:1:def get_authorization_scheme_param(
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/http.py:84:    def make_authenticate_headers(self) -> dict[str, str]:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/http.py:87:    def make_not_authenticated_error(self) -> HTTPException:
+backend/.venv/lib64/python3.12/site-packages/fastapi/security/http.py:197:    def make_authenticate_headers(self) -> dict[str, str]:
+backend/.venv/lib64/python3.12/site-packages/fastapi/encoders.py:115:def generate_encoders_by_class_tuples(
+backend/.venv/lib64/python3.12/site-packages/h11/_state.py:271:    def process_client_switch_proposal(self, switch_event: Type[Sentinel]) -> None:
+backend/.venv/lib64/python3.12/site-packages/h11/_state.py:275:    def process_event(
+backend/.venv/lib64/python3.12/site-packages/h11/_state.py:299:    def _fire_event_triggered_transitions(
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:84:def _keep_alive(event: Union[Request, Response]) -> bool:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:260:    def _server_switch_event(self, event: Event) -> Optional[Type[Sentinel]]:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:272:    def _process_event(self, role: Type[Sentinel], event: Event) -> None:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:410:    def _extract_next_receive_event(
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:438:    def next_event(self) -> Union[Event, Type[NEED_DATA], Type[PAUSED]]:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:504:    def send(self, event: ConnectionClosed) -> None:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:514:    def send(self, event: Event) -> Optional[bytes]:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:517:    def send(self, event: Event) -> Optional[bytes]:
+backend/.venv/lib64/python3.12/site-packages/h11/_connection.py:544:    def send_with_data_passthrough(self, event: Event) -> Optional[List[bytes]]:
+backend/.venv/lib64/python3.12/site-packages/h11/_writers.py:63:    def __call__(self, event: Event, write: Writer) -> None:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/results.py:297:            def remove_first(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/results.py:308:            def remove_LABEL(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/results.py:372:            def insert_locn(locn, tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/results.py:395:            def append_sum(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/results.py:411:            def make_palindrome(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/common.py:322:    def strip_html_tags(s: str, l: int, tokens: ParseResults):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/diagram/__init__.py:338:    def generate_unnamed(self) -> int:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/diagram/__init__.py:345:    def generate_index(self) -> int:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/helpers.py:97:    def copy_token_to_repeater(s, l, t):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/helpers.py:132:    def copy_token_to_repeater(s, l, t):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/helpers.py:135:        def must_match_these_tokens(s, l, t):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:800:    def postParse(self, instring, loc, tokenlist):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:1872:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2339:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2380:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2441:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2462:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2537:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2701:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:2923:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3102:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3157:            def pa(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3162:            def pa(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3328:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3429:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3511:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3804:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:3924:        def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:4056:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:4194:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:4310:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:4510:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:4611:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:4941:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5050:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5084:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5149:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5227:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5584:    def _generateDefaultName(self) -> str:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5687:    def postParse(self, instring, loc, tokenlist):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5726:    def postParse(self, instring, loc, tokenlist):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5784:    def postParse(self, instring, loc, tokenlist):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5872:    def postParse(self, instring, loc, tokenlist):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5892:        def remove_duplicate_chars(tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:5989:def token_map(func, *args) -> ParseAction:
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/core.py:6114:def tokenMap(): ...
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/pyparsing/actions.py:143:    def pa(s, l, tokens):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/auth.py:25:def _basic_auth_str(username, password):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/sessions.py:127:    def should_strip_auth(self, old_url, new_url):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/sessions.py:283:    def rebuild_auth(self, prepared_request, response):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/models.py:207:    def register_hook(self, event, hook):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/models.py:218:    def deregister_hook(self, event, hook):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/models.py:589:    def prepare_auth(self, auth, url=""):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/models.py:812:        def generate():
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/utils.py:199:def get_netrc_auth(url, raise_errors=False):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/utils.py:1010:def get_auth_from_url(url):
+backend/.venv/lib64/python3.12/site-packages/pip/_vendor/requests/utils.py:1056:def urldefragauth(url):

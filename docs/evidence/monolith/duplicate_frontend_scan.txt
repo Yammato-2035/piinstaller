@@ -1,0 +1,500 @@
+frontend/src/context/MainStatusBarContext.tsx:11:  status: MainStatusPayload | null
+frontend/src/context/MainStatusBarContext.tsx:18:  const [status, setStatus] = useState<MainStatusPayload | null>(null)
+frontend/src/context/MainStatusBarContext.tsx:19:  const value = useMemo(() => ({ status, setStatus }), [status])
+frontend/src/api/partitionApi.ts:3: * Kommuniziert mit dem Python-Backend über /api/partitions/*
+frontend/src/api/partitionApi.ts:6:import { fetchApi } from '../api'
+frontend/src/api/partitionApi.ts:103:  status: 'geplant' | 'laufend' | 'erfolgreich' | 'fehler' | 'abgebrochen'
+frontend/src/api/partitionApi.ts:115:export async function fetchDisks(): Promise<DiskScanResult> {
+frontend/src/api/partitionApi.ts:116:  const res = await fetchApi('/api/partitions/scan')
+frontend/src/api/partitionApi.ts:117:  if (!res.ok) throw new Error(`Scan fehlgeschlagen: ${res.status}`)
+frontend/src/api/partitionApi.ts:121:export async function fetchSafetyCheck(
+frontend/src/api/partitionApi.ts:125:  const res = await fetchApi(
+frontend/src/api/partitionApi.ts:126:    `/api/partitions/safety-check?partition=${encodeURIComponent(partitionName)}&action=${action}`
+frontend/src/api/partitionApi.ts:128:  if (!res.ok) throw new Error(`Safety-Check fehlgeschlagen: ${res.status}`)
+frontend/src/api/partitionApi.ts:132:export async function fetchQueue(): Promise<PlannedAction[]> {
+frontend/src/api/partitionApi.ts:133:  const res = await fetchApi('/api/partitions/queue')
+frontend/src/api/partitionApi.ts:134:  if (!res.ok) throw new Error(`Queue laden fehlgeschlagen: ${res.status}`)
+frontend/src/api/partitionApi.ts:140:  await fetchApi(`/api/partitions/queue/${encodeURIComponent(actionId)}`, { method: 'DELETE' })
+frontend/src/api/partitionApi.ts:144:  await fetchApi('/api/partitions/queue', { method: 'DELETE' })
+frontend/src/api/partitionApi.ts:148:  const res = await fetchApi('/api/partitions/queue/apply', {
+frontend/src/api/partitionApi.ts:153:  if (!res.ok) throw new Error(`Anwenden fehlgeschlagen: ${res.status}`)
+frontend/src/api/partitionApi.ts:168:  status: HardstopStatus
+frontend/src/api/partitionApi.ts:179:    smart_status?: string
+frontend/src/api/partitionApi.ts:186:    status: string
+frontend/src/api/partitionApi.ts:205:  status: 'ok' | 'review_required' | 'unavailable' | 'blocked'
+frontend/src/api/partitionApi.ts:220:  status: 'ready' | 'review_required' | 'blocked'
+frontend/src/api/partitionApi.ts:225:  required_next_gates: string[]
+frontend/src/api/partitionApi.ts:233:export async function fetchPartitionHardstopPreview(
+frontend/src/api/partitionApi.ts:237:  const res = await fetchApi(`/api/partitions/hardstop-preview?${q}`)
+frontend/src/api/partitionApi.ts:240:    throw new Error(`Hardstop-Preview fehlgeschlagen: ${res.status} ${detail}`.trim())
+frontend/src/api/partitionApi.ts:245:export async function fetchManifestLayoutPreview(payload: {
+frontend/src/api/partitionApi.ts:250:  const res = await fetchApi('/api/partitions/manifest-layout-preview', {
+frontend/src/api/partitionApi.ts:257:    throw new Error(`Manifest-Layout-Preview fehlgeschlagen: ${res.status} ${detail}`.trim())
+frontend/src/api/partitionApi.ts:262:export async function fetchRestoreHandoffPreview(payload: {
+frontend/src/api/partitionApi.ts:269:  const res = await fetchApi('/api/partitions/restore-handoff-preview', {
+frontend/src/api/partitionApi.ts:276:    throw new Error(`Restore-Handoff-Preview fehlgeschlagen: ${res.status} ${detail}`.trim())
+frontend/src/api/diagnosticsApi.ts:1:import { fetchApi } from '../api'
+frontend/src/api/diagnosticsApi.ts:2:import type { DiagnosticsAnalyzeRequest, DiagnosticsAnalyzeResponse } from '../types/diagnostics'
+frontend/src/api/diagnosticsApi.ts:8:    const res = await fetchApi('/api/diagnostics/analyze', {
+frontend/src/api/diagnosisApi.ts:1:import { fetchApi } from '../api'
+frontend/src/api/diagnosisApi.ts:9:    const res = await fetchApi('/api/diagnosis/interpret', {
+frontend/src/api/devDashboardApi.ts:1:import { fetchApi } from '../api'
+frontend/src/api/devDashboardApi.ts:6:  overall_status?: string
+frontend/src/api/devDashboardApi.ts:8:  recommended_operator_action?: string
+frontend/src/api/devDashboardApi.ts:12:  api_version_http?: number
+frontend/src/api/devDashboardApi.ts:14:  profile_gate_status?: string
+frontend/src/api/devDashboardApi.ts:16:  dev_dashboard_status_http?: number
+frontend/src/api/devDashboardApi.ts:24:  status: string
+frontend/src/api/devDashboardApi.ts:35:export async function fetchBackendHealth(historyLimit = 5): Promise<BackendHealthResponse | null> {
+frontend/src/api/devDashboardApi.ts:37:    const res = await fetchApi(
+frontend/src/api/devDashboardApi.ts:38:      `/api/dev-dashboard/backend-health?history_limit=${Math.min(20, Math.max(0, historyLimit))}`,
+frontend/src/api/devDashboardApi.ts:54:  diagnostics?: Record<string, unknown>
+frontend/src/api/devDashboardApi.ts:61:export async function fetchControlCenterSummary(): Promise<ControlCenterSummary | null> {
+frontend/src/api/devDashboardApi.ts:63:    const res = await fetchApi('/api/dev-dashboard/control-center-summary')
+frontend/src/api/devServerApi.ts:1:import { fetchApi } from '../api'
+frontend/src/api/devServerApi.ts:20:  status?: string
+frontend/src/api/devServerApi.ts:31:    last_check_status?: string
+frontend/src/api/devServerApi.ts:57:export async function fetchDevServerHealth(): Promise<DevServerHealth | null> {
+frontend/src/api/devServerApi.ts:59:    const res = await fetchApi('/api/dev-server/health')
+frontend/src/api/devServerApi.ts:67:export async function fetchDevServerNodes(): Promise<DevServerNode[]> {
+frontend/src/api/devServerApi.ts:69:    const res = await fetchApi('/api/dev-server/nodes')
+frontend/src/api/devServerApi.ts:78:export async function fetchDevServerSummary(): Promise<DevServerSummary | null> {
+frontend/src/api/devServerApi.ts:80:    const res = await fetchApi('/api/dev-server/summary')
+frontend/src/api/devServerApi.ts:88:export async function fetchDevServerReports(limit = 50): Promise<Record<string, unknown>[]> {
+frontend/src/api/devServerApi.ts:90:    const res = await fetchApi(`/api/dev-server/reports?limit=${limit}`)
+frontend/src/api/devServerApi.ts:99:export async function fetchDevServerActions(limit = 50): Promise<Record<string, unknown>[]> {
+frontend/src/api/devServerApi.ts:101:    const res = await fetchApi(`/api/dev-server/actions?limit=${limit}`)
+frontend/src/api/devServerApi.ts:112:    const res = await fetchApi(`/api/dev-server/nodes/${encodeURIComponent(nodeId)}/ssh/${path}`, {
+frontend/src/api/devDiagnosticsApi.ts:1:import { fetchApi } from '../api'
+frontend/src/api/devDiagnosticsApi.ts:51:export async function fetchQemuSmokeDiagnosticExport(
+frontend/src/api/devDiagnosticsApi.ts:55:    const res = await fetchApi(
+frontend/src/api/devDiagnosticsApi.ts:56:      `/api/dev-diagnostics/qemu-smokes/${encodeURIComponent(runId)}/export`
+frontend/src/api/devDiagnosticsApi.ts:65:export async function fetchFleetSessionDiagnosticExport(
+frontend/src/api/devDiagnosticsApi.ts:69:    const res = await fetchApi(
+frontend/src/api/devDiagnosticsApi.ts:70:      `/api/dev-diagnostics/fleet-sessions/${encodeURIComponent(sessionId)}/export`
+frontend/src/api/devDiagnosticsApi.ts:79:export async function fetchQemuSmokeMarkdownReport(runId: string): Promise<string | null> {
+frontend/src/api/devDiagnosticsApi.ts:81:    const res = await fetchApi(
+frontend/src/api/devDiagnosticsApi.ts:82:      `/api/dev-diagnostics/qemu-smokes/${encodeURIComponent(runId)}/markdown`
+frontend/src/api/devDiagnosticsApi.ts:91:export async function fetchEvidenceIndex(runId: string): Promise<EvidenceIndexResponse | null> {
+frontend/src/api/devDiagnosticsApi.ts:93:    const res = await fetchApi(
+frontend/src/api/devDiagnosticsApi.ts:94:      `/api/dev-diagnostics/qemu-smokes/${encodeURIComponent(runId)}/evidence-index`
+frontend/src/api/fleetSessionsApi.ts:1:import { fetchApi } from '../api'
+frontend/src/api/fleetSessionsApi.ts:22:  guest_smoke_status?: string | null
+frontend/src/api/fleetSessionsApi.ts:49:  status?: string
+frontend/src/api/fleetSessionsApi.ts:76:  registration_status: 'pending' | 'accepted' | 'rejected' | 'expired' | string
+frontend/src/api/fleetSessionsApi.ts:80:  operator_label?: string
+frontend/src/api/fleetSessionsApi.ts:83:export async function fetchFleetSessions(includeFinished = true): Promise<FleetSession[]> {
+frontend/src/api/fleetSessionsApi.ts:86:    const res = await fetchApi(`/api/fleet/sessions?include_finished=${q}`)
+frontend/src/api/fleetSessionsApi.ts:95:export async function fetchFleetSessionSummary(): Promise<FleetSessionSummary | null> {
+frontend/src/api/fleetSessionsApi.ts:97:    const res = await fetchApi('/api/fleet/sessions/summary')
+frontend/src/api/fleetSessionsApi.ts:105:export async function fetchRescueAgentSessions(): Promise<RescueAgentSession[]> {
+frontend/src/api/fleetSessionsApi.ts:107:    const res = await fetchApi('/api/rescue-agent/sessions')
+frontend/src/components/PartitionManagerPhase2.test.ts:17:import type { DiskInfo, HardstopPreviewResult, ManifestLayoutPreviewResult, RestoreHandoffPreviewResult } from '../api/partitionApi'
+frontend/src/components/PartitionManagerPhase2.test.ts:75:  context: { target_device: '/dev/sda', smart_status: 'ok', write_allowed: false },
+frontend/src/components/PartitionManagerPhase2.test.ts:77:    status: 'blocked',
+frontend/src/components/PartitionManagerPhase2.test.ts:88:  status: 'ok',
+frontend/src/components/PartitionManagerPhase2.test.ts:102:  status: 'review_required',
+frontend/src/components/PartitionManagerPhase2.test.ts:107:  required_next_gates: ['rescue_stick_gate'],
+frontend/src/components/PartitionManagerPhase2.test.ts:167:    expect(html).toContain('partition-restore-handoff-status')
+frontend/src/components/AppIcon.tsx:3:export type IconCategory = 'navigation' | 'status' | 'devices' | 'process' | 'diagnostic'
+frontend/src/components/AppIcon.tsx:27:  ok: 'status_ok.svg',
+frontend/src/components/AppIcon.tsx:28:  warning: 'status_warning.svg',
+frontend/src/components/AppIcon.tsx:29:  error: 'status_error.svg',
+frontend/src/components/AppIcon.tsx:30:  loading: 'status_loading.svg',
+frontend/src/components/AppIcon.tsx:31:  active: 'status_active.svg',
+frontend/src/components/AppIcon.tsx:32:  complete: 'status_complete.svg',
+frontend/src/components/AppIcon.tsx:33:  running: 'status_running.svg',
+frontend/src/components/AppIcon.tsx:80:  /** Nur für category="status": Farbzuordnung. */
+frontend/src/components/AppIcon.tsx:81:  statusColor?: 'ok' | 'warning' | 'error' | 'info' | 'muted'
+frontend/src/components/AppIcon.tsx:84:export function AppIcon({ name, category, size = 24, className = '', alt = '', statusColor }: AppIconProps) {
+frontend/src/components/AppIcon.tsx:87:    status: STATUS_MAP,
+frontend/src/components/AppIcon.tsx:90:    diagnostic: DIAG_MAP,
+frontend/src/components/AppIcon.tsx:93:  const subdir = category === 'navigation' ? 'navigation' : category === 'status' ? 'status' : category === 'devices' ? 'devices' : category === 'process' ? 'process' : 'diagnostic'
+frontend/src/components/AppIcon.tsx:98:  const filterStyle = statusColor && STATUS_FILTERS[statusColor] ? { filter: STATUS_FILTERS[statusColor] } : undefined
+frontend/src/components/PartitionGraphicLayout.tsx:7:import type { DiskInfo, PartitionInfo } from '../api/partitionApi'
+frontend/src/components/PartitionRestorePreviewPanel.tsx:8:import type { ManifestLayoutPreviewResult, RestoreHandoffPreviewResult } from '../api/partitionApi'
+frontend/src/components/PartitionRestorePreviewPanel.tsx:18:const statusTone: Record<string, keyof typeof MOCKUP_STATUS> = {
+frontend/src/components/PartitionRestorePreviewPanel.tsx:48:  const status = restoreHandoff?.status ?? 'blocked'
+frontend/src/components/PartitionRestorePreviewPanel.tsx:49:  const tone = statusTone[status] ?? 'blocked'
+frontend/src/components/PartitionRestorePreviewPanel.tsx:68:            data-testid="partition-restore-handoff-status"
+frontend/src/components/PartitionRestorePreviewPanel.tsx:70:            {t(`restorePreview.status.${status}`)}
+frontend/src/components/PartitionRestorePreviewPanel.tsx:125:      {restoreHandoff?.required_next_gates && restoreHandoff.required_next_gates.length > 0 && (
+frontend/src/components/PartitionRestorePreviewPanel.tsx:129:            {restoreHandoff.required_next_gates.map((g) => (
+frontend/src/components/trafficLight/TrafficLightBadge.tsx:3:import { isYellowTrafficLightLamp } from '../../viewmodels/statusViewModel'
+frontend/src/components/trafficLight/TrafficLightBadge.tsx:4:import type { TrafficLightLampState, TrafficLightState } from '../../trafficLight/trafficLightModel'
+frontend/src/components/trafficLight/TrafficLightBadge.tsx:5:import { trafficLightStateToLamp } from '../../trafficLight/trafficLightModel'
+frontend/src/components/trafficLight/TrafficLightBadge.tsx:27:  const lamp: TrafficLightLampState = trafficLightStateToLamp(state)
+frontend/src/components/trafficLight/TrafficLightBadge.tsx:39:      role="status"
+frontend/src/components/partitions/PartitionHardstopCenter.tsx:8:import type { DiskInfo, HardstopMessage } from '../../api/partitionApi'
+frontend/src/components/partitions/PartitionExpertModePanel.tsx:8:import type { DiskInfo, PartitionInfo } from '../../api/partitionApi'
+frontend/src/components/partitions/PartitionDeviceSidebar.tsx:8:import type { DiskInfo } from '../../api/partitionApi'
+frontend/src/components/partitions/PartitionDeviceSidebar.tsx:154:            const statusKey =
+frontend/src/components/partitions/PartitionDeviceSidebar.tsx:183:                        {t(`partitionWorkbench.sidebar.status.${statusKey}`)}
+frontend/src/components/partitions/PartitionWorkbenchShell.tsx:8:import { fetchApi } from '../../api'
+frontend/src/components/partitions/PartitionWorkbenchShell.tsx:23:        const res = await fetchApi('/api/version')
+frontend/src/components/PartitionDetailTable.tsx:8:import type { DiskInfo, PartitionInfo } from '../api/partitionApi'
+frontend/src/components/PartitionDetailTable.tsx:28:const statusIcon = {
+frontend/src/components/PartitionDetailTable.tsx:57:            <th className="px-3 py-2.5 font-semibold">{t('partitionManager.table.status')}</th>
+frontend/src/components/PartitionDetailTable.tsx:97:                    {statusIcon[st]}
+frontend/src/components/PartitionDetailTable.tsx:98:                    <span className="text-slate-400">{t(`partitionManager.table.status.${st}`)}</span>
+frontend/src/components/RadioPlayer.tsx:4:import { fetchApi, getApiBase } from '../api'
+frontend/src/components/RadioPlayer.tsx:180:  bayern1: 'https://api.ardmediathek.de/image-service/images/urn:ard:image:b366004f6196d70c?w=512',
+frontend/src/components/RadioPlayer.tsx:373:    const fetchMeta = async () => {
+frontend/src/components/RadioPlayer.tsx:375:        const res = await fetchApi(`/api/radio/stream-metadata?url=${encodeURIComponent(station.streamUrl)}`)
+frontend/src/components/RadioPlayer.tsx:397:      fetchMeta()
+frontend/src/components/RadioPlayer.tsx:398:      const metaInterval = setInterval(fetchMeta, 15000) // 15 Sekunden (reduziert Last auf Backend)
+frontend/src/components/RadioPlayer.tsx:424:    const proxyUrl = base ? `${base}/api/radio/stream?url=${encodeURIComponent(s.streamUrl)}` : null
+frontend/src/components/RadioPlayer.tsx:483:    return `${prefix.replace(/\/$/, '')}/api/radio/logo?${params.toString()}`
+frontend/src/components/rescue/RescueLiveSetupMenu.tsx:41:            <li>{de ? 'Verbindungsstatus / letzter Heartbeat' : 'Connection status / last heartbeat'}</li>
+frontend/src/components/SudoPasswordDialog.tsx:11:import { fetchApi } from '../api'
+frontend/src/components/SudoPasswordDialog.tsx:42:    const response = await fetchApi('/api/users/sudo-password/check', {
+frontend/src/components/SudoPasswordDialog.tsx:49:    if (data?.status !== 'success') return 'fail'
+frontend/src/components/SudoPasswordDialog.tsx:180:      const response = await fetchApi('/api/users/sudo-password', {
+frontend/src/components/SudoPasswordDialog.tsx:185:      let data: { status?: string; message?: string; detail?: string } = {}
+frontend/src/components/SudoPasswordDialog.tsx:192:      if (data.status === 'success') {
+frontend/src/components/SudoPasswordDialog.tsx:194:        const checkRes = await fetchApi('/api/users/sudo-password/check')
+frontend/src/components/SudoPasswordDialog.tsx:197:          if (checkData.status === 'success' && !checkData.has_password) {
+frontend/src/components/companions/companionAssets.ts:62:  diagnostics: getPandaHelperBundledUrl("diagnostics"),
+frontend/src/components/companions/TrafficLight.tsx:8:} from "../../viewmodels/statusViewModel";
+frontend/src/components/companions/TrafficLight.tsx:28:  status: PandaStatus | string;
+frontend/src/components/companions/TrafficLight.tsx:34:function getActiveLamp(status: PandaStatus): TrafficLightLampTone {
+frontend/src/components/companions/TrafficLight.tsx:35:  switch (status) {
+frontend/src/components/companions/TrafficLight.tsx:49:  status,
+frontend/src/components/companions/TrafficLight.tsx:53:  const normalized = normalizePandaStatus(String(status ?? ""));
+frontend/src/components/companions/PandaCompanion.tsx:16:  status?: PandaStatus | string;
+frontend/src/components/companions/PandaCompanion.tsx:20:  trafficLightPosition?: "bottom-right" | "bottom-left";
+frontend/src/components/companions/PandaCompanion.tsx:51:  status = "info",
+frontend/src/components/companions/PandaCompanion.tsx:55:  trafficLightPosition = "bottom-right",
+frontend/src/components/companions/PandaCompanion.tsx:64:    String(status ?? mood ?? "info"),
+frontend/src/components/companions/PandaCompanion.tsx:127:    trafficLightPosition === "bottom-left"
+frontend/src/components/companions/PandaCompanion.tsx:173:            <TrafficLight status={resolvedStatus} maxHeightPx={maxTrafficLightHeight} />
+frontend/src/components/companions/PandaCompanion.tsx:212:    case "cloud":
+frontend/src/components/companions/PandaCompanion.tsx:239:    case "cloud":
+frontend/src/components/companions/companionAssetManifest.ts:32:  "cloud",
+frontend/src/components/companions/pandaUtils.ts:7:export function normalizePandaStatus(status: string | undefined | null): PandaStatus {
+frontend/src/components/companions/pandaUtils.ts:8:  if (status && (VALID_STATUS as readonly string[]).includes(status)) {
+frontend/src/components/companions/pandaUtils.ts:9:    return status as PandaStatus;
+frontend/src/components/companions/companionVariantBundledPng.ts:4:import cloudPng from "../../assets/pandas/cloud.png";
+frontend/src/components/companions/companionVariantBundledPng.ts:27:    cloud: cloudPng,
+frontend/src/components/companions/companionVariantBundledPng.ts:45:    | "diagnostics",
+frontend/src/components/companions/companionVariantBundledPng.ts:58:    case "diagnostics":
+frontend/src/components/companions/pandaTypes.ts:10:  "cloud",
+frontend/src/components/companions/StatusDots.tsx:7:} from "../../viewmodels/statusViewModel";
+frontend/src/components/companions/StatusDots.tsx:43:      role="status"
+frontend/src/components/RiskWarningCard.tsx:5:import { riskWarningTitleKeyForLevel } from '../viewmodels/statusViewModel'
+frontend/src/components/DiagnosticsAssistantPanel.tsx:3:import type { DiagnosticsAnalyzeResponse, DiagnosticsUserLevel } from '../types/diagnostics'
+frontend/src/components/DiagnosticsAssistantPanel.tsx:16:      <p className="text-xs uppercase tracking-wide text-indigo-300">{t('diagnostics.panel.badge')}</p>
+frontend/src/components/DiagnosticsAssistantPanel.tsx:18:        {result.primary_diagnosis?.id || t('diagnostics.panel.noPrimary')}
+frontend/src/components/DiagnosticsAssistantPanel.tsx:22:        {t('diagnostics.panel.meta', { severity: result.severity, confidence: result.confidence })}
+frontend/src/components/PartitionHardstopPanel.tsx:8:import type { HardstopMessage } from '../api/partitionApi'
+frontend/src/components/PartitionToolShell.tsx:8:import { fetchApi } from '../api'
+frontend/src/components/PartitionToolShell.tsx:23:        const res = await fetchApi('/api/version')
+frontend/src/components/PartitionOverviewCards.tsx:8:import type { DiskInfo } from '../api/partitionApi'
+frontend/src/components/partition/ActionQueueBar.tsx:9:import { fetchQueue, removeFromQueue, clearQueue, applyQueue, type PlannedAction } from '../../api/partitionApi'
+frontend/src/components/partition/ActionQueueBar.tsx:22:      setActions(await fetchQueue())
+frontend/src/components/partition/PartitionDetailPanel.tsx:9:import type { PartitionInfo, SafetyWarning } from '../../api/partitionApi'
+frontend/src/components/partition/PartitionDetailPanel.tsx:10:import { fetchSafetyCheck, getRiskLevel } from '../../api/partitionApi'
+frontend/src/components/partition/PartitionDetailPanel.tsx:26:    fetchSafetyCheck(partition.name, 'delete')
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:12:} from '../../api/partitionApi'
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:24:const statusBadgeClass = (status: string) => {
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:25:  if (status === 'blocked') return 'bg-red-500/20 text-red-300 border-red-500/40'
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:26:  if (status === 'review_required' || status === 'unavailable') {
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:49:  const smartStatus = String(hardstopPreview?.context?.smart_status ?? '—')
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:110:                className={`px-2 py-0.5 rounded border ${statusBadgeClass(evaluation.status)}`}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:112:                {t(`partition.phase2.status.${evaluation.status}`)}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:172:            className={`inline-block text-xs px-2 py-0.5 rounded border ${statusBadgeClass(manifestLayoutPreview.status)}`}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:174:            {t(`partition.phase2.manifestStatus.${manifestLayoutPreview.status}`)}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:214:            className={`inline-block text-xs px-2 py-0.5 rounded border ${statusBadgeClass(
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:215:              hardstopPreview.storage_safety.status
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:218:            {t(`partition.phase2.status.${hardstopPreview.storage_safety.status}`)}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:229:            className={`inline-block text-xs px-2 py-0.5 rounded border ${statusBadgeClass(restoreHandoffPreview.status)}`}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:231:            {t(`partition.phase2.handoffStatus.${restoreHandoffPreview.status}`)}
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:237:          {restoreHandoffPreview.required_next_gates?.length > 0 && (
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:239:              {restoreHandoffPreview.required_next_gates.map((g) => (
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:244:          {restoreHandoffPreview.status === 'ready' && (
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:256:            {evaluation?.status === 'blocked' || restoreHandoffPreview?.status === 'blocked'
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:258:              : evaluation?.status === 'review_required' ||
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:259:                  restoreHandoffPreview?.status === 'review_required' ||
+frontend/src/components/partition/PartitionSafetyPreviewPanel.tsx:260:                  manifestLayoutPreview?.status === 'unavailable'
+frontend/src/components/partition/DiskVisualizer.tsx:8:import type { DiskInfo, PartitionInfo } from '../../api/partitionApi'
+frontend/src/components/partition/DiskVisualizer.tsx:9:import { getFarbe } from '../../api/partitionApi'
+frontend/src/components/partition/DiskVisualizer.tsx:111:          ? { text: t('partition.partition.status.system'), cls: 'text-orange-400' }
+frontend/src/components/partition/DiskVisualizer.tsx:113:            ? { text: t('partition.partition.status.active'), cls: 'text-emerald-400' }
+frontend/src/components/partition/DiskVisualizer.tsx:114:            : { text: t('partition.partition.status.inactive'), cls: 'text-slate-500' }
+frontend/src/components/Sidebar.tsx:5:import { fetchApi } from '../api'
+frontend/src/components/Sidebar.tsx:119:      const response = await fetchApi('/api/system/network')
+frontend/src/components/Sidebar.tsx:177:              toast(t('devDashboard.governance.cockpitOpened'), { icon: '🎛️', duration: 4000 })
+frontend/src/components/Sidebar.tsx:326:            <AppIcon name="ok" category="status" size={16} statusColor="ok" />
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:6:  fetchApi,
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:12:} from '../api'
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:24:  | { kind: 'ok'; backendVersion: string; apiBaseLabel: string }
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:25:  | { kind: 'unreachable'; apiBaseLabel: string }
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:26:  | { kind: 'stale_api_base'; apiBaseLabel: string; suggestedBase: string; backendVersion: string }
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:27:  | { kind: 'version_mismatch'; backendVersion: string; uiVersion: string; apiBaseLabel: string }
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:28:  | { kind: 'app_id_mismatch'; got: string; apiBaseLabel: string }
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:38:    const apiBaseLabel = base
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:41:        ? t('app.apiConsistency.apiBase.sameOrigin')
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:47:          return fetchApi('/api/version')
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:50:          return fetch('/api/version', { credentials: 'omit' })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:52:        return fetch(`${TAURI_DEFAULT_API}/api/version`, { credentials: 'omit' })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:78:        setState({ kind: 'unreachable', apiBaseLabel })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:89:        setState({ kind: 'unreachable', apiBaseLabel })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:94:        setState({ kind: 'app_id_mismatch', got: tidExpect, apiBaseLabel })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:102:          apiBaseLabel,
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:108:          kind: 'stale_api_base',
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:109:          apiBaseLabel,
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:113:              : t('app.apiConsistency.apiBase.sameOrigin'),
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:118:      setState({ kind: 'ok', backendVersion, apiBaseLabel })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:120:      setState({ kind: 'unreachable', apiBaseLabel })
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:130:    window.addEventListener('pi-installer-api-base-changed', onBaseChange)
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:131:    return () => window.removeEventListener('pi-installer-api-base-changed', onBaseChange)
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:148:        <p className="font-medium">{t('app.apiConsistency.unreachableTitle')}</p>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:150:          {t('app.apiConsistency.apiBaseLabel')}: <code className="rounded bg-black/10 px-1">{state.apiBaseLabel}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:152:        <p className="mt-1 text-xs opacity-90">{t('app.apiConsistency.unreachableHint')}</p>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:159:            {t('app.apiConsistency.resetApiBase')}
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:166:            {t('app.apiConsistency.retry')}
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:177:        role="status"
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:179:        <p className="font-medium">{t('app.apiConsistency.versionMismatchTitle')}</p>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:181:          {t('app.apiConsistency.uiBuild')}: <code className="rounded bg-black/10 px-1">{state.uiVersion}</code> —{' '}
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:182:          {t('app.apiConsistency.backend')}: <code className="rounded bg-black/10 px-1">{state.backendVersion}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:185:          {t('app.apiConsistency.apiBaseLabel')}: <code className="rounded bg-black/10 px-1">{state.apiBaseLabel}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:187:        <p className="mt-1 text-xs">{t('app.apiConsistency.versionMismatchHint')}</p>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:194:            {t('app.apiConsistency.resetApiBase')}
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:201:  if (state.kind === 'stale_api_base') {
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:205:        role="status"
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:207:        <p className="font-medium">{t('app.apiConsistency.staleApiBaseTitle')}</p>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:209:          {t('app.apiConsistency.apiBaseLabel')}: <code className="rounded bg-black/10 px-1">{state.apiBaseLabel}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:212:          {t('app.apiConsistency.backend')}: <code className="rounded bg-black/10 px-1">{state.backendVersion}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:215:          {t('app.apiConsistency.suggestedBase')}: <code className="rounded bg-black/10 px-1">{state.suggestedBase}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:223:            {t('app.apiConsistency.resetApiBase')}
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:236:        <p className="font-medium">{t('app.apiConsistency.appIdMismatchTitle')}</p>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:238:          {t('app.apiConsistency.expectedId')}: <code className="rounded bg-black/10 px-1">{EXPECTED_TAURI_APP_ID}</code> —{' '}
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:239:          {t('app.apiConsistency.received')}: <code className="rounded bg-black/10 px-1">{state.got}</code>
+frontend/src/components/ApiRuntimeConsistencyBanner.tsx:241:        <p className="mt-1 text-xs opacity-90">{t('app.apiConsistency.appIdMismatchHint')}</p>
+frontend/src/components/BackupJobProgressSection.tsx:16:  status?: string
+frontend/src/components/BackupJobProgressSection.tsx:70:  const showSlow = shouldShowSlowButActiveHint(po, job.status)
+frontend/src/components/RunningBackupModal.tsx:7:import { fetchApi } from '../api'
+frontend/src/components/RunningBackupModal.tsx:15:  status?: string
+frontend/src/components/RunningBackupModal.tsx:35:  if (job.status === 'error' && job.code && typeof job.code === 'string' && job.code.startsWith('backup.')) {
+frontend/src/components/RunningBackupModal.tsx:62:              const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(job.job_id)}`)
+frontend/src/components/RunningBackupModal.tsx:64:              if (d.status === 'success' && d.job) {
+frontend/src/components/RunningBackupModal.tsx:66:                const isRunning = currentJob.status === 'queued' || 
+frontend/src/components/RunningBackupModal.tsx:67:                                 currentJob.status === 'running' || 
+frontend/src/components/RunningBackupModal.tsx:68:                                 currentJob.status === 'cancel_requested' ||
+frontend/src/components/RunningBackupModal.tsx:69:                                 !currentJob.status
+frontend/src/components/RunningBackupModal.tsx:127:              const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(savedJob.job_id)}`)
+frontend/src/components/RunningBackupModal.tsx:129:              if (d.status === 'success' && d.job) {
+frontend/src/components/RunningBackupModal.tsx:131:                const isRunning = currentJob.status === 'queued' || 
+frontend/src/components/RunningBackupModal.tsx:132:                                 currentJob.status === 'running' || 
+frontend/src/components/RunningBackupModal.tsx:133:                                 currentJob.status === 'cancel_requested' ||
+frontend/src/components/RunningBackupModal.tsx:134:                                 !currentJob.status
+frontend/src/components/RunningBackupModal.tsx:154:        const r = await fetchApi('/api/backup/jobs')
+frontend/src/components/RunningBackupModal.tsx:160:        if (d.status === 'success' && Array.isArray(d.jobs) && d.jobs.length > 0) {
+frontend/src/components/RunningBackupModal.tsx:247:        const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}`)
+frontend/src/components/RunningBackupModal.tsx:251:        if (d.status === 'success' && d.job) {
+frontend/src/components/RunningBackupModal.tsx:262:          const terminal = job.status === 'success' || job.status === 'error' || job.status === 'cancelled'
+frontend/src/components/RunningBackupModal.tsx:266:              if (job.status === 'success') {
+frontend/src/components/RunningBackupModal.tsx:269:              } else if (job.status === 'cancelled') {
+frontend/src/components/RunningBackupModal.tsx:312:      const r = await fetchApi(`/api/backup/jobs/${encodeURIComponent(backupJob.job_id)}/cancel`, { method: 'POST' })
+frontend/src/components/RunningBackupModal.tsx:314:      if (d.status === 'success') {
+frontend/src/components/RunningBackupModal.tsx:316:        setBackupJob((j) => (j ? { ...j, status: 'cancel_requested' } : j))
+frontend/src/components/RunningBackupModal.tsx:323:  const isRunning = backupJob?.status === 'queued' || 
+frontend/src/components/RunningBackupModal.tsx:324:                   backupJob?.status === 'running' || 
+frontend/src/components/RunningBackupModal.tsx:325:                   backupJob?.status === 'cancel_requested' ||
+frontend/src/components/RunningBackupModal.tsx:326:                   !backupJob?.status
+frontend/src/components/RunningBackupModal.tsx:355:                {backupJob.status === 'success' && <CheckCircle2 className="w-5 h-5 text-green-500" />}
+frontend/src/components/RunningBackupModal.tsx:356:                {backupJob.status === 'error' && <AlertCircle className="w-5 h-5 text-red-500" />}
+frontend/src/components/RunningBackupModal.tsx:359:                  {backupJob.status === 'cancel_requested' ? t('runningBackup.title.cancelPending')
+frontend/src/components/RunningBackupModal.tsx:362:                    : backupJob.status === 'success' ? t('runningBackup.title.done')
+frontend/src/components/RunningBackupModal.tsx:363:                    : backupJob.status === 'error' ? t('runningBackup.title.error')
+frontend/src/components/RunningBackupModal.tsx:384:              {backupJob.status && (
+frontend/src/components/RunningBackupModal.tsx:386:                  <span className="font-semibold">{t('runningBackup.label.status')}</span> <span className="font-semibold">{backupJob.status}</span>
+frontend/src/components/RunningBackupModal.tsx:401:              {backupJob.status === 'cancel_requested' && (
+frontend/src/components/PartitionPageDevStrip.tsx:8:import { fetchApi } from '../api'
+frontend/src/components/PartitionPageDevStrip.tsx:24:      const res = await fetchApi('/api/version')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:4:import { fetchApi } from '../../api'
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:20:  status: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:25:  status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:34:  path_status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:41:    runtime_gate?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:42:    runtime_gate_exit?: number | null
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:43:    runtime_gate_summary?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:49:    validator_status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:62:    status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:67:    status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:76:  operator_policy_gate?: {
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:77:    status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:88:    controlled_gate?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:89:    operator_policy?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:98:    status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:102:    status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:110:  next_operator_action?: {
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:123:  target_architecture_matrix?: {
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:138:  status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:147:  status?: string
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:169:  const [operatorCommands, setOperatorCommands] = useState<string[]>([])
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:170:  const [operatorCommandsTitle, setOperatorCommandsTitle] = useState<string | null>(null)
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:176:      const res = await fetchApi('/api/dev-dashboard/rescue-iso/status')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:178:        setError(`HTTP ${res.status}`)
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:184:      setError('fetch_failed')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:199:        const res = await fetchApi('/api/dev-dashboard/rescue-iso/step', {
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:202:          body: JSON.stringify({ step, operator_confirm: false }),
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:208:        setStepResult({ status: 'blocked', code: 'FETCH_FAILED', errors: ['fetch_failed'] })
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:222:            ? t('devDashboard.rescueIso.operatorSudoCleanRequired')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:223:            : t('devDashboard.rescueIso.operatorBuildCommand')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:224:        const res = await fetchApi(`/api/dev-dashboard/rescue-iso/operator-commands/${kind}`, {
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:244:    if (!operatorCommands.length || !navigator.clipboard) return
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:246:      await navigator.clipboard.writeText(operatorCommands.join('\n'))
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:253:  }, [operatorCommands])
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:255:  const overall = String(data?.status || 'gray')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:257:  const lastErr = data?.operator_policy_gate?.summary || data?.iso_build?.last_error || data?.logs?.last_error || data?.summary
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:258:  const pathStatus = String(data?.path_status || 'unknown')
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:263:  const archCandidates = data?.target_architecture_matrix?.candidate_targets || []
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:264:  const archDeferred = data?.target_architecture_matrix?.deferred_targets || []
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:265:  const operatorPolicyGate = data?.operator_policy_gate
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:268:    () => (data?.next_operator_action?.commands || []).join('\n'),
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:269:    [data?.next_operator_action?.commands],
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:357:            {stepResult.status || 'unknown'} {stepResult.code ? `· ${stepResult.code}` : ''}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:367:          <FlagRow label={t('devDashboard.rescueIso.runtimeGate')} value={String(data?.repo?.runtime_gate || 'unknown')} />
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:371:          <FlagRow label={t('devDashboard.rescueIso.isoBuild')} value={String(data?.iso_build?.status || 'not_started')} />
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:372:          <FlagRow label={t('devDashboard.rescueIso.realIsoBuild')} value={String(data?.real_iso_build?.status || 'not_started')} />
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:398:        <div className={sectionClass} data-testid="rescue-build-operator-policy-gate">
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:399:          <p className="text-xs font-semibold text-slate-100">{t('devDashboard.rescueIso.operatorPolicyGate')}</p>
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:401:            label={t('devDashboard.rescueIso.operatorPolicyStatus')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:402:            value={String(operatorPolicyGate?.status || 'unknown')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:405:            label={t('devDashboard.rescueIso.operatorPolicyErrorCode')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:406:            value={String(operatorPolicyGate?.error_code || '—')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:409:            label={t('devDashboard.rescueIso.operatorPolicyNextAction')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:410:            value={String(operatorPolicyGate?.next_action || '—')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:412:          {operatorPolicyGate?.summary ? <p className="text-xs text-slate-300">{operatorPolicyGate.summary}</p> : null}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:413:          {operatorPolicyGate?.allowed_execution_modes?.length ? (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:416:              {operatorPolicyGate.allowed_execution_modes.map((item) => (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:423:          {operatorPolicyGate?.forbidden_execution_modes?.length ? (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:426:              {operatorPolicyGate.forbidden_execution_modes.map((item) => (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:444:            value={String(buildProgress?.controlled_gate || 'unknown')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:448:            value={String(buildProgress?.operator_policy || 'unknown')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:481:            value={String(data?.build_tree?.validator_status || 'unknown')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:494:          <FlagRow label={t('devDashboard.rescueIso.validatorStatus')} value={String(data?.temp_runtime_bundle?.status || 'unknown')} />
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:507:          value={String(data?.target_architecture_matrix?.host_arch?.normalized || data?.target_architecture_matrix?.host_arch?.machine || 'unknown')}
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:514:                <FlagRow label={entry.target} value={entry.status} />
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:527:                <FlagRow label={entry.target} value={entry.status} />
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:537:        {data?.target_architecture_matrix?.blockers?.length ? (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:540:            {data.target_architecture_matrix.blockers.map((item) => (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:615:      {data?.next_operator_action?.label ? (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:618:          <p className="text-xs text-violet-100/90">{data.next_operator_action.label}</p>
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:622:          {operatorPolicyGate?.evidence_links?.length ? (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:624:              <p className="font-semibold">{t('devDashboard.rescueIso.operatorPolicyEvidence')}</p>
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:625:              {operatorPolicyGate.evidence_links.map((item) => (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:635:      {operatorCommandsTitle && operatorCommands.length ? (
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:638:            <p className="text-xs font-semibold text-cyan-100">{operatorCommandsTitle}</p>
+frontend/src/components/dev-dashboard/RescueBuildPanel.tsx:646:          <pre className="text-[10px] font-mono whitespace-pre-wrap text-cyan-100/90">{operatorCommands.join('\n')}</pre>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:3: * Daten aus GET /api/backup/jobs + Detail GET /api/backup/jobs/{id}.
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:8:import { fetchApi } from '../../api'
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:25:  status?: string
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:47:  last_status_message?: string
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:49:  notification_status?: string
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:83:function statusTone(status: string | undefined): string {
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:84:  const s = (status || '').toLowerCase()
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:102:      const listRes = await fetchApi('/api/backup/jobs')
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:103:      const listJson = (await listRes.json()) as { status?: string; jobs?: CockpitBackupJob[] }
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:104:      if (listJson.status !== 'success' || !Array.isArray(listJson.jobs) || listJson.jobs.length === 0) {
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:115:      const detRes = await fetchApi(`/api/backup/jobs/${encodeURIComponent(jid)}`)
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:116:      const detJson = (await detRes.json()) as { status?: string; job?: CockpitBackupJob }
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:117:      const j = detJson.status === 'success' && detJson.job ? detJson.job : first
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:120:      if (typeof bytes === 'number' && (j.status === 'running' || j.status === 'queued')) {
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:134:      setError(t('devDashboard.governance.backupProgress.fetchError'))
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:163:  const isFailed = (job?.status || '').toLowerCase() === 'error' || (job?.status || '').toLowerCase() === 'failed'
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:164:  const isRunning = (job?.status || '').toLowerCase() === 'running' || (job?.status || '').toLowerCase() === 'queued'
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:186:        {t('devDashboard.governance.backupProgress.title')}
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:188:      <p className="text-[11px] text-emerald-200/70 mb-2">{t('devDashboard.governance.backupProgress.subtitle')}</p>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:190:        {t('devDashboard.governance.backupProgress.greenRule')}
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:196:        <p className="text-xs text-slate-400">{t('devDashboard.governance.backupProgress.noJob')}</p>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:201:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.jobId')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:205:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.status')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:206:              <dd className={statusTone(job.status)}>{job.status}</dd>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:209:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.type')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:213:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.code')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:219:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.bytes')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:223:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.throughput')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:227:              <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.elapsed')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:232:                <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.phase')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:238:                <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.compressor')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:245:            {job.notification_status ? (
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:247:                <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.notification')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:248:                <dd>{job.notification_status}</dd>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:253:                <dt className="text-slate-500">{t('devDashboard.governance.backupProgress.unit')}</dt>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:261:              {t('devDashboard.governance.backupProgress.phaseTrack')}
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:284:                {longGzipWarn ? <p>{t('devDashboard.governance.backupProgress.warnLongGzip')}</p> : null}
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:285:                {staleWarning ? <p>{t('devDashboard.governance.backupProgress.warnStaleProgress')}</p> : null}
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:292:              <p className="font-semibold">{t('devDashboard.governance.backupProgress.errorsTitle')}</p>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:298:                <p>{t('devDashboard.governance.backupProgress.partialCleanupHint')}</p>
+frontend/src/components/dev-dashboard/CockpitBackupProgressPanel.tsx:310:            <p className="text-[10px] text-slate-500 mt-2">{t('devDashboard.governance.backupProgress.greenRule')}</p>
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:4:import { fetchApi } from '../../api'
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:8:  status?: string
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:18:  runtime_gate?: {
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:20:    status?: string
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:24:    status?: string
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:25:    raw_status?: string
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:35:    status?: string
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:41:    requires_operator_setup?: boolean
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:48:  operator_setup?: {
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:87:      const res = await fetchApi('/api/dev-dashboard/deploy/status')
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:89:        setError(`HTTP ${res.status}`)
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:95:      setError('fetch_failed')
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:108:      const res = await fetchApi('/api/dev-dashboard/deploy/logs')
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:123:      const res = await fetchApi('/api/dev-dashboard/deploy/operator-setup-commands', {
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:147:      const res = await fetchApi('/api/dev-dashboard/deploy/request', {
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:150:        body: JSON.stringify({ operator_confirm: true }),
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:153:      if (body.operator_setup?.commands?.length) {
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:154:        setSetupCommands(body.operator_setup.commands)
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:155:        setSetupWarnings(body.operator_setup.warnings || [])
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:157:      setRequestResult([body.status, body.code, body.message].filter(Boolean).join(' · '))
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:181:  const overall = String(data?.status || 'gray')
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:199:    <section className={`rounded-xl border p-4 space-y-3 ${toneClass(overall)}`} data-testid="deploy-status-panel">
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:234:          <InfoRow label={t('devDashboard.deployHelper.runtimeGate')} value={String(data?.runtime_gate?.status || 'unknown')} />
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:235:          <InfoRow label={t('devDashboard.deployHelper.runtimeGateExit')} value={String(data?.runtime_gate?.exit_code ?? '—')} />
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:247:          <InfoRow label={t('devDashboard.deployHelper.operatorSetupNeeded')} value={helper.requires_operator_setup ? t('devDashboard.deployHelper.yes') : t('devDashboard.deployHelper.no')} />
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:257:          <InfoRow label={t('devDashboard.deployHelper.deployDriftStatus')} value={String(data?.deploy_drift?.status || 'unknown')} />
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:271:          <InfoRow label={t('devDashboard.deployHelper.lastStatus')} value={String(data?.last_job?.status || '—')} />
+frontend/src/components/dev-dashboard/DeployStatusPanel.tsx:281:            <p className="text-xs font-semibold text-slate-100">{t('devDashboard.deployHelper.operatorSetupCommands')}</p>
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:5:  fetchFleetSessionSummary,
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:6:  fetchFleetSessions,
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:9:} from '../../api/fleetSessionsApi'
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:12:  fetchEvidenceIndex,
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:13:  fetchQemuSmokeDiagnosticExport,
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:14:  fetchQemuSmokeMarkdownReport,
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:16:} from '../../api/devDiagnosticsApi'
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:38:  const st = session.status || 'unknown'
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:72:      const [s, sum] = await Promise.all([fetchFleetSessions(true), fetchFleetSessionSummary()])
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:86:  const active = sessions.filter((s) => !TERMINAL.has(s.status || ''))
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:98:      fetchQemuSmokeDiagnosticExport(runId),
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:99:      fetchQemuSmokeMarkdownReport(runId),
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:100:      fetchEvidenceIndex(runId),
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:241:                      {session.status}
+frontend/src/components/dev-dashboard/LabSessionsPanel.tsx:275:                      <div className="mt-2 space-y-2" data-testid="lab-session-diagnostics">
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:4:import { fetchBackendHealth, type BackendHealthResponse } from '../../api/devDashboardApi'
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:6:const OPERATOR_COMMANDS = `systemctl status setuphelfer-backend.service
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:10:curl -sS http://127.0.0.1:8000/api/version | jq .
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:13:function statusTone(status: string | undefined, stale: boolean): string {
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:15:  if (status === 'ok') return 'green'
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:16:  if (status === 'warning') return 'yellow'
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:36:      const res = await fetchBackendHealth(showAllHistory ? 20 : 5)
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:53:  const tone = statusTone(data?.status, Boolean(data?.stale))
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:82:              <span className="font-mono font-semibold">{health?.overall_status ?? data.status}</span>
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:100:              <span className="text-slate-400">{t('devDashboard.backendHealth.apiVersion')}:</span>{' '}
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:101:              <span className="font-mono">{health?.api_version_http ?? '—'}</span>
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:112:              <span className="text-slate-400">{t('devDashboard.backendHealth.gateStatus')}:</span>{' '}
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:113:              <span className="font-mono">{health?.profile_gate_status ?? '—'}</span>
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:117:              <span className="font-mono">{health?.dev_dashboard_status_http ?? '—'}</span>
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:142:          {health?.recommended_operator_action ? (
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:143:            <p className="mt-1 text-xs text-sky-200">{health.recommended_operator_action}</p>
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:154:                    {String(row.generated_at ?? '—')} — {String(row.overall_status ?? '?')} /{' '}
+frontend/src/components/dev-dashboard/BackendHealthPanel.tsx:175:              {t('devDashboard.backendHealth.operatorCommands')}
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:4:import type { ControlCenterSummary } from '../../api/devDashboardApi'
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:6:import { dashboardLegacyToneFromInput } from '../../viewmodels/statusViewModel'
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:12:function itemTone(status: string): string {
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:13:  return dashboardLegacyToneFromInput(status)
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:21:  const agentStatus = String(devServer.agent_status || 'unknown')
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:38:            className={`rounded-lg border px-3 py-2 text-sm flex flex-wrap items-center justify-between gap-2 ${toneClass(itemTone(String(item.status || 'unknown')))}`}
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:42:            <span className="text-xs font-mono uppercase">{String(item.status || 'unknown')}</span>
+frontend/src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx:47:      <div className="mt-3 rounded-lg border border-slate-700/60 bg-slate-950/40 p-3 text-xs" data-testid="rescue-pipeline-agent-status">

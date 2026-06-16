@@ -7,15 +7,28 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+---
+
+## [1.8.0.0] — 2026-06-16
+
 ### Added
 
-- **DCC Developer Toolbox — USB Operator Selection:** Read-only USB-Geräteliste, Pflicht-Checkboxen, Textphrase, Evidence (`usb_operator_selection_latest.json`), Operator-`dd`-Befehl ohne Ausführung; Blocker `RESCUE_USB_OPERATOR_SELECTION_REQUIRED` u.a.
-- **DCC Sichtbarkeit:** `dcc_token_required`-Modus — Compact-Cockpit + Token-Banner wenn Capability konfiguriert, Browser-Token fehlt.
+- **Public/Private Boundary:** Gate-Skripte `check-public-private-boundary.sh`, `check-private-import-boundaries.sh`; Evidence unter `docs/evidence/public-private/`; Architektur- und Handoff-Dokumente (Cloudserver privat, Telemetrie intern, Operator, Plesk Future).
+- **Core Contracts (public-safe):** `redaction_contract`, `telemetry_client_contract`, `diagnostic_finding_contract`, `audit_event_contract` + pytest.
+- **Monolith Pre-Cloud Audit:** Inventar, Duplikat- und Kopplungsanalyse unter `docs/evidence/monolith/`.
+- **Legal/Beta:** Public-safe Checklisten (Beta, NDA, Telemetrie-Einwilligung, TOM, Löschkonzept, AV).
+- **OpenAPI Stubs:** `telemetry_client_contract_openapi.yaml`, `diagnostics_client_contract_openapi.yaml`, `cloud_public_contracts_openapi.yaml`.
 
 ### Changed
 
-- **Version 1.7.4.0:** Funktionsänderung (3. Stelle); Cargo/Tauri semver **1.7.4**.
-- **Deploy-Verifikation:** Manifest/OpenAPI-Pflicht für `rescue-usb/candidates` und `rescue-usb/selection`.
+- **STATUS_MATRIX:** Public/Private Boundary, Monolith Audit, Telemetry Handoff, Plesk Future Plan ergänzt.
+- **Modulgrenzen:** 15 Domänen inkl. public/private-Trennung dokumentiert.
+
+### Not done (bewusst)
+
+- Keine Cloudserver-Edition-Implementierung im Public Repo.
+- Kein interner Telemetrie-Server, kein Operator-Dashboard, keine Plesk-Free-Version.
+- Kein produktiver Deploy.
 
 ---
 
