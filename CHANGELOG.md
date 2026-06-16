@@ -9,6 +9,21 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.9.1.0] — 2026-06-16
+
+### Added
+
+- **F.1 MSI Windows read-only Precheck:** Device Discovery, Evidence (redacted), Precheck-Result JSON
+- **NTFS/Windows Detection Contract:** `windows_ntfs_detection_contract.py` + Tests
+- **MSI Windows API (read-only):** `api/routes/msi_windows.py` — capabilities, precheck schema, parse-readonly
+- Rescue-Stick NTFS Capability Matrix, FAQ, KB; F.2/F.3/F.4 Prompt-Entwürfe; Backup-Observability-Anforderungen
+
+### Changed
+
+- `STATUS_MATRIX.md`, `NEXT_STEPS_AFTER_1_9_0_0.md` — F.1 grün, F.2 blocked bis Execute-Prompt
+
+---
+
 ## [1.9.0.0] — 2026-06-16
 
 ### Added

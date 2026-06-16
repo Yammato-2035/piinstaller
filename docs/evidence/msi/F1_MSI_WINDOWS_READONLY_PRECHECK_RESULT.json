@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "run_id": "F1-MSI-WINDOWS-READONLY-PRECHECK",
+  "created_at": "2026-06-16T20:33:19+00:00",
+  "operator": "volker",
+  "mode": "read_only",
+  "write_operations_executed": false,
+  "mount_operations_executed": false,
+  "password_bypass_attempted": false,
+  "bitlocker_bypass_attempted": false,
+  "host_product": "ROG Strix G713PI (ASUS)",
+  "msi_source_status": "identified",
+  "source_device": "/dev/nvme0n1",
+  "source_device_serial_redacted": "sha256:9ddbc32067d4e61f",
+  "windows_detected": true,
+  "efi_detected": true,
+  "ntfs_detected": true,
+  "bitlocker_status": "not_detected",
+  "backup_target_candidates": [
+    {
+      "device": "/dev/sda",
+      "path": "/dev/sda",
+      "external_confirmed": true,
+      "role": "backup_target_candidate",
+      "label": "Backup",
+      "fstype": "ext4"
+    }
+  ],
+  "blocked_devices": [
+    "/dev/nvme1n1"
+  ],
+  "linux_system_device": "/dev/nvme1n1",
+  "recommended_next_step": "MSI_IMAGE_BACKUP",
+  "allowed_next_actions": {
+    "scan": true,
+    "image_backup_plan": true,
+    "image_backup_execute": false,
+    "verify": false,
+    "restore": false,
+    "wipe": false,
+    "linux_install": false
+  },
+  "warnings": [],
+  "errors": [],
+  "classification_summary": {
+    "disk_roles": [
+      {
+        "device": "/dev/nvme0n1",
+        "role": "windows_system_disk",
+        "confidence": "medium"
+      },
+      {
+        "device": "/dev/nvme1n1",
+        "role": "linux_system_disk",
+        "confidence": "high"
+      },
+      {
+        "device": "/dev/sda",
+        "role": "internal_data_disk",
+        "confidence": "low"
+      }
+    ]
+  },
+  "evidence_files": [
+    "docs/evidence/msi/F1_MSI_DEVICE_DISCOVERY_RAW_REDACTED.txt",
+    "docs/evidence/msi/F1_MSI_DEVICE_DISCOVERY_SUMMARY.md"
+  ]
+}

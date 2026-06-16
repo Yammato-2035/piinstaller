@@ -1,0 +1,169 @@
+=== F1 MSI DEVICE DISCOVERY 2026-06-16T20:32:01Z ===
+--- lsblk ---
+NAME        PATH           TYPE   SIZE MODEL                   SERIAL          TRAN   FSTYPE FSVER LABEL       UUID                                 PARTUUID                             MOUNTPOINTS               ROTA RM HOTPLUG
+sda         /dev/sda       disk 931,5G HGST HTS721010A9E630    sha256:9243cdc26b35c864  usb                                                                                                                                    1  0       1
+└─sda1      /dev/sda1      part 931,3G                                                ext4   1.0   Backup      44ce6f76-7896-4623-87b0-d81aedbed6d5 be480593-46c6-4148-b028-cdec97d8fcb4 /media/gabriel/Backup        1  0       1
+sdb         /dev/sdb       disk    59G Ultra Line              sha256:d6374567d0a68fff  usb                                                                                                                                    1  1       1
+├─sdb1      /dev/sdb1      part     4G                                                vfat   FAT32 sha256:c01a86a39427adef E4B4-9CD6                            5d6e5aa7-b5e0-426b-ab8e-71bb81e8a448                              1  1       1
+└─sdb2      /dev/sdb2      part    55G                                                vfat   FAT32 SETUP_LOGS  E4C2-2229                            8ff74126-1437-4a6a-9906-d5f166121c79 /media/gabriel/SETUP_LOGS    1  1       1
+nvme1n1     /dev/nvme1n1   disk   1,8T Samsung SSD 980 PRO 2TB sha256:46edd3ea7c0ae67f nvme                                                                                                                                   0  0       0
+├─nvme1n1p1 /dev/nvme1n1p1 part   512M                                         nvme   vfat   FAT32             94A7-F964                            77f82df5-80d6-488a-bedd-f59adcebf229 /boot/efi                    0  0       0
+└─nvme1n1p2 /dev/nvme1n1p2 part   1,8T                                         nvme   ext4   1.0               57b5dd3e-2461-41f2-821a-3c81ed058dcd 29829f22-1ffd-485c-8252-7325d2777229 /                            0  0       0
+nvme0n1     /dev/nvme0n1   disk   1,8T Samsung SSD 980 PRO 2TB sha256:9ddbc32067d4e61f nvme                                                                                                                                   0  0       0
+├─nvme0n1p1 /dev/nvme0n1p1 part   757M                                         nvme   ntfs                     6268DDF068DDC349                     4e96080d-d4ec-11ef-910b-00410e6a0272                              0  0       0
+├─nvme0n1p2 /dev/nvme0n1p2 part 512,1M                                         nvme   vfat   FAT32             A8E5-5B95                            4e96080e-d4ec-11ef-910b-00410e6a0272                              0  0       0
+├─nvme0n1p3 /dev/nvme0n1p3 part    16M                                         nvme                                                                 4e96080f-d4ec-11ef-910b-00410e6a0272                              0  0       0
+├─nvme0n1p4 /dev/nvme0n1p4 part 928,8G                                         nvme   ntfs                     0252FA5552FA4CC3                     4e960810-d4ec-11ef-910b-00410e6a0272                              0  0       0
+├─nvme0n1p5 /dev/nvme0n1p5 part   860M                                         nvme   ntfs                     780490A5049067C0                     f4ef1313-f88e-439c-a8c9-1ee0857d1e09                              0  0       0
+└─nvme0n1p6 /dev/nvme0n1p6 part   931G                                         nvme   ntfs                     242CFF0B2CFED730                     32363638-3735-6431-2d64-3465622d3131                              0  0       0
+--- blkid ---
+/dev/nvme0n1p5: BLOCK_SIZE="512" UUID="780490A5049067C0" TYPE="ntfs" PARTUUID="f4ef1313-f88e-439c-a8c9-1ee0857d1e09"
+/dev/nvme0n1p1: BLOCK_SIZE="512" UUID="6268DDF068DDC349" TYPE="ntfs" PARTUUID="4e96080d-d4ec-11ef-910b-00410e6a0272"
+/dev/nvme0n1p6: BLOCK_SIZE="512" UUID="242CFF0B2CFED730" TYPE="ntfs" PARTLABEL="Basi" PARTUUID="32363638-3735-6431-2d64-3465622d3131"
+/dev/nvme0n1p4: BLOCK_SIZE="512" UUID="0252FA5552FA4CC3" TYPE="ntfs" PARTUUID="4e960810-d4ec-11ef-910b-00410e6a0272"
+/dev/nvme0n1p2: UUID="A8E5-5B95" BLOCK_SIZE="512" TYPE="vfat" PARTUUID="4e96080e-d4ec-11ef-910b-00410e6a0272"
+/dev/nvme1n1p2: UUID="57b5dd3e-2461-41f2-821a-3c81ed058dcd" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="29829f22-1ffd-485c-8252-7325d2777229"
+/dev/nvme1n1p1: UUID="94A7-F964" BLOCK_SIZE="512" TYPE="vfat" PARTLABEL="EFI System Partition" PARTUUID="77f82df5-80d6-488a-bedd-f59adcebf229"
+/dev/sda1: LABEL="Backup" UUID="44ce6f76-7896-4623-87b0-d81aedbed6d5" BLOCK_SIZE="4096" TYPE="ext4" PARTUUID="be480593-46c6-4148-b028-cdec97d8fcb4"
+--- findmnt ---
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime
+proc /proc proc rw,nosuid,nodev,noexec,relatime
+udev /dev devtmpfs rw,nosuid,relatime,size=15975144k,nr_inodes=3993786,mode=755,inode64
+devpts /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000
+tmpfs /run tmpfs rw,nosuid,nodev,noexec,relatime,size=3203968k,mode=755,inode64
+efivarfs /sys/firmware/efi/efivars efivarfs rw,nosuid,nodev,noexec,relatime
+/dev/nvme1n1p2 / ext4 rw,relatime,errors=remount-ro
+securityfs /sys/kernel/security securityfs rw,nosuid,nodev,noexec,relatime
+tmpfs /dev/shm tmpfs rw,nosuid,nodev,inode64
+tmpfs /run/lock tmpfs rw,nosuid,nodev,noexec,relatime,size=5120k,inode64
+cgroup2 /sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot
+pstore /sys/fs/pstore pstore rw,nosuid,nodev,noexec,relatime
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700
+systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=32,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=31796
+mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime
+hugetlbfs /dev/hugepages hugetlbfs rw,nosuid,nodev,relatime,pagesize=2M
+debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime
+tracefs /sys/kernel/tracing tracefs rw,nosuid,nodev,noexec,relatime
+configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime
+fusectl /sys/fs/fuse/connections fusectl rw,nosuid,nodev,noexec,relatime
+tmpfs /run/qemu tmpfs rw,nosuid,nodev,relatime,mode=755,inode64
+/dev/nvme1n1p1 /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro
+binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,nosuid,nodev,noexec,relatime
+tmpfs /run/user/1002 tmpfs rw,nosuid,nodev,relatime,size=3203964k,nr_inodes=800991,mode=700,uid=1002,gid=1002,inode64
+gvfsd-fuse /run/user/1002/gvfs fuse.gvfsd-fuse rw,nosuid,nodev,relatime,user_id=1002,group_id=1002
+/dev/sdb2 /media/gabriel/SETUP_LOGS vfat rw,nosuid,nodev,relatime,uid=1002,gid=1002,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro
+/dev/sda1 /media/gabriel/Backup ext4 rw,nosuid,nodev,relatime,errors=remount-ro
+portal /run/user/1002/doc fuse.portal rw,nosuid,nodev,relatime,user_id=1002,group_id=1002
+tmpfs /run/user/1000 tmpfs rw,nosuid,nodev,relatime,size=3203964k,nr_inodes=800991,mode=700,uid=1000,gid=1000,inode64
+gvfsd-fuse /run/user/1000/gvfs fuse.gvfsd-fuse rw,nosuid,nodev,relatime,user_id=1000,group_id=1000
+portal /run/user/1000/doc fuse.portal rw,nosuid,nodev,relatime,user_id=1000,group_id=1000
+--- by-id ---
+insgesamt 0
+drwxr-xr-x 2 root root 820 Jun 16 19:17 .
+drwxr-xr-x 9 root root 180 Jun 16 21:16 ..
+lrwxrwxrwx 1 root root   9 Jun 16 21:16 ata-HGST_HTS721010A9E630_JR100XD304V3HE -> ../../sda
+lrwxrwxrwx 1 root root  10 Jun 16 21:16 ata-HGST_HTS721010A9E630_JR100XD304V3HE-part1 -> ../../sda1
+lrwxrwxrwx 1 root root  13 Jun 16 21:16 nvme-eui.002538b941a0b158 -> ../../nvme0n1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b158-part1 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b158-part2 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b158-part3 -> ../../nvme0n1p3
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b158-part4 -> ../../nvme0n1p4
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b158-part5 -> ../../nvme0n1p5
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b158-part6 -> ../../nvme0n1p6
+lrwxrwxrwx 1 root root  13 Jun 16 21:16 nvme-eui.002538b941a0b159 -> ../../nvme1n1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b159-part1 -> ../../nvme1n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-eui.002538b941a0b159-part2 -> ../../nvme1n1p2
+lrwxrwxrwx 1 root root  13 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T -> ../../nvme0n1
+lrwxrwxrwx 1 root root  13 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1 -> ../../nvme0n1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1-part1 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1-part2 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1-part3 -> ../../nvme0n1p3
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1-part4 -> ../../nvme0n1p4
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1-part5 -> ../../nvme0n1p5
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T_1-part6 -> ../../nvme0n1p6
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T-part1 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T-part2 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T-part3 -> ../../nvme0n1p3
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T-part4 -> ../../nvme0n1p4
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T-part5 -> ../../nvme0n1p5
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905337T-part6 -> ../../nvme0n1p6
+lrwxrwxrwx 1 root root  13 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905338X -> ../../nvme1n1
+lrwxrwxrwx 1 root root  13 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905338X_1 -> ../../nvme1n1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905338X_1-part1 -> ../../nvme1n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905338X_1-part2 -> ../../nvme1n1p2
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905338X-part1 -> ../../nvme1n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 nvme-Samsung_SSD_980_PRO_2TB_S736NL0X905338X-part2 -> ../../nvme1n1p2
+lrwxrwxrwx 1 root root   9 Jun 16 19:17 usb-Intenso_Ultra_Line_24111412110686-0:0 -> ../../sdb
+lrwxrwxrwx 1 root root  10 Jun 16 19:17 usb-Intenso_Ultra_Line_24111412110686-0:0-part1 -> ../../sdb1
+lrwxrwxrwx 1 root root  10 Jun 16 19:17 usb-Intenso_Ultra_Line_24111412110686-0:0-part2 -> ../../sdb2
+lrwxrwxrwx 1 root root   9 Jun 16 21:16 usb-SABRENT_SABRENT_DB9876543214E-0:0 -> ../../sda
+lrwxrwxrwx 1 root root  10 Jun 16 21:16 usb-SABRENT_SABRENT_DB9876543214E-0:0-part1 -> ../../sda1
+lrwxrwxrwx 1 root root   9 Jun 16 21:16 wwn-0x5000cca8c8c23382 -> ../../sda
+lrwxrwxrwx 1 root root  10 Jun 16 21:16 wwn-0x5000cca8c8c23382-part1 -> ../../sda1
+--- by-uuid ---
+insgesamt 0
+drwxr-xr-x 2 root root 240 Jun 16 19:17 .
+drwxr-xr-x 9 root root 180 Jun 16 21:16 ..
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 0252FA5552FA4CC3 -> ../../nvme0n1p4
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 242CFF0B2CFED730 -> ../../nvme0n1p6
+lrwxrwxrwx 1 root root  10 Jun 16 21:16 44ce6f76-7896-4623-87b0-d81aedbed6d5 -> ../../sda1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 57b5dd3e-2461-41f2-821a-3c81ed058dcd -> ../../nvme1n1p2
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 6268DDF068DDC349 -> ../../nvme0n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 780490A5049067C0 -> ../../nvme0n1p5
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 94A7-F964 -> ../../nvme1n1p1
+lrwxrwxrwx 1 root root  15 Jun 16 21:16 A8E5-5B95 -> ../../nvme0n1p2
+lrwxrwxrwx 1 root root  10 Jun 16 19:17 E4B4-9CD6 -> ../../sdb1
+lrwxrwxrwx 1 root root  10 Jun 16 19:17 E4C2-2229 -> ../../sdb2
+--- sys block ---
+insgesamt 0
+drwxr-xr-x  2 root root 0 Jun 16 22:32 .
+dr-xr-xr-x 13 root root 0 Jun 16 21:16 ..
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop0 -> ../devices/virtual/block/loop0
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop1 -> ../devices/virtual/block/loop1
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop2 -> ../devices/virtual/block/loop2
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop3 -> ../devices/virtual/block/loop3
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop4 -> ../devices/virtual/block/loop4
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop5 -> ../devices/virtual/block/loop5
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop6 -> ../devices/virtual/block/loop6
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 loop7 -> ../devices/virtual/block/loop7
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 nvme0n1 -> ../devices/pci0000:00/0000:00:01.2/0000:02:00.0/nvme/nvme0/nvme0n1
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 nvme1n1 -> ../devices/pci0000:00/0000:00:02.2/0000:08:00.0/nvme/nvme1/nvme1n1
+lrwxrwxrwx  1 root root 0 Jun 16 21:16 sda -> ../devices/pci0000:00/0000:00:08.1/0000:09:00.4/usb6/6-1/6-1:1.0/host0/target0:0:0/0:0:0:0/block/sda
+lrwxrwxrwx  1 root root 0 Jun 16 19:17 sdb -> ../devices/pci0000:00/0000:00:08.1/0000:09:00.4/usb6/6-2/6-2.2/6-2.2:1.0/host1/target1:0:0/1:0:0:0/block/sdb
+--- dmi ---
+ASUSTeK COMPUTER INC.
+ROG Strix G713PI_G713PI
+--- efibootmgr ---
+BootCurrent: 0003
+Timeout: 1 seconds
+BootOrder: 000A,0003,0009,000B,000C,000D,0002,0001
+Boot0001* UEFI: HTTP IPv4 Realtek PCIe GBE Family Controller	PciRoot(0x0)/Pci(0x1,0x6)/Pci(0x0,0x0)/MAC(08bfb8c4f753,0)/IPv4(0.0.0.00.0.0.0,0,0)/Uri()0000424f
+Boot0002* UEFI: PXE IPv4 Realtek PCIe GBE Family Controller	PciRoot(0x0)/Pci(0x1,0x6)/Pci(0x0,0x0)/MAC(08bfb8c4f753,0)/IPv4(0.0.0.00.0.0.0,0,0)0000424f
+Boot0003* Ubuntu	HD(1,GPT,77f82df5-80d6-488a-bedd-f59adcebf229,0x800,0x100000)/File(\EFI\ubuntu\shimx64.efi)
+Boot0009* Windows Boot Manager	HD(2,GPT,4e96080e-d4ec-11ef-910b-00410e6a0272,0x17b008,0x10008e)/File(\EFI\Microsoft\Boot\bootmgfw.efi)57494e444f5753000100000088000000780000004200430044004f0042004a004500430054003d007b00390064006500610038003600320063002d0035006300640064002d0034006500370030002d0061006300630031002d006600330032006200330034003400640034003700390035007d00000000000100000010000000040000007fff0400
+Boot000A* Windows Boot Manager	HD(2,GPT,4e96080e-d4ec-11ef-910b-00410e6a0272,0x17b008,0x10008e)/File(\EFI\Microsoft\Boot\bootmgfw.efi)57494e444f5753000100000088000000780000004200430044004f0042004a004500430054003d007b00390064006500610038003600320063002d0035006300640064002d0034006500370030002d0061006300630031002d006600330032006200330034003400640034003700390035007d00000000000100000010000000040000007fff0400
+Boot000B* ubuntu	HD(2,GPT,4e96080e-d4ec-11ef-910b-00410e6a0272,0x17b008,0x10008e)/File(\EFI\ubuntu\shimx64.efi) File(.)
+Boot000C* UEFI: Intenso Ultra Line, Partition 1	PciRoot(0x0)/Pci(0x8,0x1)/Pci(0x0,0x4)/USB(3,0)/USB(1,0)/HD(1,GPT,5d6e5aa7-b5e0-426b-ab8e-71bb81e8a448,0x800,0x800000)0000424f
+Boot000D* UEFI: Intenso Ultra Line, Partition 2	PciRoot(0x0)/Pci(0x8,0x1)/Pci(0x0,0x4)/USB(3,0)/USB(1,0)/HD(2,GPT,8ff74126-1437-4a6a-9906-d5f166121c79,0x800800,0x6df77df)0000424f
+--- smartctl ---
+# /dev/sda
+smartctl 7.4 2023-08-01 r5530 [x86_64-linux-6.8.0-124-generic] (local build)
+Copyright (C) 2002-23, Bruce Allen, Christian Franke, www.smartmontools.org
+
+Smartctl open device: /dev/sda [SAT] failed: Permission denied
+# /dev/sdb
+smartctl 7.4 2023-08-01 r5530 [x86_64-linux-6.8.0-124-generic] (local build)
+Copyright (C) 2002-23, Bruce Allen, Christian Franke, www.smartmontools.org
+
+/dev/sdb: Unknown USB bridge [0x24a9:0x205a (0x110)]
+Please specify device type with the -d option.
+# /dev/nvme0n1
+smartctl 7.4 2023-08-01 r5530 [x86_64-linux-6.8.0-124-generic] (local build)
+Copyright (C) 2002-23, Bruce Allen, Christian Franke, www.smartmontools.org
+
+Smartctl open device: /dev/nvme0n1 failed: Permission denied
+# /dev/nvme1n1
+smartctl 7.4 2023-08-01 r5530 [x86_64-linux-6.8.0-124-generic] (local build)
+Copyright (C) 2002-23, Bruce Allen, Christian Franke, www.smartmontools.org
+
+Smartctl open device: /dev/nvme1n1 failed: Permission denied

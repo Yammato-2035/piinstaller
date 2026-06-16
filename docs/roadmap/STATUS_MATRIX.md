@@ -48,9 +48,12 @@
 | **Telemetry Server internal** | **private_only** | Nur Client-Contract public | `TELEMETRY_INTERNAL_SERVER_HANDOFF.md` |
 | **Diagnostics Server private-only** | **private_only** | Handoff only | `DIAGNOSTICS_INTERNAL_SERVER_HANDOFF.md` |
 | **Operator Dashboard private-only** | **private_only** | ≠ lokales Dev-Cockpit | `OPERATOR_DASHBOARD_PRIVATE_HANDOFF.md` |
-| **MSI Windows Backup Plan** | **planned** | Runbook + Evidence-Schema; kein Lauf | `MSI_WINDOWS_BACKUP_RESTORE_RUNBOOK_DE.md` |
-| **MSI Windows Verify Plan** | **planned** | Plan only | `MSI_WINDOWS_VERIFY_PLAN_DE.md` |
-| **MSI Windows Restore Test** | **planned** | Passwort/BitLocker-Policy dokumentiert | `MSI_WINDOWS_RESTORE_TEST_PLAN_DE.md` |
+| **F.1 MSI Windows Read-only Precheck** | **Grün** | nvme0n1 identifiziert; Evidence redacted; kein Write | `F1_MSI_WINDOWS_READONLY_PRECHECK_FINAL_RESULT.md` |
+| **NTFS/Windows Detection Contract** | **Grün** | `windows_ntfs_detection_contract.py` + Tests | `F1_NTFS_RESCUE_CAPABILITY_RESULT.md` |
+| **Rescue Stick NTFS Capability** | **Gelb** | Matrix/Doku; ISO-Pakete F.2+ | `RESCUE_STICK_NTFS_WINDOWS_CAPABILITY.md` |
+| **MSI F2 Image Backup** | **blocked** | Freigegeben als Plan; Execute wartet F.2 Prompt | `MSI_F2_IMAGE_BACKUP_EXECUTION_PROMPT_DRAFT_DE.md` |
+| **MSI F3 Verify** | **blocked** | Nach F.2 | `MSI_F3_IMAGE_VERIFY_PROMPT_DRAFT_DE.md` |
+| **MSI F4 Restore Test** | **blocked** | Nach F.3 | `MSI_F4_RESTORE_TEST_PROMPT_DRAFT_DE.md` |
 | **MSI Wipe Release** | **blocked** | Erst nach B+V+R Evidence | `MSI_WINDOWS_EVIDENCE_SCHEMA.json` |
 | **MSI Linux Development Blueprint** | **planned** | `linux-development-workstation` public-safe | `LINUX_DEVELOPMENT_WORKSTATION_BLUEPRINT_DE.md` |
 | **MSI Linux Backup/Verify/Restore** | **planned** | Nach Linux-Install, separater Lauf | `MSI_LINUX_BLUEPRINT_TEST_PLAN_DE.md` |

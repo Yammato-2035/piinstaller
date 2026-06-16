@@ -2657,6 +2657,7 @@ try:
     from api.routes.backup_readonly import router as backup_readonly_router
     from api.routes.capabilities import router as capabilities_router
     from api.routes.catalog import router as catalog_router
+    from api.routes.msi_windows import router as msi_windows_router
     from api.routes.security import router as security_router
     from api.routes.system import router as system_router
     from api.routes.control_center import router as control_center_router
@@ -2678,6 +2679,7 @@ try:
     app.include_router(status_router)
     app.include_router(system_router)
     app.include_router(security_router)
+    app.include_router(msi_windows_router)
     app.include_router(capabilities_router)
     app.include_router(catalog_router)
     app.include_router(control_center_readonly_router)
