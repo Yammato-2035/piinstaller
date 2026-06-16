@@ -715,10 +715,66 @@ def get_readonly_storage_probe_contract() -> dict[str, Any]:
         "storage_inventory": "core.storage_facade.build_storage_inventory_snapshot",
         "classified_devices": "core.storage_facade.list_classified_block_devices_for_inspect",
         "physical_disks": "core.storage_facade.list_physical_disk_paths",
+        "lsblk_tree": "core.storage_facade.get_lsblk_json_tree",
+        "devices_for_api": "core.storage_facade.list_devices_for_api",
         "mount_inventory": "core.mount_facade.build_mount_inventory_snapshot",
         "mounts_flat": "core.mount_facade.discover_mounts_flat",
         "implementation_note": "lsblk/blkid/findmnt only inside core facades",
     }
+
+
+def get_lsblk_json_tree(*, runner: Runner = None) -> dict[str, Any]:
+    """Full lsblk -J tree (delegates storage_discovery)."""
+    from core.storage_discovery import discover_lsblk_json_tree
+
+    return discover_lsblk_json_tree(runner=runner)
+
+
+def find_lsblk_node_by_mountpoint(mountpoint: str, *, runner: Runner = None) -> dict[str, Any] | None:
+    """lsblk node for a mountpoint (delegates storage_discovery)."""
+    from core.storage_discovery import discover_lsblk_node_by_mountpoint
+
+    return discover_lsblk_node_by_mountpoint(mountpoint, runner=runner)
+
+
+def find_lsblk_node_by_name(dev_name: str, *, runner: Runner = None) -> dict[str, Any] | None:
+    """lsblk node by short name (delegates storage_discovery)."""
+    from core.storage_discovery import discover_lsblk_node_by_name
+
+    return discover_lsblk_node_by_name(dev_name, runner=runner)
+
+
+def find_disk_by_name(name: str, *, runner: Runner = None) -> dict[str, Any] | None:
+    """Top-level disk node by name (delegates storage_discovery)."""
+    from core.storage_discovery import discover_disk_by_name
+
+    return discover_disk_by_name(name, runner=runner)
+
+
+def disk_has_system_mount(disk: dict[str, Any]) -> bool:
+    """True when disk tree contains /, /boot, or /boot/firmware mounts."""
+    from core.storage_discovery import disk_has_system_mount as _fn
+
+    return _fn(disk)
+
+
+def get_device_fstype(
+    dev_path: str,
+    *,
+    runner: Runner = None,
+    sudo_runner: Runner = None,
+) -> str:
+    """Filesystem type for block device (delegates storage_discovery)."""
+    from core.storage_discovery import discover_device_fstype
+
+    return discover_device_fstype(dev_path, runner=runner, sudo_runner=sudo_runner)
+
+
+def list_devices_for_api(*, runner: Runner = None) -> list[dict[str, Any]]:
+    """Public device list for GET /api/system/devices (delegates safe_device)."""
+    from core.safe_device import devices_for_api
+
+    return devices_for_api(runner=runner)
 
 
 def collect_inspect_storage_bundle(*, runner: Runner = None) -> dict[str, Any]:

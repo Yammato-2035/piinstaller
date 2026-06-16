@@ -3009,9 +3009,9 @@ async def get_system_paths():
 async def get_system_devices():
     """Klassifizierte Blockgeräte (lsblk): nur Information, keine automatische Auswahl."""
     try:
-        from core.safe_device import devices_for_api
+        from core.storage_facade import list_devices_for_api
 
-        return {"status": "success", "devices": devices_for_api()}
+        return {"status": "success", "devices": list_devices_for_api()}
     except Exception as e:
         return JSONResponse(
             status_code=500,
@@ -4550,7 +4550,7 @@ def _validate_backup_dir(path_str: str) -> str:
     - Dienstnutzer (setuphelfer) muss beschreiben können (BACKUP-TARGET-*)
     """
     from core.backup_target_service_access import assert_backup_target_writable_for_service
-    from core.safe_device import WriteTargetProtectionError, validate_write_target
+    from core.safety_facade import WriteTargetProtectionError, validate_write_target
 
     resolved = _normalize_path(path_str)
     try:
@@ -4581,7 +4581,7 @@ def _validate_restore_target_dir(path_str: str) -> str:
     Nutzt primär validate_write_target; bei STORAGE-PROTECTION-004 auf /mnt/setuphelfer
     ist ein kontrollierter Fallback auf lokale Schreibprobe erlaubt.
     """
-    from core.safe_device import WriteTargetProtectionError, validate_write_target
+    from core.safety_facade import WriteTargetProtectionError, validate_write_target
 
     resolved = _normalize_path(path_str)
     if str(resolved) == "/":
@@ -9780,7 +9780,7 @@ async def backup_set_settings(request: Request):
         base["backup_dir"] = _validate_backup_dir(base.get("backup_dir", "/mnt/setuphelfer/backups"))
     except Exception as ve:
         from core.backup_target_service_access import extract_backup_target_diagnosis_id
-        from core.safe_device import WriteTargetProtectionError
+        from core.safety_facade import WriteTargetProtectionError
 
         details: dict = {"reason": str(ve)}
         btd = extract_backup_target_diagnosis_id(str(ve))
@@ -10747,58 +10747,58 @@ async def backup_profile_preview(request: Request):
 
 
 def _lsblk_tree() -> dict:
-    """Legacy wrapper → storage_discovery (P.2)."""
-    from core.storage_discovery import discover_lsblk_json_tree
+    """Legacy wrapper → storage_facade (B.5)."""
+    from core.storage_facade import get_lsblk_json_tree
 
-    return discover_lsblk_json_tree()
+    return get_lsblk_json_tree()
 
 
 def _flatten_findmnt_filesystems(nodes: Any) -> list[dict[str, Any]]:
-    """Legacy wrapper → storage_discovery (P.2)."""
-    from core.storage_discovery import _flatten_findmnt_filesystems as _fn
+    """Legacy wrapper → mount_facade (B.5)."""
+    from core.mount_facade import flatten_findmnt_filesystems
 
-    return _fn(nodes)
+    return flatten_findmnt_filesystems(nodes)
 
 
 def _findmnt_mounts() -> list[dict]:
-    """Legacy wrapper → storage_discovery (P.2)."""
-    from core.storage_discovery import discover_findmnt_mounts_flat
+    """Legacy wrapper → mount_facade (B.5)."""
+    from core.mount_facade import discover_mounts_flat
 
-    return discover_findmnt_mounts_flat()
+    return discover_mounts_flat()
 
 def _mountpoints_for_disk(disk_dev: str) -> list[str]:
-    """Legacy wrapper → storage_discovery (P.3)."""
-    from core.storage_discovery import discover_mountpoints_for_disk
+    """Legacy wrapper → mount_facade (B.5)."""
+    from core.mount_facade import discover_mountpoints_for_disk
 
     return discover_mountpoints_for_disk(disk_dev)
 
 
 def _find_lsblk_by_mountpoint(mountpoint: str) -> Optional[dict]:
-    """Legacy wrapper → storage_discovery (P.3)."""
-    from core.storage_discovery import discover_lsblk_node_by_mountpoint
+    """Legacy wrapper → storage_facade (B.5)."""
+    from core.storage_facade import find_lsblk_node_by_mountpoint
 
-    return discover_lsblk_node_by_mountpoint(mountpoint)
+    return find_lsblk_node_by_mountpoint(mountpoint)
 
 
 def _find_lsblk_by_name(dev_name: str) -> Optional[dict]:
-    """Legacy wrapper → storage_discovery (P.3)."""
-    from core.storage_discovery import discover_lsblk_node_by_name
+    """Legacy wrapper → storage_facade (B.5)."""
+    from core.storage_facade import find_lsblk_node_by_name
 
-    return discover_lsblk_node_by_name(dev_name)
+    return find_lsblk_node_by_name(dev_name)
 
 
 def _disk_is_system(disk: dict) -> bool:
-    """Legacy wrapper → storage_discovery (P.3)."""
-    from core.storage_discovery import disk_has_system_mount
+    """Legacy wrapper → storage_facade (B.5)."""
+    from core.storage_facade import disk_has_system_mount
 
     return disk_has_system_mount(disk)
 
 
 def _find_disk_by_name(name: str) -> Optional[dict]:
-    """Legacy wrapper → storage_discovery (P.3)."""
-    from core.storage_discovery import discover_disk_by_name
+    """Legacy wrapper → storage_facade (B.5)."""
+    from core.storage_facade import find_disk_by_name
 
-    return discover_disk_by_name(name)
+    return find_disk_by_name(name)
 
 
 def _sanitize_label(label: str, max_len: int = 16) -> str:
@@ -10895,7 +10895,7 @@ def _clone_disk_info(sudo_password: Optional[str] = None) -> dict:
         boot_info = {"mountpoint": "/boot/firmware", "device": None}
 
     def _get_fstype(dev_path: str) -> str:
-        from core.storage_discovery import discover_device_fstype
+        from core.storage_facade import get_device_fstype
 
         if not dev_path or not dev_path.startswith("/dev/"):
             return ""
@@ -10905,7 +10905,7 @@ def _clone_disk_info(sudo_password: Optional[str] = None) -> dict:
             rc = 0 if r.get("success") else int(r.get("returncode") or 1)
             return rc, (r.get("stdout") or "")
 
-        return discover_device_fstype(
+        return get_device_fstype(
             dev_path,
             sudo_runner=_sudo_runner if _sudo else None,
         )

@@ -343,3 +343,17 @@ def discover_mounts_flat(*, runner: Runner = None) -> list[dict[str, Any]]:
     from core.storage_discovery import discover_findmnt_mounts_flat
 
     return discover_findmnt_mounts_flat(runner=runner)
+
+
+def flatten_findmnt_filesystems(nodes: Any) -> list[dict[str, Any]]:
+    """Flatten nested findmnt -J filesystem nodes (delegates storage_discovery)."""
+    from core.storage_discovery import _flatten_findmnt_filesystems
+
+    return _flatten_findmnt_filesystems(nodes)
+
+
+def discover_mountpoints_for_disk(disk_dev: str, *, runner: Runner = None) -> list[str]:
+    """Mountpoints belonging to a disk device (delegates storage_discovery)."""
+    from core.storage_discovery import discover_mountpoints_for_disk
+
+    return discover_mountpoints_for_disk(disk_dev, runner=runner)

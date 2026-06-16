@@ -9,6 +9,20 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.4.0] — 2026-06-16
+
+### Changed
+
+- **Core Facade Rescue Migration B.5:** `app.py` Storage-Helfer und Safety-Validierung vollständig über Facades; kein direkter `storage_discovery`/`safe_device`-Import in HTTP-Schicht.
+- Neue Helfer: `get_lsblk_json_tree`, `find_lsblk_node_by_*`, `list_devices_for_api`, `flatten_findmnt_filesystems`, `discover_mountpoints_for_disk`.
+
+### Added
+
+- `docs/architecture/CORE_FACADE_RESCUE_MIGRATION_B5.md`
+- `backend/tests/test_core_facade_rescue_migration_b5_v1.py`
+
+---
+
 ## [1.8.3.0] — 2026-06-16
 
 ### Changed

@@ -31,12 +31,12 @@ class TestBackupFindmntMountFlattenV1(unittest.TestCase):
             ]
         }
 
-        def fake_run(cmd: str, *args, **kwargs):
+        def fake_shell_capture(cmd: str, *, runner=None, timeout=30):
             if "findmnt -J" in cmd:
-                return {"success": True, "stdout": json.dumps(nested)}
-            return {"success": False, "stdout": ""}
+                return 0, json.dumps(nested)
+            return 1, ""
 
-        with patch.object(app_module, "run_command", side_effect=fake_run):
+        with patch("core.storage_discovery._run_shell_capture", side_effect=fake_shell_capture):
             mounts = app_module._findmnt_mounts()
 
         targets = {m.get("target") for m in mounts if isinstance(m, dict)}
