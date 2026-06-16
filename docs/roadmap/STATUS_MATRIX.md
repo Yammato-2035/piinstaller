@@ -1,6 +1,6 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-05-26 — **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
+**Stand:** 2026-06-16 — Facade B.5, Router E.8, Backup B.3, Telemetry Set C. **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
 
 ## Ampeldefinition
 
@@ -44,7 +44,9 @@
 | **Public/Private Boundary Gate** | **Grün** | Skript Exit 0; keine privaten Pfade im Tree | `docs/evidence/public-private/PUBLIC_PRIVATE_BOUNDARY_FINAL_RESULT.md` |
 | **Monolith Audit (Pre-Cloud)** | **Gelb** | Inventar + Duplikat-Audit; app.py 15k Zeilen | `docs/evidence/monolith/MONOLITH_PRE_CLOUD_FINAL_RESULT.md` |
 | **Core Facade Freeze** | **Grün** | Rescue B.2–**B.5** inkl. `app.py` Storage/Safety-Delegation | `CORE_FACADE_RESCUE_MIGRATION_B5.md` |
-| **Telemetry Client Contract** | **Grün** | public-safe, opt-in, redaction-before-send | `backend/core/telemetry_client_contract.py` |
+| **App Router Slices (DCC)** | **Grün** | E.1–**E.8** readonly (9 GET in `dev_dashboard_readonly`) | `APP_ROUTER_SLICE_E8.md` |
+| **Backup Readonly Router** | **Grün** | B.2–**B.3** alle Backup-GETs extrahiert (13) | `BACKUP_READONLY_ROUTER_B3.md` |
+| **Telemetry Client Contract** | **Grün** | public-safe + **Set C** Rescue-Client-Preview | `RESCUE_TELEMETRY_CLIENT_C.md` |
 | **Telemetry Internal Server** | **Schwarz** | Handoff only, kein Public-Implementierung | `docs/private-handoff/TELEMETRY_INTERNAL_SERVER_HANDOFF.md` |
 | **Cloudserver Private Handoff** | **Gelb** | Doku + OpenAPI-Stubs; privates Repo pending | `docs/evidence/cloud-private/CLOUDSERVER_PRIVATE_HANDOFF_RESULT.md` |
 | **Plesk Free Version** | **Schwarz** | Future Plan only — nicht jetzt bauen | `docs/architecture/PLESK_FREE_VERSION_FUTURE_PLAN.md` |

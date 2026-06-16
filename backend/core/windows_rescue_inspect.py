@@ -429,6 +429,17 @@ def ingest_operator_hardware_run(
         "completion": completion,
         "operator_status": operator_status,
     }
+    try:
+        from core.rescue_telemetry_client import build_rescue_stick_telemetry_client_preview
+        from core.telemetry_client_contract import TelemetryOptInState
+
+        result["telemetry_client_preview"] = build_rescue_stick_telemetry_client_preview(
+            report,
+            run_id=run_id,
+            opt_in_state=TelemetryOptInState.DISABLED,
+        )
+    except Exception:  # noqa: BLE001
+        result["telemetry_client_preview"] = {"status": "error", "validation_errors": ["preview_build_failed"]}
     if write_outputs:
         _write_json(root / REPORT_LATEST_REL, report)
         _write_json(root / ENVELOPE_LATEST_REL, envelope)

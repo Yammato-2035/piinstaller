@@ -9,6 +9,22 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
+## [1.8.5.0] — 2026-06-16
+
+### Changed
+
+- **E.8:** DCC-Tests an 9 GET-Handler in `dev_dashboard_readonly` angepasst (inkl. Status-Facade).
+- **Backup Readonly B.3:** `GET /api/backup/target-check` aus `app.py` in `backup_readonly`-Router extrahiert.
+- **Set C:** `rescue_telemetry_client` verbindet Rettungsstick-Reports mit `telemetry_client_contract` + Redaction.
+
+### Added
+
+- `backend/core/backup_target_check_handler.py`, `backend/core/rescue_telemetry_client.py`
+- `docs/architecture/BACKUP_READONLY_ROUTER_B3.md`, `RESCUE_TELEMETRY_CLIENT_C.md`
+- Tests: `test_backup_readonly_router_b3_v1.py`, `test_rescue_telemetry_client_v1.py`
+
+---
+
 ## [1.8.4.0] — 2026-06-16
 
 ### Changed

@@ -89,10 +89,11 @@ class TestAppRouterSliceE8(unittest.TestCase):
 
     def test_handlers_are_get_only_for_e8(self) -> None:
         text = (_backend / "api/routes/dev_dashboard_readonly.py").read_text(encoding="utf-8")
-        self.assertEqual(text.count("@router.get"), 8)
+        # E.4 (5) + E.8 (3) + status facade (1) = 9 GET handlers
+        self.assertEqual(text.count("@router.get"), 9)
         self.assertNotIn("@router.post", text)
 
-    def test_readonly_router_has_eight_get_handlers_total(self) -> None:
+    def test_readonly_router_has_nine_get_handlers_total(self) -> None:
         tbl = _route_table(dev_dashboard_readonly_router)
         get_routes = [p for m, p in tbl if m == "GET"]
-        self.assertEqual(len(get_routes), 8)
+        self.assertEqual(len(get_routes), 9)

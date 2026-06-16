@@ -119,3 +119,15 @@ def json_response(**kwargs):
     from fastapi.responses import JSONResponse
 
     return JSONResponse(**kwargs)
+
+
+def validate_backup_dir(path_str: str) -> str:
+    return _app()._validate_backup_dir(path_str)
+
+
+def sudo_password() -> str:
+    return _app().sudo_store.get_password() or ""
+
+
+def backup_target_err_to_api() -> dict[str, str]:
+    return _app()._BACKUP_TARGET_ERR_TO_API

@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Query, Request
 
 from core import backup_readonly_handlers as handlers
+from core.backup_target_check_handler import backup_target_check
 
 router = APIRouter(tags=["backup-readonly"])
 
@@ -71,3 +72,18 @@ async def backup_usb_info(mountpoint: str = "", device: str = ""):
 @router.get("/api/backup/list")
 async def list_backups(backup_dir: str = "/mnt/setuphelfer/backups"):
     return await handlers.list_backups(backup_dir)
+
+
+@router.get("/api/backup/target-check")
+async def backup_target_check_route(
+    backup_dir: str,
+    create: int = 0,
+    auto_prepare: int = 0,
+    label: str = "br001",
+):
+    return await backup_target_check(
+        backup_dir,
+        create=create,
+        auto_prepare=auto_prepare,
+        label=label,
+    )

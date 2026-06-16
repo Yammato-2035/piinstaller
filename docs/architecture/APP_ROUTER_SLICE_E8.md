@@ -18,4 +18,4 @@ Kein `build_dashboard_status`. Keine neue Notification-State-Logik im Router.
 
 ## Nächster Schritt
 
-**F.1** — DCC Status Facade.
+**F.2** — DCC Status Facade (status route bereits im readonly router). **E.9** — control-center Router-Slice.
