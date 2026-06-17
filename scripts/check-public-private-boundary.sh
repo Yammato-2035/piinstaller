@@ -52,8 +52,22 @@ _set_exit() {
 # Paths where forbidden terms may appear when documenting boundaries (not implementing them).
 DOC_TERM_ALLOWLIST=(
   "docs/architecture/COMMERCIAL_MODULE_BOUNDARY.md"
+  "docs/architecture/PUBLIC_PRIVATE_BOUNDARY.md"
+  "docs/architecture/SETUPHELFER_PUBLIC_PRIVATE_STRATEGY.md"
+  "docs/architecture/CLOUDSERVER_EDITION_PRIVATE_BOUNDARY.md"
   "docs/architecture/PUBLIC_PRIVATE_PRODUCT_SPLIT.md"
   "docs/architecture/PRIVATE_REPOSITORY_STRATEGY.md"
+  "docs/architecture/SETUPHELFER_PRODUCT_FAMILY_V2.md"
+  "docs/architecture/SETUPHELFER_CORE_PLATFORM.md"
+  "docs/architecture/DCC_PRODUCT_MODEL_V2.md"
+  "docs/architecture/TELEMETRY_SERVER_IONOS_PLESK_ARCHITECTURE.md"
+  "docs/architecture/PLESK_EXTENSION_ADAPTER_PLAN.md"
+  "docs/roadmap/PRODUCT_ROADMAP_V2.md"
+  "docs/business/"
+  "docs/ui/DCC_MULTI_PRODUCT_DASHBOARD_V2.md"
+  "docs/security/PRODUCT_FAMILY_RISK_ANALYSIS_V2.md"
+  "docs/deploy/TELEMETRY_PLESK_REVERSE_PROXY_DE.md"
+  "docs/security/CLOUDSERVER_EDITION_SECURITY_CONTRACT.md"
   "docs/private-handoff/"
   "docs/evidence/public-private/"
   "docs/evidence/msi/"
@@ -64,7 +78,15 @@ DOC_TERM_ALLOWLIST=(
   "docs/runbooks/MSI_"
   "docs/blueprints/"
   "docs/roadmap/STATUS_MATRIX.md"
-  "docs/roadmap/NEXT_STEPS_AFTER_"
+  "docs/roadmap/ROADMAP_2026.md"
+  "docs/roadmap/MASTER_ROADMAP_2026_2030.md"
+  "docs/roadmap/PRODUCT_ROADMAP_V2.md"
+  "docs/faq/CLOUDSERVER_BOUNDARY_FAQ_DE.md"
+  "docs/faq/CLOUDSERVER_BOUNDARY_FAQ_EN.md"
+  "docs/faq/ARCHITECTURE_FAQ_DE.md"
+  "docs/faq/ARCHITECTURE_FAQ_EN.md"
+  "docs/knowledge-base/"
+  "docs/dev-dashboard/README.md"
   "docs/legal/"
   "scripts/check-public-private-boundary.sh"
 )
@@ -93,14 +115,19 @@ FORBIDDEN_PATHS=(
   "backend/diagnostics_server"
   "backend/internal_diagnostics"
   "backend/operator_dashboard"
+  "backend/devcontrol"
+  "backend/development_control"
   "backend/licensing"
   "backend/billing"
   "backend/subscriptions"
   "backend/commercial"
+  "backend/plesk_adapter"
   "frontend/src/operator"
   "frontend/src/cloud-pro"
   "frontend/src/cloud-backup"
+  "frontend/src/devcontrol"
   "frontend/src/pages/CloudOperatorDashboard.tsx"
+  "plesk-extension"
   "commercial"
   "licensing"
   "billing"
@@ -160,11 +187,17 @@ FORBIDDEN_TERMS=(
   "DIAGNOSTICS_SERVER_PRIVATE"
   "OPERATOR_DASHBOARD"
   "INTERNAL_DIAGNOSTIC_RULE"
+  "DIAGNOSTIC_RULE_BUNDLE"
+  "DEV_DASHBOARD_INTERNAL"
+  "DEVCONTROL_OPERATOR"
+  "PLESK_ADMIN_ACTION"
+  "PLESK_EXTENSION_SECRET"
   "HARDWARE_FINGERPRINT_PRIVATE"
   "CUSTOMER_BILLING"
   "LICENSE_ENFORCEMENT"
   "SUBSCRIPTION_ENFORCEMENT"
   "PRIVATE_INGEST"
+  "PRIVATE_ADMIN_ENDPOINT"
   "PLESK_CATALOG_SUBMISSION_SECRET"
   "IONOS_PRODUCTION_TOKEN"
   "PLESK_API_TOKEN"
@@ -263,6 +296,7 @@ ALLOWED_DOMAIN_FRAGMENTS=(
   "diagnose.internal.setuphelfer.example"
   "cloud.private.setuphelfer.example"
   "api.internal.setuphelfer.example"
+  "telemetrie.setuphelfer.de"
   "setuphelfer.example"
   "example.com"
   "localhost"
@@ -317,6 +351,53 @@ while IFS= read -r compose; do
     fi
   fi
 done < <(find "${ROOT}" -maxdepth 4 \( -name 'docker-compose*.yml' -o -name 'docker-compose*.yaml' \) 2>/dev/null)
+
+# --- 6. .env must not be tracked ---
+if git -C "${ROOT}" ls-files --error-unmatch .env &>/dev/null; then
+  _add blocked "tracked_env_file:.env"
+  _set_exit "${EXIT_SECRET}"
+fi
+
+# --- 7. Private endpoint literals in non-doc code ---
+PRIVATE_ENDPOINT_PATTERNS=(
+  '/v1/admin/keys/rotate'
+  '/internal/telemetry/ingest'
+  '/operator/fleet/production'
+  '/plesk/catalog/submit'
+)
+for f in "${CHANGED_FILES[@]}"; do
+  [[ -f "${ROOT}/${f}" ]] || continue
+  if _is_doc_allowlisted "${f}"; then
+    continue
+  fi
+  case "${f}" in
+    *.py|*.ts|*.tsx|*.js|*.jsx|*.sh)
+      ;;
+    *)
+      continue
+      ;;
+  esac
+  for pat in "${PRIVATE_ENDPOINT_PATTERNS[@]}"; do
+    if grep -qF "${pat}" "${ROOT}/${f}" 2>/dev/null; then
+      _add blocked "private_endpoint_literal:${pat}:in:${f}"
+      _set_exit "${EXIT_PRIVATE_CODE}"
+    fi
+  done
+done
+
+# --- 8. Diagnostic rule bundle filenames ---
+for f in "${CHANGED_FILES[@]}"; do
+  [[ -f "${ROOT}/${f}" ]] || continue
+  if _is_doc_allowlisted "${f}"; then
+    continue
+  fi
+  case "${f}" in
+    *diagnostic_rule_bundle*|*internal_diagnostic_rules*|*diagnostics_matcher_private*)
+      _add blocked "diagnostic_rule_bundle_path:${f}"
+      _set_exit "${EXIT_DIAGNOSTICS_SERVER}"
+      ;;
+  esac
+done
 
 # --- JSON output ---
 FINDINGS_JSON="[]"

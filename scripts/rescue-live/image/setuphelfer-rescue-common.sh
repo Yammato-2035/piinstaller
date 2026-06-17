@@ -416,7 +416,22 @@ setuphelfer_rescue_show_branding() {
   [[ -f "$branding" ]] && cat "$branding" || echo "Setuphelfer Rettungsstick"
 }
 
+setuphelfer_rescue_wifi_ensure_managed() {
+  local _line _dev _typ _state
+  while IFS= read -r _line; do
+    _dev="${_line%%:*}"
+    _typ="${_line#*:}"
+    _typ="${_typ%%:*}"
+    _state="${_line##*:}"
+    if [[ "$_typ" == "wifi" && "$_state" == "unmanaged" && -n "$_dev" ]]; then
+      nmcli device set "$_dev" managed yes 2>/dev/null || true
+      sleep 1
+    fi
+  done < <(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null || true)
+}
+
 setuphelfer_rescue_wifi_prepare_radio() {
+  setuphelfer_rescue_wifi_ensure_managed
   nmcli radio wifi on 2>/dev/null || true
   rfkill unblock wifi 2>/dev/null || true
 }

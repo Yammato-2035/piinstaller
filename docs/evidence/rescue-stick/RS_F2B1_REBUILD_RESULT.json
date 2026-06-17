@@ -1,0 +1,20 @@
+{
+  "version": "1.9.4.0",
+  "build_id": "RS-F2B1",
+  "squashfs_path": "build/rescue/filesystem.squashfs.repacked-1.9.4.0",
+  "squashfs_sha256": "3cbfca25997ce549b38e6ab640f63ae0a4a77f2ce66891811f97e78467480f61",
+  "source_squashfs_sha256": "1992d67c66df41223d623d4f06fc44bcad054ec95734385044549a0a0b9caf57",
+  "iso_path": null,
+  "iso_sha256": null,
+  "marker": "build/rescue/RS_F2B1_CAPABILITY_MARKER.json",
+  "marker_included": true,
+  "tests_green": {
+    "test_rescue_backup_plan_contract_v1": true,
+    "test_rescue_evidence_store_v1": true,
+    "test_rescue_local_telemetry_queue_v1": true,
+    "test_rescue_telemetry_redaction_contract_v1": true,
+    "test_rescue_runtime_diagnostics_redaction_v1": true
+  },
+  "private_only_artifacts_found": false,
+  "build_command": "fakeroot ./scripts/rescue-live/repack-rescue-squashfs-react-shell.sh build/rescue/filesystem.squashfs.repacked-1.9.3.0"
+}

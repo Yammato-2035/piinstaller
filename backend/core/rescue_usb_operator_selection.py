@@ -156,12 +156,26 @@ def _detect_setuphelfer_rescue(partitions: Sequence[Mapping[str, Any]], mountpoi
     }
 
 
-def device_blocked_reason(*, device_path: str, classified: ClassifiedDevice, transport: str) -> str | None:
+def _sda_removable_usb_allowed(device_path: str, transport: str, removable: bool) -> bool:
+    """Allow /dev/sda when it is a hot-plug USB stick (common on laptops without sdb)."""
+    return device_path == "/dev/sda" and transport.lower() == "usb" and removable
+
+
+def device_blocked_reason(
+    *,
+    device_path: str,
+    classified: ClassifiedDevice,
+    transport: str,
+    removable: bool | None = None,
+) -> str | None:
     dev = device_path.strip()
     if not dev.startswith("/dev/"):
         return "INVALID_DEVICE_PATH"
+    is_removable = removable if removable is not None else classified.removable
     for pat in _FORBIDDEN_DEVICE_PATTERNS:
         if pat.match(dev):
+            if _sda_removable_usb_allowed(dev, transport, is_removable):
+                continue
             return "FORBIDDEN_SYSTEM_OR_BACKUP_DEVICE"
     if transport.lower() != "usb":
         return "NOT_USB_TRANSPORT"
@@ -191,7 +205,12 @@ def build_usb_candidates_payload(*, runner: Runner | None = None, workspace: Pat
         transport = str(node.get("tran") or cd.type or "").lower()
         partitions = _partition_rows(node)
         rescue_meta = _detect_setuphelfer_rescue(partitions, cd.mountpoints)
-        blocked = device_blocked_reason(device_path=dev_path, classified=cd, transport=transport)
+        blocked = device_blocked_reason(
+            device_path=dev_path,
+            classified=cd,
+            transport=transport,
+            removable=cd.removable,
+        )
         devices.append(
             {
                 "device": dev_path,

@@ -31,7 +31,16 @@ while [[ $# -gt 0 ]]; do
 done
 
 [[ -n "$TARGET" ]] || usage
-[[ "$TARGET" != /dev/sda ]] || fail "forbidden target /dev/sda" 27
+if [[ "$TARGET" == /dev/sda ]]; then
+  python3 - <<PY || fail "forbidden target /dev/sda (not removable USB)" 27
+import subprocess, sys
+p = subprocess.run(["lsblk", "-no", "TRAN,RM", ${TARGET@Q}], capture_output=True, text=True)
+parts = (p.stdout or "").strip().split()
+if len(parts) >= 2 and parts[0].lower() == "usb" and parts[1].strip() in ("1", "1\n"):
+    sys.exit(0)
+sys.exit(1)
+PY
+fi
 [[ "$TARGET" != /dev/nvme* ]] || fail "forbidden nvme target" 27
 
 if [[ -z "$PART" ]]; then

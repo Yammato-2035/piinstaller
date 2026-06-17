@@ -39,7 +39,7 @@ export const RESCUE_START_MENU_ITEMS: RescueMenuItemDef[] = [
     actionTarget: '/rescue/backup/create',
     safetyLevel: 'confirmation_required',
     writeRisk: 'high',
-    enabled: false,
+    enabled: true,
     requiresConfirmation: true,
   },
   {

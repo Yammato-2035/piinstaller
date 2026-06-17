@@ -80,13 +80,14 @@ def validate_payload_update_target_probe(
     blockers: list[str] = []
     dev = target_device.strip()
     part = partition_device.strip()
+    expected_part = partition_path_for_target(dev, 1)
 
-    if dev != "/dev/sdb":
-        blockers.append("UNEXPECTED_TARGET_DEVICE")
-    if part != "/dev/sdb1":
+    if part != expected_part:
         blockers.append("UNEXPECTED_PARTITION_DEVICE")
     if (transport or "").lower() != "usb":
         blockers.append("NOT_USB_TRANSPORT")
+    if dev.startswith("/dev/nvme"):
+        blockers.append("FORBIDDEN_NVME_TARGET")
     if (fstype or "").lower() not in ("vfat", "msdos"):
         blockers.append("NOT_VFAT_PARTITION")
     if (label or "").upper() != FAT_VOLUME_LABEL:

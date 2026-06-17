@@ -24,6 +24,13 @@ from modules.rescue_restore_dryrun import run_restore_dryrun_pipeline
 from modules.rescue_restore_gate import load_dry_run_grant
 from modules.rescue_restore_execute import RESTORE_LOG_PATH, run_rescue_restore
 
+try:
+    from api.routes.rescue_backup import router as rescue_backup_plan_router
+    from api.routes.rescue_evidence import router as rescue_evidence_plan_router
+except ImportError:
+    rescue_backup_plan_router = None
+    rescue_evidence_plan_router = None
+
 router = APIRouter(prefix="/api/rescue", tags=["rescue"])
 
 
@@ -62,3 +69,9 @@ async def post_rescue_restore(
             codes=["rescue.restore.session_invalid", "rescue.hardstop.session_invalid"],
         )
     return run_rescue_restore(body)
+
+
+if rescue_backup_plan_router is not None:
+    router.include_router(rescue_backup_plan_router)
+if rescue_evidence_plan_router is not None:
+    router.include_router(rescue_evidence_plan_router)

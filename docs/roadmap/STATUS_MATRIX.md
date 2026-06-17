@@ -1,6 +1,8 @@
 # Setuphelfer – Statusmatrix (Ampel)
 
-**Stand:** 2026-06-16 — Boundary 1.9.0.0, Router E.14, MSI-Plan, Facade B.5. **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
+**Stand:** 2026-06-17 — **Produktfamilie V2.0** dokumentiert. Boundary 1.9.0.0, Router E.14, MSI-Plan, Facade B.5. **BR-001-Pivot:** **BR-001-LIVE** experimentell/rot (kein Release-Gate, keine Live-Desktop-Gate-Retries). **BR-001-OFFLINE** (Rettungsstick) = **Release-Gate** (rot bis HW-E2E). **PKG-001**, **DEV-001**, **BR-011–BR-019** wie zuvor. **BR-004/005:** blocked an **BR-001-OFFLINE**-Archiv. Siehe `docs/architecture/BR-001_GATE_STRATEGY_DE.md`.
+
+**V2-Referenz:** [`PRODUCT_ROADMAP_V2.md`](PRODUCT_ROADMAP_V2.md), [`SETUPHELFER_PRODUCT_FAMILY_V2.md`](../architecture/SETUPHELFER_PRODUCT_FAMILY_V2.md)
 
 ## Ampeldefinition
 
@@ -40,7 +42,9 @@
 | **Notification Email** | Gelb | Dashboard-Status bleibt produktiv gelb, weil das persistierte Rescue-Failure-Event sauber als `notification.email.provider_limit_exceeded` klassifiziert ist (`554 5.7.0 outgoing message limit exceeded`, `next_action=check_smtp_provider_limit_or_wait`, kein Fake-Gruen); separater aktueller Test-Mail-Smoke antwortete zwar mit `sent`, hebt den persistierten Failure-Status aber nicht rueckwirkend auf | `NOTIFICATION_MODULE_INTEGRATION_RESULT.md`, `NOTIFICATION_EMAIL_SETUP_RUNBOOK.md`, `/var/lib/setuphelfer/notifications/notification_events.jsonl`, `/var/lib/setuphelfer/notifications/notification_latest_summary.json` |
 | Backend-Version-Gate | Grün | Regel+Skript+`/api/version`-Diagnose im Repo; produktiver Runtime-Gate-Lauf auf `/opt/setuphelfer` liefert Exit `0` | `docs/evidence/release-gates/backend_version_update_gate.json`, `scripts/check-backend-version-gate.sh`, `docs/evidence/dev-dashboard/DEPLOY_HELPER_INTEGRATION_RESULT.md` |
 | **PKG-001** Runtime-Paket-Deploy-Gate | Gelb | Packaging-Readiness ist read-only produktiv sichtbar (`deb`/`rpm`/`AppImage` vorhanden), aber Installationsabnahme bleibt pending; kein fake install green | `docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`, `PACKAGE_DEPLOYMENT_GATE_EN.md`, `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, `docs/evidence/release-gates/apt_update_delivery_gap.json`, `docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md` |
-| Cloudserver Edition | Schwarz | nach Modularisierung; **Handoff 2026-06-16** — proprietär, nur privates Repo | `docs/private-handoff/CLOUDSERVER_PRIVATE_REPO_HANDOFF.md` |
+| Cloudserver Edition | Schwarz | **Eigenständiges privates Produkt** — kein Public-Backend-Modul; Handoff 2026-06-16 | `SETUPHELFER_PRODUCT_FAMILY_V2.md`, `docs/private-handoff/CLOUDSERVER_PRIVATE_REPO_HANDOFF.md` |
+| **Produktfamilie V2.0** | **Gelb** | Architektur + Roadmap + DCC-Modell dokumentiert; Runtime unverändert | `SETUPHELFER_PRODUCT_FAMILY_V2.md`, `DCC_PRODUCT_MODEL_V2.md`, `PRODUCT_ROADMAP_V2.md` |
+| **DCC Multi-Produkt V2** | **Gelb** | UI-Konzept + Datenmodell; keine Frontend-Implementierung | `DCC_MULTI_PRODUCT_DASHBOARD_V2.md`, `DCC_PRODUCT_MODEL_V2.md` |
 | **Public/Private Commercial Boundary** | **Grün** | Gate verschärft (Cloud Backup, Cloud Free/Pro, Telemetry/Diagnostics Server, Operator); PUBLIC Repo | `COMMERCIAL_MODULE_BOUNDARY.md`, `PUBLIC_PRIVATE_BOUNDARY_HARDENING_RESULT.md` |
 | **Cloud Backup private-only** | **private_only** | Keine Implementierung im Public Repo | `COMMERCIAL_MODULES_PRIVATE_HANDOFF.md` |
 | **Cloud Edition Free private-only** | **private_only** | Strategisch geschützt trotz Name | `COMMERCIAL_MODULE_BOUNDARY.md` |
@@ -299,3 +303,15 @@ Vollständiges Inventar: **`docs/evidence/release-gates/blocker_inventory.json`*
 | **Rescue-Agent Ingest Stub** | **Grün** | Operator-Smoke ok (`…182452`); Register+Report+Trap release | `RESCUE_AGENT_OPERATOR_SMOKE_INGEST.md` |
 | **ISO Precheck** | **Gelb** | Cleanup **ok**; Validate Exit 14 blockiert Operator-Build | `RESCUE_ISO_BUILD_TREE_CLEANUP_RESULT.md` |
 | Deploy Drift | Gelb | Evidence-only HEAD; Backend/Rescue/Fleet match; 4 UI/Build-Hilfsdateien differieren | `RUNTIME_DRIFT_CLASSIFICATION_AFTER_RELEASE_RESTORE.md` |
+
+## RS-F2B.1 Rescue Stick Runtime Diagnose/Fix (2026-06-17)
+
+| Bereich | Ampel | Hinweis |
+|---------|-------|---------|
+| WLAN Detection | Gelb | MSI: unmanaged/NM-Quirk klassifiziert; Fix im Payload 1.9.4.0; Retest RS-F2B.2 |
+| Local Stick Telemetry | Gelb | SETUP_LOGS-Persistenz implementiert; MSI-Retest offen |
+| Backup Plan (plan-only) | Grün | Contract + Fehlercodes + UI; `execute_allowed=false` |
+| Backup Execute | Schwarz | Blockiert bis RS-F2C |
+| Stick Payload | Grün | Squashfs `3cbfca…` auf `/dev/sda` verifiziert |
+
+Evidence: `docs/evidence/rescue-stick/RS_F2B1_FINAL_RESULT.md`, `docs/evidence/release-gates/RS_F2B1_NEXT_STEP_DECISION.md`

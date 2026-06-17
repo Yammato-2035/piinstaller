@@ -1160,11 +1160,6 @@ def validate_fat32_write_target(
     blockers: list[str] = []
     errors: list[str] = []
 
-    for pat in FORBIDDEN_TARGET_PATTERNS:
-        if pat.match(dev):
-            blockers.append("FORBIDDEN_SYSTEM_OR_BACKUP_DEVICE")
-            errors.append("forbidden_device_pattern")
-
     classified = {d.id: d for d in list_classified_devices(runner=runner)}
     cd = classified.get(dev)
     row = None
@@ -1175,10 +1170,24 @@ def validate_fat32_write_target(
         candidates_pre = build_usb_candidates_payload(runner=runner)
         row = next((d for d in candidates_pre.get("devices") or [] if d.get("device") == dev), None)
         transport = str((row or {}).get("transport") or "usb").lower()
-        reason = device_blocked_reason(device_path=dev, classified=cd, transport=transport)
+        reason = device_blocked_reason(
+            device_path=dev,
+            classified=cd,
+            transport=transport,
+            removable=cd.removable,
+        )
         if reason:
             blockers.append(reason)
             errors.append(reason)
+
+    for pat in FORBIDDEN_TARGET_PATTERNS:
+        if pat.match(dev):
+            transport = str((row or {}).get("transport") or getattr(cd, "transport", "") or "").lower()
+            removable = bool((row or {}).get("removable") if row else (cd.removable if cd else False))
+            if pat.pattern == r"^/dev/sda$" and transport == "usb" and removable:
+                continue
+            blockers.append("FORBIDDEN_SYSTEM_OR_BACKUP_DEVICE")
+            errors.append("forbidden_device_pattern")
 
     candidates = build_usb_candidates_payload(runner=runner)
     if row is None:

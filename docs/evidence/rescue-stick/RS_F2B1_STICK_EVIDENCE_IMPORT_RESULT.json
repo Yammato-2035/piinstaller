@@ -1,0 +1,32 @@
+{
+  "stick_detected": true,
+  "setup_logs_partition_found": true,
+  "setup_logs_mounted": true,
+  "setup_logs_mount": "/media/volker/SETUP_LOGS",
+  "read_only_import": true,
+  "files_found": [
+    "setuphelfer/diagnostics/latest/41-wifi.txt",
+    "setuphelfer/diagnostics/latest/61-rescue-run-state.txt",
+    "setuphelfer/diagnostics/20260617_211041_boot/12-lsmod.txt",
+    "setuphelfer/diagnostics/20260617_211041_boot/20-dmesg-firmware.txt"
+  ],
+  "rescue_session_found": true,
+  "telemetry_events_found": false,
+  "telemetry_spool_on_setup_logs_after_fix": true,
+  "backup_plan_attempt_found": false,
+  "network_scan_found": true,
+  "redaction_status": "ok",
+  "msi_boot_findings": {
+    "wlan_not_found": true,
+    "local_telemetry_expected": true,
+    "backup_plan_created": false,
+    "telemetry_only_in_run_on_msi": true,
+    "wizard_disk_discovery_null": true
+  },
+  "warnings": [
+    "MSI-Boot: Telemetrie nur unter /run/setuphelfer-rescue/telemetry-spool, nicht auf SETUP_LOGS",
+    "media-check spot_checks_ok=false (Pfadauflösung im FAT32-ESP-Modus)",
+    "wizard-state: disk_discovery null, action_plan null"
+  ],
+  "errors": []
+}

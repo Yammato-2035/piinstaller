@@ -32,7 +32,7 @@ EVIDENCE_SUBDIRS = (
     "raw",
 )
 
-_STICK_LABELS = frozenset({"SETUPHELFER", "SETUPHELFER_RESCUE", "SETUPHELFER_RESCUE_LIVE"})
+_STICK_LABELS = frozenset({"SETUPHELFER", "SETUPHELFER_RESCUE", "SETUPHELFER_RESCUE_LIVE", "SETUP_LOGS"})
 _LIVE_MEDIUM_PATH = Path("/run/live/medium")
 _LIVE_MEDIUM_CANDIDATES = (
     Path("/run/live/medium"),
@@ -42,6 +42,7 @@ _RAM_FALLBACK_ROOT = Path("/tmp/setuphelfer-evidence")
 _WRITABLE_FSTYPES = frozenset({"vfat", "exfat", "ext2", "ext3", "ext4"})
 _READONLY_FSTYPES = frozenset({"iso9660", "udf", "squashfs", "erofs"})
 _MEDIA_RE = re.compile(r"^/media/[^/]+/SETUPHELFER", re.IGNORECASE)
+_SETUP_LOGS_RE = re.compile(r"^/media/[^/]+/SETUP_LOGS$", re.IGNORECASE)
 
 
 def _utc_now() -> str:
@@ -65,7 +66,7 @@ def _is_plausible_stick_target(target: str) -> bool:
         live_s = str(live_root)
         if t == live_s or t.startswith(f"{live_s}/"):
             return True
-    return bool(_MEDIA_RE.match(t))
+    return bool(_MEDIA_RE.match(t) or _SETUP_LOGS_RE.match(t))
 
 
 def _reject_internal_system_source(source: str, *, runner: Runner = None) -> bool:
@@ -146,7 +147,8 @@ def detect_rescue_stick_mount(*, runner: Runner = None) -> dict[str, Any]:
             for p in _LIVE_MEDIUM_CANDIDATES
         )
         media_setuphelfer = bool(_MEDIA_RE.match(target))
-        recognized = live_medium or media_setuphelfer or label in _STICK_LABELS
+        media_setup_logs = bool(_SETUP_LOGS_RE.match(target))
+        recognized = live_medium or media_setuphelfer or media_setup_logs or label in _STICK_LABELS
         readonly_fs = fstype in _READONLY_FSTYPES or _mount_options_readonly(options)
         writable = (
             recognized
@@ -159,6 +161,10 @@ def detect_rescue_stick_mount(*, runner: Runner = None) -> dict[str, Any]:
             score += 3
         if label in _STICK_LABELS:
             score += 2
+        if label == "SETUP_LOGS":
+            score += 4
+        if media_setup_logs:
+            score += 3
         if media_setuphelfer:
             score += 2
         if writable:
@@ -216,6 +222,24 @@ def detect_rescue_stick_mount(*, runner: Runner = None) -> dict[str, Any]:
 
 def build_rescue_evidence_root(*, runner: Runner = None) -> dict[str, Any]:
     """Resolve canonical evidence root path and metadata."""
+    from core.rescue_setup_logs_persistence import detect_setup_logs_mount
+
+    logs = detect_setup_logs_mount(runner=runner)
+    if logs.get("persistent"):
+        root = Path(str(logs["evidence_root"]))
+        return {
+            "schema_version": 1,
+            "generated_at": _utc_now(),
+            "evidence_root": str(root),
+            "evidence_dir_name": "setuphelfer/evidence",
+            "fallback": False,
+            "warning": None,
+            "mount_point": logs.get("mount_point"),
+            "persistence_mode": logs.get("persistence_mode"),
+            "detection": logs,
+            "writable": True,
+        }
+
     det = detect_rescue_stick_mount(runner=runner)
     root = Path(str(det.get("writable_root") or _RAM_FALLBACK_ROOT))
     return {
@@ -228,6 +252,7 @@ def build_rescue_evidence_root(*, runner: Runner = None) -> dict[str, Any]:
         "mount_point": det.get("mount_point"),
         "persistence_mode": det.get("persistence_mode"),
         "detection": det,
+        "writable": not bool(det.get("fallback")),
     }
 
 

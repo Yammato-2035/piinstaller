@@ -35,7 +35,8 @@ export const RescueStartCenter: React.FC<{
   status: RescueBootStatus;
   locale: 'de' | 'en';
   onLocaleChange: (locale: 'de' | 'en') => void;
-}> = ({ status, locale, onLocaleChange }) => {
+  onSelectItem?: (id: RescueMenuItemId) => void;
+}> = ({ status, locale, onLocaleChange, onSelectItem }) => {
   const [selected, setSelected] = useState<RescueMenuItemId>('system_analyze');
   const dict = useMemo(() => (locale === 'de' ? de : en), [locale]);
   const bg = locale === 'de' ? BOOT_BG_DE : BOOT_BG_EN;
@@ -104,7 +105,10 @@ export const RescueStartCenter: React.FC<{
                 key={item.id}
                 type="button"
                 disabled={!item.enabled}
-                onClick={() => setSelected(item.id)}
+                onClick={() => {
+                  setSelected(item.id);
+                  onSelectItem?.(item.id);
+                }}
                 style={{
                   display: 'grid',
                   gridTemplateColumns: '48px 1fr',
