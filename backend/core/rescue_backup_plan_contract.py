@@ -13,11 +13,21 @@ from core.msi_windows_image_backup import (
     compute_required_bytes,
     run_f2_preflight,
 )
+from core.rescue_backup_encryption_contract import build_encryption_preflight
+from core.rescue_backup_verify_contract import build_backup_verify_plan
+from core.rescue_disk_role_classifier import (
+    ROLE_EXTERNAL_BACKUP,
+    ROLE_LINUX_SYSTEM,
+    ROLE_WINDOWS_SYSTEM,
+    classify_disk_role,
+    validate_source_target_pair,
+)
+from core.rescue_os_detection import classify_detected_os
 from core.rescue_backup_target_policy import classify_storage_role
 from core.rescue_wifi_diagnostics import classify_wifi_status
 from core.rescue_setup_logs_persistence import resolve_rescue_evidence_root
 
-CONTRACT_VERSION = 1
+CONTRACT_VERSION = 2
 SETUP_LOGS_LABELS = frozenset({"SETUP_LOGS"})
 
 
@@ -57,7 +67,7 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
 
     if not source_device:
         errors.append(_err("source_missing", "Keine Windows-/NTFS-Quelle angegeben."))
-    elif source_device.startswith("/dev/nvme1"):
+    elif source_device.startswith("/dev/nvme1") and str(payload.get("backup_mode") or "") != "linux_full_root_tar":
         errors.append(_err("source_ambiguous", "Interne Linux-Quelle blockiert."))
 
     target_label = str(payload.get("target_label") or "").upper()
@@ -160,3 +170,102 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
         "warnings": warnings,
         "errors": errors,
     }
+
+
+def build_rescue_full_backup_plan(body: dict[str, Any] | None = None) -> dict[str, Any]:
+    """Full-backup plan with encryption/verify/cloud-pro gates; execute_allowed=false in RS-P1."""
+    payload = body if isinstance(body, dict) else {}
+    base = build_rescue_backup_plan(payload)
+    backup_mode = str(payload.get("backup_mode") or payload.get("source_type") or "auto")
+    target_mode = str(payload.get("target_mode") or "external_hdd").lower()
+    if backup_mode == "auto":
+        os_info = classify_detected_os(
+            {"path": payload.get("source_device"), "fstype": payload.get("fstype"), "type": "disk"}
+        )
+        backup_mode = os_info.get("backup_modes", ["raw_image"])[0] if os_info.get("backup_modes") else "raw_image"
+
+    source_dev = {
+        "path": payload.get("source_device"),
+        "fstype": payload.get("fstype"),
+        "label": payload.get("source_label"),
+        "type": "disk",
+    }
+    target_dev = {
+        "path": payload.get("target_device") or payload.get("target_mount"),
+        "label": payload.get("target_label"),
+        "fstype": payload.get("fstype"),
+        "tran": payload.get("target_tran"),
+    }
+    pair = validate_source_target_pair(source_dev, target_dev)
+    errors = list(base.get("errors") or [])
+    warnings = list(base.get("warnings") or [])
+    for e in pair.get("errors") or []:
+        if e not in errors:
+            errors.append(e)
+
+    if target_mode in ("cloud", "cloud_pro"):
+        errors.append(_err("cloud_pro_plan_only", "Cloud-Backup ist Pro/private-only — kein Execute im Public-Repo."))
+        if base.get("wifi", {}).get("blocks_plan"):
+            errors.append(_err("cloud_selected_but_wifi_missing", "Cloud gewählt ohne Netzwerk."))
+
+    encryption = build_encryption_preflight(
+        encryption_requested=bool(payload.get("encryption_requested", True)),
+        mode=str(payload.get("encryption_mode") or "not_configured"),
+        key_configured=bool(payload.get("encryption_key_configured")),
+        lab_unencrypted_confirmed=bool(payload.get("lab_unencrypted_confirmed")),
+    )
+    if encryption.get("blocks_execute") and encryption.get("encryption_required"):
+        warnings.append(_err("encryption_key_missing", "Verschlüsselung vor Execute klären."))
+
+    verify = build_backup_verify_plan(
+        image_path=str(payload.get("planned_image_path") or ""),
+        manifest_path=str(payload.get("planned_manifest_path") or ""),
+        sha256_path=str(payload.get("planned_sha256_path") or ""),
+        encrypted=encryption.get("encryption_status") == "configured",
+    )
+    if payload.get("verify_requested", True) and verify.get("verify_status") == "blocked":
+        warnings.append(_err("verify_not_ready", "Verify-Preflight noch nicht bereit."))
+
+    plan_status = base.get("plan_status")
+    if errors:
+        plan_status = "blocked"
+    elif warnings or pair.get("review_required") or encryption.get("encryption_status") in ("missing", "deferred"):
+        plan_status = "review_required"
+
+    next_step = "Plan erneut prüfen nach Quell-/Zielwahl und Verschlüsselungskonfiguration."
+    if not errors and plan_status == "ready":
+        next_step = "Preflight OK — Execute folgt in RS-P3 nach Operator-Freigabe."
+
+    base.update(
+        {
+            "contract_version": CONTRACT_VERSION,
+            "plan_status": plan_status,
+            "backup_mode": backup_mode,
+            "full_backup": True,
+            "manual_selection_supported": True,
+            "target_selection_supported": True,
+            "verify_required": bool(payload.get("verify_requested", True)),
+            "verify": verify,
+            "encryption": {
+                "supported": True,
+                "requested": bool(payload.get("encryption_requested", True)),
+                "mode": encryption.get("mode"),
+                "key_status": encryption.get("encryption_status"),
+                "blocks_execute": encryption.get("blocks_execute", True),
+                "preflight": encryption,
+            },
+            "cloud": {
+                "available": False,
+                "pro_only": True,
+                "public_repo_execute_allowed": False,
+                "plan_only": target_mode in ("cloud", "cloud_pro"),
+            },
+            "source_role": pair.get("source_role"),
+            "target_role": pair.get("target_role"),
+            "execute_allowed": False,
+            "errors": errors,
+            "warnings": warnings,
+            "next_safe_step": next_step,
+        }
+    )
+    return base

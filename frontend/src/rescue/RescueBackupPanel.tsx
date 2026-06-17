@@ -3,7 +3,8 @@ import {
   fetchCloudTargetStatus,
   fetchRescueCapabilities,
   fetchStorageDiscovery,
-  runBackupPlan,
+  fetchSystemSummary,
+  runFullBackupPlan,
   saveCloudTargetLocal,
   writeEvidenceEvent,
   type BackupPlanResult,
@@ -30,6 +31,10 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [targetPath, setTargetPath] = useState('');
   const [targetMount, setTargetMount] = useState('');
   const [capabilities, setCapabilities] = useState<{ booted_from_rescue?: boolean }>({});
+  const [backupMode, setBackupMode] = useState<'raw_image' | 'linux_full_root_tar' | 'auto'>('auto');
+  const [encryptionRequested, setEncryptionRequested] = useState(true);
+  const [verifyRequested, setVerifyRequested] = useState(true);
+  const [systemSummary, setSystemSummary] = useState<Record<string, unknown> | null>(null);
   const [plan, setPlan] = useState<BackupPlanResult | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
   const [error, setError] = useState('');
@@ -42,11 +47,13 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
   useEffect(() => {
     (async () => {
       try {
-        const [disc, caps, cloud] = await Promise.all([
+        const [disc, caps, cloud, summary] = await Promise.all([
           fetchStorageDiscovery(),
           fetchRescueCapabilities(),
           fetchCloudTargetStatus(),
+          fetchSystemSummary().catch(() => null),
         ]);
+        setSystemSummary(summary as Record<string, unknown> | null);
         setSources(disc.source_candidates || []);
         setTargets(disc.target_candidates || []);
         setCapabilities(caps);
@@ -78,25 +85,26 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
       const body = {
         source_device: sourcePath,
         source_size_bytes: sources.find((s) => s.path === sourcePath)?.size || 0,
-        source_type: 'windows_ntfs_disk',
-        target_mode: targetMode === 'cloud' ? 'cloud' : 'external_hdd',
+        backup_mode: backupMode,
+        target_mode: targetMode === 'cloud' ? 'cloud_pro' : 'external_hdd',
         target_mount: targetMount,
         target_device: targetPath,
         target_label: selectedTarget?.label,
         target_tran: selectedTarget?.tran,
         free_bytes: 0,
-        fstype: selectedTarget?.fstype || 'ext4',
-        wifi_status: 'missing',
+        fstype: selectedTarget?.fstype || sources.find((s) => s.path === sourcePath)?.fstype || 'ext4',
+        encryption_requested: encryptionRequested,
+        verify_requested: verifyRequested,
         operator_confirm_source: true,
         operator_confirm_target: true,
         operator_confirm_no_restore: true,
         operator_confirm_no_wipe: true,
       };
-      const result = await runBackupPlan(body);
+      const result = await runFullBackupPlan(body);
       setPlan(result);
       await writeEvidenceEvent({
-        event: { phase: 'backup_plan_check', plan_status: result.plan_status, plan_id: result.plan_id },
-        stick_build_id: 'RS-F2B1',
+        event: { event_type: 'backup_plan_requested', plan_status: result.plan_status, plan_id: result.plan_id },
+        stick_build_id: 'RS-P1',
       }).catch(() => undefined);
     } catch {
       setError('Backup-Plan konnte nicht geprüft werden (API nicht erreichbar).');
@@ -146,7 +154,8 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
           </p>
         ) : null}
         <p style={{ fontSize: 13, color: '#94a3b8' }}>
-          Nächster Schritt: Geräte prüfen, Ziel wählen, dann „Plan erneut prüfen“. Ausführung bleibt gesperrt (RS-F2B.1).
+          {(plan as BackupPlanResult).next_safe_step ||
+            'Nächster Schritt: Geräte prüfen, Ziel wählen, dann Plan erneut prüfen. Ausführung gesperrt (RS-P1).'}
         </p>
         <pre style={pre}>{JSON.stringify(plan, null, 2)}</pre>
       </div>
@@ -198,8 +207,33 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
         {loading ? <p>Lade Geräte…</p> : null}
         {error ? <p style={{ color: '#f87171' }}>{error}</p> : null}
 
+        {systemSummary?.identity ? (
+          <p style={{ color: '#94a3b8', fontSize: 14 }}>
+            Rechner: {(systemSummary.identity as { vendor?: string; model?: string }).vendor} /{' '}
+            {(systemSummary.identity as { model?: string }).model} · Boot:{' '}
+            {(systemSummary.identity as { boot_mode?: string }).boot_mode}
+          </p>
+        ) : null}
+
         <section style={panel}>
-          <h2 style={h2}>Quelle (Windows)</h2>
+          <h2 style={h2}>Backup-Art</h2>
+          <select value={backupMode} onChange={(e) => setBackupMode(e.target.value as typeof backupMode)} style={input}>
+            <option value="auto">Automatisch erkennen</option>
+            <option value="raw_image">Full Image (Windows/NTFS)</option>
+            <option value="linux_full_root_tar">Linux Full Root (tar)</option>
+          </select>
+          <label style={{ ...label, display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <input type="checkbox" checked={encryptionRequested} onChange={(e) => setEncryptionRequested(e.target.checked)} />
+            Verschlüsselung anfordern (Preflight, kein Execute)
+          </label>
+          <label style={{ ...label, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" checked={verifyRequested} onChange={(e) => setVerifyRequested(e.target.checked)} />
+            Verify erforderlich
+          </label>
+        </section>
+
+        <section style={panel}>
+          <h2 style={h2}>Quelle</h2>
           <select value={sourcePath} onChange={(e) => setSourcePath(e.target.value)} style={input}>
             {sources.map((s) => (
               <option key={s.path} value={s.path}>
@@ -263,7 +297,7 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
         <section style={panel}>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             <button type="button" style={btnPrimary} onClick={runPlanCheck} disabled={planLoading}>
-              {planLoading ? 'Prüfe…' : 'Plan erneut prüfen'}
+              {planLoading ? 'Prüfe…' : 'Backup-Plan erstellen'}
             </button>
             <button type="button" style={btnSecondary} onClick={() => window.location.reload()}>
               Geräte neu erkennen

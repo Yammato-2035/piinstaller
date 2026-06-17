@@ -36,11 +36,24 @@ export interface BackupPlanResult {
   plan_status?: 'ready' | 'review_required' | 'blocked';
   plan_id?: string;
   execute_allowed?: boolean;
+  backup_mode?: string;
+  full_backup?: boolean;
+  next_safe_step?: string;
+  encryption?: { key_status?: string; blocks_execute?: boolean };
+  verify?: { verify_required?: boolean; verify_status?: string };
+  cloud?: { pro_only?: boolean; plan_only?: boolean };
   errors?: Array<{ code?: string; message?: string }>;
   warnings?: Array<{ code?: string; message?: string }>;
   wifi?: { required?: boolean; available?: boolean; blocks_plan?: boolean };
   capacity?: { required_bytes?: number; free_bytes?: number };
   telemetry?: { local_evidence_path?: string; persistent?: boolean };
+}
+
+export interface RescueSystemSummary {
+  identity?: { vendor?: string; model?: string; boot_mode?: string };
+  source_candidates?: RescueStorageDevice[];
+  target_candidates?: RescueStorageDevice[];
+  execute_allowed?: boolean;
 }
 
 const jsonHeaders = { 'Content-Type': 'application/json' };
@@ -73,6 +86,22 @@ export async function saveCloudTargetLocal(body: {
   return res.json();
 }
 
+export async function runFullBackupPlan(body: Record<string, unknown>): Promise<BackupPlanResult> {
+  const res = await fetch('/api/rescue/backup/full-plan', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('full_plan_failed');
+  return res.json();
+}
+
+export async function fetchSystemSummary(): Promise<RescueSystemSummary> {
+  const res = await fetch('/api/rescue/system/summary', { cache: 'no-store' });
+  if (!res.ok) throw new Error('system_summary_failed');
+  return res.json();
+}
+
 export async function runBackupPlan(body: Record<string, unknown>): Promise<BackupPlanResult> {
   const res = await fetch('/api/rescue/backup/plan', {
     method: 'POST',
@@ -93,7 +122,7 @@ export async function writeEvidenceEvent(body: Record<string, unknown>): Promise
   return res.json();
 }
 
-export async function runBackupPreflight(body: Record<string, unknown>): Promise<BackupPreflightResult> {
+export async function runBackupPreflight(body: Record<string, unknown>): Promise<{ preflight?: Record<string, unknown> }> {
   const res = await fetch('/api/rescue/backup/preflight', {
     method: 'POST',
     headers: jsonHeaders,

@@ -41,9 +41,19 @@ async def rescue_backup_preflight_route(body: dict[str, Any] = Body(...)):
     return await backup_handlers.post_backup_preflight(body)
 
 
+@router.get("/system/summary")
+async def rescue_system_summary_route():
+    return await backup_handlers.get_system_summary()
+
+
 @router.post("/backup/plan")
 async def rescue_backup_plan_route(body: dict[str, Any] = Body(...)):
     return await backup_handlers.post_backup_plan(body)
+
+
+@router.post("/backup/full-plan")
+async def rescue_full_backup_plan_route(body: dict[str, Any] = Body(...)):
+    return await backup_handlers.post_full_backup_plan(body)
 
 
 @router.post("/restore/preview-preflight")

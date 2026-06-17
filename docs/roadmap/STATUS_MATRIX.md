@@ -31,7 +31,7 @@
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |
-| Rescue Stick | Rot | BR-001-OFFLINE Release-Gate; Deploy-Pipelines teilweise; RS-001–008 HW rot | `RESCUE_STICK_TEST_MATRIX.md`, `rescue-stick.json` |
+| Rescue Stick | Gelb | RS-P1: Systemerkennung + Full-Backup-Plan Contract; Execute blockiert; MSI-Retest RS-P2 | `RESCUE_STICK_PRODUCT_READINESS_MATRIX.md`, `RS_P1_FINAL_RESULT.md` |
 | Monolith-Audit | Gelb | App-Bootstrap extrahiert (`app_bootstrap/`); `app.py` noch ~17k Zeilen; Boundary `review_required` | `docs/evidence/monolith/APP_PY_AFTER_DECOMPOSITION.md`, `docs/architecture/APP_BOOTSTRAP_ARCHITECTURE.md` |
 | **App.py Bootstrap / Decomposition** | **Gelb** | Factory, Middleware-, Router-Registry, Startup-Diagnostik, Dev-Dashboard-Service; **kein** Deploy; Live-Diagnose nach Sync | `docs/evidence/runtime-results/app_decomposition_before_rescue_iso_gate.json`, `docs/evidence/rescue/RESCUE_ISO_BUILD_READINESS_AFTER_APP_DECOMPOSITION.md` |
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |
@@ -44,7 +44,7 @@
 | **PKG-001** Runtime-Paket-Deploy-Gate | Gelb | Packaging-Readiness ist read-only produktiv sichtbar (`deb`/`rpm`/`AppImage` vorhanden), aber Installationsabnahme bleibt pending; kein fake install green | `docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md`, `PACKAGE_DEPLOYMENT_GATE_EN.md`, `scripts/check-runtime-deploy-gate.sh`, `scripts/runtime_deploy_gate_eval.py`, `docs/evidence/release-gates/apt_update_delivery_gap.json`, `docs/evidence/dev-dashboard/PROJECT_OVERVIEW_DASHBOARD_INTEGRATION_RESULT.md` |
 | Cloudserver Edition | Schwarz | **Eigenständiges privates Produkt** — kein Public-Backend-Modul; Handoff 2026-06-16 | `SETUPHELFER_PRODUCT_FAMILY_V2.md`, `docs/private-handoff/CLOUDSERVER_PRIVATE_REPO_HANDOFF.md` |
 | **Produktfamilie V2.0** | **Gelb** | Architektur + Roadmap + DCC-Modell dokumentiert; Runtime unverändert | `SETUPHELFER_PRODUCT_FAMILY_V2.md`, `DCC_PRODUCT_MODEL_V2.md`, `PRODUCT_ROADMAP_V2.md` |
-| **DCC Multi-Produkt V2** | **Gelb** | UI-Konzept + Datenmodell; keine Frontend-Implementierung | `DCC_MULTI_PRODUCT_DASHBOARD_V2.md`, `DCC_PRODUCT_MODEL_V2.md` |
+| **DCC Multi-Produkt V2** | **Gelb** | Registry-API + Frontend Preview (`DccProductFamilyPanel`); Release-Profil 404 erwartet | `DCC_PRODUCTS_API_V1.md`, `DccProductFamilyPanel.tsx` |
 | **Public/Private Commercial Boundary** | **Grün** | Gate verschärft (Cloud Backup, Cloud Free/Pro, Telemetry/Diagnostics Server, Operator); PUBLIC Repo | `COMMERCIAL_MODULE_BOUNDARY.md`, `PUBLIC_PRIVATE_BOUNDARY_HARDENING_RESULT.md` |
 | **Cloud Backup private-only** | **private_only** | Keine Implementierung im Public Repo | `COMMERCIAL_MODULES_PRIVATE_HANDOFF.md` |
 | **Cloud Edition Free private-only** | **private_only** | Strategisch geschützt trotz Name | `COMMERCIAL_MODULE_BOUNDARY.md` |

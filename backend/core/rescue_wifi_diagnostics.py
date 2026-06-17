@@ -37,12 +37,22 @@ def classify_wifi_status() -> dict[str, Any]:
     required_for_cloud = True
 
     fix_suggestions: list[str] = []
+    ui_status = "wlan_ok"
     if unmanaged:
         fix_suggestions.append("nmcli_device_set_managed_yes")
+        ui_status = "interface_unmanaged"
     if not wifi_radio_on:
         fix_suggestions.append("nmcli_radio_wifi_on")
     if "Soft blocked: yes" in rfkill:
         fix_suggestions.append("rfkill_unblock_wifi")
+        ui_status = "rfkill_blocked"
+    if wifi_hw_missing and not interfaces and not driver_loaded:
+        ui_status = "firmware_or_hardware_missing"
+    elif driver_loaded and re.search(r"firmware.*failed|Direct firmware load", _run(["dmesg", "--ctime"]) or ""):
+        ui_status = "firmware_missing"
+    if blocks_cloud_backup and not blocks_hdd_backup:
+        if ui_status == "wlan_ok":
+            ui_status = "wlan_missing_hdd_ok"
 
     return {
         "wifi_hardware_detected": bool(interfaces) or driver_loaded,
@@ -58,5 +68,6 @@ def classify_wifi_status() -> dict[str, Any]:
         "blocks_local_hdd_backup": blocks_hdd_backup,
         "blocks_cloud_backup": blocks_cloud_backup,
         "fix_suggestions": fix_suggestions,
+        "ui_status": ui_status,
         "status": "unmanaged" if unmanaged else ("missing_hw" if wifi_hw_missing and not interfaces else "available"),
     }

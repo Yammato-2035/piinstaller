@@ -73,3 +73,15 @@ async def post_backup_plan(body: dict[str, Any]) -> dict[str, Any]:
     from core.rescue_backup_plan_contract import build_rescue_backup_plan
 
     return build_rescue_backup_plan(body)
+
+
+async def post_full_backup_plan(body: dict[str, Any]) -> dict[str, Any]:
+    from core.rescue_backup_plan_contract import build_rescue_full_backup_plan
+
+    return build_rescue_full_backup_plan(body)
+
+
+async def get_system_summary() -> dict[str, Any]:
+    from core.rescue_system_identity import build_rescue_system_summary
+
+    return build_rescue_system_summary()

@@ -1,0 +1,30 @@
+{
+  "setuphelfer_version": "1.9.5.0",
+  "major_version_locked_to_1": true,
+  "stick_build_id": "rs-p1-20260617",
+  "squashfs_sha256": "95a66245d7658ac39e4b641c9b52c2502f3b35d4b3a81d73c90e0e5166e7ca68",
+  "features": {
+    "boot_matrix_evidence": true,
+    "system_identity": true,
+    "os_detection": true,
+    "disk_role_classification": true,
+    "wifi_diagnostics": true,
+    "local_telemetry_queue": true,
+    "persistent_setup_logs": true,
+    "redaction_before_persist": true,
+    "backup_plan_contract": true,
+    "full_backup_plan": true,
+    "manual_source_selection": true,
+    "manual_target_selection": true,
+    "external_hdd_target": true,
+    "cloud_backup_pro_plan_only": true,
+    "backup_verify_contract": true,
+    "backup_encryption_contract": true,
+    "restore_preview_contract": true,
+    "backup_execute": false,
+    "restore_execute": false,
+    "wipe": false,
+    "linux_install": false
+  },
+  "private_only_artifacts_included": false
+}
