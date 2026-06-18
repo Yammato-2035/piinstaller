@@ -166,8 +166,12 @@ if [[ -e "$MOUNT/.sqtmp" ]]; then
   fail "staging artifact .sqtmp must not be on USB" 26
 fi
 
-if grep -q "menuentry \"Setuphelfer Rettung starten\"" "$MOUNT/boot/grub/grub.cfg" 2>/dev/null; then
-  echo "OK: grub menu Setuphelfer Rettung starten"
+if grep -q "menuentry \"Setuphelfer starten - sicherer Textmodus\"" "$MOUNT/boot/grub/grub.cfg" 2>/dev/null \
+   && grep -q "setuphelfer_mode=text" "$MOUNT/boot/grub/grub.cfg" 2>/dev/null \
+   && grep -q "setuphelfer_kiosk=0" "$MOUNT/boot/grub/grub.cfg" 2>/dev/null; then
+  echo "OK: grub failsafe text mode default menu"
+elif grep -q "menuentry \"Setuphelfer Rettung starten\"" "$MOUNT/boot/grub/grub.cfg" 2>/dev/null; then
+  echo "OK: grub menu Setuphelfer Rettung starten (legacy)"
 else
   fail "grub.cfg missing required menu entry" 24
 fi

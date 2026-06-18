@@ -192,6 +192,29 @@ def grub_cfg_loads_gfx_modules(grub_text: str, *, image_format: str = "jpeg") ->
     return "insmod png" in grub_text
 
 
+def grub_cfg_failsafe_plain_mode(grub_text: str) -> bool:
+    lowered = grub_text.lower()
+    return "menu_color_normal=" in grub_text and "set theme=" not in lowered
+
+
+def validate_fat32_grub_failsafe(grub_cfg_text: str) -> list[str]:
+    """Validate plain high-contrast GRUB menu (RS-P2C) — no gfxmenu theme required."""
+    errors: list[str] = []
+    if "insmod gfxterm" not in grub_cfg_text:
+        errors.append("GRUB_CFG_GFXTERM_MISSING")
+    if "menu_color_normal=" not in grub_cfg_text:
+        errors.append("GRUB_CFG_MENU_COLORS_MISSING")
+    if "set timeout_style=menu" not in grub_cfg_text:
+        errors.append("GRUB_CFG_TIMEOUT_STYLE_MENU_MISSING")
+    if "setuphelfer_mode=text" not in grub_cfg_text:
+        errors.append("GRUB_CFG_TEXT_MODE_DEFAULT_MISSING")
+    if grub_cfg_references_theme(grub_cfg_text):
+        errors.append("GRUB_CFG_THEME_SHOULD_NOT_BE_REFERENCED_IN_FAILSAFE")
+    if "setuphelfer_kiosk=1" in grub_cfg_text.split("setuphelfer_mode=text")[0]:
+        errors.append("GRUB_CFG_KIOSK_IN_DEFAULT_ENTRY")
+    return errors
+
+
 def validate_fat32_grub_branding(
     staging_dir: Path,
     grub_cfg_text: str,
@@ -199,6 +222,9 @@ def validate_fat32_grub_branding(
     bootx64_modules: Sequence[str] | None = None,
     image_format: str = "jpeg",
 ) -> list[str]:
+    if grub_cfg_failsafe_plain_mode(grub_cfg_text):
+        return validate_fat32_grub_failsafe(grub_cfg_text)
+
     errors: list[str] = []
     theme_dir = staging_dir / GRUB_THEME_DIR_REL
     theme_file = theme_dir / GRUB_THEME_FILE

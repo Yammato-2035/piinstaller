@@ -101,7 +101,7 @@ def apply_grub_branding_on_mount(
     branding_txt = mount_root / "setuphelfer" / "rescue" / "boot-branding.txt"
     branding_txt.parent.mkdir(parents=True, exist_ok=True)
     branding_txt.write_text(
-        "Setuphelfer Rettungsstick — GRUB theme/branding active\n",
+        "Setuphelfer Rettungsstick — GRUB failsafe plain menu (text mode default)\n",
         encoding="utf-8",
     )
 

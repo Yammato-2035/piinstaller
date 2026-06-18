@@ -67,7 +67,7 @@ class RescueGrubBrandingTests(unittest.TestCase):
             bootx64_modules=BOOTX64_MKSTANDALONE_MODULES.split(),
             image_format="jpeg",
         )
-        self.assertIn("GRUB_CFG_THEME_NOT_REFERENCED", errors)
+        self.assertEqual(errors, [], errors)
 
     def test_bootx64_modules_include_gfx(self) -> None:
         modules = BOOTX64_MKSTANDALONE_MODULES.split()
