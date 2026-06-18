@@ -39,18 +39,44 @@ mkdir -p "${ROOT}/usr/share/setuphelfer/rescue/ui"
 cp -a "${UI_SRC}/." "${ROOT}/usr/share/setuphelfer/rescue/ui/"
 
 IMAGE="${REPO_ROOT}/scripts/rescue-live/image"
-for script in setuphelfer-rescue-common.sh setuphelfer-rescue-ui-launch setuphelfer-rescue-state-write setuphelfer-rescue-evidence-spool-sync setuphelfer-rescue-start-assistant setuphelfer-rescue-network-onboarding setuphelfer-rescue-telemetry-push; do
+for script in \
+  setuphelfer-rescue-common.sh \
+  setuphelfer-rescue-ui-launch \
+  setuphelfer-rescue-kiosk-start \
+  setuphelfer-rescue-backend-start.sh \
+  setuphelfer-rescue-gui-start.sh \
+  setuphelfer-rescue-state-write \
+  setuphelfer-rescue-evidence-spool-sync \
+  setuphelfer-rescue-start-assistant \
+  setuphelfer-rescue-network-onboarding \
+  setuphelfer-rescue-telemetry-push \
+  setuphelfer-rescue-media-check \
+  setuphelfer-rescue-disk-discovery \
+  setuphelfer-rescue-boot-diagnostics \
+  setuphelfer-rescue-boot-evidence-init; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script}"
 done
+for py in setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-plan-builder.py setuphelfer-rescue-live-medium-check.py; do
+  install -m 0755 "${IMAGE}/${py}" "${ROOT}/usr/local/sbin/${py}"
+done
+
+# RS-P2A: sync workspace backend into live payload (repack previously missed RS-P1 contracts).
+RSYNC_EX=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.env' --exclude='tests' --exclude='.pytest_cache' --exclude='venv' --exclude='.venv' --exclude='.venv-ci' --exclude='cache')
+mkdir -p "${ROOT}/opt/setuphelfer-rescue/backend" "${ROOT}/opt/setuphelfer-rescue/scripts/rescue-live"
+rsync -rlt "${RSYNC_EX[@]}" "${REPO_ROOT}/backend/" "${ROOT}/opt/setuphelfer-rescue/backend/"
+rsync -rlt "${RSYNC_EX[@]}" "${REPO_ROOT}/scripts/rescue-live/" "${ROOT}/opt/setuphelfer-rescue/scripts/rescue-live/"
 
 SYSTEMD="${ROOT}/etc/systemd/system"
 WANTS="${SYSTEMD}/multi-user.target.wants"
 TIMERS="${SYSTEMD}/timers.target.wants"
 mkdir -p "$WANTS" "$TIMERS"
-for unit in setuphelfer-rescue-ui.service setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service; do
+for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service; do
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
+# GUI autostart is orchestrated by setuphelfer-rescue-start-assistant via setuphelfer-rescue-gui-start.
+rm -f "${WANTS}/setuphelfer-rescue-ui.service"
 
 # Offline-first: network/telemetry not auto-started at boot.
 rm -f "${WANTS}/setuphelfer-rescue-network-onboarding.service" \

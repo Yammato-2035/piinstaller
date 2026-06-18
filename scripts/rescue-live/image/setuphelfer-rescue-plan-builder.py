@@ -86,9 +86,26 @@ def main() -> int:
     disk_path = Path(sys.argv[1])
     wizard_path = Path(sys.argv[2])
     out_path = Path(sys.argv[3]) if len(sys.argv) > 3 else None
-    disk_report = json.loads(disk_path.read_text(encoding="utf-8"))
-    wizard = json.loads(wizard_path.read_text(encoding="utf-8"))
-    plans = build_plans(disk_report, wizard)
+    if not disk_path.is_file():
+        plans = {
+            "schema_version": 1,
+            "execution_allowed": False,
+            "blocked_reason": "disk_discovery_missing",
+            "error_code": "disk_discovery_missing",
+            "operator_hints": [
+                "Festplatten-Erkennung erneut starten",
+                "SETUP_LOGS Diagnose prüfen",
+                "Stick-Version aktualisieren (RS-P2A)",
+            ],
+            "secrets_exposed": False,
+        }
+    else:
+        disk_report = json.loads(disk_path.read_text(encoding="utf-8"))
+        wizard = json.loads(wizard_path.read_text(encoding="utf-8"))
+        plans = build_plans(disk_report, wizard)
+        if disk_report.get("error_code"):
+            plans["blocked_reason"] = str(disk_report.get("error_code"))
+            plans["error_code"] = disk_report.get("error_code")
     rendered = json.dumps(plans, indent=2, ensure_ascii=False)
     if out_path:
         out_path.write_text(rendered + "\n", encoding="utf-8")

@@ -40,6 +40,17 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
     warnings: list[dict[str, str]] = []
     errors: list[dict[str, str]] = []
 
+    disk_discovery = payload.get("disk_discovery")
+    if payload.get("devices_detected") and disk_discovery is None:
+        errors.append(
+            _err(
+                "disk_discovery_null_with_devices",
+                "Geräte erkannt, aber disk_discovery fehlt — Contract-Fehler.",
+            )
+        )
+    if disk_discovery is None and not payload.get("source_device"):
+        errors.append(_err("source_missing", "Keine Quelle erkannt."))
+
     session_id = str(payload.get("rescue_session_id") or uuid.uuid4().hex[:16])
     target_mode = str(payload.get("target_mode") or "external_hdd").lower()
     wifi_override = str(payload.get("wifi_status") or "").lower()

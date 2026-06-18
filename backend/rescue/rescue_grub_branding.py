@@ -50,28 +50,33 @@ def staged_background_filename(image_format: str) -> str:
     return GRUB_BACKGROUND_PNG_FILE
 
 
-def generate_grub_theme_txt(*, desktop_image: str | None = None) -> str:
+def generate_grub_theme_txt(*, desktop_image: str | None = None, use_background: bool = True) -> str:
     image = desktop_image or GRUB_BACKGROUND_PNG_FILE
-    # desktop-image is branding only; mockup PNG contains painted buttons — real entries
-    # come from grub.cfg menuentry blocks, positioned via boot_menu below.
-    return f"""# Setuphelfer GRUB theme — branded boot picker (kernel variants only)
-desktop-image: "{image}"
-title-text: ""
+    # The boot-menu JPEG contains painted faux buttons in the lower half. Placing the
+    # real GRUB menu there made entries invisible on MSI hardware (background-only).
+    # Keep branding as optional wallpaper; menu sits in the upper band with high contrast.
+    bg_line = f'desktop-image: "{image}"' if use_background else "# desktop-image disabled — high-contrast menu band"
+    return f"""# Setuphelfer GRUB theme — visible boot picker (RS-P2A)
+{bg_line}
+desktop-color: "#0f172a"
+title-text: "Setuphelfer Rettungsstick"
 title-color: "#ffffff"
 message-color: "#e2e8f0"
 
 + boot_menu {{
-  left = 8%
-  width = 84%
-  top = 52%
-  height = 42%
-  item_color = "#e2e8f0"
-  selected_item_color = "#ffffff"
-  item_height = 32
-  item_padding = 10
-  item_spacing = 6
-  scrollbar = false
-  scrollbar_width = 0
+  left = 6%
+  width = 88%
+  top = 10%
+  height = 38%
+  item_color = "#f8fafc"
+  selected_item_color = "#0f172a"
+  item_height = 34
+  item_padding = 12
+  item_spacing = 8
+  item_font = "unicode"
+  selected_item_font = "unicode"
+  scrollbar = true
+  scrollbar_width = 12
 }}
 """
 

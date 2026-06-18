@@ -1,0 +1,26 @@
+{
+  "setuphelfer_version": "1.9.5.1",
+  "major_version_locked_to_1": true,
+  "stick_build_id": "rs-p2a-20260618",
+  "squashfs_sha256": "b8619ca61774baade694ae7569484b61053c45c0da2b380d2ea9235aea2e4275",
+  "build_capability": {
+    "grub_theme_packaged": true,
+    "rescue_gui_packaged": true,
+    "wifi_fix_packaged": true,
+    "backup_plan_contract_packaged": true
+  },
+  "runtime_validated": {
+    "grub_menu_visible": false,
+    "rescue_gui_visible": false,
+    "wifi_scan_success": false,
+    "setup_logs_persistent": "unknown",
+    "backup_plan_created": false
+  },
+  "execute_allowed": {
+    "backup": false,
+    "restore": false,
+    "wipe": false,
+    "linux_install": false
+  },
+  "private_only_artifacts_included": false
+}

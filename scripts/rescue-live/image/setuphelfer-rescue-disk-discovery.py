@@ -157,13 +157,33 @@ def discover(media_stable: bool = True) -> dict[str, Any]:
 def main() -> int:
     media_stable = os.environ.get("SETUPHELFER_MEDIA_STABLE", "1") == "1"
     out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else None
-    payload = discover(media_stable=media_stable)
+    errors: list[str] = []
+    try:
+        payload = discover(media_stable=media_stable)
+    except Exception as exc:  # noqa: BLE001 — must always persist evidence
+        errors.append(f"discover_exception:{type(exc).__name__}")
+        payload = {
+            "schema_version": 1,
+            "checked_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "read_only": True,
+            "status": "failed",
+            "error_code": "disk_discovery_exception",
+            "devices": [],
+            "recommendation": {
+                "recommended_next_action": "diagnostics_only",
+                "risks": errors,
+            },
+            "secrets_exposed": False,
+        }
+    if not payload.get("devices") and payload.get("status") != "failed":
+        payload["warnings"] = [{"code": "no_devices_detected", "message": "Keine Blockgeräte erkannt."}]
     rendered = json.dumps(payload, indent=2, ensure_ascii=False)
     if out_path:
+        out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(rendered + "\n", encoding="utf-8")
     else:
         print(rendered)
-    return 0
+    return 0 if payload.get("devices") else (0 if out_path else 1)
 
 
 if __name__ == "__main__":

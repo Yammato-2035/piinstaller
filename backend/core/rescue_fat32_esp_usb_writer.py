@@ -380,6 +380,7 @@ def generate_fat32_esp_grub_cfg(
 
     lines = [
         "set timeout=10",
+        "set timeout_style=menu",
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
@@ -387,7 +388,7 @@ def generate_fat32_esp_grub_cfg(
         "",
         entry(
             "Setuphelfer Rettung starten",
-            "boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
+            "boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_kiosk=1 setuphelfer_telemetry_opt_in=1",
         ),
         entry(
             "Setuphelfer Rettung starten - Netzwerk-Assistent",

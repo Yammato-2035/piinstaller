@@ -1,20 +1,16 @@
 [Unit]
 Description=Setuphelfer Rescue React Shell (offline-first)
-After=local-fs.target setuphelfer-rescue-state.service
+After=local-fs.target setuphelfer-rescue-state.service setuphelfer-backend.service
+Wants=setuphelfer-backend.service
 ConditionPathExists=/usr/share/setuphelfer/rescue/ui/rescue.html
-# The graphical Chromium kiosk needs a running X server. On real hardware (and
-# under nomodeset) there is no X here, so Chromium exits with "Missing X server"
-# and Restart= turns it into a crash-loop that spams tty1 and makes the text TUI
-# unusable. The kiosk is therefore OPT-IN via setuphelfer_kiosk=1; by default the
-# text start-assistant TUI owns tty1.
-ConditionKernelCommandLine=setuphelfer_kiosk=1
 
 [Service]
 Type=simple
 Environment=TERM=linux
-ExecStart=/usr/local/sbin/setuphelfer-rescue-ui-launch
+ExecStartPre=/usr/local/sbin/setuphelfer-rescue-backend-start.sh
+ExecStart=/usr/local/sbin/setuphelfer-rescue-gui-start
 Restart=on-failure
-RestartSec=3
+RestartSec=5
 StandardInput=tty
 StandardOutput=tty
 TTYPath=/dev/tty1

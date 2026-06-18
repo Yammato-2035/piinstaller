@@ -89,6 +89,7 @@ elif [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" ]]; then
 fi
 
 if [[ "$EXIT_CODE" -eq 0 && "$ERROR_CODE" != "SKIPPED_QEMU_LAB" && "$nm_active" == true ]]; then
+  setuphelfer_rescue_wifi_prepare_radio
   if nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | grep -E ':ethernet:connected$' >/dev/null || false; then
     CONFIG_SOURCE="ethernet_connected"
     DEFAULT_ROUTE=true

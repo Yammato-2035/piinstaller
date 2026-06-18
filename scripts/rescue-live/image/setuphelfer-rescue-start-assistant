@@ -218,7 +218,25 @@ _step_disks() {
   _wizard_step="disk_discovery"
   _status_write
   export SETUPHELFER_MEDIA_STABLE="$([[ "$_media_stable" == true ]] && echo 1 || echo 0)"
-  python3 "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery.py" "$DISK_JSON" || true
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" || true
+  fi
+  if [[ ! -f "$DISK_JSON" ]]; then
+    python3 "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery.py" "$DISK_JSON" 2>/dev/null || true
+  fi
+  if [[ ! -f "$DISK_JSON" ]]; then
+    setuphelfer_rescue_write_json "$DISK_JSON" <<'EOF'
+{
+  "schema_version": 1,
+  "read_only": true,
+  "status": "failed",
+  "error_code": "disk_discovery_failed",
+  "devices": [],
+  "recommendation": {"recommended_next_action": "diagnostics_only", "risks": ["disk_discovery_failed"]},
+  "secrets_exposed": false
+}
+EOF
+  fi
   _wizard_write_state
 }
 
@@ -343,10 +361,21 @@ if [[ "$MODE" == "--boot-trigger" ]]; then
     _exit_code=0
     exit 0
   fi
-  # Graphical kiosk (X + chromium) is OPT-IN via setuphelfer_kiosk=1. By default we
-  # run the text TUI wizard below, which works on every GPU (incl. NVIDIA GTX 1070
-  # without a driver, or nomodeset). Blindly exec'ing the graphical kiosk on tty1
-  # without an X server left the screen at a blinking cursor on real hardware.
+  # RS-P2A: graphical Rescue GUI is the default path when assets exist.
+  # Text TUI remains the honest fallback when display/browser/backend fails.
+  if [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x "${SCRIPT_DIR}/setuphelfer-rescue-gui-start" ]]; then
+    if "${SCRIPT_DIR}/setuphelfer-rescue-gui-start"; then
+      :
+    fi
+    _gui_rc=$?
+    if [[ "$_gui_rc" -eq 0 ]]; then
+      exit 0
+    fi
+    if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
+      _wt="$(setuphelfer_rescue_whiptail_tty)"
+      whiptail --title "Setuphelfer" --msgbox "Grafische Oberfläche konnte nicht gestartet werden.\n\nUrsache: gui_start_exit_${_gui_rc}\n\nDer sichere Text-Assistent wird geöffnet." 14 72 3>&1 1>"$_wt" 2>&3 || true
+    fi
+  fi
   if grep -qw 'setuphelfer_kiosk=1' /proc/cmdline 2>/dev/null \
      && [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x /usr/local/sbin/setuphelfer-rescue-kiosk-start ]]; then
     exec /usr/local/sbin/setuphelfer-rescue-kiosk-start

@@ -418,16 +418,40 @@ setuphelfer_rescue_show_branding() {
 
 setuphelfer_rescue_wifi_ensure_managed() {
   local _line _dev _typ _state
+  rfkill unblock wifi 2>/dev/null || true
+  rfkill unblock all 2>/dev/null || true
+  if lsmod 2>/dev/null | grep -q '^iwlwifi'; then
+    :
+  elif iw dev 2>/dev/null | grep -q Interface; then
+    modprobe iwlwifi 2>/dev/null || true
+    modprobe iwlmvm 2>/dev/null || true
+  fi
+  for _dev in $(iw dev 2>/dev/null | awk '/Interface/ {print $2}'); do
+    [[ -n "$_dev" ]] || continue
+    ip link set "$_dev" up 2>/dev/null || true
+    nmcli device set "$_dev" managed yes 2>/dev/null || true
+  done
   while IFS= read -r _line; do
     _dev="${_line%%:*}"
     _typ="${_line#*:}"
     _typ="${_typ%%:*}"
     _state="${_line##*:}"
-    if [[ "$_typ" == "wifi" && "$_state" == "unmanaged" && -n "$_dev" ]]; then
-      nmcli device set "$_dev" managed yes 2>/dev/null || true
-      sleep 1
+    if [[ "$_typ" == "wifi" && -n "$_dev" ]]; then
+      case "$_state" in
+        unmanaged|unavailable|disconnected)
+          nmcli device set "$_dev" managed yes 2>/dev/null || true
+          ip link set "$_dev" up 2>/dev/null || true
+          sleep 1
+          ;;
+      esac
     fi
   done < <(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null || true)
+  if nmcli radio 2>/dev/null | grep -qi 'WIFI-HW.*missing'; then
+    if iw dev 2>/dev/null | grep -q Interface; then
+      systemctl restart NetworkManager 2>/dev/null || true
+      sleep 2
+    fi
+  fi
 }
 
 setuphelfer_rescue_wifi_prepare_radio() {
