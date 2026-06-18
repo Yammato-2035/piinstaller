@@ -13,11 +13,11 @@ from core.rescue_gui_autostart_contract import build_gui_autostart_status
 
 
 class TestRescueGuiAutostartContractV1(unittest.TestCase):
-    def test_gui_enabled_by_default(self):
+    def test_gui_opt_in_not_default(self):
         out = build_gui_autostart_status(
             html_present=True, backend_running=True, kiosk_launcher_present=True
         )
-        self.assertTrue(out["gui_enabled_by_default"])
+        self.assertFalse(out["gui_enabled_by_default"])
 
     def test_text_fallback_on_backend_missing(self):
         out = build_gui_autostart_status(

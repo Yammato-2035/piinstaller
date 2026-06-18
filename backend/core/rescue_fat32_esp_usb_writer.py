@@ -20,7 +20,10 @@ from core.rescue_usb_operator_selection import (
     load_operator_selection_evidence,
 )
 from core.safe_device import list_classified_devices
-from rescue.rescue_grub_branding import generate_grub_cfg_branding_lines, stage_grub_theme_to_fat32_staging
+from rescue.rescue_grub_branding import (
+    generate_grub_cfg_failsafe_plain_lines,
+    stage_grub_theme_to_fat32_staging,
+)
 
 Runner = Callable[..., Any]
 
@@ -378,36 +381,38 @@ def generate_fat32_esp_grub_cfg(
             f"}}\n"
         )
 
+    base_live = "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1"
     lines = [
-        "set timeout=10",
+        "set timeout=15",
         "set timeout_style=menu",
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
-        *generate_grub_cfg_branding_lines(),
+        *generate_grub_cfg_failsafe_plain_lines(),
         "",
         entry(
-            "Setuphelfer Rettung starten",
-            "boot=live components quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_kiosk=1 setuphelfer_telemetry_opt_in=1",
+            "Setuphelfer starten - sicherer Textmodus",
+            f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1",
         ),
         entry(
-            "Setuphelfer Rettung starten - Netzwerk-Assistent",
-            "boot=live components setuphelfer.network=1 quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
+            "Setuphelfer starten - grafische Oberflaeche",
+            f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1",
         ),
         entry(
-            "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus",
-            "boot=live components pci=noaer nouveau.modeset=0 nomodeset quiet setuphelfer_rescue=1 setuphelfer_msi_compat=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
+            "Diagnose sammeln und auf Stick speichern",
+            f"{base_live} setuphelfer_mode=diagnostics setuphelfer_kiosk=0 setuphelfer_collect_diagnostics=1",
         ),
         entry(
-            "Setuphelfer Diagnosemodus",
-            "boot=live components systemd.unit=multi-user.target setuphelfer_rescue=1 setuphelfer_diagnose=1",
+            "Hardware- und WLAN-Diagnose",
+            f"{base_live} setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1",
         ),
         entry(
-            "Setuphelfer RAM-Modus / toram + Media-Check",
-            "boot=live components toram setuphelfer.media_check=1 quiet setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1",
+            "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)",
+            f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 "
+            "pci=noaer nouveau.modeset=0 nomodeset",
         ),
         'menuentry "Neustart" { reboot }',
-        'menuentry "Herunterfahren" { halt }',
+        'menuentry "Ausschalten" { halt }',
         "",
     ]
     return "\n".join(lines)

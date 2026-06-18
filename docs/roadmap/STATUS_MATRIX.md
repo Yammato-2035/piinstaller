@@ -31,7 +31,7 @@
 | Verify | Rot | BR-004/BR-005 blocked — kein neues BR-001-Archiv aus diesem Lauf | `BR-004.json`, `BR-005.json` |
 | Restore | Rot | kontrollierte HW-Abnahmen ausstehend | `docs/evidence/backup-restore/` |
 | Hardwaretests | Rot | Matrix vorbereitet | `docs/testing/HARDWARE_TEST_MATRIX.md`, `docs/evidence/hardware/` |
-| Rescue Stick | Gelb | RS-P2A: GRUB/GUI/WLAN/Plan-Fix auf Stick 1.9.5.1 — MSI-Retest RS-P2B | `RS_P2A_FINAL_RESULT.md`, `RS_P2A_CAPABILITY_MARKER.json` |
+| Rescue Stick | Gelb | RS-P2C: Failsafe GRUB + Textmodus-Default + GUI-Watchdog auf 1.9.5.2 — MSI-Retest RS-P2D | `RS_P2C_FINAL_RESULT.md`, `RS_P2C_CAPABILITY_MARKER.json` |
 | Monolith-Audit | Gelb | App-Bootstrap extrahiert (`app_bootstrap/`); `app.py` noch ~17k Zeilen; Boundary `review_required` | `docs/evidence/monolith/APP_PY_AFTER_DECOMPOSITION.md`, `docs/architecture/APP_BOOTSTRAP_ARCHITECTURE.md` |
 | **App.py Bootstrap / Decomposition** | **Gelb** | Factory, Middleware-, Router-Registry, Startup-Diagnostik, Dev-Dashboard-Service; **kein** Deploy; Live-Diagnose nach Sync | `docs/evidence/runtime-results/app_decomposition_before_rescue_iso_gate.json`, `docs/evidence/rescue/RESCUE_ISO_BUILD_READINESS_AFTER_APP_DECOMPOSITION.md` |
 | Website-Transparenz | Gelb | Markdown-Basis im Repo | `docs/roadmap/PUBLIC_STATUS_PAGE.md`, `docs/testing/WEBSITE_TRANSPARENCY_TEST_MATRIX.md` |

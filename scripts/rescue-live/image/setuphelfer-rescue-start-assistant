@@ -356,29 +356,13 @@ _final_actions() {
 }
 
 if [[ "$MODE" == "--boot-trigger" ]]; then
-  _autostart=true
   if ! setuphelfer_rescue_cmdline_has_start_assistant; then
     _exit_code=0
     exit 0
   fi
-  # RS-P2A: graphical Rescue GUI is the default path when assets exist.
-  # Text TUI remains the honest fallback when display/browser/backend fails.
-  if [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x "${SCRIPT_DIR}/setuphelfer-rescue-gui-start" ]]; then
-    if "${SCRIPT_DIR}/setuphelfer-rescue-gui-start"; then
-      :
-    fi
-    _gui_rc=$?
-    if [[ "$_gui_rc" -eq 0 ]]; then
-      exit 0
-    fi
-    if command -v whiptail >/dev/null 2>&1 && setuphelfer_rescue_has_interactive_tty; then
-      _wt="$(setuphelfer_rescue_whiptail_tty)"
-      whiptail --title "Setuphelfer" --msgbox "Grafische Oberfläche konnte nicht gestartet werden.\n\nUrsache: gui_start_exit_${_gui_rc}\n\nDer sichere Text-Assistent wird geöffnet." 14 72 3>&1 1>"$_wt" 2>&3 || true
-    fi
-  fi
-  if grep -qw 'setuphelfer_kiosk=1' /proc/cmdline 2>/dev/null \
-     && [[ -f /usr/share/setuphelfer/rescue/ui/rescue.html && -x /usr/local/sbin/setuphelfer-rescue-kiosk-start ]]; then
-    exec /usr/local/sbin/setuphelfer-rescue-kiosk-start
+  # RS-P2C: text mode default via entrypoint; GUI only when explicitly selected in GRUB/TUI.
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-entrypoint" ]]; then
+    exec "${SCRIPT_DIR}/setuphelfer-rescue-entrypoint" --boot-trigger
   fi
   if setuphelfer_rescue_prepare_tty1; then
     _tty1_prepared=true

@@ -56,6 +56,11 @@ for script in \
   setuphelfer-rescue-boot-evidence-init; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script}"
 done
+for script in setuphelfer-rescue-gui-watchdog.sh setuphelfer-rescue-entrypoint.sh setuphelfer-rescue-tui.sh; do
+  install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script%.sh}"
+done
+install -m 0755 "${REPO_ROOT}/scripts/rescue-live/collect-rescue-runtime-diagnostics.sh" \
+  "${ROOT}/usr/local/sbin/collect-rescue-runtime-diagnostics"
 for py in setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-plan-builder.py setuphelfer-rescue-live-medium-check.py; do
   install -m 0755 "${IMAGE}/${py}" "${ROOT}/usr/local/sbin/${py}"
 done
@@ -75,7 +80,7 @@ for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.s
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
-# GUI autostart is orchestrated by setuphelfer-rescue-start-assistant via setuphelfer-rescue-gui-start.
+# GUI autostart is opt-in via GRUB/TUI; entrypoint orchestrates text default + gui watchdog.
 rm -f "${WANTS}/setuphelfer-rescue-ui.service"
 
 # Offline-first: network/telemetry not auto-started at boot.

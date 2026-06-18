@@ -39,20 +39,20 @@ class RescueFat32EspUsbTests(unittest.TestCase):
     def test_generate_fat32_esp_grub_cfg_required_menus(self) -> None:
         cfg = fat32.generate_fat32_esp_grub_cfg()
         for title in (
-            "Setuphelfer Rettung starten",
-            "Netzwerk-Assistent",
-            "MSI/NVIDIA",
-            "Diagnosemodus",
-            "RAM-Modus",
+            "sicherer Textmodus",
+            "grafische Oberflaeche",
+            "Diagnose sammeln",
+            "WLAN-Diagnose",
             "Neustart",
-            "Herunterfahren",
+            "Ausschalten",
         ):
             self.assertIn(title.split()[0], cfg)
         self.assertIn("linux /live/vmlinuz", cfg)
         self.assertIn("initrd /live/initrd.img", cfg)
         self.assertIn(f"search --no-floppy --label {fat32.FAT_VOLUME_LABEL} --set=root", cfg)
-        self.assertNotIn(f"--label {fat32.GPT_PARTITION_NAME}", cfg)
-        self.assertNotIn("search --set=root --file", cfg)
+        self.assertIn("setuphelfer_mode=text", cfg)
+        self.assertIn("setuphelfer_kiosk=0", cfg)
+        self.assertNotIn("setuphelfer_kiosk=1 setuphelfer_safe_ui", cfg)
         self.assertIn("pci=noaer", cfg)
         self.assertIn("nomodeset", cfg)
         self.assertIn("nouveau.modeset=0", cfg)

@@ -1,0 +1,27 @@
+{
+  "setuphelfer_version": "1.9.5.2",
+  "major_version_locked_to_1": true,
+  "build_capability": {
+    "plain_grub_menu": true,
+    "safe_text_mode_default": true,
+    "gui_optional": true,
+    "gui_watchdog": true,
+    "tui_backup_plan": true,
+    "tui_wifi_diagnostics": true,
+    "setup_logs_boot_evidence": true
+  },
+  "runtime_validated": {
+    "msi_grub_menu_visible": false,
+    "msi_text_mode_visible": false,
+    "msi_gui_visible": false,
+    "msi_wifi_scan_success": false,
+    "msi_backup_plan_created": false
+  },
+  "execute_allowed": {
+    "backup": false,
+    "restore": false,
+    "wipe": false,
+    "linux_install": false
+  },
+  "private_only_artifacts_included": false
+}

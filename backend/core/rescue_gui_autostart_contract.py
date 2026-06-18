@@ -17,7 +17,7 @@ def build_gui_autostart_status(
     if not html_present:
         return {
             "contract_version": CONTRACT_VERSION,
-            "gui_enabled_by_default": True,
+            "gui_enabled_by_default": False,
             "status": "failed",
             "reason": "frontend_missing",
             "display_mode": "text_fallback",
@@ -27,7 +27,7 @@ def build_gui_autostart_status(
     if not backend_running:
         return {
             "contract_version": CONTRACT_VERSION,
-            "gui_enabled_by_default": True,
+            "gui_enabled_by_default": False,
             "status": "failed",
             "reason": "backend_not_running",
             "display_mode": "text_fallback",
@@ -37,7 +37,7 @@ def build_gui_autostart_status(
     if not kiosk_launcher_present:
         return {
             "contract_version": CONTRACT_VERSION,
-            "gui_enabled_by_default": True,
+            "gui_enabled_by_default": False,
             "status": "failed",
             "reason": "kiosk_launcher_missing",
             "display_mode": "text_fallback",
@@ -47,7 +47,7 @@ def build_gui_autostart_status(
     if gui_start_exit_code not in (None, 0):
         return {
             "contract_version": CONTRACT_VERSION,
-            "gui_enabled_by_default": True,
+            "gui_enabled_by_default": False,
             "status": "failed",
             "reason": f"gui_start_exit_{gui_start_exit_code}",
             "display_mode": "text_fallback",
@@ -56,9 +56,9 @@ def build_gui_autostart_status(
         }
     return {
         "contract_version": CONTRACT_VERSION,
-        "gui_enabled_by_default": True,
+        "gui_enabled_by_default": False,
         "status": "starting",
-        "reason": "graphical_default",
+        "reason": "graphical_opt_in",
         "display_mode": "graphical",
         "text_fallback_only_on_failure": True,
         "execute_allowed": False,

@@ -81,6 +81,21 @@ message-color: "#e2e8f0"
 """
 
 
+def generate_grub_cfg_failsafe_plain_lines() -> list[str]:
+    """Plain high-contrast GRUB menu — no gfxmenu theme / wallpaper (RS-P2C)."""
+    return [
+        "insmod efi_gop",
+        "insmod efi_uga",
+        "insmod gfxterm",
+        "terminal_output gfxterm",
+        "terminal_input gfxterm",
+        "set gfxmode=auto",
+        "set gfxpayload=keep",
+        'set menu_color_normal=white/black',
+        'set menu_color_highlight=black/white',
+    ]
+
+
 def generate_grub_cfg_branding_lines(*, image_format: str = "jpeg") -> list[str]:
     # Workspace boot-menu asset is JPEG-with-.png-suffix; GRUB needs `insmod jpeg` and a
     # matching .jpg desktop-image or theme load fails silently → text fallback on hardware.

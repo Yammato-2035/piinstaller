@@ -598,3 +598,43 @@ setuphelfer_rescue_wait_default_route() {
   done
   return 1
 }
+
+setuphelfer_rescue_boot_state_path() {
+  printf '%s/boot_state.json' "$SETUPHELFER_RESCUE_STATE_DIR"
+}
+
+setuphelfer_rescue_should_start_gui() {
+  if grep -Eq '(^| )setuphelfer_mode=gui( |$)' /proc/cmdline 2>/dev/null; then
+    return 0
+  fi
+  if grep -Eq '(^| )setuphelfer_kiosk=1( |$)' /proc/cmdline 2>/dev/null \
+     && ! grep -Eq '(^| )setuphelfer_kiosk=0( |$)' /proc/cmdline 2>/dev/null \
+     && ! grep -Eq '(^| )setuphelfer_mode=text( |$)' /proc/cmdline 2>/dev/null; then
+    return 0
+  fi
+  return 1
+}
+
+setuphelfer_rescue_write_boot_state() {
+  local phase="${1:-}"
+  local py_backend="/opt/setuphelfer-rescue/backend"
+  if [[ -d "$py_backend" ]]; then
+    PYTHONPATH="${py_backend}:${PYTHONPATH:-}" python3 - <<PY 2>/dev/null || true
+from core.rescue_boot_evidence import write_boot_state_files
+write_boot_state_files(phase=${phase@Q})
+PY
+    setuphelfer_rescue_mirror_evidence_file \
+      "/var/lib/setuphelfer-rescue/local/evidence/boot_state_redacted.json" \
+      "setuphelfer/evidence/boot/boot_state_redacted.json" 2>/dev/null || true
+    return 0
+  fi
+  setuphelfer_rescue_write_json "$(setuphelfer_rescue_boot_state_path)" <<EOF
+{
+  "schema_version": 1,
+  "phase": "$phase",
+  "selected_mode": "text",
+  "kiosk_requested": false,
+  "backup_execute_allowed": false
+}
+EOF
+}

@@ -32,14 +32,18 @@ class RescueGrubBrandingTests(unittest.TestCase):
         raw = (ASSETS / "boot-menu" / GRUB_BACKGROUND_SOURCE_FILE).read_bytes()
         self.assertEqual(detect_image_format(raw), "jpeg")
 
-    def test_generate_grub_cfg_references_theme(self) -> None:
+    def test_generate_grub_cfg_failsafe_plain_menu(self) -> None:
         cfg = generate_fat32_esp_grub_cfg()
-        self.assertIn("set theme=", cfg)
         self.assertIn("insmod gfxterm", cfg)
-        self.assertIn("insmod gfxmenu", cfg)
-        self.assertIn("insmod jpeg", cfg)
-        self.assertNotIn("insmod png", cfg)
-        self.assertIn("Setuphelfer Rettung starten", cfg)
+        self.assertIn("menu_color_normal=white/black", cfg)
+        self.assertNotIn("set theme=", cfg)
+        self.assertNotIn("insmod gfxmenu", cfg)
+        self.assertIn("Setuphelfer starten - sicherer Textmodus", cfg)
+        self.assertIn("setuphelfer_mode=text", cfg)
+        self.assertIn("setuphelfer_kiosk=0", cfg)
+        self.assertIn("setuphelfer_mode=gui", cfg)
+        self.assertIn("set timeout_style=menu", cfg)
+        self.assertIn("set timeout=15", cfg)
 
     def test_stage_grub_theme_to_staging(self) -> None:
         staging = REPO / "build" / "rescue" / ".test-grub-staging"
@@ -56,13 +60,14 @@ class RescueGrubBrandingTests(unittest.TestCase):
         theme_txt = (staging / GRUB_THEME_DIR_REL / "theme.txt").read_text(encoding="utf-8")
         self.assertIn(GRUB_BACKGROUND_JPEG_FILE, theme_txt)
         cfg = generate_fat32_esp_grub_cfg()
+        self.assertNotIn("set theme=", cfg)
         errors = validate_fat32_grub_branding(
             staging,
             cfg,
             bootx64_modules=BOOTX64_MKSTANDALONE_MODULES.split(),
             image_format="jpeg",
         )
-        self.assertEqual(errors, [], errors)
+        self.assertIn("GRUB_CFG_THEME_NOT_REFERENCED", errors)
 
     def test_bootx64_modules_include_gfx(self) -> None:
         modules = BOOTX64_MKSTANDALONE_MODULES.split()
