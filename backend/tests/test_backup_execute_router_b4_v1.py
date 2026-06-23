@@ -47,9 +47,14 @@ class TestBackupExecuteRouterB4(unittest.TestCase):
         self.assertNotIn("BACKUP_JOBS", text)
 
     def test_remaining_backup_posts_in_app(self) -> None:
+        """Nach B.4–B.8 gehören Backup-POST-Routen auf backup_execute_router, nicht app.py."""
         app_text = (_backend / "app.py").read_text(encoding="utf-8")
         remaining = re.findall(r'@app\.post\("/api/backup/', app_text)
-        self.assertGreaterEqual(len(remaining), 9)
+        self.assertEqual(
+            len(remaining),
+            0,
+            msg="backup POST routes must live on backup_execute_router, not app.py",
+        )
 
 
 if __name__ == "__main__":
