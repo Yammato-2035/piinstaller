@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import unittest
 from pathlib import Path
@@ -112,9 +113,13 @@ class BackendVersionGateV1Tests(unittest.TestCase):
 
         self.assertEqual(semver_triple("1.7.3.1"), "1.7.3")
         root = _backend.parent
+        cfg = json.loads((root / "config" / "version.json").read_text(encoding="utf-8"))
+        expected = str(cfg.get("project_version") or "").strip()
+        self.assertTrue(expected, msg="config/version.json must define project_version")
         out = check_workspace_consistency(root)
         self.assertIn("ok", out)
-        self.assertEqual(out.get("canonical"), "1.7.3.1")
+        self.assertTrue(out.get("ok"), msg=str(out.get("mismatches")))
+        self.assertEqual(out.get("canonical"), expected)
 
 
 if __name__ == "__main__":
