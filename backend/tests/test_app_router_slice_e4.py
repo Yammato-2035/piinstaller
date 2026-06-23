@@ -63,7 +63,8 @@ class TestAppRouterSliceE4(unittest.TestCase):
             self.assertIsNone(rx.search(text), f"router must not match {rx.pattern}")
         self.assertIn("dev_dashboard", text)
         self.assertIn("build_modules_list", text)
-        self.assertIn("build_evidence_index", text)
+        self.assertIn("build_dcc_evidence_index_api", text)
+        self.assertIn("dcc_status_facade", text)
 
     def test_app_py_includes_router_and_no_duplicate_handlers(self) -> None:
         app_text = (_backend / "app.py").read_text(encoding="utf-8")
