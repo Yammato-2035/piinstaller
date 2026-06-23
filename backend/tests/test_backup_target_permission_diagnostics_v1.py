@@ -92,14 +92,10 @@ class TestBackupTargetPermissionDiagnosticsV1(unittest.TestCase):
         import app as app_module
         from fastapi.testclient import TestClient
 
-        def deny(_path, runner=None):
-            raise WriteTargetProtectionError(
-                "STORAGE-PROTECTION-006",
-                "Simulated traverse denied",
-                detail="eacces",
-            )
-
-        with patch("core.safe_device.validate_write_target", side_effect=deny):
+        with patch(
+            "core.backup_target_check_handler.rt.validate_backup_dir",
+            side_effect=ValueError("STORAGE-PROTECTION-006: Simulated traverse denied"),
+        ):
             client = TestClient(app_module.app)
             r = client.get(
                 "/api/backup/target-check",
