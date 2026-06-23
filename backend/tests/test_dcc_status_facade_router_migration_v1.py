@@ -14,9 +14,12 @@ if str(_BACKEND) not in sys.path:
 
 APP_PY = _BACKEND / "app.py"
 STATUS_SERVICE = _BACKEND / "core" / "dev_dashboard_status_service.py"
+DEV_DASHBOARD_READONLY = _BACKEND / "api" / "routes" / "dev_dashboard_readonly.py"
+CONTROL_CENTER_READONLY = _BACKEND / "api" / "routes" / "control_center_readonly.py"
+DCC_STATUS_FACADE = _BACKEND / "core" / "dcc_status_facade.py"
 
-MIGRATED_HANDLERS = (
-    "dev_dashboard_status",
+STATUS_HANDLER = "dev_dashboard_status"
+CONTROL_CENTER_HANDLERS = (
     "dev_dashboard_control_center_summary",
     "dev_dashboard_roadmap",
     "dev_dashboard_project_overview",
@@ -34,23 +37,45 @@ FACADE_IMPORTS = (
 
 
 class TestDccStatusFacadeRouterMigrationV1(unittest.TestCase):
-    def test_app_py_migrated_handlers_use_facade(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
-        for fn in MIGRATED_HANDLERS:
-            self.assertIn(f"async def {fn}", text)
-        for imp in FACADE_IMPORTS:
-            self.assertIn(imp, text, f"missing facade import {imp}")
-        self.assertIn("build_dev_dashboard_status", text)
+    def test_migrated_handlers_use_facade(self) -> None:
+        dash_text = DEV_DASHBOARD_READONLY.read_text(encoding="utf-8")
+        cc_text = CONTROL_CENTER_READONLY.read_text(encoding="utf-8")
+        facade_text = DCC_STATUS_FACADE.read_text(encoding="utf-8")
+        app_text = APP_PY.read_text(encoding="utf-8")
 
-    def test_app_py_no_direct_dashboard_aggregation_in_migrated_handlers(self) -> None:
-        text = APP_PY.read_text(encoding="utf-8")
+        self.assertIn(f"async def {STATUS_HANDLER}", dash_text)
+        self.assertIn("build_dcc_dashboard_status_api", dash_text)
+        for fn in CONTROL_CENTER_HANDLERS:
+            self.assertIn(f"async def {fn}", cc_text)
+        for imp in FACADE_IMPORTS:
+            self.assertIn(imp, cc_text, f"missing facade import {imp}")
+        self.assertIn("build_dev_dashboard_status", facade_text)
+        self.assertIn("include_router(dev_dashboard_readonly_router)", app_text)
+        self.assertIn("include_router(control_center_readonly_router)", app_text)
+
+    def test_routers_no_direct_dashboard_aggregation_in_migrated_handlers(self) -> None:
+        combined = DEV_DASHBOARD_READONLY.read_text(encoding="utf-8") + CONTROL_CENTER_READONLY.read_text(
+            encoding="utf-8"
+        )
         for pattern in (
             r"dev_dashboard_roadmap[\s\S]{0,400}build_dashboard_status",
             r"dev_dashboard_control_center_summary[\s\S]{0,400}build_dashboard_status",
             r"dev_dashboard_prompt_findings[\s\S]{0,400}build_dashboard_status",
             r"dev_dashboard_cursor_meta_prompt[\s\S]{0,400}build_dashboard_status",
         ):
-            self.assertIsNone(re.search(pattern, text), f"direct aggregation still present: {pattern}")
+            self.assertIsNone(re.search(pattern, combined), f"direct aggregation still present: {pattern}")
+
+    def test_app_py_no_duplicate_migrated_dashboard_routes(self) -> None:
+        app_text = APP_PY.read_text(encoding="utf-8")
+        for dup in (
+            '@app.get("/api/dev-dashboard/status")',
+            '@app.get("/api/dev-dashboard/control-center-summary")',
+            '@app.get("/api/dev-dashboard/roadmap")',
+            '@app.get("/api/dev-dashboard/project-overview")',
+            '@app.get("/api/dev-dashboard/prompt-findings")',
+            '@app.get("/api/dev-dashboard/cursor-meta-prompt")',
+        ):
+            self.assertNotIn(dup, app_text, f"duplicate handler still in app.py: {dup}")
 
     def test_status_service_uses_facade(self) -> None:
         text = STATUS_SERVICE.read_text(encoding="utf-8")
