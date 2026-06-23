@@ -22,13 +22,13 @@ def restore_preview_preflight(body: dict[str, Any] | None = None) -> dict[str, A
         storage_snapshot=payload.get("storage_snapshot") if isinstance(payload.get("storage_snapshot"), dict) else None,
         operator_override=bool(payload.get("explicit_internal_override")),
     )
-  return {
-      "contract_version": CONTRACT_VERSION,
-      "restore_executed": False,
-      "preview_only": True,
-      "execute_allowed_on_development_laptop": False,
-      "execute_allowed_only_when_booted_from_rescue": True,
-      "requires_operator_confirmation": True,
-      "requires_verify_green": True,
-      "plan": plan,
-  }
+    return {
+        "contract_version": CONTRACT_VERSION,
+        "restore_executed": False,
+        "preview_only": True,
+        "execute_allowed_on_development_laptop": False,
+        "execute_allowed_only_when_booted_from_rescue": True,
+        "requires_operator_confirmation": True,
+        "requires_verify_green": True,
+        "plan": plan,
+    }
