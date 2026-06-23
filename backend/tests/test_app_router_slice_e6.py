@@ -56,8 +56,11 @@ class TestAppRouterSliceE6(unittest.TestCase):
 
     def test_app_py_no_duplicate_e6_handlers(self) -> None:
         app_text = (_backend / "app.py").read_text(encoding="utf-8")
+        cc_ro_text = (_backend / "api/routes/control_center_readonly.py").read_text(encoding="utf-8")
         self.assertIn("include_router(dev_dashboard_roadmap_router)", app_text)
-        self.assertIn('@app.get("/api/dev-dashboard/roadmap")', app_text)
+        self.assertIn("include_router(control_center_readonly_router)", app_text)
+        self.assertIn('@router.get("/api/dev-dashboard/roadmap")', cc_ro_text)
+        self.assertNotIn('@app.get("/api/dev-dashboard/roadmap")', app_text)
         for dup in (
             '@app.get("/api/dev-dashboard/roadmap/next-prompts")',
             '@app.get("/api/dev-dashboard/roadmap/export-next-prompt/{prompt_id}")',
