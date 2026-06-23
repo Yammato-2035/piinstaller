@@ -92,10 +92,21 @@ class DeployRunnerLabPhaseConsolidationV1Tests(unittest.TestCase):
         self.assertNotEqual(out["release_statement"]["production_ready"], True)
 
     def test_no_execute_apply_install_write_delete_release_route(self) -> None:
-        routes = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
-        self.assertIn("/runner/lab-phase/consolidation", routes)
-        for forbidden in ["/runner/lab-phase/consolidation/execute", "/runner/lab-phase/consolidation/apply", "/runner/lab-phase/consolidation/install", "/runner/lab-phase/consolidation/write", "/runner/lab-phase/consolidation/delete", "/runner/lab-phase/consolidation/release"]:
-            self.assertNotIn(forbidden, routes)
+        runtime_routes = (_REPO_ROOT / "backend/deploy/routes_runtime.py").read_text(encoding="utf-8")
+        routes_py = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
+        self.assertIn("/runner/lab-phase/consolidation", runtime_routes)
+        self.assertIn("include_router(deploy_runtime_router)", routes_py)
+        self.assertNotIn('@router.post("/runner/lab-phase/consolidation")', routes_py)
+        for forbidden in [
+            "/runner/lab-phase/consolidation/execute",
+            "/runner/lab-phase/consolidation/apply",
+            "/runner/lab-phase/consolidation/install",
+            "/runner/lab-phase/consolidation/write",
+            "/runner/lab-phase/consolidation/delete",
+            "/runner/lab-phase/consolidation/release",
+        ]:
+            self.assertNotIn(forbidden, runtime_routes)
+            self.assertNotIn(forbidden, routes_py)
 
     def test_no_forbidden_systemcalls(self) -> None:
         src = (_REPO_ROOT / "backend/deploy/runner_lab_phase_consolidation.py").read_text(encoding="utf-8").lower()
