@@ -130,8 +130,10 @@ class DeployRunnerManualRuntimeEvidenceFinalSnapshotV1Tests(unittest.TestCase):
             self.assertNotIn(token, src)
 
     def test_no_execute_subroutes(self) -> None:
-        routes = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
-        self.assertIn("/runner/manual-runtime/evidence-final-snapshot", routes)
+        evidence_routes = (_REPO_ROOT / "backend/deploy/routes_evidence.py").read_text(encoding="utf-8")
+        routes_py = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
+        self.assertIn("/runner/manual-runtime/evidence-final-snapshot", evidence_routes)
+        self.assertNotIn('@router.post("/runner/manual-runtime/evidence-final-snapshot")', routes_py)
         for forbidden in [
             "/runner/manual-runtime/evidence-final-snapshot/execute",
             "/runner/manual-runtime/evidence-final-snapshot/apply",
@@ -140,7 +142,8 @@ class DeployRunnerManualRuntimeEvidenceFinalSnapshotV1Tests(unittest.TestCase):
             "/runner/manual-runtime/evidence-final-snapshot/delete",
             "/runner/manual-runtime/evidence-final-snapshot/release",
         ]:
-            self.assertNotIn(forbidden, routes)
+            self.assertNotIn(forbidden, evidence_routes)
+            self.assertNotIn(forbidden, routes_py)
 
 
 if __name__ == "__main__":

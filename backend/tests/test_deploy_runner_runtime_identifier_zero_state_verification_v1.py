@@ -128,13 +128,15 @@ class DeployRunnerRuntimeIdentifierZeroStateVerificationV1Tests(unittest.TestCas
         self.assertNotIn("systemctl", t)
 
     def test_routes_keine_release_execute(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        c = routes.read_text(encoding="utf-8")
-        start = c.find("/runtime-identifier-zero-state-verification")
+        deploy_dir = Path(__file__).resolve().parents[1] / "deploy"
+        diagnostics_routes = (deploy_dir / "routes_diagnostics.py").read_text(encoding="utf-8")
+        routes_py = (deploy_dir / "routes.py").read_text(encoding="utf-8")
+        start = diagnostics_routes.find("/runtime-identifier-zero-state-verification")
         self.assertGreater(start, 0)
-        block = c[start : start + 4200]
+        block = diagnostics_routes[start : start + 4200]
         for bad in ("/release", "/publish", "/tag", "/execute", "/delete", "/deploy", "systemctl"):
             self.assertNotIn(bad, block)
+        self.assertNotIn('@router.post("/runtime-identifier-zero-state-verification")', routes_py)
 
 
 if __name__ == "__main__":

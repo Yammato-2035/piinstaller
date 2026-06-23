@@ -95,13 +95,15 @@ class DeployRunnerSetuphelferSafeRewritePlanV1Tests(unittest.TestCase):
         self.assertNotIn("subprocess", t)
 
     def test_keine_verbotenen_unterrouten(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        c = routes.read_text(encoding="utf-8")
-        start = c.find("/setuphelfer-safe-rewrite-plan")
+        deploy_dir = Path(__file__).resolve().parents[1] / "deploy"
+        versioning_routes = (deploy_dir / "routes_versioning.py").read_text(encoding="utf-8")
+        routes_py = (deploy_dir / "routes.py").read_text(encoding="utf-8")
+        start = versioning_routes.find("/setuphelfer-safe-rewrite-plan")
         self.assertGreater(start, 0)
-        block = c[start : start + 900]
+        block = versioning_routes[start : start + 900]
         for bad in ("/release", "/publish", "/tag", "/delete", "/execute"):
             self.assertNotIn(bad, block)
+        self.assertNotIn('@router.post("/setuphelfer-safe-rewrite-plan")', routes_py)
 
 
 if __name__ == "__main__":

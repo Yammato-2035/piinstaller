@@ -48,13 +48,15 @@ class DeployRunnerSetuphelferIdentifierConsistencyCheckV1Tests(unittest.TestCase
         self.assertNotIn("os.system", t)
 
     def test_keine_release_publish_tag_execute_delete_routen(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        c = routes.read_text(encoding="utf-8")
-        start = c.find("/setuphelfer-identifier-consistency-check")
+        deploy_dir = Path(__file__).resolve().parents[1] / "deploy"
+        evidence_routes = (deploy_dir / "routes_evidence.py").read_text(encoding="utf-8")
+        routes_py = (deploy_dir / "routes.py").read_text(encoding="utf-8")
+        start = evidence_routes.find("/setuphelfer-identifier-consistency-check")
         self.assertGreater(start, 0)
-        block = c[start : start + 1000]
+        block = evidence_routes[start : start + 1000]
         for bad in ("/release", "/publish", "/tag", "/execute", "/delete"):
             self.assertNotIn(bad, block)
+        self.assertNotIn('@router.post("/setuphelfer-identifier-consistency-check")', routes_py)
 
     def test_output_json_parsebar(self) -> None:
         check_setuphelfer_identifier_consistency(explicit_overwrite=True)

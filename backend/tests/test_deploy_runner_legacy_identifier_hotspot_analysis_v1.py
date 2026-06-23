@@ -71,13 +71,15 @@ class DeployRunnerLegacyIdentifierHotspotAnalysisV1Tests(unittest.TestCase):
         self.assertNotIn("systemctl", t)
 
     def test_keine_release_publish_tag_execute_delete_routen(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        c = routes.read_text(encoding="utf-8")
-        start = c.find("/legacy-identifier-hotspot-analysis")
+        deploy_dir = Path(__file__).resolve().parents[1] / "deploy"
+        evidence_routes = (deploy_dir / "routes_evidence.py").read_text(encoding="utf-8")
+        routes_py = (deploy_dir / "routes.py").read_text(encoding="utf-8")
+        start = evidence_routes.find("/legacy-identifier-hotspot-analysis")
         self.assertGreater(start, 0)
-        block = c[start : start + 1200]
+        block = evidence_routes[start : start + 1200]
         for bad in ("/release", "/publish", "/tag", "/execute", "/delete"):
             self.assertNotIn(bad, block)
+        self.assertNotIn('@router.post("/legacy-identifier-hotspot-analysis")', routes_py)
 
 
 class DeployRunnerLegacyIdentifierHotspotAnalysisHandoffV1Tests(unittest.TestCase):

@@ -89,13 +89,15 @@ class DeployRunnerVersionConsistencyCheckV1Tests(unittest.TestCase):
             self.assertNotIn(bad, t)
 
     def test_keine_release_deploy_tag_publish_unterrouten(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        c = routes.read_text(encoding="utf-8")
-        start = c.find("/version-governance/state")
+        deploy_dir = Path(__file__).resolve().parents[1] / "deploy"
+        governance_routes = (deploy_dir / "routes_governance.py").read_text(encoding="utf-8")
+        routes_py = (deploy_dir / "routes.py").read_text(encoding="utf-8")
+        start = governance_routes.find("/version-governance/state")
         self.assertGreater(start, 0)
-        block = c[start : start + 1000]
+        block = governance_routes[start : start + 1000]
         for bad in ("/release", "/tag", "/publish", "/execute"):
             self.assertNotIn(bad, block)
+        self.assertNotIn('@router.post("/version-governance/state")', routes_py)
 
 
 if __name__ == "__main__":

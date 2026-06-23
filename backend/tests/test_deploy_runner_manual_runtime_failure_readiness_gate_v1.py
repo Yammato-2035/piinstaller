@@ -201,8 +201,10 @@ class DeployRunnerManualRuntimeFailureReadinessGateV1Tests(unittest.TestCase):
             self.assertNotIn(token, src)
 
     def test_no_execute_subroutes(self) -> None:
-        routes = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
-        self.assertIn("/runner/manual-runtime/failure-readiness-gate", routes)
+        diagnostics_routes = (_REPO_ROOT / "backend/deploy/routes_diagnostics.py").read_text(encoding="utf-8")
+        routes_py = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
+        self.assertIn("/runner/manual-runtime/failure-readiness-gate", diagnostics_routes)
+        self.assertNotIn('@router.post("/runner/manual-runtime/failure-readiness-gate")', routes_py)
         for forbidden in [
             "/runner/manual-runtime/failure-readiness-gate/execute",
             "/runner/manual-runtime/failure-readiness-gate/apply",
@@ -210,7 +212,8 @@ class DeployRunnerManualRuntimeFailureReadinessGateV1Tests(unittest.TestCase):
             "/runner/manual-runtime/failure-readiness-gate/delete",
             "/runner/manual-runtime/failure-readiness-gate/release",
         ]:
-            self.assertNotIn(forbidden, routes)
+            self.assertNotIn(forbidden, diagnostics_routes)
+            self.assertNotIn(forbidden, routes_py)
 
 
 if __name__ == "__main__":

@@ -123,13 +123,15 @@ class DeployRunnerVersionSourceOfTruthCheckV1Tests(unittest.TestCase):
         self.assertNotIn("os.system", t)
 
     def test_keine_release_publish_tag_routen(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        c = routes.read_text(encoding="utf-8")
-        start = c.find("/version-source-of-truth-check")
+        deploy_dir = Path(__file__).resolve().parents[1] / "deploy"
+        governance_routes = (deploy_dir / "routes_governance.py").read_text(encoding="utf-8")
+        routes_py = (deploy_dir / "routes.py").read_text(encoding="utf-8")
+        start = governance_routes.find("/version-source-of-truth-check")
         self.assertGreater(start, 0)
-        block = c[start : start + 900]
+        block = governance_routes[start : start + 900]
         for bad in ("/release", "/publish", "/tag"):
             self.assertNotIn(bad, block)
+        self.assertNotIn('@router.post("/version-source-of-truth-check")', routes_py)
 
 
 if __name__ == "__main__":
