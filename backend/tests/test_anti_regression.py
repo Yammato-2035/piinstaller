@@ -50,16 +50,36 @@ class TestConfigPathRegression(unittest.TestCase):
 class TestNoDuplicateBackupVerifyRoute(unittest.TestCase):
     """
     REGRESSION-RISK: POST /api/backup/verify war doppelt definiert (Audit A-02).
-    Diese Prüfung zählt Vorkommen der Route-Definition in app.py.
+    Seit Phase B.8 liegt die Definition in api.routes.backup_execute; der Handler bleibt in
+    core.backup_execute_handlers.verify_backup.
     """
 
     def test_backup_verify_route_defined_only_once(self):
-        app_file = _backend / "app.py"
-        content = app_file.read_text(encoding="utf-8")
-        # Suche nach @app.post("/api/backup/verify") - soll exakt einmal vorkommen
-        route_marker = '@app.post("/api/backup/verify")'
-        count = content.count(route_marker)
+        from app import app
+
+        registered = [
+            r
+            for r in app.routes
+            if getattr(r, "path", "") == "/api/backup/verify"
+            and "POST" in (getattr(r, "methods", None) or set())
+        ]
         self.assertEqual(
-            count, 1,
-            f"Route POST /api/backup/verify soll exakt einmal definiert sein (Anti-Regression). Gefunden: {count}"
+            len(registered),
+            1,
+            "Route POST /api/backup/verify soll im App-Router genau einmal registriert sein "
+            f"(Anti-Regression). Gefunden: {len(registered)}",
+        )
+
+        app_file = _backend / "app.py"
+        router_file = _backend / "api" / "routes" / "backup_execute.py"
+        app_marker = '@app.post("/api/backup/verify")'
+        router_marker = '@router.post("/api/backup/verify")'
+        definition_count = app_file.read_text(encoding="utf-8").count(app_marker) + router_file.read_text(
+            encoding="utf-8"
+        ).count(router_marker)
+        self.assertEqual(
+            definition_count,
+            1,
+            "Route POST /api/backup/verify soll exakt einmal definiert sein (Anti-Regression). "
+            f"Gefunden: {definition_count}",
         )
