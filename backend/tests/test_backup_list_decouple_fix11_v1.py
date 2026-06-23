@@ -30,9 +30,15 @@ class TestBackupListDecoupleFix11V1(unittest.TestCase):
 
     def test_media_path_is_blocked_without_scan(self) -> None:
         app_py = _backend / "app.py"
-        text = app_py.read_text(encoding="utf-8")
-        self.assertIn("STORAGE-PROTECTION-005", text)
-        self.assertIn('"backup.path_invalid"', text)
+        handlers_py = _backend / "core" / "backup_readonly_handlers.py"
+        validate_fn = app_py.read_text(encoding="utf-8").split("def _validate_backup_list_dir", 1)[1].split("\ndef _", 1)[0]
+        list_fn = handlers_py.read_text(encoding="utf-8").split("async def list_backups", 1)[1]
+        self.assertIn("STORAGE-PROTECTION-005", validate_fn)
+        self.assertIn("/media/", validate_fn)
+        self.assertIn('"backup.path_invalid"', list_fn)
+        self.assertIn("STORAGE-PROTECTION-005", list_fn)
+        self.assertIn('"diagnosis_id": diagnosis_id', list_fn)
+        self.assertNotIn("os.scandir(", list_fn)
 
     def test_successful_backup_updates_index(self) -> None:
         app_py = _backend / "app.py"
