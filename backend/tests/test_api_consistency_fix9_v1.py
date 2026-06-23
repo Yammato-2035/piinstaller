@@ -25,7 +25,7 @@ class TestApiConsistencyFix9V1(unittest.TestCase):
         self.assertNotIn(".glob(", list_fn)
         self.assertNotIn("resolve_mount_source_for_path", text)
         self.assertNotIn("_collect_backups_sync", list_fn)
-        self.assertIn('"diagnosis_id": diagnosis_id', text)
+        self.assertIn('"diagnosis_id": diagnosis_id', list_fn)
 
     def test_backup_data_success_returns_source_plan_details(self) -> None:
         app_py = _backend / "app.py"
@@ -37,11 +37,13 @@ class TestApiConsistencyFix9V1(unittest.TestCase):
 
     def test_restore_preview_response_exposes_private_tmp_hint(self) -> None:
         app_py = _backend / "app.py"
+        handlers_py = _backend / "core" / "backup_execute_handlers.py"
         text = app_py.read_text(encoding="utf-8")
+        restore_fn = handlers_py.read_text(encoding="utf-8").split("async def restore_backup", 1)[1]
         self.assertIn("def _private_tmp_isolation_active()", text)
-        self.assertIn('"private_tmp_isolation": private_tmp_isolation', text)
-        self.assertIn('"preview_dir_visibility_note": preview_visibility_note', text)
-        self.assertIn('"service_private_tmp_hint": private_tmp_hint_key', text)
+        self.assertIn('"private_tmp_isolation": private_tmp_isolation', restore_fn)
+        self.assertIn('"preview_dir_visibility_note": preview_visibility_note', restore_fn)
+        self.assertIn('"service_private_tmp_hint": private_tmp_hint_key', restore_fn)
 
     def test_backup_index_write_contains_only_metadata(self) -> None:
         app_py = _backend / "app.py"
