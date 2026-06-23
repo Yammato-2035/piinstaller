@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import sys
 import tempfile
 import unittest
@@ -11,23 +10,15 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
+from .recovery_imports import import_recovery_submodule
+
 _BACKEND = Path(__file__).resolve().parent.parent
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
 
-def _load(rel: str, mod_name: str):
-    p = _BACKEND / rel
-    spec = importlib.util.spec_from_file_location(mod_name, p)
-    if not spec or not spec.loader:
-        raise ImportError(rel)
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
-    return m
-
-
-plan_mod = _load("recovery/minimal_plan.py", "setuphelfer_recovery_minimal_plan_test")
-routes_mod = _load("recovery/routes.py", "setuphelfer_recovery_routes_test")
+plan_mod = import_recovery_submodule("minimal_plan")
+routes_mod = import_recovery_submodule("routes")
 
 
 generate_recovery_minimal_plan = plan_mod.generate_recovery_minimal_plan

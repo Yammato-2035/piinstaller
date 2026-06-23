@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import sys
 import tempfile
@@ -10,23 +9,15 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
+from .recovery_imports import import_recovery_submodule
+
 _BACKEND = Path(__file__).resolve().parent.parent
 if str(_BACKEND) not in sys.path:
     sys.path.insert(0, str(_BACKEND))
 
 
-def _load(rel: str, mod_name: str):
-    p = _BACKEND / rel
-    spec = importlib.util.spec_from_file_location(mod_name, p)
-    if not spec or not spec.loader:
-        raise ImportError(rel)
-    m = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(m)
-    return m
-
-
-mod = _load("recovery/activation_execute.py", "setuphelfer_recovery_activation_execute_test")
-routes_mod = _load("recovery/routes.py", "setuphelfer_recovery_routes_activation_execute_test")
+mod = import_recovery_submodule("activation_execute")
+routes_mod = import_recovery_submodule("routes")
 
 
 class TestRecoveryActivationExecuteV1(unittest.TestCase):
