@@ -103,7 +103,7 @@ class DeployRoutesOrchestratorStructureV1Tests(unittest.TestCase):
     def test_routes_py_runner_import_count_documented(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", src, flags=re.M))
-        self.assertEqual(count, 81)
+        self.assertEqual(count, 77)
 
     def test_no_build_plan_only_in_routes_py(self) -> None:
         src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")

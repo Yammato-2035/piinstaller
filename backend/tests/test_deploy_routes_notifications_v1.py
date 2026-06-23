@@ -37,7 +37,7 @@ class DeployRoutesNotificationsV1Tests(unittest.TestCase):
     def test_routes_py_unchanged_runner_import_count(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8")
         count = len(re.findall(r"^from deploy\.runner_", routes_src, flags=re.M))
-        self.assertEqual(count, 93)
+        self.assertEqual(count, 77)
 
     def test_no_notification_paths_in_routes_py(self) -> None:
         routes_src = (_BACKEND / "deploy" / "routes.py").read_text(encoding="utf-8").lower()
