@@ -23,6 +23,8 @@ _OUT_REC = _HANDOFF / "legacy_runtime_safe_migration_recommendations.json"
 _OUT_MATRIX = _HANDOFF / "legacy_upgrade_path_matrix.json"
 _RUNNER = _REPO_ROOT / "backend/deploy/runner_legacy_runtime_compatibility_validation.py"
 _ROUTES = _REPO_ROOT / "backend/deploy/routes.py"
+_EVIDENCE_ROUTES = _REPO_ROOT / "backend/deploy/routes_evidence.py"
+_VERSIONING_ROUTES = _REPO_ROOT / "backend/deploy/routes_versioning.py"
 
 
 class DeployRunnerLegacyRuntimeCompatibilityValidationV1Tests(unittest.TestCase):
@@ -207,7 +209,11 @@ class DeployRunnerLegacyRuntimeCompatibilityValidationV1Tests(unittest.TestCase)
         self.assertNotIn("Popen", src)
 
     def test_routes_no_forbidden_verbs(self) -> None:
-        routes = _ROUTES.read_text(encoding="utf-8")
+        combined = (
+            _EVIDENCE_ROUTES.read_text(encoding="utf-8")
+            + _VERSIONING_ROUTES.read_text(encoding="utf-8")
+        )
+        routes_py = _ROUTES.read_text(encoding="utf-8")
         markers = (
             "@router.post(\"/legacy-runtime-compatibility-inventory\")",
             "@router.post(\"/legacy-runtime-coexistence-analysis\")",
@@ -216,9 +222,10 @@ class DeployRunnerLegacyRuntimeCompatibilityValidationV1Tests(unittest.TestCase)
         )
         banned_subpaths = ("/migrate", "/delete", "/restart", "/release", "/publish")
         for m in markers:
-            start = routes.find(m)
+            start = combined.find(m)
             self.assertGreaterEqual(start, 0, msg=m)
-            block = routes[start : start + 900].lower()
+            block = combined[start : start + 900].lower()
             for b in banned_subpaths:
                 self.assertNotIn(b, block, msg=f"{m} contains {b}")
+            self.assertNotIn(m, routes_py)
 
