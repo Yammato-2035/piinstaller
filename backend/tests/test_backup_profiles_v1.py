@@ -103,12 +103,15 @@ class BackupProfilesModelTests(unittest.TestCase):
 class BackupProfilesApiTests(unittest.TestCase):
     @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")
     def test_get_profiles(self) -> None:
+        expected = profile_specs_public()
         c = TestClient(fastapi_app, base_url="http://localhost")
         r = c.get("/api/backup/profiles")
         self.assertEqual(r.status_code, 200)
         b = r.json()
         self.assertEqual(b.get("status"), "success")
-        self.assertEqual(len(b.get("profiles") or []), 5)
+        profiles = b.get("profiles") or []
+        self.assertEqual(len(profiles), len(expected))
+        self.assertEqual({p["id"] for p in profiles}, {x["id"] for x in expected})
 
     @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")
     @patch("app._validate_backup_dir")
