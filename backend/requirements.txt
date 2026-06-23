@@ -2,7 +2,7 @@
 # Supply-chain: Version ranges limit drift. For reproducible builds use pip freeze or requirements-lock.txt.
 
 # Web Framework (Ranges so pip-audit/OSV bleiben ohne bekannte CVEs)
-starlette>=0.49.1,<0.51
+starlette==1.3.1
 fastapi>=0.128,<0.136
 
 # ASGI Server
