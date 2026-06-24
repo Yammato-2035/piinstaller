@@ -1,7 +1,8 @@
 import React from 'react';
+import { rescueTheme as theme } from './rescueTheme';
 
 export const RescueEvidencePanel: React.FC<{ locale: 'de' | 'en' }> = ({ locale }) => (
-  <section style={{ color: '#cbd5e1', fontSize: 14 }}>
+  <section style={{ color: theme.textMuted, fontSize: theme.fontSizeBase }}>
     <p>
       {locale === 'de'
         ? 'Logs und Evidence werden lokal auf dem Rettungsstick gespeichert (best effort).'

@@ -3,6 +3,377 @@
   "subtitle": "Analyze first. Backup second. Act safely.",
   "hint": "Nothing is repaired or installed unless you explicitly confirm.",
   "menuPrompt": "What would you like to do?",
+  "nav": {
+    "backup": {
+      "title": "Backup & data safety",
+      "subtitle": "Full backup and quick file rescue to external targets."
+    },
+    "analyze": {
+      "title": "Analysis",
+      "subtitle": "System analysis — computer, status and recommendations."
+    },
+    "network": {
+      "title": "Network",
+      "subtitle": "Set up Wi-Fi and connections."
+    },
+    "partitions": {
+      "title": "Partition helper",
+      "subtitle": "Understand drives and plan a safe layout."
+    },
+    "linuxInstall": {
+      "title": "Reinstall",
+      "subtitle": "Plan Linux installation (preview)."
+    },
+    "linuxMigration": {
+      "title": "Switch this PC to Linux",
+      "subtitle": "Analyze Windows or existing systems, back up data, and plan Linux installation."
+    },
+    "dataRescue": {
+      "title": "Rescue files",
+      "subtitle": "Read important Windows folders and create a rescue plan."
+    },
+    "settings": {
+      "title": "Settings",
+      "subtitle": "Language, display and rescue options."
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Status, logs and diagnostics overview."
+    }
+  },
+  "branding": {
+    "copyright": "© Setuphelfer — Rescue stick"
+  },
+  "common": {
+    "back": "Back to menu"
+  },
+  "section": {
+    "analyze": {
+      "intro": "Overview of computer, services and storage — without a full partition table.",
+      "loading": "Loading system analysis…",
+      "computerTitle": "Computer",
+      "statusTitle": "System status",
+      "storageTitle": "Storage summary",
+      "recommendTitle": "Recommendation",
+      "diskCount": "Drive count",
+      "windowsFound": "Windows found",
+      "externalTargets": "External targets",
+      "smartWarnings": "SMART warnings",
+      "recWindowsFound": "Windows data found — back up before making changes.",
+      "recBackupFirst": "Back up data before making changes.",
+      "recTargetOk": "External backup target present.",
+      "recTargetMissing": "No external backup target — connect a USB drive."
+    },
+    "backup": {
+      "breadcrumb": "Backup & data safety",
+      "quickRescueTitle": "Quick file rescue",
+      "quickRescueHint": "Read important Windows folders and copy to external target — without changing partitions.",
+      "quickRescueButton": "Rescue important Windows files"
+    },
+    "partitions": {
+      "intro": "Partitions and drives will appear here once disk discovery is active.",
+      "introLoaded": "Detected drives and partitions (read-only). Write actions only via backup with confirmation.",
+      "searching": "Searching for drives…",
+      "hint": "Source and target drives are checked separately in the backup area.",
+      "error": "Could not read storage devices.",
+      "empty": "No storage devices detected.",
+      "blocked": "Blocked",
+      "colPath": "Device",
+      "colType": "Type",
+      "colFs": "Filesystem",
+      "colSize": "Size",
+      "colMount": "Mount",
+      "colRole": "Role",
+      "scanOk": "Partition manager: {count} drive(s) detected.",
+      "helperIntro": "Understand drives and plan a safe layout — nothing is changed here.",
+      "beginnerNote": "Nothing is changed here. Setuphelfer only explains the current layout.",
+      "overviewTitle": "Overview",
+      "internalDisks": "Internal drives",
+      "externalDisks": "External drives",
+      "windowsParts": "Windows partitions",
+      "rescueStick": "Rescue stick",
+      "goalTitle": "What would you like to do?",
+      "goals": {
+        "dualboot": "Keep Windows and add Linux",
+        "replace_windows": "Replace Windows",
+        "data_disk": "Use drive for data",
+        "external_backup": "Use external disk as backup target",
+        "view_only": "View only"
+      },
+      "recSystemDisk": "Linux system (fastest drive)",
+      "recDataDisk": "Data/backup (largest HDD)",
+      "recSwap": "Swap only if enabled — then fastest internal drive. USB for backup or tests only.",
+      "writeBlocked": "Write actions are blocked (write_allowed=false).",
+      "roles": {
+        "rescue_usb_stick": "Rescue stick",
+        "backup_target": "Backup target",
+        "external_backup_hdd": "External backup",
+        "windows_system_disk": "Windows system",
+        "linux_system_disk": "Linux system",
+        "external_test": "External/test",
+        "unknown": "Unknown",
+        "windows_data": "Windows data"
+      }
+    },
+    "linuxInstall": {
+      "intro": "Reinstall is shown as plan-only preview on the rescue stick — no automatic formatting or install without explicit approval.",
+      "planTitle": "Planned flow (Debian/Linux)",
+      "stepAnalyze": "Analyze system and partitions",
+      "stepBackup": "Create backup on external target",
+      "stepPartition": "Prepare partitioning (hand-off)",
+      "stepInstall": "Start installation (Pro/Private — not executable here)",
+      "statusReady": "Execute allowed (Pro/Private).",
+      "statusBlocked": "Execute blocked — plan-only in public rescue. Backup and analysis first.",
+      "rescueHint": "From rescue stick: backup and verify first, then partitioning via Setuphelfer desktop.",
+      "wipeHint": "To wipe data and install Linux: create a plan under “Switch this PC to Linux”, rescue files and verify backup first. The stick never formats disks automatically."
+    },
+    "dataRescue": {
+      "intro": "Rescue important files from Windows before partitions change or Linux is installed. Nothing is deleted, formatted, or overwritten.",
+      "planOnlyBanner": "Read and plan only — copy start is enabled in the next step (RS-P3V.1).",
+      "loading": "Searching Windows user profiles (read-only)…",
+      "error": "Could not read profiles.",
+      "estimateError": "Size estimation failed.",
+      "planError": "Could not create rescue plan.",
+      "targetRequired": "Please choose a target.",
+      "stepUser": "1. Choose Windows user",
+      "stepFolders": "2. Select folders",
+      "stepTarget": "3. Choose target",
+      "noProfiles": "No Windows user profile found",
+      "noWindowsHint": "The Windows partition must be mounted read-only. The rescue stick tries this automatically. If it fails: disable Windows Fast Startup and reboot.",
+      "noNtfs": "No NTFS partition detected (Windows drive not found).",
+      "ntfsFound": "NTFS partitions detected",
+      "usersPathMissing": "Windows found but Users folder is missing or damaged — system may be severely corrupted.",
+      "diagnostics": {
+        "profiles_found": "Windows user profiles were found.",
+        "mount_failed": "Could not mount Windows read-only. Disable Fast Startup in Windows and reboot.",
+        "no_ntfs": "No Windows NTFS partition found. Check if Windows is installed or the disk is encrypted.",
+        "users_empty_or_damaged": "Users folder is empty or unreadable — profiles may be damaged or removed.",
+        "windows_without_users": "Windows system found but no user profiles — reinstall or corruption possible.",
+        "ntfs_not_mounted": "NTFS present but not mounted — automatic mount is attempted.",
+        "unknown": "No Windows user profile found. Check all NTFS partitions."
+      },
+      "mountFailed": "Could not mount Windows:",
+      "chooseTarget": "Choose target…",
+      "selectedSize": "Estimated data size",
+      "nextTarget": "Continue to target selection",
+      "createPlan": "Create rescue plan",
+      "planTitle": "4. Rescue plan",
+      "planStatus": "Plan status",
+      "targetFree": "Free space on target",
+      "executeDisabled": "Copy operation disabled when execute_allowed=false.",
+      "startCopy": "Start copy",
+      "startCopyNow": "Rescue files now",
+      "executeError": "Copy operation failed.",
+      "running": "Copying files…",
+      "resultTitle": "Result",
+      "resultStatus": "Status",
+      "filesCopied": "Files copied",
+      "targetPath": "Target path",
+      "verifyStatus": "Verify",
+      "verifyOk": "Verify passed",
+      "verifyFail": "Verify failed",
+      "confirmIntro": "Please confirm the copy operation:",
+      "confirmSource": "Source",
+      "confirmTarget": "Target",
+      "confirmSize": "Estimated size",
+      "confirmFree": "Free space",
+      "confirmNoDelete": "Copy only — nothing deleted, formatted, or overwritten.",
+      "confirmStart": "Copy now",
+      "confirmCancel": "Cancel",
+      "disabled": "disabled",
+      "files": "files",
+      "folders": {
+        "documents": "Documents",
+        "pictures": "Pictures",
+        "videos": "Videos",
+        "music": "Music",
+        "downloads": "Downloads",
+        "desktop": "Desktop",
+        "onedrive": "OneDrive"
+      }
+    },
+    "linuxMigration": {
+      "intro": "This assistant guides you step by step to Linux. Nothing is deleted or installed — only analysis, recommendations, and an installation plan.",
+      "planOnlyBanner": "No changes are made to storage devices. This feature creates analysis and installation suggestions only.",
+      "loading": "Analyzing system (read-only)…",
+      "error": "Analysis failed. Please try again.",
+      "planError": "Could not create plan.",
+      "hardwareTitle": "Your computer",
+      "identityTitle": "Detected computer",
+      "identityConfirm": "This is the computer I want to switch to Linux.",
+      "mainboard": "Motherboard",
+      "manufacturer": "Manufacturer",
+      "model": "Model",
+      "cpu": "Processor",
+      "ram": "Memory",
+      "bootMode": "Boot mode (UEFI/BIOS)",
+      "secureBoot": "Secure Boot",
+      "msiDetected": "MSI test hardware detected",
+      "nextDisks": "Continue to drives",
+      "nextProfile": "Continue to usage profile",
+      "profileTitle": "What will you use Linux for?",
+      "profile": {
+        "office": "Internet & office",
+        "standard_pc": "Standard PC",
+        "gaming": "Gaming PC",
+        "developer": "Developer PC",
+        "home_server": "Home server",
+        "nas": "NAS",
+        "custom": "Custom layout"
+      },
+      "health": {
+        "excellent": "Excellent",
+        "good": "Good",
+        "warning": "Caution",
+        "critical": "Critical"
+      },
+      "disksTitle": "Drive evaluation",
+      "suitableFor": "Suitable for:",
+      "nextVariants": "Continue to migration options",
+      "variantsTitle": "How do you want to switch?",
+      "riskRecommended": "Recommended",
+      "riskCaution": "Caution",
+      "riskDataLoss": "Data loss possible",
+      "nextDistro": "Continue to Linux suggestions",
+      "nextPartitions": "Continue to partition preview",
+      "partitionsTitle": "Partition suggestion",
+      "partitionsPreviewOnly": "Preview only — nothing is partitioned or formatted.",
+      "dualDiskIntro": "Multiple internal drives detected — recommendation per Linux best practice:",
+      "dualDiskSystem": "Fast system disk (boot)",
+      "dualDiskData": "Second disk for data",
+      "dualDiskSingle": "One internal disk detected — system and data planned on it.",
+      "nextReadiness": "Continue to safety rating",
+      "readinessTitle": "Safety rating",
+      "readinessOverall": "Overall rating",
+      "risksTitle": "Risks",
+      "exportJson": "Export plan as JSON",
+      "exportMarkdown": "Export plan as Markdown",
+      "distrosTitle": "Linux recommendations",
+      "group": {
+        "beginner": "Beginner",
+        "advanced": "Advanced",
+        "server": "Server"
+      },
+      "recommended": "Recommended",
+      "nextBackup": "Continue",
+      "warningTitle": "WARNING",
+      "warningBody": "The selected migration may erase all data on this computer.",
+      "warningBackup": "Create a full backup",
+      "warningVerify": "Verify backup",
+      "warningRestoreTest": "Run a restore test",
+      "warningContinue": "You may continue — backup is strongly recommended but not mandatory.",
+      "nextConfirm": "Continue to confirmation",
+      "confirmTitle": "Confirmation",
+      "confirmDataLoss": "I understand that data may be lost.",
+      "confirmPhrasePrompt": "Type exactly to confirm:",
+      "confirmSafe": "This option should not erase existing data. You can create the installation plan.",
+      "generatePlan": "Create installation plan",
+      "planGenerating": "Creating plan…",
+      "planTitle": "Installation plan",
+      "planSource": "Source",
+      "planTarget": "Target",
+      "planSystemDisk": "System drive",
+      "planPartitions": "Planned partitioning",
+      "planStatus": "Status"
+    }
+  },
+  "migration": {
+    "panda": {
+      "welcome": "Hi! I'll guide you to Linux — with no hidden actions.",
+      "identity": "Please verify this is really your computer.",
+      "profile": "Choose your main use case — the partition suggestion adapts to it.",
+      "partitions": "This is only a suggestion. Partitioning is planned later in the partition helper.",
+      "readiness": "Green = well prepared, yellow = review hints, red = resolve critical items.",
+      "analysisDone": "Analysis complete. Here is what is inside your computer.",
+      "disks": "Fast SSDs suit Linux and apps; large drives suit photos and backups.",
+      "variants": "Green = recommended, yellow = caution, red = data loss possible.",
+      "distros": "For beginners we recommend Linux Mint or Ubuntu LTS.",
+      "backup": "A backup protects your files — you may continue without one, but we strongly advise it.",
+      "confirm": "Read carefully. A plan is created only after confirmation — nothing is written to disk yet.",
+      "planReady": "This is only a plan. Nothing is installed or erased yet."
+    },
+    "variant": {
+      "dualBoot": {
+        "title": "Install Linux alongside Windows",
+        "pro1": "Windows stays available",
+        "pro2": "Lower risk",
+        "con1": "Less free space",
+        "con2": "More complex layout"
+      },
+      "replace": {
+        "title": "Replace Windows completely",
+        "pro1": "Maximum Linux performance",
+        "pro2": "Simple layout",
+        "con1": "All existing data will be erased"
+      },
+      "newDisk": {
+        "title": "Use a new Linux system drive",
+        "pro1": "Highest safety",
+        "pro2": "Windows unchanged",
+        "con1": "Extra SSD required"
+      }
+    },
+    "distros": {
+      "linuxMint": {
+        "desc": "Very beginner-friendly, Windows-like desktop.",
+        "hardware": "Good for typical PCs and laptops with 4 GB RAM or more.",
+        "pro1": "Easy to use",
+        "pro2": "Large community",
+        "con1": "Not always the newest software"
+      },
+      "ubuntu": {
+        "desc": "Popular Linux with LTS support and lots of help online.",
+        "hardware": "Runs on most PCs and laptops.",
+        "pro1": "Lots of documentation",
+        "pro2": "LTS updates",
+        "con1": "Snap packages not loved by everyone"
+      },
+      "debian": {
+        "desc": "Very stable — good for experienced users.",
+        "hardware": "Efficient, runs on older hardware too.",
+        "pro1": "Very stable",
+        "pro2": "Free software focus",
+        "con1": "Newer drivers sometimes arrive later"
+      },
+      "debianServer": {
+        "desc": "Debian without desktop — for servers and services.",
+        "hardware": "Minimal RAM use.",
+        "pro1": "Stable for 24/7 operation",
+        "con1": "No graphical desktop by default"
+      },
+      "ubuntuServer": {
+        "desc": "Ubuntu Server LTS for cloud and home servers.",
+        "hardware": "Good for x86 servers and VMs.",
+        "pro1": "LTS and cloud integration",
+        "con1": "Command-line skills needed"
+      }
+    }
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "themeDark": "Dark (Rescue)",
+    "telemetry": "Telemetry",
+    "telemetryOn": "Enabled (opt-in)",
+    "telemetryOff": "Disabled",
+    "telemetryEnable": "Enable telemetry",
+    "telemetryEnabling": "Enabling…",
+    "telemetryEnableFailed": "Could not enable telemetry.",
+    "telemetryTest": "Run telemetry test",
+    "telemetryTestRunning": "Testing…",
+    "telemetryTestOk": "Upload succeeded or health reachable.",
+    "telemetryTestSpooled": "Spooled locally on stick (upload server unreachable).",
+    "telemetryTestPending": "Test completed without successful upload.",
+    "telemetryTestFailed": "Functional test failed.",
+    "networkRequired": "Network required",
+    "rescueMode": "Rescue mode",
+    "rescueModeReact": "Graphical UI (React)",
+    "expertMode": "Expert mode (raw JSON)",
+    "expertHint": "Enable expert mode to view technical raw data.",
+    "noSystemdDump": "No systemd errors on the standard screen.",
+    "yes": "Yes",
+    "no": "No"
+  },
   "menu": {
     "system_analyze": {
       "title": "Analyze system",
@@ -38,7 +409,76 @@
     "network": "Network",
     "telemetry": "Telemetry",
     "optional": "optional",
-    "off": "off"
+    "off": "off",
+    "on": "on"
+  },
+  "statusLabels": {
+    "ok": "Ready",
+    "review_required": "Review required",
+    "failed": "Failed",
+    "not_configured": "Not configured",
+    "disabled": "Disabled",
+    "skipped": "Skipped"
+  },
+  "network": {
+    "hardware": "Wi-Fi hardware",
+    "hardwareUnknown": "Searching for wireless adapter…",
+    "available": "Available networks",
+    "rescan": "Scan again",
+    "scanning": "Scanning…",
+    "scanFailed": "Wi-Fi scan failed.",
+    "connect": "Connect",
+    "connecting": "Connecting…",
+    "connectFailed": "Connection failed.",
+    "passwordFor": "Password for",
+    "connected": "Connected",
+    "disconnected": "Not connected",
+    "ethernetConnected": "Connected via Ethernet cable",
+    "ip": "IP address",
+    "gateway": "Gateway",
+    "internet": "Internet",
+    "telemetry": "Telemetry",
+    "telemetryLocalOk": "Locally reachable (backend on stick)",
+    "telemetryLocalFail": "Local telemetry health unreachable — check backend.",
+    "yes": "Yes",
+    "no": "No",
+    "noAutoConnect": "No connection without your explicit confirmation.",
+    "telemetryPeerTitle": "Telemetry server connection",
+    "telemetryPeerHint": "This machine is visible to the Setuphelfer health server.",
+    "machineLabel": "Machine",
+    "lanLabel": "LAN (Ethernet)",
+    "wifiLabel": "Wi-Fi",
+    "dualLink": "LAN connected, Wi-Fi also available",
+    "dualConnected": "LAN and Wi-Fi connected",
+    "scanAllowed": "Wi-Fi scan allowed",
+    "scanBlocked": "Wi-Fi scan blocked",
+    "radioOff": "Wi-Fi radio off — enabling for scan"
+  },
+  "statusBar": {
+    "offline": "Offline",
+    "rescue": "Rescue"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English",
+    "fr": "Français",
+    "nl": "Nederlands"
+  },
+  "systemMenu": {
+    "title": "System",
+    "shell": "Open shell",
+    "terminal": "Open terminal",
+    "logs": "Show logs",
+    "exportDiagnostic": "Export diagnostics",
+    "tui": "Switch to text UI",
+    "confirmReboot": "Reboot now?",
+    "confirmShutdown": "Shut down now?",
+    "cancel": "Cancel",
+    "exportOk": "Diagnostic export started (download + stick event).",
+    "exportFail": "Diagnostic export failed.",
+    "shutdownOk": "Shutdown started.",
+    "tuiHint": "Text UI: GRUB entry “Text mode” or F10 → Reboot.",
+    "shutdownHint": "Shutdown not available — use the device power button."
   },
   "footer": {
     "help": "Help",
@@ -49,5 +489,38 @@
     "shutdown": "Shut down",
     "select": "Select"
   },
-  "lang": "Language"
+  "lang": "Language",
+  "backup": {
+    "guideTitle": "Guide — backup step by step",
+    "guideStep1": "Connect an external drive via USB (not the rescue stick).",
+    "guideStep2": "Under “Target drive”, pick the external disk — not /dev/sda (stick).",
+    "guideStep3": "Click “Mount ext4 …” if the backup partition is not mounted yet.",
+    "guideStep4": "Pick a source: for tests use a small USB NTFS disk or NTFS partition.",
+    "guideStep5": "Click “Create backup plan” — then “Start backup” when the plan is ready.",
+    "guideNote": "Leave encryption off for the first test. Mount failed? Replug the drive and try again.",
+    "mountHint": "The ext4 partition on the target disk must be mounted — otherwise no start button.",
+    "mountSuccess": "Partition mounted at",
+    "refreshDevices": "Refresh devices"
+  },
+  "boot": {
+    "title": "Setuphelfer Rescue",
+    "subtitle": "Rescue assistant",
+    "cardTitle": "Setuphelfer rescue stick",
+    "cardSubtitle": "Preparing rescue environment",
+    "starting": "Starting rescue stick…",
+    "pleaseWait": "Please wait — loading interface and services.",
+    "steps": {
+      "hardware": "Detecting hardware",
+      "services": "Starting services",
+      "ui": "Preparing interface"
+    }
+  },
+  "guide": {
+    "title": "Quick guide",
+    "summary": "1) Rescue files  2) Backup  3) Plan Linux. Nothing changes without your confirmation.",
+    "step1": "Save important Windows folders under “Rescue files”.",
+    "step2": "Create a full backup on an external drive.",
+    "step3": "Create an installation plan under “Switch this PC to Linux”.",
+    "step4": "Reinstall only after plan and backup — the stick never formats automatically."
+  }
 }

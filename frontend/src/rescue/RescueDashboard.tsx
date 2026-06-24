@@ -1,62 +1,39 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import de from './i18n/de.json';
-import en from './i18n/en.json';
-import { RescueBrandingHeader } from './RescueBrandingHeader';
 import { RESCUE_NAV_TILES, type RescueNavTileId } from './rescueNavTiles';
 import { moveTileFocus } from './rescueKeyboardNav';
-import { rescueLayoutProfile } from './rescueLayout';
-
+import { useRescueLayoutProfile } from './rescueLayout';
+import { RESCUE_LOGO } from './rescueAssets';
+import { RESCUE_TILE_COUNT } from './rescueTheme';
+import { getRescueDict, tPath, type RescueLocale } from './rescueLocale';
 const tileIcon: Record<string, string> = {
   backup: '💾',
+  rescue: '📁',
+  migration: '🐼🧰',
   analyze: '🔍',
   network: '📶',
   partition: '🧩',
+  install: '🐧',
   settings: '⚙️',
   system: '🖥️',
 };
 
-function tPath(dict: Record<string, unknown>, key: string): string {
-  const parts = key.split('.');
-  let cur: unknown = dict;
-  for (const p of parts) {
-    if (cur && typeof cur === 'object' && p in (cur as object)) {
-      cur = (cur as Record<string, unknown>)[p];
-    } else {
-      return key;
-    }
-  }
-  return typeof cur === 'string' ? cur : key;
-}
-
 declare const __APP_VERSION__: string;
 
-export const RescueStartCenter: React.FC<{
-  locale: 'de' | 'en';
+/** RS-P3M — centered dashboard with responsive tile grid. */
+export const RescueDashboard: React.FC<{
+  locale: RescueLocale;
   onSelectTile?: (id: RescueNavTileId) => void;
 }> = ({ locale, onSelectTile }) => {
+  const layout = useRescueLayoutProfile();
   const [focused, setFocused] = useState<RescueNavTileId>('backup_create');
-  const [viewportWidth, setViewportWidth] = useState(
-    typeof window !== 'undefined' ? window.innerWidth : 1200,
-  );
-  const dict = useMemo(() => (locale === 'de' ? de : en), [locale]);
+  const dict = useMemo(() => getRescueDict(locale), [locale]);
   const version = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '';
   const tileRefs = useRef<Partial<Record<RescueNavTileId, HTMLButtonElement | null>>>({});
-  const layout = useMemo(() => rescueLayoutProfile(viewportWidth), [viewportWidth]);
 
   const focusTile = useCallback((id: RescueNavTileId) => {
     setFocused(id);
     tileRefs.current[id]?.focus();
   }, []);
-
-  useEffect(() => {
-    const onResize = () => setViewportWidth(window.innerWidth);
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
-
-  useEffect(() => {
-    focusTile('backup_create');
-  }, [focusTile]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -80,13 +57,29 @@ export const RescueStartCenter: React.FC<{
   }, [focused, focusTile, onSelectTile, layout.tileCols]);
 
   return (
-    <div className="rescue-start-stack">
-      <RescueBrandingHeader subtitle={tPath(dict, 'subtitle')} version={version} />
+    <div className="rescue-dashboard" data-rescue-tile-count={RESCUE_TILE_COUNT}>
+      <div className="rescue-brand-block rescue-brand-row">
+        <img src={RESCUE_LOGO} alt="Setuphelfer" className="rescue-hero-logo" data-rescue-logo="true" />
+        <div className="rescue-brand-text">
+          <h1 className="rescue-brand-title" data-rescue-wordmark="true">
+            <span>Setup</span>
+            <span className="rescue-brand-green">helfer</span>
+          </h1>
+          <p className="rescue-brand-subtitle">{tPath(dict, 'subtitle')}</p>
+          {version ? (
+            <p className="rescue-brand-version" data-rescue-version="true">
+              v{version}
+            </p>
+          ) : null}
+        </div>
+      </div>
 
       <section
         className="rescue-tile-grid"
+        style={{ gridTemplateColumns: `repeat(${layout.tileCols}, minmax(0, 1fr))` }}
         aria-label={tPath(dict, 'menuPrompt')}
-        style={{ maxWidth: layout.maxWidth }}
+        data-rescue-tiles="true"
+        data-rescue-tile-cols={layout.tileCols}
       >
         {RESCUE_NAV_TILES.map((tile) => {
           const active = focused === tile.id;
@@ -98,23 +91,12 @@ export const RescueStartCenter: React.FC<{
               }}
               type="button"
               className={`rescue-tile-btn rescue-focus-ring${active ? ' rescue-tile-active' : ''}`}
+              data-rescue-tile-id={tile.id}
               aria-label={tPath(dict, tile.titleKey)}
               onFocus={() => setFocused(tile.id)}
               onClick={() => {
                 setFocused(tile.id);
                 onSelectTile?.(tile.id);
-              }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                textAlign: 'center',
-                gap: 10,
-                padding: '18px 14px',
-                borderRadius: 16,
-                cursor: 'pointer',
-                transition: 'border-color 0.15s, box-shadow 0.15s',
               }}
             >
               <span className="rescue-tile-icon" aria-hidden>
@@ -127,9 +109,7 @@ export const RescueStartCenter: React.FC<{
         })}
       </section>
 
-      <p className="rescue-hint" style={{ textAlign: 'center', margin: '6px 0 0' }}>
-        {tPath(dict, 'hint')}
-      </p>
+      <p className="rescue-hint">{tPath(dict, 'hint')}</p>
     </div>
   );
 };

@@ -15,6 +15,8 @@ die() { echo "ERROR: $*" >&2; exit "${2:-1}"; }
 command -v unsquashfs >/dev/null || die "unsquashfs missing" 23
 command -v mksquashfs >/dev/null || die "mksquashfs missing" 24
 
+"${REPO_ROOT}/scripts/check-rescue-ui-smoke-gate.sh" || die "rescue UI smoke gate failed — payload build forbidden" 26
+
 "${REPO_ROOT}/scripts/rescue-live/build-rescue-react-ui.sh"
 UI_SRC="${REPO_ROOT}/build/rescue/ui"
 python3 - <<PY

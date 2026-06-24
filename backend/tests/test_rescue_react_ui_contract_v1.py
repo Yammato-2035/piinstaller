@@ -28,11 +28,13 @@ class RescueReactUiContractTests(unittest.TestCase):
         self.assertIn("menu", de)
         self.assertIn("menu", en)
 
-    def test_start_center_and_menu_items_present(self) -> None:
+    def test_start_center_and_dashboard_present(self) -> None:
         self.assertTrue((RESCUE_SRC / "RescueStartCenter.tsx").is_file())
+        self.assertTrue((RESCUE_SRC / "RescueDashboard.tsx").is_file())
         self.assertTrue((RESCUE_SRC / "rescueMenuItems.ts").is_file())
         app = (RESCUE_SRC / "RescueApp.tsx").read_text(encoding="utf-8")
-        self.assertIn("RescueStartCenter", app)
+        self.assertIn("RescueDashboard", app)
+        self.assertIn("RescueShellLayout", app)
 
     def test_no_systemd_failure_in_beginner_ui(self) -> None:
         app = (RESCUE_SRC / "RescueApp.tsx").read_text(encoding="utf-8")

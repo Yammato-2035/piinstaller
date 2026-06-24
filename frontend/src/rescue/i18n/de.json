@@ -3,6 +3,377 @@
   "subtitle": "Erst analysieren. Dann sichern. Dann handeln.",
   "hint": "Es wird nichts repariert oder installiert, solange du es nicht ausdrücklich bestätigst.",
   "menuPrompt": "Was möchtest du tun?",
+  "nav": {
+    "backup": {
+      "title": "Backup & Daten sichern",
+      "subtitle": "Vollbackup und schnelle Dateirettung auf externe Ziele."
+    },
+    "analyze": {
+      "title": "Analyse",
+      "subtitle": "Systemanalyse — Computer, Status und Empfehlungen."
+    },
+    "network": {
+      "title": "Netzwerk",
+      "subtitle": "WLAN und Verbindungen einrichten."
+    },
+    "partitions": {
+      "title": "Partitionshelfer",
+      "subtitle": "Laufwerke verstehen und sichere Aufteilung planen."
+    },
+    "linuxInstall": {
+      "title": "Neuinstallation",
+      "subtitle": "Linux-Installation planen (Vorschau)."
+    },
+    "linuxMigration": {
+      "title": "Computer auf Linux umstellen",
+      "subtitle": "Windows oder vorhandene Systeme analysieren, Daten sichern und Linux installieren."
+    },
+    "dataRescue": {
+      "title": "Dateien retten",
+      "subtitle": "Wichtige Windows-Ordner lesen und Rettungsplan erstellen."
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "subtitle": "Sprache, Anzeige und Rescue-Optionen."
+    },
+    "system": {
+      "title": "System",
+      "subtitle": "Status, Logs und Diagnose-Übersicht."
+    }
+  },
+  "branding": {
+    "copyright": "© Setuphelfer — Rettungsstick"
+  },
+  "common": {
+    "back": "Zurück zum Menü"
+  },
+  "section": {
+    "analyze": {
+      "intro": "Überblick über Computer, Dienste und Datenträger — ohne vollständige Partitionstabelle.",
+      "loading": "Systemanalyse wird geladen…",
+      "computerTitle": "Computer",
+      "statusTitle": "Systemstatus",
+      "storageTitle": "Datenträger-Zusammenfassung",
+      "recommendTitle": "Empfehlung",
+      "diskCount": "Anzahl Laufwerke",
+      "windowsFound": "Windows gefunden",
+      "externalTargets": "Externe Ziele",
+      "smartWarnings": "SMART-Warnungen",
+      "recWindowsFound": "Windows-Daten wurden gefunden — vor Änderungen sichern.",
+      "recBackupFirst": "Vor Änderungen zuerst Daten sichern.",
+      "recTargetOk": "Externes Backup-Ziel vorhanden.",
+      "recTargetMissing": "Kein externes Backup-Ziel erkannt — USB-Festplatte anschließen."
+    },
+    "backup": {
+      "breadcrumb": "Backup & Daten sichern",
+      "quickRescueTitle": "Schnelle Dateirettung",
+      "quickRescueHint": "Wichtige Windows-Ordner lesen und auf externes Ziel kopieren — ohne Partitionen zu ändern.",
+      "quickRescueButton": "Wichtige Windows-Dateien retten"
+    },
+    "partitions": {
+      "intro": "Partitionen und Laufwerke werden hier angezeigt, sobald die Datenträger-Erkennung aktiv ist.",
+      "introLoaded": "Erkannte Laufwerke und Partitionen (read-only). Schreibende Aktionen nur über Backup mit Bestätigung.",
+      "searching": "Datenträger werden gesucht…",
+      "hint": "Im Backup-Bereich werden Quell- und Ziellaufwerke separat geprüft.",
+      "error": "Datenträger konnten nicht gelesen werden.",
+      "empty": "Keine Datenträger erkannt.",
+      "blocked": "Blockiert",
+      "colPath": "Gerät",
+      "colType": "Typ",
+      "colFs": "Dateisystem",
+      "colSize": "Größe",
+      "colMount": "Mount",
+      "colRole": "Rolle",
+      "scanOk": "Partitionsmanager: {count} Datenträger erkannt.",
+      "helperIntro": "Laufwerke verstehen und sichere Aufteilung planen — hier wird nichts geändert.",
+      "beginnerNote": "Hier wird nichts geändert. Setuphelfer erklärt nur die vorhandene Aufteilung.",
+      "overviewTitle": "Übersicht",
+      "internalDisks": "Interne Laufwerke",
+      "externalDisks": "Externe Laufwerke",
+      "windowsParts": "Windows-Partitionen",
+      "rescueStick": "Rettungsstick",
+      "goalTitle": "Was möchten Sie tun?",
+      "goals": {
+        "dualboot": "Windows behalten und Linux zusätzlich installieren",
+        "replace_windows": "Windows ersetzen",
+        "data_disk": "Datenträger für Daten nutzen",
+        "external_backup": "Externe Festplatte als Backup-Ziel nutzen",
+        "view_only": "Nur anzeigen"
+      },
+      "recSystemDisk": "Linux-System (schnellstes Laufwerk)",
+      "recDataDisk": "Daten/Backup (größte HDD)",
+      "recSwap": "Swap nur wenn aktiviert — dann schnellster interner Datenträger. USB nur für Backup oder Tests.",
+      "writeBlocked": "Schreibaktionen sind blockiert (write_allowed=false).",
+      "roles": {
+        "rescue_usb_stick": "Rettungsstick",
+        "backup_target": "Backup-Ziel",
+        "external_backup_hdd": "Externes Backup",
+        "windows_system_disk": "Windows-System",
+        "linux_system_disk": "Linux-System",
+        "external_test": "Extern/Test",
+        "unknown": "Unbekannt",
+        "windows_data": "Windows-Daten"
+      }
+    },
+    "linuxInstall": {
+      "intro": "Neuinstallation ist im Rettungsstick als Plan-only-Vorschau sichtbar — keine automatische Formatierung oder Installation ohne ausdrückliche Freigabe.",
+      "planTitle": "Geplanter Ablauf (Debian/Linux)",
+      "stepAnalyze": "System und Partitionen analysieren",
+      "stepBackup": "Backup auf externes Ziel erstellen",
+      "stepPartition": "Partitionierung vorbereiten (Hand-off)",
+      "stepInstall": "Installation starten (Pro/Private — derzeit nicht ausführbar)",
+      "statusReady": "Execute freigegeben (Pro/Private).",
+      "statusBlocked": "Execute blockiert — Plan-only im Public-Rescue. Backup und Analyse zuerst.",
+      "rescueHint": "Vom Rettungsstick: zuerst Backup und Verify, dann Partitionierung über Setuphelfer Desktop.",
+      "wipeHint": "Daten löschen und Linux installieren: zuerst unter „Computer auf Linux umstellen“ Plan erstellen, Dateien retten und Backup prüfen. Der Stick formatiert keine Platte automatisch."
+    },
+    "dataRescue": {
+      "intro": "Retten Sie wichtige Dateien von Windows, bevor Partitionen verändert oder Linux installiert wird. Es wird nichts gelöscht, formatiert oder überschrieben.",
+      "planOnlyBanner": "Lesen und gezieltes Kopieren auf externes Ziel — nur nach Bestätigung.",
+      "loading": "Windows-Benutzerprofile werden gesucht (nur lesen)…",
+      "error": "Profile konnten nicht gelesen werden.",
+      "estimateError": "Größenschätzung fehlgeschlagen.",
+      "planError": "Rettungsplan konnte nicht erstellt werden.",
+      "targetRequired": "Bitte Ziel wählen.",
+      "stepUser": "1. Windows-Benutzer wählen",
+      "stepFolders": "2. Ordner auswählen",
+      "stepTarget": "3. Ziel wählen",
+      "noProfiles": "Kein Windows-Benutzerprofil gefunden",
+      "noWindowsHint": "Die Windows-Partition muss read-only eingehängt sein. Der Rettungsstick versucht das automatisch. Bei Fehlern: Windows-Schnellstart deaktivieren und erneut booten.",
+      "noNtfs": "Keine NTFS-Partition erkannt (Windows-Laufwerk nicht gefunden).",
+      "ntfsFound": "NTFS-Partitionen erkannt",
+      "usersPathMissing": "Windows wurde gefunden, aber der Ordner Users fehlt oder ist beschädigt — evtl. stark beschädigtes System.",
+      "diagnostics": {
+        "profiles_found": "Windows-Benutzerprofile wurden gefunden.",
+        "mount_failed": "Windows konnte nicht read-only eingehängt werden. Schnellstart in Windows deaktivieren und erneut booten.",
+        "no_ntfs": "Keine Windows-NTFS-Partition gefunden. Prüfen Sie, ob Windows installiert ist oder die Platte verschlüsselt ist.",
+        "users_empty_or_damaged": "Der Users-Ordner ist leer oder nicht lesbar — Profile evtl. beschädigt oder gelöscht.",
+        "windows_without_users": "Windows-System gefunden, aber keine Benutzerprofile — evtl. Neuinstallation oder Beschädigung.",
+        "ntfs_not_mounted": "NTFS vorhanden, aber noch nicht eingehängt — automatischer Mount wird versucht.",
+        "unknown": "Kein Windows-Benutzerprofil gefunden. Prüfen Sie alle NTFS-Partitionen."
+      },
+      "mountFailed": "Windows konnte nicht eingehängt werden:",
+      "chooseTarget": "Ziel wählen…",
+      "selectedSize": "Geschätzte Datenmenge",
+      "nextTarget": "Weiter zur Zielauswahl",
+      "createPlan": "Rettungsplan erstellen",
+      "planTitle": "4. Rettungsplan",
+      "planStatus": "Plan-Status",
+      "targetFree": "Freier Speicher am Ziel",
+      "executeDisabled": "Kopiervorgang ist in dieser Version deaktiviert (execute_allowed=false).",
+      "startCopy": "Kopiervorgang starten",
+      "startCopyNow": "Dateien jetzt retten",
+      "executeError": "Kopiervorgang fehlgeschlagen.",
+      "running": "Dateien werden kopiert…",
+      "resultTitle": "Ergebnis",
+      "resultStatus": "Status",
+      "filesCopied": "Kopierte Dateien",
+      "targetPath": "Zielpfad",
+      "verifyStatus": "Verify",
+      "verifyOk": "Verify erfolgreich",
+      "verifyFail": "Verify fehlgeschlagen",
+      "confirmIntro": "Bitte bestätigen Sie den Kopiervorgang:",
+      "confirmSource": "Quelle",
+      "confirmTarget": "Ziel",
+      "confirmSize": "Geschätzte Größe",
+      "confirmFree": "Freier Speicher",
+      "confirmNoDelete": "Es wird nur kopiert — nichts gelöscht, formatiert oder überschrieben.",
+      "confirmStart": "Jetzt kopieren",
+      "confirmCancel": "Abbrechen",
+      "disabled": "deaktiviert",
+      "files": "Dateien",
+      "folders": {
+        "documents": "Dokumente",
+        "pictures": "Bilder",
+        "videos": "Videos",
+        "music": "Musik",
+        "downloads": "Downloads",
+        "desktop": "Desktop",
+        "onedrive": "OneDrive"
+      }
+    },
+    "linuxMigration": {
+      "intro": "Der Assistent führt Sie Schritt für Schritt durch die Umstellung auf Linux. Es werden keine Daten gelöscht und nichts installiert — nur Analyse, Empfehlungen und ein Installationsplan.",
+      "planOnlyBanner": "Es werden keine Änderungen an Datenträgern vorgenommen. Diese Funktion erstellt ausschließlich Analyse- und Installationsvorschläge.",
+      "loading": "System wird analysiert (nur lesen)…",
+      "error": "Analyse fehlgeschlagen. Bitte erneut versuchen.",
+      "planError": "Plan konnte nicht erstellt werden.",
+      "hardwareTitle": "Ihr Computer",
+      "identityTitle": "Erkannter Computer",
+      "identityConfirm": "Dies ist der Computer, den ich auf Linux umstellen möchte.",
+      "mainboard": "Mainboard",
+      "manufacturer": "Hersteller",
+      "model": "Modell",
+      "cpu": "Prozessor",
+      "ram": "Arbeitsspeicher",
+      "bootMode": "Startmodus (UEFI/BIOS)",
+      "secureBoot": "Secure Boot",
+      "msiDetected": "MSI-Testhardware erkannt",
+      "nextDisks": "Weiter zu Datenträgern",
+      "nextProfile": "Weiter zum Nutzungsprofil",
+      "profileTitle": "Wofür möchten Sie Linux nutzen?",
+      "profile": {
+        "office": "Internet & Office",
+        "standard_pc": "Standard-PC",
+        "gaming": "Gaming-PC",
+        "developer": "Entwickler-PC",
+        "home_server": "Heimserver",
+        "nas": "NAS",
+        "custom": "Eigene Aufteilung"
+      },
+      "health": {
+        "excellent": "Ausgezeichnet",
+        "good": "Gut",
+        "warning": "Achtung",
+        "critical": "Kritisch"
+      },
+      "disksTitle": "Datenträger-Bewertung",
+      "suitableFor": "Geeignet für:",
+      "nextVariants": "Weiter zu Migrationsvorschlägen",
+      "variantsTitle": "Wie möchten Sie umsteigen?",
+      "riskRecommended": "Empfohlen",
+      "riskCaution": "Achtung",
+      "riskDataLoss": "Datenverlust möglich",
+      "nextDistro": "Weiter zu Linux-Vorschlägen",
+      "nextPartitions": "Weiter zum Partitionsvorschlag",
+      "partitionsTitle": "Partitionsvorschlag",
+      "partitionsPreviewOnly": "Nur Vorschau — es wird nichts partitioniert oder formatiert.",
+      "dualDiskIntro": "Sie haben mehrere interne Platten — Empfehlung nach Linux-Praxis:",
+      "dualDiskSystem": "Schnelle Systemplatte (Boot)",
+      "dualDiskData": "Zweite Platte für Daten",
+      "dualDiskSingle": "Eine interne Platte erkannt — System und Daten werden darauf geplant.",
+      "nextReadiness": "Weiter zur Sicherheitsampel",
+      "readinessTitle": "Sicherheitsampel",
+      "readinessOverall": "Gesamtbewertung",
+      "risksTitle": "Risiken",
+      "exportJson": "Plan als JSON exportieren",
+      "exportMarkdown": "Plan als Markdown exportieren",
+      "distrosTitle": "Linux-Empfehlungen",
+      "group": {
+        "beginner": "Anfänger",
+        "advanced": "Fortgeschritten",
+        "server": "Server"
+      },
+      "recommended": "Empfohlen",
+      "nextBackup": "Weiter",
+      "warningTitle": "WARNUNG",
+      "warningBody": "Die gewählte Migration kann alle Daten auf dem Computer löschen.",
+      "warningBackup": "Vollständiges Backup erstellen",
+      "warningVerify": "Backup prüfen",
+      "warningRestoreTest": "Restore-Test durchführen",
+      "warningContinue": "Sie können dennoch fortfahren — Backup wird dringend empfohlen, ist aber nicht zwingend.",
+      "nextConfirm": "Weiter zur Bestätigung",
+      "confirmTitle": "Bestätigung",
+      "confirmDataLoss": "Ich habe verstanden, dass Daten verloren gehen können.",
+      "confirmPhrasePrompt": "Geben Sie zur Bestätigung exakt ein:",
+      "confirmSafe": "Diese Variante löscht voraussichtlich keine vorhandenen Daten. Sie können den Installationsplan erstellen.",
+      "generatePlan": "Installationsplan erstellen",
+      "planGenerating": "Plan wird erstellt…",
+      "planTitle": "Installationsplan",
+      "planSource": "Quelle",
+      "planTarget": "Ziel",
+      "planSystemDisk": "Systemlaufwerk",
+      "planPartitions": "Vorgesehene Partitionierung",
+      "planStatus": "Status"
+    }
+  },
+  "migration": {
+    "panda": {
+      "welcome": "Hallo! Ich begleite Sie durch die Umstellung auf Linux — ganz ohne versteckte Aktionen.",
+      "identity": "Bitte prüfen Sie, ob dies wirklich Ihr Computer ist.",
+      "profile": "Wählen Sie, wofür Sie Linux hauptsächlich nutzen möchten — der Partitionsvorschlag passt sich an.",
+      "partitions": "Das ist nur ein Vorschlag. Partitionen werden erst später im Partitionshelfer geplant.",
+      "readiness": "Grün = gut vorbereitet, Gelb = Hinweise beachten, Rot = kritische Punkte klären.",
+      "analysisDone": "Die Analyse ist fertig. Hier sehen Sie, was in Ihrem Computer steckt.",
+      "disks": "Schnelle SSDs eignen sich für Linux und Programme, große Festplatten für Fotos und Backups.",
+      "variants": "Grün = empfohlen, Gelb = Vorsicht, Rot = Datenverlust möglich.",
+      "distros": "Für Einsteiger empfehlen wir Linux Mint oder Ubuntu LTS.",
+      "backup": "Ein Backup schützt Ihre Fotos und Dokumente — auch wenn Sie ohne Backup fortfahren dürfen.",
+      "confirm": "Lesen Sie die Hinweise sorgfältig. Erst nach Bestätigung wird ein Plan erstellt — ohne Schreiben auf die Platte.",
+      "planReady": "Das ist nur ein Plan. Es wird noch nichts installiert oder gelöscht."
+    },
+    "variant": {
+      "dualBoot": {
+        "title": "Linux neben Windows installieren",
+        "pro1": "Windows bleibt erhalten",
+        "pro2": "Geringes Risiko",
+        "con1": "Weniger Speicherplatz",
+        "con2": "Komplexere Struktur"
+      },
+      "replace": {
+        "title": "Windows vollständig ersetzen",
+        "pro1": "Maximale Linux-Leistung",
+        "pro2": "Einfache Struktur",
+        "con1": "Alle vorhandenen Daten werden gelöscht"
+      },
+      "newDisk": {
+        "title": "Neue Linux-Systemplatte nutzen",
+        "pro1": "Höchste Sicherheit",
+        "pro2": "Windows bleibt unverändert",
+        "con1": "Zusätzliche SSD erforderlich"
+      }
+    },
+    "distros": {
+      "linuxMint": {
+        "desc": "Sehr einsteigerfreundlich, Windows-ähnliche Oberfläche.",
+        "hardware": "Gut für normale PCs und Laptops ab 4 GB RAM.",
+        "pro1": "Einfache Bedienung",
+        "pro2": "Große Community",
+        "con1": "Nicht immer die neueste Software"
+      },
+      "ubuntu": {
+        "desc": "Beliebtes Linux mit LTS-Support und viel Hilfe online.",
+        "hardware": "Läuft auf den meisten PCs und Laptops.",
+        "pro1": "Viel Dokumentation",
+        "pro2": "LTS-Updates",
+        "con1": "Snap-Pakete nicht überall beliebt"
+      },
+      "debian": {
+        "desc": "Sehr stabil, weniger Experimente — gut für erfahrene Nutzer.",
+        "hardware": "Sparsam, läuft auch auf älterer Hardware.",
+        "pro1": "Sehr stabil",
+        "pro2": "Freie Software-Priorität",
+        "con1": "Neuere Treiber manchmal später"
+      },
+      "debianServer": {
+        "desc": "Debian ohne Desktop — für Server und Dienste.",
+        "hardware": "Minimaler RAM-Verbrauch.",
+        "pro1": "Stabil für Dauerbetrieb",
+        "con1": "Keine grafische Oberfläche standardmäßig"
+      },
+      "ubuntuServer": {
+        "desc": "Ubuntu Server LTS für Cloud und Heimserver.",
+        "hardware": "Gut für x86-Server und VMs.",
+        "pro1": "LTS und Cloud-Integration",
+        "con1": "Kommandozeilen-Kenntnisse nötig"
+      }
+    }
+  },
+  "settings": {
+    "language": "Sprache",
+    "theme": "Darstellung",
+    "themeDark": "Dunkel (Rescue)",
+    "telemetry": "Telemetrie",
+    "telemetryOn": "Aktiviert (Opt-in)",
+    "telemetryOff": "Deaktiviert",
+    "telemetryEnable": "Telemetrie aktivieren",
+    "telemetryEnabling": "Aktiviere…",
+    "telemetryEnableFailed": "Telemetrie konnte nicht aktiviert werden.",
+    "telemetryTest": "Telemetrie-Funktionstest",
+    "telemetryTestRunning": "Test läuft…",
+    "telemetryTestOk": "Upload erfolgreich oder Health erreichbar.",
+    "telemetryTestSpooled": "Lokal auf Stick gespoolt (Upload-Server nicht erreichbar).",
+    "telemetryTestPending": "Test ohne erfolgreichen Upload.",
+    "telemetryTestFailed": "Funktionstest fehlgeschlagen.",
+    "networkRequired": "Netzwerk erforderlich",
+    "rescueMode": "Rescue-Modus",
+    "rescueModeReact": "Grafische Oberfläche (React)",
+    "expertMode": "Expertenmodus (JSON-Rohdaten)",
+    "expertHint": "Expertenmodus aktivieren, um technische Rohdaten anzuzeigen.",
+    "noSystemdDump": "Keine systemd-Fehler im Standardbildschirm.",
+    "yes": "Ja",
+    "no": "Nein"
+  },
   "menu": {
     "system_analyze": {
       "title": "System analysieren",
@@ -38,7 +409,76 @@
     "network": "Netzwerk",
     "telemetry": "Telemetrie",
     "optional": "optional",
-    "off": "aus"
+    "off": "aus",
+    "on": "ein"
+  },
+  "statusLabels": {
+    "ok": "Bereit",
+    "review_required": "Prüfung nötig",
+    "failed": "Fehler",
+    "not_configured": "Nicht konfiguriert",
+    "disabled": "Deaktiviert",
+    "skipped": "Übersprungen"
+  },
+  "network": {
+    "hardware": "WLAN-Hardware",
+    "hardwareUnknown": "WLAN-Adapter wird gesucht…",
+    "available": "Verfügbare Netzwerke",
+    "rescan": "WLAN neu suchen",
+    "scanning": "Suche läuft…",
+    "scanFailed": "WLAN-Suche fehlgeschlagen.",
+    "connect": "Verbinden",
+    "connecting": "Verbinde…",
+    "connectFailed": "Verbindung fehlgeschlagen.",
+    "passwordFor": "Passwort für",
+    "connected": "Verbunden",
+    "disconnected": "Nicht verbunden",
+    "ethernetConnected": "Per LAN-Kabel verbunden",
+    "ip": "IP-Adresse",
+    "gateway": "Gateway",
+    "internet": "Internet",
+    "telemetry": "Telemetrie",
+    "telemetryLocalOk": "Lokal erreichbar (Backend auf Stick)",
+    "telemetryLocalFail": "Lokaler Telemetrie-Health nicht erreichbar — Backend prüfen.",
+    "yes": "Ja",
+    "no": "Nein",
+    "noAutoConnect": "Keine Verbindung ohne deine ausdrückliche Bestätigung.",
+    "telemetryPeerTitle": "Verbindung zum Telemetrie-Server",
+    "telemetryPeerHint": "Dieser Rechner ist für den Setuphelfer-Health-Server sichtbar.",
+    "machineLabel": "Rechner",
+    "lanLabel": "LAN (Ethernet)",
+    "wifiLabel": "WLAN",
+    "dualLink": "LAN verbunden, WLAN ebenfalls verfügbar",
+    "dualConnected": "LAN und WLAN verbunden",
+    "scanAllowed": "WLAN-Suche erlaubt",
+    "scanBlocked": "WLAN-Suche blockiert",
+    "radioOff": "WLAN-Funk aus — wird für Suche eingeschaltet"
+  },
+  "statusBar": {
+    "offline": "Offline",
+    "rescue": "Rescue"
+  },
+  "language": {
+    "de": "Deutsch",
+    "en": "English",
+    "fr": "Français",
+    "nl": "Nederlands"
+  },
+  "systemMenu": {
+    "title": "System",
+    "shell": "Shell öffnen",
+    "terminal": "Terminal öffnen",
+    "logs": "Logs anzeigen",
+    "exportDiagnostic": "Diagnose exportieren",
+    "tui": "Zur Textoberfläche wechseln",
+    "confirmReboot": "Neustart jetzt ausführen?",
+    "confirmShutdown": "Herunterfahren jetzt ausführen?",
+    "cancel": "Abbrechen",
+    "exportOk": "Diagnose-Export gestartet (Download + Stick-Event).",
+    "exportFail": "Diagnose-Export fehlgeschlagen.",
+    "shutdownOk": "Herunterfahren gestartet.",
+    "tuiHint": "Textoberfläche: GRUB-Eintrag „Textmodus“ oder F10 → Neustart.",
+    "shutdownHint": "Herunterfahren nicht möglich — Ein-/Aus-Taste am Gerät."
   },
   "footer": {
     "help": "Hilfe",
@@ -49,5 +489,39 @@
     "shutdown": "Ausschalten",
     "select": "Auswählen"
   },
-  "lang": "Sprache"
+  "backup": {
+    "guideTitle": "Anleitung — Backup Schritt für Schritt",
+    "guideStep1": "Externe Festplatte per USB anschließen (nicht der Rettungsstick).",
+    "guideStep2": "Unten bei „Ziellaufwerk“ die externe Platte wählen — nicht /dev/sda (Stick).",
+    "guideStep3": "Auf „ext4 … mounten“ klicken, wenn die Backup-Partition noch nicht eingehängt ist.",
+    "guideStep4": "Quelle wählen: für Tests kleine USB-NTFS-Platte oder NTFS-Partition.",
+    "guideStep5": "„Backup-Plan erstellen“ — bei grünem Plan „Backup starten“.",
+    "guideNote": "Verschlüsselung für den ersten Test aus lassen. Mount schlägt fehl? Platte kurz ab- und wieder anstecken, dann erneut mounten.",
+    "mountHint": "Die ext4-Partition auf der Zielplatte muss gemountet sein — sonst kein Start-Button.",
+    "mountSuccess": "Partition gemountet unter",
+    "refreshDevices": "Geräte aktualisieren"
+  },
+  "lang": "Sprache",
+  "boot": {
+    "title": "Setuphelfer Rescue",
+    "subtitle": "Rettungshelfer",
+    "cardTitle": "Setuphelfer Rettungsstick",
+    "cardSubtitle": "Rettungsumgebung wird vorbereitet",
+    "starting": "Rettungsstick wird gestartet …",
+    "pleaseWait": "Bitte warten — Oberfläche und Dienste werden geladen.",
+    "steps": {
+      "hardware": "Datenträger werden erkannt",
+      "network": "Netzwerk wird geprüft",
+      "services": "Dienste werden gestartet",
+      "ui": "Oberfläche wird geladen"
+    }
+  },
+  "guide": {
+    "title": "Kurzanleitung",
+    "summary": "1) Dateien retten  2) Backup  3) Linux planen. Nichts wird ohne Ihre Bestätigung verändert.",
+    "step1": "Wichtige Windows-Ordner unter „Dateien retten“ sichern.",
+    "step2": "Vollständiges Backup auf externe Platte erstellen.",
+    "step3": "Unter „Computer auf Linux umstellen“ Installationsplan erstellen.",
+    "step4": "Neuinstallation nur nach Plan und Backup — Stick formatiert nichts automatisch."
+  }
 }

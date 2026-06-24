@@ -151,4 +151,17 @@ export async function fetchCloudTargetStatus(): Promise<{ status?: string; enabl
   return res.json();
 }
 
+export async function fetchTelemetryRuntimeStatus(): Promise<Record<string, unknown>> {
+  const res = await fetch('/api/rescue/telemetry/status', { cache: 'no-store' });
+  if (!res.ok) return {};
+  return res.json() as Promise<Record<string, unknown>>;
+}
+
+export async function runTelemetryFunctionalTest(): Promise<{ ok: boolean }> {
+  const res = await fetch('/api/rescue/telemetry/test', { method: 'POST', headers: jsonHeaders });
+  if (!res.ok) return { ok: false };
+  const data = (await res.json()) as { ok?: boolean; success?: boolean };
+  return { ok: Boolean(data.ok ?? data.success) };
+}
+
 export type { RescueBootStatus };

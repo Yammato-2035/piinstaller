@@ -1,41 +1,68 @@
 import React from 'react';
-import type { RescueBootStatus } from './rescueTypes';
+import type { RescueBootStatus, RescueStatusLevel } from './rescueTypes';
+import { rescueTheme as t } from './rescueTheme';
 
 const statusColor = (s: string) => {
-  if (s === 'ok') return '#22c55e';
-  if (s === 'failed') return '#ef4444';
-  if (s === 'disabled' || s === 'skipped' || s === 'not_configured') return '#94a3b8';
-  return '#f59e0b';
+  if (s === 'ok') return t.statusOk;
+  if (s === 'failed') return t.statusErr;
+  if (s === 'review_required') return t.statusWarn;
+  if (s === 'disabled' || s === 'skipped' || s === 'not_configured') return t.textDim;
+  return t.statusWarn;
 };
+
+const statusIcon = (s: string) => {
+  if (s === 'ok') return '✓';
+  if (s === 'failed') return '✕';
+  if (s === 'review_required') return '◐';
+  if (s === 'disabled' || s === 'skipped' || s === 'not_configured') return '○';
+  return '◐';
+};
+
+const statusClass = (s: string) => {
+  if (s === 'ok') return 'rescue-status-ok';
+  if (s === 'failed') return 'rescue-status-err';
+  if (s === 'review_required') return 'rescue-status-warn';
+  return 'rescue-status-neutral';
+};
+
+export function humanStatusLabel(
+  value: string,
+  labels: Record<string, string>,
+): string {
+  const key = value as RescueStatusLevel;
+  return labels[key] ?? value;
+}
 
 export const RescueBootStatusPanel: React.FC<{
   status: RescueBootStatus;
   labels: Record<string, string>;
-}> = ({ status, labels }) => (
-  <section
-    style={{
-      display: 'grid',
-      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-      gap: 12,
-      marginBottom: 20,
-    }}
-  >
+  statusLabels: Record<string, string>;
+}> = ({ status, labels, statusLabels }) => (
+  <section className="rescue-analysis-grid" aria-label="System status">
     {[
-      { key: labels.medium, value: status.medium.status },
-      { key: `${labels.network} (${labels.optional})`, value: status.network.status },
-      { key: `${labels.telemetry} (${labels.off})`, value: status.telemetry.status },
+      { key: labels.medium, value: status.medium.status, icon: '💿' },
+      { key: `${labels.network} (${labels.optional})`, value: status.network.status, icon: '📶' },
+      {
+        key: status.telemetry.opt_in
+          ? `${labels.telemetry} (${labels.on})`
+          : `${labels.telemetry} (${labels.off})`,
+        value: status.telemetry.status,
+        icon: '📡',
+      },
     ].map((row) => (
-      <div
-        key={row.key}
-        style={{
-          padding: '12px 14px',
-          borderRadius: 10,
-          background: 'rgba(15,23,42,0.8)',
-          border: '1px solid rgba(148,163,184,0.25)',
-        }}
-      >
-        <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>{row.key}</div>
-        <div style={{ fontSize: 16, fontWeight: 600, color: statusColor(row.value) }}>{row.value}</div>
+      <div key={row.key} className={`rescue-analysis-card ${statusClass(row.value)}`}>
+        <div className="rescue-analysis-card-label">
+          <span className="rescue-analysis-card-icon" aria-hidden>
+            {row.icon}
+          </span>
+          <span>{row.key}</span>
+        </div>
+        <div className="rescue-analysis-card-value" style={{ color: statusColor(row.value) }}>
+          <span className="rescue-analysis-status-icon" aria-hidden>
+            {statusIcon(row.value)}
+          </span>
+          {humanStatusLabel(row.value, statusLabels)}
+        </div>
       </div>
     ))}
   </section>
