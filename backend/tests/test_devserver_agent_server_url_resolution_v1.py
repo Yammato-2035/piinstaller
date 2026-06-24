@@ -104,7 +104,7 @@ class DevAgentServerUrlResolutionTests(unittest.TestCase):
         self.assertIn("qemu_gtk_pid.txt", text)
         self.assertNotIn('>"/qemu_gtk_pid.txt"', text)
         self.assertNotIn("> /qemu_gtk_pid.txt", text)
-        self.assertIn("WRAPPER_WARNING", text)
+        self.assertIn("EVDIR", text)
 
 
 if __name__ == "__main__":

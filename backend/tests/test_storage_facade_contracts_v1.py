@@ -93,9 +93,9 @@ class StorageFacadeContractsV1Tests(unittest.TestCase):
             self.assertEqual(get_partition_uuid("/dev/sdb1"), "abc-uuid")
 
     def test_collect_inspect_storage_bundle_mocked(self) -> None:
-        with mock.patch("core.storage_facade.detect_block_devices", return_value=[{"device": "/dev/sdz"}]):
-            with mock.patch("core.storage_facade.classify_devices", return_value=[{"device": "/dev/sdz"}]):
-                with mock.patch("core.storage_facade.detect_filesystems", return_value={}):
+        with mock.patch("core.storage_facade.detect_block_devices_for_inspect", return_value=[{"device": "/dev/sdz"}]):
+            with mock.patch("core.storage_facade.classify_devices_for_inspect", return_value=[{"device": "/dev/sdz"}]):
+                with mock.patch("core.storage_facade.detect_filesystems_for_inspect", return_value={}):
                     bundle = collect_inspect_storage_bundle()
         self.assertEqual(bundle["devices_raw"], [{"device": "/dev/sdz"}])
         self.assertIsNone(bundle.get("error"))

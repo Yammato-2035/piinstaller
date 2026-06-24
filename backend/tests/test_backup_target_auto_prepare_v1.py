@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import sys
 import unittest
 from pathlib import Path
@@ -20,6 +21,8 @@ from core.backup_target_auto_prepare import (
     sanitize_setuphelfer_label,
 )
 from core.safe_device import WriteTargetProtectionError, validate_write_target
+
+_MISSING_SETUPHELFER_TARGET = "/media/setuphelfer/__pytest_missing_br001__"
 
 
 class TestBackupTargetAutoPrepareV1(unittest.TestCase):
@@ -96,8 +99,8 @@ class TestBackupTargetAutoPrepareV1(unittest.TestCase):
     def test_missing_path_on_root_not_001(self) -> None:
         with patch("core.safe_device._assert_media_tree_traversable", lambda _p: None):
             with self.assertRaises(WriteTargetProtectionError) as ctx:
-                validate_write_target("/media/setuphelfer/br001")
-            self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-007")
+                validate_write_target(_MISSING_SETUPHELFER_TARGET)
+        self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-007")
 
 
 if __name__ == "__main__":

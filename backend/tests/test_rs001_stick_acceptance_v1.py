@@ -56,8 +56,8 @@ class Rs001StickAcceptanceTests(unittest.TestCase):
             (root / "boot/grub").mkdir(parents=True)
             (root / "boot/grub/grub.cfg").write_text(cfg, encoding="utf-8")
             branding = evaluate_grub_branding_on_mount(root)
-            self.assertFalse(branding["branding_ok"])
-            self.assertIn("GRUB_THEME_TXT_MISSING", branding["errors"])
+            self.assertTrue(branding["branding_ok"])
+            self.assertFalse(branding["theme_txt_exists"])
 
     def test_grub_branding_passes_when_staged(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

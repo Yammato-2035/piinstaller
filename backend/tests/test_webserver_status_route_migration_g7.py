@@ -46,7 +46,8 @@ class TestWebserverStatusRouteMigrationG7(unittest.TestCase):
 
     def test_facade_delegates_network_to_network_info_facade(self) -> None:
         text = FACADE_PATH.read_text(encoding="utf-8")
-        self.assertIn("from core.network_info_facade import build_network_info, detect_frontend_port", text)
+        self.assertIn("from core.network_info_facade import build_network_info", text)
+        self.assertIn("discover_frontend_port", text)
         self.assertNotIn("get_network_info(", text)
         self.assertNotIn("_detect_frontend_port(", text)
 

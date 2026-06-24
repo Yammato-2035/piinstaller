@@ -29,8 +29,21 @@ def test_local_lab_require_token_default_false():
 
 
 def test_release_devserver_disabled():
-    with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
-        profile = resolve_runtime_profile()
-        cap = build_runtime_capabilities(profile)
-        policy = build_devserver_policy(profile, cap)
-        assert policy.enabled_default is None
+    with patch.dict(
+        os.environ,
+        {
+            "SETUPHELFER_INSTALL_PROFILE": "release",
+            "SETUPHELFER_DEV_SERVER_ENABLED": "",
+            "SETUPHELFER_DEV_SERVER_MODE": "",
+            "SETUPHELFER_DEV_SERVER_REQUIRE_TOKEN": "",
+        },
+        clear=False,
+    ):
+        with patch(
+            "core.developer_capability.is_dev_server_host_locally_allowed",
+            return_value=False,
+        ):
+            profile = resolve_runtime_profile()
+            cap = build_runtime_capabilities(profile)
+            policy = build_devserver_policy(profile, cap)
+            assert policy.enabled_default is None

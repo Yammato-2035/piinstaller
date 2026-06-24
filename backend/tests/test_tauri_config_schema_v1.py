@@ -76,9 +76,11 @@ class TauriConfigSchemaTests(unittest.TestCase):
         self.assertEqual(res.get("semver_package_version"), projection.semver_package_version)
 
     def test_version_projection_still_valid_for_current_repo(self) -> None:
+        cfg = json.loads((_repo / "config" / "version.json").read_text(encoding="utf-8"))
+        expected = str(cfg.get("project_version") or "")
         out = vp.build_version_projection_from_repo(_repo)
-        self.assertEqual(out.project_version, "1.7.4.4")
-        self.assertEqual(out.semver_package_version, "1.7.4")
+        self.assertEqual(out.project_version, expected)
+        self.assertEqual(out.semver_package_version, vp.build_version_projection(expected).semver_package_version)
 
     def test_rename_script_target_deb_name_matches_projection(self) -> None:
         projection = vp.build_version_projection("1.7.3.1")

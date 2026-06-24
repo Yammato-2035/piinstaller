@@ -156,13 +156,13 @@ if __name__ == "__main__":
 
 class TestRestoreEnforcementFix12SourceChecks(unittest.TestCase):
     def test_restore_contract_and_codes_present_in_source(self) -> None:
-        app_py = _backend / "app.py"
-        text = app_py.read_text(encoding="utf-8")
-        self.assertIn("if mode not in (\"preview\", \"restore\")", text)
-        self.assertIn("\"backup.restore_target_missing\"", text)
-        self.assertIn("\"backup.restore_target_invalid\"", text)
-        self.assertIn("\"backup.restore_not_writable\"", text)
-        self.assertIn("\"backup.restore_success\"", text)
-        self.assertIn("\"backup.restore_preview_ok\"", text)
-        self.assertIn("if not target_dir:", text)
-        self.assertIn("if target_dir.strip() == \"/\":", text)
+        handlers_py = _backend / "core" / "backup_execute_handlers.py"
+        restore_fn = handlers_py.read_text(encoding="utf-8").split("async def restore_backup", 1)[1]
+        self.assertIn('if mode not in ("preview", "restore")', restore_fn)
+        self.assertIn('"backup.restore_target_missing"', restore_fn)
+        self.assertIn('"backup.restore_target_invalid"', restore_fn)
+        self.assertIn('"backup.restore_not_writable"', restore_fn)
+        self.assertIn('"backup.restore_success"', restore_fn)
+        self.assertIn('"backup.restore_preview_ok"', restore_fn)
+        self.assertIn("if not target_dir:", restore_fn)
+        self.assertIn('if target_dir.strip() == "/":', restore_fn)

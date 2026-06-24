@@ -26,6 +26,8 @@ from core.safe_device import (
     write_safe_prefixes_resolved,
 )
 
+_MISSING_SETUPHELFER_TARGET = "/media/setuphelfer/__pytest_missing_br001__"
+
 
 def _lsblk_system_disk() -> dict:
     return {
@@ -140,7 +142,7 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
 
     @patch("core.safe_device._assert_media_tree_traversable", lambda _p: None)
     def test_setuphelfer_missing_path_raises_007_not_001(self) -> None:
-        """Fehlendes /media/setuphelfer/br001 darf nicht als Systemplatten-001 erscheinen."""
+        """Fehlendes /media/setuphelfer/… darf nicht als Systemplatten-001 erscheinen."""
 
         def fake_run(argv, **kwargs):
             if argv[:2] == ["lsblk", "-J"]:
@@ -155,9 +157,9 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
             return CompletedProcess(argv, 1, "", "")
 
         with self.assertRaises(WriteTargetProtectionError) as ctx:
-            validate_write_target("/media/setuphelfer/br001", runner=fake_run)
+            validate_write_target(_MISSING_SETUPHELFER_TARGET, runner=fake_run)
         self.assertEqual(ctx.exception.diagnosis_id, "STORAGE-PROTECTION-007")
-        self.assertTrue(is_under_setuphelfer_product_media("/media/setuphelfer/br001"))
+        self.assertTrue(is_under_setuphelfer_product_media(_MISSING_SETUPHELFER_TARGET))
 
     @patch("core.safe_device._assert_media_tree_traversable", lambda _p: None)
     def test_setuphelfer_bind_mount_path_allowed(self) -> None:
@@ -191,7 +193,7 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
     def test_inspect_write_target_mount_predicts_007(self) -> None:
         with patch("core.safe_device._assert_media_tree_traversable", lambda _p: None):
             with patch("core.safe_device._mount_anchor_is_system_disk", return_value=True):
-                out = inspect_write_target_mount("/media/setuphelfer/br001", runner=None)
+                out = inspect_write_target_mount(_MISSING_SETUPHELFER_TARGET, runner=None)
         self.assertEqual(out.get("would_block_diagnosis_id"), "STORAGE-PROTECTION-007")
 
     def test_validate_blocks_system_disk_source(self) -> None:

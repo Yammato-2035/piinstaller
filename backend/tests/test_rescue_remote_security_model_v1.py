@@ -43,7 +43,11 @@ class RescueRemoteSecurityModelTests(unittest.TestCase):
         from unittest.mock import patch
 
         with patch.dict(os.environ, {"SETUPHELFER_RESCUE_REMOTE_ENABLED": "true"}, clear=False):
-            self.assertTrue(rescue_remote_enabled())
+            with patch(
+                "core.install_profile.get_install_profile_state",
+                side_effect=RuntimeError("profile unavailable in unit test"),
+            ):
+                self.assertTrue(rescue_remote_enabled())
 
 
 if __name__ == "__main__":

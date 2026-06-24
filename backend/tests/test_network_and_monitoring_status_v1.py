@@ -30,10 +30,10 @@ def _cp(cmd, returncode=0, stdout="", stderr=""):
 
 @unittest.skipUnless(_HAS_APP, "app/FastAPI nicht verfuegbar")
 class TestNetworkInfoDetection(unittest.TestCase):
-    @patch("app.subprocess.run")
-    @patch("app.run_command")
-    def test_normal_lan_ip_from_ip_command(self, mock_run_command, mock_subprocess_run):
-        mock_run_command.return_value = {
+    @patch("core.network_discovery.subprocess.run")
+    @patch("core.network_discovery._shell_run")
+    def test_normal_lan_ip_from_ip_command(self, mock_shell_run, mock_subprocess_run):
+        mock_shell_run.return_value = {
             "success": True,
             "stdout": "2: enp5s0    inet 192.168.178.140/24 brd 192.168.178.255 scope global enp5s0\n",
         }
@@ -53,10 +53,10 @@ class TestNetworkInfoDetection(unittest.TestCase):
         self.assertEqual(info["localhost"], "127.0.0.1")
         self.assertEqual(info["warnings"], [])
 
-    @patch("app.subprocess.run")
-    @patch("app.run_command")
-    def test_only_localhost_results_in_empty_lan_with_warning(self, mock_run_command, mock_subprocess_run):
-        mock_run_command.return_value = {"success": True, "stdout": ""}
+    @patch("core.network_discovery.subprocess.run")
+    @patch("core.network_discovery._shell_run")
+    def test_only_localhost_results_in_empty_lan_with_warning(self, mock_shell_run, mock_subprocess_run):
+        mock_shell_run.return_value = {"success": True, "stdout": ""}
 
         def side_effect(cmd, **kwargs):
             if cmd == ["hostname", "-I"]:
@@ -72,10 +72,10 @@ class TestNetworkInfoDetection(unittest.TestCase):
         self.assertEqual(info["source"], "none")
         self.assertTrue(any("keine LAN-IP erkannt" in w for w in info["warnings"]))
 
-    @patch("app.subprocess.run")
-    @patch("app.run_command")
-    def test_docker_veth_and_wg_are_filtered(self, mock_run_command, mock_subprocess_run):
-        mock_run_command.return_value = {
+    @patch("core.network_discovery.subprocess.run")
+    @patch("core.network_discovery._shell_run")
+    def test_docker_veth_and_wg_are_filtered(self, mock_shell_run, mock_subprocess_run):
+        mock_shell_run.return_value = {
             "success": True,
             "stdout": (
                 "2: docker0    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0\n"
@@ -98,10 +98,10 @@ class TestNetworkInfoDetection(unittest.TestCase):
         self.assertEqual(len(info["interfaces"]), 1)
         self.assertEqual(info["interfaces"][0]["name"], "enp5s0")
 
-    @patch("app.subprocess.run")
-    @patch("app.run_command")
-    def test_hostname_i_fallback_when_ip_command_empty(self, mock_run_command, mock_subprocess_run):
-        mock_run_command.return_value = {"success": False, "stdout": ""}
+    @patch("core.network_discovery.subprocess.run")
+    @patch("core.network_discovery._shell_run")
+    def test_hostname_i_fallback_when_ip_command_empty(self, mock_shell_run, mock_subprocess_run):
+        mock_shell_run.return_value = {"success": False, "stdout": ""}
 
         def side_effect(cmd, **kwargs):
             if cmd == ["hostname", "-I"]:
@@ -150,8 +150,15 @@ class TestMonitoringStatus(unittest.TestCase):
 
 @unittest.skipUnless(_HAS_APP, "app/FastAPI nicht verfuegbar")
 class TestSystemStatusPolicy(unittest.TestCase):
-    @patch("app.get_updates_categorized")
-    @patch("app.get_security_config")
+    def setUp(self) -> None:
+        self._realtest_patcher = patch("core.system_status_core._load_realtest_state", return_value={})
+        self._realtest_patcher.start()
+
+    def tearDown(self) -> None:
+        self._realtest_patcher.stop()
+
+    @patch("core.system_status_core._legacy_get_updates_categorized")
+    @patch("core.system_status_core._legacy_get_security_config")
     def test_all_security_components_green(self, mock_get_security, mock_get_updates):
         mock_get_security.return_value = {
             "ssh": {"config": "PermitRootLogin no\n"},
@@ -165,8 +172,8 @@ class TestSystemStatusPolicy(unittest.TestCase):
         s = app_module._compute_system_status()
         self.assertEqual(s["security"], "green")
 
-    @patch("app.get_updates_categorized")
-    @patch("app.get_security_config")
+    @patch("core.system_status_core._legacy_get_updates_categorized")
+    @patch("core.system_status_core._legacy_get_security_config")
     def test_missing_one_component_yellow(self, mock_get_security, mock_get_updates):
         mock_get_security.return_value = {
             "ssh": {"config": "PermitRootLogin no\n"},
@@ -180,8 +187,8 @@ class TestSystemStatusPolicy(unittest.TestCase):
         s = app_module._compute_system_status()
         self.assertEqual(s["security"], "yellow")
 
-    @patch("app.get_updates_categorized")
-    @patch("app.get_security_config")
+    @patch("core.system_status_core._legacy_get_updates_categorized")
+    @patch("core.system_status_core._legacy_get_security_config")
     def test_critical_security_gap_root_login_enabled(self, mock_get_security, mock_get_updates):
         mock_get_security.return_value = {
             "ssh": {"config": "PermitRootLogin yes\n"},
@@ -195,24 +202,24 @@ class TestSystemStatusPolicy(unittest.TestCase):
         s = app_module._compute_system_status()
         self.assertEqual(s["security"], "red")
 
-    @patch("app.get_updates_categorized")
-    @patch("app.get_security_config")
+    @patch("core.system_status_core._legacy_get_updates_categorized")
+    @patch("core.system_status_core._legacy_get_security_config")
     def test_updates_none_green(self, mock_get_security, mock_get_updates):
         mock_get_security.return_value = {"ufw": {"installed": True, "active": True}, "ssh": {"config": "PermitRootLogin no\n"}}
         mock_get_updates.return_value = {"total": 0, "categories": {"security": 0, "critical": 0, "necessary": 0, "optional": 0}}
         s = app_module._compute_system_status()
         self.assertEqual(s["updates"], "green")
 
-    @patch("app.get_updates_categorized")
-    @patch("app.get_security_config")
+    @patch("core.system_status_core._legacy_get_updates_categorized")
+    @patch("core.system_status_core._legacy_get_security_config")
     def test_updates_optional_yellow(self, mock_get_security, mock_get_updates):
         mock_get_security.return_value = {"ufw": {"installed": True, "active": True}, "ssh": {"config": "PermitRootLogin no\n"}}
         mock_get_updates.return_value = {"total": 1, "categories": {"security": 0, "critical": 0, "necessary": 0, "optional": 1}}
         s = app_module._compute_system_status()
         self.assertEqual(s["updates"], "yellow")
 
-    @patch("app.get_updates_categorized")
-    @patch("app.get_security_config")
+    @patch("core.system_status_core._legacy_get_updates_categorized")
+    @patch("core.system_status_core._legacy_get_security_config")
     def test_updates_security_or_critical_red(self, mock_get_security, mock_get_updates):
         mock_get_security.return_value = {"ufw": {"installed": True, "active": True}, "ssh": {"config": "PermitRootLogin no\n"}}
         mock_get_updates.return_value = {"total": 2, "categories": {"security": 1, "critical": 0, "necessary": 1, "optional": 0}}
