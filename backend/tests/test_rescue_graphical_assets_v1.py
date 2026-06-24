@@ -8,6 +8,7 @@ import subprocess
 import unittest
 from pathlib import Path
 
+from rescue.rescue_grub_branding import generate_grub_theme_txt
 from rescue.rescue_graphical_assets import (
     FORBIDDEN_BRAND_PHRASES,
     build_asset_manifest,
@@ -122,7 +123,11 @@ class RescueGraphicalAssetsTests(unittest.TestCase):
         errors = validate_rescue_menu_items(items)
         self.assertEqual(errors, [], errors)
         for high_risk in ("backup_create", "restore", "cloudserver_manage"):
-            self.assertIn("enabled: false", blocks[high_risk], high_risk)
+            if high_risk == "backup_create":
+                self.assertIn("requiresConfirmation: true", blocks[high_risk], high_risk)
+                self.assertIn("confirmation_required", blocks[high_risk], high_risk)
+            else:
+                self.assertIn("enabled: false", blocks[high_risk], high_risk)
 
     def test_stage_script_and_prepare_hook_present(self) -> None:
         self.assertTrue(STAGE_SCRIPT.is_file())
@@ -140,10 +145,10 @@ class RescueGraphicalAssetsTests(unittest.TestCase):
         self.assertGreaterEqual(len(data.get("entries", [])), 5)
 
     def test_grub_theme_stub_documents_fallback(self) -> None:
-        theme = (REPO / "build/rescue/theme/grub/setuphelfer/theme.txt").read_text(encoding="utf-8")
+        theme = generate_grub_theme_txt()
         self.assertIn("Setuphelfer", theme)
         self.assertIn("desktop-image", theme)
-        self.assertIn("Fallback", theme)
+        self.assertIn("Rettungsstick", theme)
 
 
 if __name__ == "__main__":
