@@ -6,6 +6,7 @@ import json
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 from core.backup_tar_warning_classification import (
     classification_to_job_status_fields,
     TarWarningClassification,
@@ -190,17 +191,18 @@ class TestPublishTarNonzeroStatusFields(unittest.TestCase):
                 verify_deep_ok=False,
             )
             cls = classify_tar_run(tar_exit_code=1, stderr_text=_BR001_STDERR)
-            br._publish_tar_nonzero_failure(
-                status_file,
-                state,
-                partial_path=str(job_dir / "x.partial"),
-                rc=1,
-                stderr_excerpt="",
-                stderr_tail="",
-                stderr_log_path=None,
-                tar_class_fields=classification_to_job_status_fields(cls),
-                outcome=outcome,
-            )
+            with mock.patch.object(br, "_attach_backup_failure_notification"):
+                br._publish_tar_nonzero_failure(
+                    status_file,
+                    state,
+                    partial_path=str(job_dir / "x.partial"),
+                    rc=1,
+                    stderr_excerpt="",
+                    stderr_tail="",
+                    stderr_log_path=None,
+                    tar_class_fields=classification_to_job_status_fields(cls),
+                    outcome=outcome,
+                )
             data = json.loads(status_file.read_text(encoding="utf-8"))
             self.assertEqual(data["tar_warning_classification"], "TAR_VOLATILE_WARNINGS_ONLY")
             self.assertIn("tar_warning_downgrade_allowed", data)

@@ -9,6 +9,7 @@ from deploy.runner_manual_runtime_failure_injection_matrix import (
     _ROLLBACK_REQUIRED_TYPES,
     build_manual_runtime_failure_injection_matrix,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _HANDOFF = _REPO_ROOT / "docs/evidence/runtime-results/handoff"
@@ -84,7 +85,7 @@ class DeployRunnerManualRuntimeFailureInjectionMatrixV1Tests(unittest.TestCase):
             self.assertNotIn(token, src)
 
     def test_no_execute_subroutes(self) -> None:
-        routes = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
+        routes = read_deploy_routes_aggregate()
         self.assertIn("/runner/manual-runtime/failure-injection-matrix", routes)
         for forbidden in [
             "/runner/manual-runtime/failure-injection-matrix/execute",

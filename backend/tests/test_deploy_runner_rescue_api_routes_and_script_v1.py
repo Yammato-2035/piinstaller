@@ -3,15 +3,16 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
+
 _REPO = Path(__file__).resolve().parents[2]
-_ROUTES = _REPO / "backend/deploy/routes.py"
 _SCRIPT = _REPO / "scripts/rescue/build-rescue-iso.sh"
 _CONTROLLED = _REPO / "scripts/rescue/build-rescue-iso-controlled.sh"
 
 
 class DeployRunnerRescueApiRoutesAndScriptV1Tests(unittest.TestCase):
     def test_rescue_post_routes_registered(self) -> None:
-        txt = _ROUTES.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         for needle in (
             "/rescue/live-os-base-decision",
             "/rescue/component-inventory",
@@ -74,7 +75,7 @@ class DeployRunnerRescueApiRoutesAndScriptV1Tests(unittest.TestCase):
             self.assertIn(needle, txt)
 
     def test_no_forbidden_rescue_route_segments(self) -> None:
-        low = _ROUTES.read_text(encoding="utf-8").lower()
+        low = read_deploy_routes_aggregate().lower()
         for bad in (
             "write-usb",
             "restore-execute",

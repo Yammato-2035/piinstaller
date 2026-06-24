@@ -17,6 +17,7 @@ from deploy.runner_rescue_debian_live_build_inputs import (
     build_debian_live_config_structure,
     build_debian_live_package_lists,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO = Path(__file__).resolve().parents[2]
 _BR = _REPO / "build" / "rescue"
@@ -146,7 +147,7 @@ class DeployRunnerRescueDryBuildOrchestrationV1Tests(unittest.TestCase):
         self.assertNotIn("subprocess", raw)
 
     def test_routes_dry_build_endpoints(self) -> None:
-        txt = _ROUTES.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         for n in (
             "/rescue/dry-build/stage-graph",
             "/rescue/dry-build/input-resolution",
@@ -159,7 +160,7 @@ class DeployRunnerRescueDryBuildOrchestrationV1Tests(unittest.TestCase):
             self.assertIn(n, txt)
 
     def test_routes_no_forbidden_segments(self) -> None:
-        low = _ROUTES.read_text(encoding="utf-8").lower()
+        low = read_deploy_routes_aggregate().lower()
         for bad in (
             "/rescue/dry-build/execute",
             "/rescue/dry-build/chroot",

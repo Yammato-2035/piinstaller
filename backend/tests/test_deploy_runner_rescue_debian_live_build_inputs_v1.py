@@ -15,6 +15,7 @@ from deploy.runner_rescue_debian_live_build_inputs import (
     build_debian_live_package_lists,
     validate_debian_live_build_inputs_safety,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO = Path(__file__).resolve().parents[2]
 _DL = _REPO / "build" / "rescue" / "debian-live"
@@ -223,7 +224,7 @@ class DeployRunnerRescueDebianLiveBuildInputsV1Tests(unittest.TestCase):
             self.assertNotIn(bad, raw)
 
     def test_routes_debian_live_input_endpoints(self) -> None:
-        txt = _ROUTES.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         for n in (
             "/rescue/debian-live/config-structure",
             "/rescue/debian-live/package-lists",
@@ -236,7 +237,7 @@ class DeployRunnerRescueDebianLiveBuildInputsV1Tests(unittest.TestCase):
             self.assertIn(n, txt)
 
     def test_routes_no_forbidden_segments(self) -> None:
-        low = _ROUTES.read_text(encoding="utf-8").lower()
+        low = read_deploy_routes_aggregate().lower()
         for bad in (
             "/rescue/debian-live/build",
             "/rescue/debian-live/execute",

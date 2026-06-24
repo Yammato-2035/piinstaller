@@ -5,6 +5,8 @@ from pathlib import Path
 
 from deploy.runner_next_phase_gate import evaluate_runner_next_phase_gate
 
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
+
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -85,7 +87,7 @@ class DeployRunnerNextPhaseGateV1Tests(unittest.TestCase):
             self.assertIn(k, req_codes)
 
     def test_no_execute_apply_install_write_delete_release_route(self) -> None:
-        routes = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
+        routes = read_deploy_routes_aggregate()
         self.assertIn("/runner/next-phase/gate", routes)
         for forbidden in [
             "/runner/next-phase/gate/execute",

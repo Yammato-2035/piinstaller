@@ -10,6 +10,7 @@ from deploy.runner_runtime_result_validator import (
     _REPO_ROOT,
     validate_runner_runtime_result_bundle,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 
 def _valid_payload(runbook_id: str, pass_fail: str = "pass") -> dict:
@@ -167,8 +168,7 @@ class DeployRunnerRuntimeResultValidatorV1Tests(unittest.TestCase):
         self.assertFalse(out["acceptance_check"]["lab_ready_candidate_allowed"])
 
     def test_no_execute_apply_install_write_delete_route(self) -> None:
-        routes_path = _REPO_ROOT / "backend" / "deploy" / "routes.py"
-        txt = routes_path.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         self.assertIn("/runner/runtime-results/validate", txt)
         self.assertNotIn("/runner/runtime-results/execute", txt)
         self.assertNotIn("/runner/runtime-results/apply", txt)

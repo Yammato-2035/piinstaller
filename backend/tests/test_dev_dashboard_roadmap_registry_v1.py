@@ -20,6 +20,8 @@ from core.dev_dashboard_roadmap import (  # noqa: E402
     load_roadmap_registry_bundle,
 )
 
+from tests.support.dcc_test_context import isolated_release_dcc_client  # noqa: E402
+
 _repo = Path(__file__).resolve().parent.parent.parent
 
 
@@ -145,10 +147,15 @@ except Exception:
 @unittest.skipUnless(_HAS_APP, "FastAPI TestClient oder app nicht verfuegbar")
 class TestDevDashboardRoadmapRegistryApi(unittest.TestCase):
     def setUp(self):
+        self._dcc_ctx = isolated_release_dcc_client()
+        self._dcc_headers = self._dcc_ctx.__enter__()
         self.client = TestClient(app, base_url="http://localhost")
 
+    def tearDown(self):
+        self._dcc_ctx.__exit__(None, None, None)
+
     def test_roadmap_api_and_read_only_flags(self):
-        response = self.client.get("/api/dev-dashboard/roadmap")
+        response = self.client.get("/api/dev-dashboard/roadmap", headers=self._dcc_headers)
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         self.assertIn(body.get("status"), ("success", "review_required"))
@@ -157,7 +164,7 @@ class TestDevDashboardRoadmapRegistryApi(unittest.TestCase):
         self.assertIn("roadmap", body)
 
     def test_next_prompt_api_returns_selected_prompt(self):
-        response = self.client.get("/api/dev-dashboard/roadmap/next-prompt")
+        response = self.client.get("/api/dev-dashboard/roadmap/next-prompt", headers=self._dcc_headers)
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         prompt = body.get("prompt") or {}
@@ -166,13 +173,13 @@ class TestDevDashboardRoadmapRegistryApi(unittest.TestCase):
         self.assertFalse(body.get("execution_allowed"))
 
     def test_export_next_prompt_returns_text(self):
-        response = self.client.get("/api/dev-dashboard/roadmap/export-next-prompt/DIAGNOSTICS_TEST_TRACK")
+        response = self.client.get("/api/dev-dashboard/roadmap/export-next-prompt/DIAGNOSTICS_TEST_TRACK", headers=self._dcc_headers)
         self.assertEqual(response.status_code, 200, response.text)
         self.assertIn("STRICT MODE", response.text)
         self.assertIn("Phase 0 Runtime-/Repo-Gate", response.text)
 
     def test_invalid_prompt_id_returns_clean_error(self):
-        response = self.client.get("/api/dev-dashboard/roadmap/export-next-prompt/__missing__")
+        response = self.client.get("/api/dev-dashboard/roadmap/export-next-prompt/__missing__", headers=self._dcc_headers)
         self.assertEqual(response.status_code, 404, response.text)
         body = response.json()
         self.assertEqual(body.get("error"), "prompt_not_found")
@@ -182,7 +189,7 @@ class TestDevDashboardRoadmapRegistryApi(unittest.TestCase):
             repo = Path(td)
             with patch("core.dev_dashboard_roadmap._repo_root", return_value=repo):
                 with patch("core.dev_dashboard._repo_root", return_value=repo):
-                    response = self.client.get("/api/dev-dashboard/roadmap")
+                    response = self.client.get("/api/dev-dashboard/roadmap", headers=self._dcc_headers)
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
         self.assertEqual(body.get("status"), "review_required")

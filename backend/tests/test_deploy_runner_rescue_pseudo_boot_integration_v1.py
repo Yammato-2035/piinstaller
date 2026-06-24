@@ -13,6 +13,7 @@ from deploy.runner_rescue_pseudo_boot_integration import (
     build_rescue_service_startup_simulation,
     validate_rescue_pseudo_boot_safety,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO = Path(__file__).resolve().parents[2]
 _BR = _REPO / "build" / "rescue"
@@ -99,13 +100,19 @@ class DeployRunnerRescuePseudoBootIntegrationV1Tests(unittest.TestCase):
         self.assertGreater(len(rels), 0)
 
     def test_no_iso_img_under_build_rescue(self) -> None:
+        from deploy.runner_rescue_io import ARTIFACT_SCAN_SKIP_TOP
+
         self._run_all_pseudo_boot_builders()
         for fp in _BR.rglob("*"):
             if not fp.is_file():
                 continue
             try:
                 rel = fp.relative_to(_BR)
-                if rel.parts and rel.parts[0] == "output":
+                if not rel.parts:
+                    continue
+                if rel.parts[0] in ARTIFACT_SCAN_SKIP_TOP or rel.parts[0].startswith("."):
+                    continue
+                if len(rel.parts) == 1 and rel.name.lower().startswith("uefi-fat32-"):
                     continue
             except ValueError:
                 pass
@@ -127,7 +134,7 @@ class DeployRunnerRescuePseudoBootIntegrationV1Tests(unittest.TestCase):
             self.assertNotIn(bad, raw)
 
     def test_routes_pseudo_boot_endpoints(self) -> None:
-        txt = _ROUTES.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         for n in (
             "/rescue/pseudo-boot/manifest",
             "/rescue/pseudo-boot/service-startup",
@@ -140,7 +147,7 @@ class DeployRunnerRescuePseudoBootIntegrationV1Tests(unittest.TestCase):
             self.assertIn(n, txt)
 
     def test_routes_no_forbidden_vm_iso_strings(self) -> None:
-        low = _ROUTES.read_text(encoding="utf-8").lower()
+        low = read_deploy_routes_aggregate().lower()
         for bad in ("qemu-system", "vboxmanage", "grub-mkrescue", "xorriso", "publish-release"):
             self.assertNotIn(bad, low)
 

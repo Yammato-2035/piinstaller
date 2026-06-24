@@ -13,6 +13,7 @@ from deploy.runner_rescue_io import (
     load_json_handoff,
     resolve_handoff_path,
     resolve_under_build_rescue,
+    scan_build_rescue_for_forbidden_images,
     write_json_handoff,
 )
 
@@ -69,28 +70,7 @@ def _ensure_under_build_rescue(p: Path) -> tuple[bool, str | None]:
 
 
 def _no_iso_or_img_under_build_rescue() -> tuple[bool, list[str]]:
-    bad: list[str] = []
-    root = BUILD_RESCUE_ROOT
-    if not root.is_dir():
-        return True, []
-    for fp in root.rglob("*"):
-        try:
-            rel = fp.relative_to(root)
-            if rel.parts and rel.parts[0] == "output":
-                continue
-        except ValueError:
-            continue
-        if fp.is_symlink():
-            try:
-                fp.resolve().relative_to(BUILD_RESCUE_ROOT.resolve(strict=False))
-            except (OSError, ValueError):
-                bad.append(f"SYMLINK_OUTSIDE:{fp.relative_to(REPO_ROOT)}")
-                continue
-        if fp.is_file():
-            low = fp.name.lower()
-            if low.endswith(".iso") or low.endswith(".img"):
-                bad.append(str(fp.relative_to(REPO_ROOT)).replace("\\", "/"))
-    return len(bad) == 0, bad
+    return scan_build_rescue_for_forbidden_images()
 
 
 def _guard_build_file(path: Path, *, explicit_overwrite: bool, prefix: str) -> str | None:

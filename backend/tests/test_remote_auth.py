@@ -41,6 +41,9 @@ def _past_iso(seconds=-60):
 class TestValidateSessionToken(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
+        import storage.db as storage_db
+
+        storage_db._remote_db_path = None
         init_remote_db(None)
         conn = get_connection()
         try:

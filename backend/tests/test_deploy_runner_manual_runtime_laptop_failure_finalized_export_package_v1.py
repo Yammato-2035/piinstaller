@@ -5,6 +5,7 @@ import json
 import unittest
 from pathlib import Path
 
+from deploy.routes_source_aggregate import extract_deploy_route_block
 from deploy.runner_manual_runtime_laptop_failure_finalized_export_package import (
     build_manual_laptop_failure_finalized_export_package,
 )
@@ -115,11 +116,8 @@ class DeployRunnerManualRuntimeLaptopFailureFinalizedExportPackageV1Tests(unitte
             self.assertNotIn(bad, t)
 
     def test_keine_verbotenen_unterrouten(self) -> None:
-        routes = Path(__file__).resolve().parents[1] / "deploy" / "routes.py"
-        chunk = routes.read_text(encoding="utf-8")
-        start = chunk.find("laptop-failure-finalized-export-package")
-        self.assertGreater(start, 0)
-        block = chunk[start : start + 1200]
+        block = extract_deploy_route_block("laptop-failure-finalized-export-package")
+        self.assertGreater(len(block), 0)
         for bad in ("execute", "apply", "install", "delete", "release"):
             self.assertNotIn(bad, block)
 

@@ -12,6 +12,8 @@ if str(_backend) not in sys.path:
 
 from core.dev_dashboard_manual_command_runs import build_manual_command_runs_index  # noqa: E402
 
+from tests.support.dcc_test_context import isolated_release_dcc_client  # noqa: E402
+
 try:
     from fastapi.testclient import TestClient
     from app import app
@@ -98,10 +100,15 @@ class TestManualCommandRunsLoader(unittest.TestCase):
 @unittest.skipUnless(_HAS_APP, "FastAPI TestClient oder app nicht verfuegbar")
 class TestManualCommandRunsApi(unittest.TestCase):
     def setUp(self):
+        self._dcc_ctx = isolated_release_dcc_client()
+        self._dcc_headers = self._dcc_ctx.__enter__()
         self.client = TestClient(app, base_url="http://localhost")
 
+    def tearDown(self):
+        self._dcc_ctx.__exit__(None, None, None)
+
     def test_get_manual_command_runs_read_only(self):
-        r = self.client.get("/api/dev-dashboard/manual-command-runs")
+        r = self.client.get("/api/dev-dashboard/manual-command-runs", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         data = r.json()
         self.assertEqual(data.get("status"), "success")

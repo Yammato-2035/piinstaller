@@ -125,10 +125,11 @@ class TestDevControlCenterSummary(unittest.TestCase):
             self.assertIn("SAMPLE_FAQ", str(pairs.get("missing_en") or pairs.get("missing_de")))
 
     def test_no_write_actions_in_summary(self):
-        summary = build_control_center_summary(dashboard={})
-        blob = str(summary).lower()
-        for forbidden in ("start_backup", "run_restore", "rescue_iso_build", "debootstrap"):
-            self.assertNotIn(forbidden, blob)
+        with tempfile.TemporaryDirectory() as td:
+            summary = build_control_center_summary(repo_root=Path(td), dashboard={})
+            blob = str(summary).lower()
+            for forbidden in ("start_backup", "run_restore", "rescue_iso_build", "debootstrap"):
+                self.assertNotIn(forbidden, blob)
 
     def test_rescue_iso_not_fake_green(self):
         with tempfile.TemporaryDirectory() as td:

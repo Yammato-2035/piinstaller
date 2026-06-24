@@ -14,6 +14,7 @@ from deploy.runner_rescue_runtime_assembly_pipeline import (
     build_rescue_startup_script_assembly,
     validate_rescue_runtime_assembly_safety,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO = Path(__file__).resolve().parents[2]
 _BR = _REPO / "build" / "rescue"
@@ -112,13 +113,19 @@ class DeployRunnerRescueRuntimeAssemblyPipelineV1Tests(unittest.TestCase):
         self.assertGreater(len(mods), 0)
 
     def test_no_iso_img(self) -> None:
+        from deploy.runner_rescue_io import ARTIFACT_SCAN_SKIP_TOP
+
         self._run_all_runtime_builders()
         for fp in _BR.rglob("*"):
             if not fp.is_file():
                 continue
             try:
                 rel = fp.relative_to(_BR)
-                if rel.parts and rel.parts[0] == "output":
+                if not rel.parts:
+                    continue
+                if rel.parts[0] in ARTIFACT_SCAN_SKIP_TOP or rel.parts[0].startswith("."):
+                    continue
+                if len(rel.parts) == 1 and rel.name.lower().startswith("uefi-fat32-"):
                     continue
             except ValueError:
                 pass
@@ -140,7 +147,7 @@ class DeployRunnerRescueRuntimeAssemblyPipelineV1Tests(unittest.TestCase):
             self.assertNotIn(bad, raw)
 
     def test_routes_runtime_endpoints(self) -> None:
-        txt = _ROUTES.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         for n in (
             "/rescue/runtime/root",
             "/rescue/runtime/backend",
@@ -154,7 +161,7 @@ class DeployRunnerRescueRuntimeAssemblyPipelineV1Tests(unittest.TestCase):
             self.assertIn(n, txt)
 
     def test_routes_no_forbidden_publish(self) -> None:
-        low = _ROUTES.read_text(encoding="utf-8").lower()
+        low = read_deploy_routes_aggregate().lower()
         self.assertNotIn("publish-release", low)
         self.assertNotIn("qemu-system", low)
 

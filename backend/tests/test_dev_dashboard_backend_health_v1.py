@@ -71,17 +71,18 @@ class DevDashboardBackendHealthTests(unittest.TestCase):
         self.assertEqual(out["status"], "warning")
 
     def test_opt_path_preferred_when_backend_under_opt(self) -> None:
+        now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
         with tempfile.TemporaryDirectory() as tmp:
             opt = Path(tmp) / "opt"
             ws = Path(tmp) / "ws"
             for root in (opt, ws):
                 (root / "docs/evidence/dev-dashboard").mkdir(parents=True)
             (opt / "docs/evidence/dev-dashboard/backend_health_latest.json").write_text(
-                json.dumps({"generated_at": "2026-06-03T12:00:00Z", "overall_status": "ok"}),
+                json.dumps({"generated_at": now, "overall_status": "ok"}),
                 encoding="utf-8",
             )
             (ws / "docs/evidence/dev-dashboard/backend_health_latest.json").write_text(
-                json.dumps({"generated_at": "2026-06-03T11:00:00Z", "overall_status": "warning"}),
+                json.dumps({"generated_at": now, "overall_status": "warning"}),
                 encoding="utf-8",
             )
             opt_latest = opt / "docs/evidence/dev-dashboard/backend_health_latest.json"
@@ -161,7 +162,9 @@ class DevDashboardBackendHealthTests(unittest.TestCase):
 
         import app as app_module
 
-        with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
+        from tests.support.dcc_test_context import isolated_release_no_dcc
+
+        with isolated_release_no_dcc():
             client = TestClient(app_module.app)
             r = client.get("/api/dev-dashboard/backend-health")
         self.assertEqual(r.status_code, 404)

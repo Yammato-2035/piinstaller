@@ -56,22 +56,23 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
-def _parse_semver(v: str) -> tuple[int, int, int] | None:
+def _parse_version_parts(v: str) -> tuple[int, ...] | None:
     parts = str(v).strip().split(".")
-    if len(parts) != 3:
+    if len(parts) not in (3, 4):
         return None
     try:
-        return int(parts[0]), int(parts[1]), int(parts[2])
+        return tuple(int(p) for p in parts)
     except ValueError:
         return None
 
 
 def _bump_patch(v: str) -> str | None:
-    p = _parse_semver(v)
+    p = _parse_version_parts(v)
     if p is None:
         return None
-    x, y, z = p
-    return f"{x}.{y}.{z + 1}"
+    if len(p) == 4:
+        return f"{p[0]}.{p[1]}.{p[2]}.{p[3] + 1}"
+    return f"{p[0]}.{p[1]}.{p[2] + 1}"
 
 
 def prepare_runtime_identifier_patch_bump(*, explicit_overwrite: bool = False) -> dict[str, Any]:
@@ -114,7 +115,7 @@ def prepare_runtime_identifier_patch_bump(*, explicit_overwrite: bool = False) -
 
     prev = str(cfg.get("project_version") or "")
     nxt = _bump_patch(prev)
-    if not nxt or _parse_semver(nxt) is None:
+    if not nxt or _parse_version_parts(nxt) is None:
         return _emit("blocked", {}, ["PATCH_PREP_VERSION_PARSE_FAILED"], [])
 
     body = {

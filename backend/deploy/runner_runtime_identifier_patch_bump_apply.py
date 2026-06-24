@@ -72,20 +72,23 @@ def _atomic_write(path: Path, content: str) -> None:
     tmp.replace(path)
 
 
-def _parse_semver(v: str) -> tuple[int, int, int] | None:
+def _parse_version_parts(v: str) -> tuple[int, ...] | None:
     parts = str(v).strip().split(".")
-    if len(parts) != 3:
+    if len(parts) not in (3, 4):
         return None
     try:
-        return int(parts[0]), int(parts[1]), int(parts[2])
+        return tuple(int(p) for p in parts)
     except ValueError:
         return None
 
 
 def _semver_gt(a: str, b: str) -> bool:
-    pa, pb = _parse_semver(a), _parse_semver(b)
+    pa, pb = _parse_version_parts(a), _parse_version_parts(b)
     if pa is None or pb is None:
         return False
+    width = max(len(pa), len(pb))
+    pa = pa + (0,) * (width - len(pa))
+    pb = pb + (0,) * (width - len(pb))
     return pa > pb
 
 

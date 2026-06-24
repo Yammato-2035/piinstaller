@@ -136,7 +136,9 @@ class RescueTelemetryIngestHttpTests(unittest.TestCase):
         }
 
     def test_release_profile_blocks_dcc_not_telemetry_health(self) -> None:
-        with tempfile.TemporaryDirectory() as td, patch.dict(
+        from tests.support.dcc_test_context import isolated_release_no_dcc
+
+        with tempfile.TemporaryDirectory() as td, isolated_release_no_dcc(), patch.dict(
             os.environ, self._client_env(td, enabled="0"), clear=False
         ):
             client = TestClient(fastapi_app, base_url="http://localhost")

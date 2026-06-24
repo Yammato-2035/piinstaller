@@ -11,6 +11,40 @@ BUILD_RESCUE_ROOT = (REPO_ROOT / "build" / "rescue").resolve(strict=False)
 
 _RESCUE_SUBDIRS = ("live-build", "output", "evidence", "logs")
 
+ARTIFACT_SCAN_SKIP_TOP = frozenset(
+    {"output", "live-build", "archive", "fat32-esp-staging", "temp-runtime", "evidence", "logs"}
+)
+
+
+def scan_build_rescue_for_forbidden_images() -> tuple[bool, list[str]]:
+    """True when no unexpected .iso/.img files exist under build/rescue (dev-machine safe)."""
+    bad: list[str] = []
+    root = BUILD_RESCUE_ROOT
+    if not root.is_dir():
+        return True, []
+    for fp in root.rglob("*"):
+        try:
+            rel = fp.relative_to(root)
+            if rel.parts and (
+                rel.parts[0] in ARTIFACT_SCAN_SKIP_TOP or rel.parts[0].startswith(".")
+            ):
+                continue
+        except ValueError:
+            continue
+        if fp.is_symlink():
+            try:
+                fp.resolve().relative_to(BUILD_RESCUE_ROOT.resolve(strict=False))
+            except (OSError, ValueError):
+                bad.append(f"SYMLINK_OUTSIDE:{fp.relative_to(REPO_ROOT)}")
+                continue
+        if fp.is_file():
+            low = fp.name.lower()
+            if len(rel.parts) == 1 and low.startswith("uefi-fat32-"):
+                continue
+            if low.endswith(".iso") or low.endswith(".img"):
+                bad.append(str(fp.relative_to(REPO_ROOT)).replace("\\", "/"))
+    return len(bad) == 0, bad
+
 
 def ensure_rescue_workspace_dirs() -> Path:
     """Creates ``build/rescue/{live-build,output,evidence,logs}`` if missing."""

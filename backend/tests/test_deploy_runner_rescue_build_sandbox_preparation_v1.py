@@ -13,6 +13,7 @@ from deploy.runner_rescue_build_sandbox_preparation import (
     build_rescue_sandbox_runtime_copy_plan,
     validate_rescue_build_sandbox_safety,
 )
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO = Path(__file__).resolve().parents[2]
 _BR = _REPO / "build" / "rescue"
@@ -113,7 +114,7 @@ class DeployRunnerRescueBuildSandboxPreparationV1Tests(unittest.TestCase):
         bad.unlink()
 
     def test_routes_build_sandbox_paths(self) -> None:
-        txt = _ROUTES.read_text(encoding="utf-8")
+        txt = read_deploy_routes_aggregate()
         for n in (
             "/rescue/build-sandbox/root",
             "/rescue/build-sandbox/config-copy-plan",
@@ -126,7 +127,7 @@ class DeployRunnerRescueBuildSandboxPreparationV1Tests(unittest.TestCase):
             self.assertIn(n, txt)
 
     def test_routes_no_forbidden_segments(self) -> None:
-        low = _ROUTES.read_text(encoding="utf-8").lower()
+        low = read_deploy_routes_aggregate().lower()
         for bad in (
             "/rescue/build-sandbox/execute",
             "/rescue/build-sandbox/chroot",

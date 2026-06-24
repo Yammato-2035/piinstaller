@@ -5,6 +5,8 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+from tests.support.dcc_test_context import isolated_release_dcc_client
+
 from fastapi.testclient import TestClient
 
 from app import app
@@ -139,11 +141,13 @@ class NotificationEmailProviderLimitTests(unittest.TestCase):
             patch("core.notification_email.load_effective_notification_config", return_value=_config()),
             patch("core.notification_email._smtp_send", side_effect=_provider_limit_error()),
         ):
-            with TestClient(app) as client:
-                res = client.post(
-                    "/api/dev-dashboard/notifications/test-email",
-                    json={"message": "Setuphelfer provider limit classification smoke test"},
-                )
+            with isolated_release_dcc_client() as headers:
+                with TestClient(app) as client:
+                    res = client.post(
+                        "/api/dev-dashboard/notifications/test-email",
+                        json={"message": "Setuphelfer provider limit classification smoke test"},
+                        headers=headers,
+                    )
 
         self.assertEqual(res.status_code, 200)
         body = res.json()

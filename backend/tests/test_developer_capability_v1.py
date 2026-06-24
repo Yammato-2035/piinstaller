@@ -42,7 +42,11 @@ class DeveloperCapabilityTests(unittest.TestCase):
             self.assertIsNone(code)
 
     def test_release_without_dcc_developer_enabled_stays_profile_blocked(self) -> None:
-        with patch.dict(os.environ, {"DCC_DEVELOPER_TOKEN": "dev-laptop"}, clear=False):
+        with patch("core.developer_capability._load_developer_env_file"), patch.dict(
+            os.environ,
+            {"DCC_DEVELOPER_TOKEN": "dev-laptop", "DCC_DEVELOPER_ENABLED": ""},
+            clear=False,
+        ):
             blocked, code = is_dcc_route_allowed(
                 path="/api/dev-dashboard/status",
                 install_profile="release",

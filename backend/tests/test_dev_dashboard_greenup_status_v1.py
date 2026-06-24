@@ -241,9 +241,11 @@ class ProjectOverviewDashboardStateTests(unittest.TestCase):
         self.assertNotIn("dd if=", src)
 
     def test_new_routes_are_registered_in_app(self) -> None:
-        text = (_backend / "app.py").read_text(encoding="utf-8")
-        self.assertIn("/api/dev-dashboard/packaging/readiness", text)
-        self.assertIn("/api/dev-dashboard/project-overview", text)
+        cc = (_backend / "api" / "routes" / "control_center_readonly.py").read_text(encoding="utf-8")
+        app_text = (_backend / "app.py").read_text(encoding="utf-8")
+        self.assertIn('@router.get("/api/dev-dashboard/packaging/readiness")', cc)
+        self.assertIn('@router.get("/api/dev-dashboard/project-overview")', cc)
+        self.assertIn("include_router(control_center_readonly_router)", app_text)
 
 
 if __name__ == "__main__":

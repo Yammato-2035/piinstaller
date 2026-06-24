@@ -67,6 +67,7 @@ class TestAppRouterSliceE8(unittest.TestCase):
         self.assertIn("build_dcc_notifications_status_api", text)
         self.assertIn("build_dcc_notifications_events_api", text)
         self.assertIn("dcc_status_facade", text)
+        self.assertIn("build_products_api_response", text)
         self.assertNotIn("load_backend_health_snapshot", text)
         self.assertNotIn("build_notification_summary", text)
         self.assertNotIn("list_notification_events", text)
@@ -89,11 +90,11 @@ class TestAppRouterSliceE8(unittest.TestCase):
 
     def test_handlers_are_get_only_for_e8(self) -> None:
         text = (_backend / "api/routes/dev_dashboard_readonly.py").read_text(encoding="utf-8")
-        # E.4 (5) + E.8 (3) + status facade (1) = 9 GET handlers
-        self.assertEqual(text.count("@router.get"), 9)
+        # E.4 (5) + E.8 (3) + status facade (1) + products (1) = 10 GET handlers
+        self.assertEqual(text.count("@router.get"), 10)
         self.assertNotIn("@router.post", text)
 
     def test_readonly_router_has_nine_get_handlers_total(self) -> None:
         tbl = _route_table(dev_dashboard_readonly_router)
         get_routes = [p for m, p in tbl if m == "GET"]
-        self.assertEqual(len(get_routes), 9)
+        self.assertEqual(len(get_routes), 10)

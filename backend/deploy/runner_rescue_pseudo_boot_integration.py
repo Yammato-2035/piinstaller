@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 from deploy.runner_rescue_io import (
     BUILD_RESCUE_ROOT,
     REPO_ROOT,
@@ -13,6 +14,7 @@ from deploy.runner_rescue_io import (
     load_json_handoff,
     resolve_handoff_path,
     resolve_under_build_rescue,
+    scan_build_rescue_for_forbidden_images,
     write_json_handoff,
 )
 
@@ -80,32 +82,27 @@ def _write_json_build(path: Path, obj: dict[str, Any]) -> str | None:
 
 
 def _no_iso_or_img_under_build_rescue() -> tuple[bool, list[str]]:
-    bad: list[str] = []
-    root = BUILD_RESCUE_ROOT
-    if not root.is_dir():
-        return True, []
-    for fp in root.rglob("*"):
-        try:
-            rel = fp.relative_to(root)
-            if rel.parts and rel.parts[0] == "output":
-                continue
-        except ValueError:
-            continue
-        if fp.is_file():
-            low = fp.name.lower()
-            if low.endswith(".iso") or low.endswith(".img"):
-                bad.append(str(fp.relative_to(REPO_ROOT)).replace("\\", "/"))
-    return len(bad) == 0, bad
+    return scan_build_rescue_for_forbidden_images()
 
 
 def _routes_text() -> str:
-    p = REPO_ROOT / "backend" / "deploy" / "routes.py"
-    return p.read_text(encoding="utf-8") if p.is_file() else ""
+    return read_deploy_routes_aggregate()
 
 
 def _app_text() -> str:
     p = REPO_ROOT / "backend" / "app.py"
     return p.read_text(encoding="utf-8") if p.is_file() else ""
+
+
+def _api_routes_text() -> str:
+    root = REPO_ROOT / "backend" / "api" / "routes"
+    if not root.is_dir():
+        return ""
+    return "".join(p.read_text(encoding="utf-8") for p in sorted(root.glob("*.py")))
+
+
+def _static_route_sources_text() -> str:
+    return _app_text() + _api_routes_text() + _routes_text()
 
 
 def build_rescue_pseudo_boot_manifest(*, explicit_overwrite: bool = False) -> dict[str, Any]:
@@ -250,7 +247,7 @@ def build_rescue_backend_health_integration(*, explicit_overwrite: bool = False)
     if g:
         return _emit("rescue_pseudo_boot_backend_health", _BACKEND_HEALTH, "blocked", {}, wrote=False, warnings=[], errors=[g])
 
-    app_t = _app_text()
+    app_t = _static_route_sources_text()
     rt = _routes_text()
     checks = {
         "endpoint_api_version": '@app.get("/api/version")' in app_t or '"/api/version"' in app_t,
@@ -273,6 +270,7 @@ def build_rescue_backend_health_integration(*, explicit_overwrite: bool = False)
         "static_analysis_only": True,
         "sources": {
             "app_py": "backend/app.py",
+            "api_routes_py": "backend/api/routes/*.py",
             "routes_py": "backend/deploy/routes.py",
         },
         "checks": checks,

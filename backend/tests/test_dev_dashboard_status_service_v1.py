@@ -12,6 +12,12 @@ if str(_backend) not in sys.path:
 
 from core.dev_dashboard_status_service import build_dcc_profile_block_response  # noqa: E402
 
+from tests.support.dcc_test_context import (  # noqa: E402
+    RELEASE_DCC_HEADERS,
+    isolated_release_dcc_client,
+    isolated_release_no_dcc,
+)
+
 try:
     from fastapi.testclient import TestClient
 
@@ -26,7 +32,7 @@ except Exception:
 
 class DevDashboardStatusServiceTests(unittest.TestCase):
     def test_release_without_token_blocked(self) -> None:
-        with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
+        with isolated_release_no_dcc():
             body = build_dcc_profile_block_response()
         self.assertIsNotNone(body)
         assert body is not None
@@ -84,7 +90,7 @@ class DevDashboardStatusServiceTests(unittest.TestCase):
 @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")
 class DevDashboardStatusHttpTests(unittest.TestCase):
     def test_release_status_blocked_without_token(self) -> None:
-        with patch.dict(os.environ, {"SETUPHELFER_INSTALL_PROFILE": "release"}, clear=False):
+        with isolated_release_no_dcc():
             client = TestClient(fastapi_app, base_url="http://localhost")
             r = client.get("/api/dev-dashboard/status")
             self.assertEqual(r.status_code, 404)

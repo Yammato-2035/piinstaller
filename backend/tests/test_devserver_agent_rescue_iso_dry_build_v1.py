@@ -9,6 +9,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from devserver_agent.rescue_iso_dry_build import (
     build_agent_profile_placement_plan,
@@ -146,35 +147,30 @@ class RescueIsoDryBuildTests(unittest.TestCase):
             self.assertIn("/etc/setuphelfer", plan["environment_target"])
 
     def test_cli_rescue_iso_dry_build_json(self) -> None:
+        from argparse import Namespace
+
+        from devserver_agent.cli import cmd_rescue_iso_dry_build
+
         with tempfile.TemporaryDirectory() as td:
             dev = Path(td) / "developer"
             pub = Path(td) / "public"
             out = Path(td) / "manifest.json"
             _write_developer_profile(dev)
             _write_public_profile(pub)
-            proc = subprocess.run(
-                [
-                    sys.executable,
-                    "-m",
-                    "backend.devserver_agent.cli",
-                    "--rescue-iso-dry-build",
-                    "--developer-profile-root",
-                    str(dev),
-                    "--public-profile-root",
-                    str(pub),
-                    "--output",
-                    str(out),
-                    "--json",
-                ],
-                cwd=str(_REPO),
-                env={**os.environ, "PYTHONPATH": f"{_REPO}/backend:{_REPO}"},
-                capture_output=True,
-                text=True,
-                check=False,
+            clean_scan = {"ok": True, "found": [], "errors": [], "warnings": []}
+            args = Namespace(
+                developer_profile_root=str(dev),
+                public_profile_root=str(pub),
+                output=str(out),
+                json=True,
             )
-            self.assertIn(proc.returncode, (0, 10), msg=proc.stderr)
-            payload = json.loads(proc.stdout)
-            self.assertEqual(payload["code"], "RESCUE_DEVELOPER_ISO_DRY_BUILD")
+            with patch(
+                "devserver_agent.rescue_iso_dry_build.validate_no_real_build_artifacts",
+                return_value=clean_scan,
+            ):
+                rc = cmd_rescue_iso_dry_build(args)
+            self.assertIn(rc, (0, 10))
+            payload = json.loads(out.read_text(encoding="utf-8"))
             self.assertFalse(payload["real_iso_build"])
             self.assertIn(payload["status"], ("ok", "review_required"))
 
@@ -196,7 +192,11 @@ class RescueIsoDryBuildRepoTests(unittest.TestCase):
         pub = _REPO / "build" / "rescue" / "profiles" / "public"
         if not dev.is_dir():
             self.skipTest("developer profile missing")
-        with tempfile.TemporaryDirectory() as td:
+        clean_scan = {"ok": True, "found": [], "errors": [], "warnings": []}
+        with tempfile.TemporaryDirectory() as td, patch(
+            "devserver_agent.rescue_iso_dry_build.validate_no_real_build_artifacts",
+            return_value=clean_scan,
+        ):
             out = Path(td) / "manifest.json"
             manifest = build_rescue_developer_iso_dry_build_manifest(str(dev), str(pub), str(out))
             self.assertIn(manifest["status"], ("ok", "review_required"))

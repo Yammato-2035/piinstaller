@@ -8,6 +8,7 @@ import unittest
 from pathlib import Path
 
 from deploy.runner_manual_runtime_validator_seal_consistency_audit import run_validator_seal_consistency_audit
+from deploy.routes_source_aggregate import read_deploy_routes_aggregate
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _HANDOFF = _REPO_ROOT / "docs/evidence/runtime-results/handoff"
@@ -283,7 +284,7 @@ class DeployRunnerManualRuntimeValidatorSealConsistencyAuditV1Tests(unittest.Tes
             self.assertNotIn(token, src)
 
     def test_no_execute_subroutes(self) -> None:
-        routes = (_REPO_ROOT / "backend/deploy/routes.py").read_text(encoding="utf-8")
+        routes = read_deploy_routes_aggregate()
         self.assertIn("/runner/manual-runtime/result-validator-seal-consistency-audit", routes)
         for forbidden in [
             "/runner/manual-runtime/result-validator-seal-consistency-audit/execute",

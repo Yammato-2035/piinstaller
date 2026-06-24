@@ -17,6 +17,8 @@ if str(_backend) not in sys.path:
 
 from core import dev_dashboard as dd  # noqa: E402
 
+from tests.support.dcc_test_context import isolated_release_dcc_client  # noqa: E402
+
 _MANIFEST_DRIFT_NEUTRAL: dict[str, object] = {
     "workspace_manifest_path": "/tmp/manifest-ws.json",
     "runtime_manifest_path": "/tmp/manifest-rt.json",
@@ -150,15 +152,16 @@ class TestDevDashboardCore(unittest.TestCase):
 
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("probe.txt",))
     def test_deploy_drift_green_identical_files(self) -> None:
-        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
-            with tempfile.TemporaryDirectory() as td:
-                ws = Path(td) / "w"
-                rt = Path(td) / "r"
-                ws.mkdir()
-                rt.mkdir()
-                (ws / "probe.txt").write_text("same", encoding="utf-8")
-                (rt / "probe.txt").write_text("same", encoding="utf-8")
-                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.profile_deploy_manifest.enrich_deploy_drift_profile_aware", side_effect=lambda base, **kw: base):
+            with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+                with tempfile.TemporaryDirectory() as td:
+                    ws = Path(td) / "w"
+                    rt = Path(td) / "r"
+                    ws.mkdir()
+                    rt.mkdir()
+                    (ws / "probe.txt").write_text("same", encoding="utf-8")
+                    (rt / "probe.txt").write_text("same", encoding="utf-8")
+                    out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "green")
         self.assertEqual(out["matching_files_count"], 1)
         self.assertEqual(out["differing_files_count"], 0)
@@ -180,27 +183,28 @@ class TestDevDashboardCore(unittest.TestCase):
 
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("packaging/helpers/probe-starter.py",))
     def test_deploy_drift_green_when_workspace_dirty_but_runtime_matches_head(self) -> None:
-        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
-            with tempfile.TemporaryDirectory() as td:
-                ws = Path(td) / "w"
-                rt = Path(td) / "r"
-                ws.mkdir()
-                rt.mkdir()
-                (ws / "packaging" / "helpers").mkdir(parents=True)
-                (rt / "packaging" / "helpers").mkdir(parents=True)
-                deployed = "runtime-and-head\n"
-                dirty = "runtime-and-head\nlocal-only\n"
-                starter = ws / "packaging" / "helpers" / "probe-starter.py"
-                runtime_starter = rt / "packaging" / "helpers" / "probe-starter.py"
-                starter.write_text(deployed, encoding="utf-8")
-                runtime_starter.write_text(deployed, encoding="utf-8")
-                subprocess.run(["git", "-C", str(ws), "init", "-q"], check=True)
-                subprocess.run(["git", "-C", str(ws), "config", "user.email", "test@example.com"], check=True)
-                subprocess.run(["git", "-C", str(ws), "config", "user.name", "Test"], check=True)
-                subprocess.run(["git", "-C", str(ws), "add", "."], check=True)
-                subprocess.run(["git", "-C", str(ws), "commit", "-qm", "head"], check=True)
-                starter.write_text(dirty, encoding="utf-8")
-                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.profile_deploy_manifest.enrich_deploy_drift_profile_aware", side_effect=lambda base, **kw: base):
+            with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+                with tempfile.TemporaryDirectory() as td:
+                    ws = Path(td) / "w"
+                    rt = Path(td) / "r"
+                    ws.mkdir()
+                    rt.mkdir()
+                    (ws / "packaging" / "helpers").mkdir(parents=True)
+                    (rt / "packaging" / "helpers").mkdir(parents=True)
+                    deployed = "runtime-and-head\n"
+                    dirty = "runtime-and-head\nlocal-only\n"
+                    starter = ws / "packaging" / "helpers" / "probe-starter.py"
+                    runtime_starter = rt / "packaging" / "helpers" / "probe-starter.py"
+                    starter.write_text(deployed, encoding="utf-8")
+                    runtime_starter.write_text(deployed, encoding="utf-8")
+                    subprocess.run(["git", "-C", str(ws), "init", "-q"], check=True)
+                    subprocess.run(["git", "-C", str(ws), "config", "user.email", "test@example.com"], check=True)
+                    subprocess.run(["git", "-C", str(ws), "config", "user.name", "Test"], check=True)
+                    subprocess.run(["git", "-C", str(ws), "add", "."], check=True)
+                    subprocess.run(["git", "-C", str(ws), "commit", "-qm", "head"], check=True)
+                    starter.write_text(dirty, encoding="utf-8")
+                    out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "green")
         self.assertEqual(out["differing_files_count"], 0)
         self.assertEqual(out["suggested_actions"], ["none"])
@@ -229,16 +233,17 @@ class TestDevDashboardCore(unittest.TestCase):
     @patch.object(dd, "DEPLOY_DRIFT_MAX_HASH_BYTES", 8)
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("big.bin",))
     def test_deploy_drift_large_file_uses_metadata_not_full_hash(self) -> None:
-        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
-            with tempfile.TemporaryDirectory() as td:
-                ws = Path(td) / "w"
-                rt = Path(td) / "r"
-                ws.mkdir()
-                rt.mkdir()
-                payload = b"0123456789abcdef"
-                (ws / "big.bin").write_bytes(payload)
-                (rt / "big.bin").write_bytes(payload)
-                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.profile_deploy_manifest.enrich_deploy_drift_profile_aware", side_effect=lambda base, **kw: base):
+            with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+                with tempfile.TemporaryDirectory() as td:
+                    ws = Path(td) / "w"
+                    rt = Path(td) / "r"
+                    ws.mkdir()
+                    rt.mkdir()
+                    payload = b"0123456789abcdef"
+                    (ws / "big.bin").write_bytes(payload)
+                    (rt / "big.bin").write_bytes(payload)
+                    out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "green")
         self.assertEqual(out["matching_files_count"], 1)
         rows = out.get("checked_files") or []
@@ -248,18 +253,19 @@ class TestDevDashboardCore(unittest.TestCase):
     @patch.object(dd, "DEPLOY_DRIFT_MAX_HASH_BYTES", 8)
     @patch.object(dd, "DEPLOY_DRIFT_REL_PATHS", ("big.bin",))
     def test_deploy_drift_large_file_same_content_different_mtime_green(self) -> None:
-        with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
-            with tempfile.TemporaryDirectory() as td:
-                ws = Path(td) / "w"
-                rt = Path(td) / "r"
-                ws.mkdir()
-                rt.mkdir()
-                payload = b"0123456789abcdef"
-                (ws / "big.bin").write_bytes(payload)
-                (rt / "big.bin").write_bytes(payload)
-                time.sleep(1.1)
-                (ws / "big.bin").touch()
-                out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
+        with patch("core.profile_deploy_manifest.enrich_deploy_drift_profile_aware", side_effect=lambda base, **kw: base):
+            with patch("core.dev_dashboard.manifest_drift_for_roots", return_value=dict(_MANIFEST_DRIFT_NEUTRAL)):
+                with tempfile.TemporaryDirectory() as td:
+                    ws = Path(td) / "w"
+                    rt = Path(td) / "r"
+                    ws.mkdir()
+                    rt.mkdir()
+                    payload = b"0123456789abcdef"
+                    (ws / "big.bin").write_bytes(payload)
+                    (rt / "big.bin").write_bytes(payload)
+                    time.sleep(1.1)
+                    (ws / "big.bin").touch()
+                    out = dd._compute_deploy_drift(workspace_root=ws, runtime_root=rt)
         self.assertEqual(out["status"], "green")
         self.assertEqual(out["suggested_actions"], ["none"])
         rows = out.get("checked_files") or []
@@ -323,10 +329,15 @@ except Exception:
 @unittest.skipUnless(_HAS_APP, "FastAPI TestClient oder app nicht verfuegbar")
 class TestDevDashboardApiV1(unittest.TestCase):
     def setUp(self):
+        self._dcc_ctx = isolated_release_dcc_client()
+        self._dcc_headers = self._dcc_ctx.__enter__()
         self.client = TestClient(app, base_url="http://localhost")
 
+    def tearDown(self):
+        self._dcc_ctx.__exit__(None, None, None)
+
     def test_status_200(self):
-        r = self.client.get("/api/dev-dashboard/status")
+        r = self.client.get("/api/dev-dashboard/status", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         data = r.json()
         self.assertEqual(data.get("status"), "success")
@@ -336,14 +347,14 @@ class TestDevDashboardApiV1(unittest.TestCase):
             self.assertIn(key, dash, msg=key)
 
     def test_status_accepts_frontend_query_params(self):
-        r = self.client.get("/api/dev-dashboard/status?frontend_build_version=0.0.1-test&frontend_runtime_source=build")
+        r = self.client.get("/api/dev-dashboard/status?frontend_build_version=0.0.1-test&frontend_runtime_source=build", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         fe = (r.json().get("dashboard") or {}).get("frontend") or {}
         self.assertEqual(fe.get("frontend_build_version"), "0.0.1-test")
         self.assertEqual(fe.get("frontend_runtime_source"), "build")
 
     def test_modules_includes_backup_restore_with_children(self):
-        r = self.client.get("/api/dev-dashboard/modules")
+        r = self.client.get("/api/dev-dashboard/modules", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         mods = r.json().get("modules") or []
         br = next((m for m in mods if m.get("id") == "backup-restore"), None)
@@ -352,7 +363,7 @@ class TestDevDashboardApiV1(unittest.TestCase):
         self.assertGreaterEqual(len(children), 1)
 
     def test_module_detail_backup_restore(self):
-        r = self.client.get("/api/dev-dashboard/modules/backup-restore")
+        r = self.client.get("/api/dev-dashboard/modules/backup-restore", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         payload = r.json()
         self.assertEqual(payload.get("status"), "success")
@@ -361,22 +372,22 @@ class TestDevDashboardApiV1(unittest.TestCase):
         self.assertGreaterEqual(len(mod.get("children") or []), 1)
 
     def test_evidence_index_200(self):
-        r = self.client.get("/api/dev-dashboard/evidence-index")
+        r = self.client.get("/api/dev-dashboard/evidence-index", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json().get("status"), "success")
 
     def test_post_restart_placeholder(self):
-        r = self.client.post("/api/dev-dashboard/actions/restart-backend", json={})
+        r = self.client.post("/api/dev-dashboard/actions/restart-backend", json={}, headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json().get("result"), "not_implemented_safe")
 
     def test_post_start_backup_placeholder(self):
-        r = self.client.post("/api/dev-dashboard/actions/start-backup", json={})
+        r = self.client.post("/api/dev-dashboard/actions/start-backup", json={}, headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json().get("result"), "use_existing_backup_api")
 
     def test_status_includes_cockpit_sections(self):
-        r = self.client.get("/api/dev-dashboard/status")
+        r = self.client.get("/api/dev-dashboard/status", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         dash = r.json().get("dashboard") or {}
         self.assertIn("runtime_gate", dash)
@@ -385,14 +396,14 @@ class TestDevDashboardApiV1(unittest.TestCase):
         self.assertIn(stm.get("mode"), ("LOCKED", "UNLOCKED"))
 
     def test_prompt_findings_200(self):
-        r = self.client.get("/api/dev-dashboard/prompt-findings")
+        r = self.client.get("/api/dev-dashboard/prompt-findings", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         data = r.json()
         self.assertEqual(data.get("status"), "success")
         self.assertIn("findings", data)
 
     def test_cursor_meta_prompt_200(self):
-        r = self.client.get("/api/dev-dashboard/cursor-meta-prompt")
+        r = self.client.get("/api/dev-dashboard/cursor-meta-prompt", headers=self._dcc_headers)
         self.assertEqual(r.status_code, 200, r.text)
         data = r.json()
         self.assertEqual(data.get("status"), "success")

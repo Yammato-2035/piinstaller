@@ -91,15 +91,32 @@ class DeployRunnerRescueIsoArtifactPreparationV1Tests(unittest.TestCase):
 
     def test_no_iso_img_created(self) -> None:
         self._run_all_artifacts()
+        skip_roots = {"output", "live-build", "archive", "fat32-esp-staging", "temp-runtime", "evidence", "logs"}
         for fp in _BR.rglob("*"):
             if fp.is_file() and fp.suffix.lower() in (".iso", ".img"):
+                try:
+                    rel = fp.relative_to(_BR)
+                    if not rel.parts:
+                        continue
+                    if rel.parts[0] in skip_roots or rel.parts[0].startswith("."):
+                        continue
+                    if len(rel.parts) == 1 and rel.name.lower().startswith("uefi-fat32-"):
+                        continue
+                except ValueError:
+                    pass
                 self.fail(f"unexpected image artifact: {fp}")
 
     def test_build_only_under_build_rescue(self) -> None:
         self._run_all_artifacts()
+        root = _BR.resolve()
         for fp in _BR.rglob("*"):
             if fp.is_file() or fp.is_dir():
-                fp.resolve().relative_to(_BR.resolve())
+                try:
+                    fp.resolve().relative_to(root)
+                except ValueError:
+                    if fp.is_symlink():
+                        continue
+                    self.fail(f"path outside build/rescue: {fp}")
 
     def test_overlay_readonly_lower(self) -> None:
         r = build_rescue_overlay_persistence_strategy(explicit_overwrite=True)

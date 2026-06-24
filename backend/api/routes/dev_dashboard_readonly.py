@@ -136,3 +136,28 @@ async def dev_dashboard_notifications_events(limit: int = 50):
     except Exception:
         logger.exception("dev_dashboard_notifications_events failed")
         raise
+
+
+@router.get("/api/dev-dashboard/products")
+async def dev_dashboard_products(
+    request: Request,
+    visibility: str | None = Query(default=None),
+    category: str | None = Query(default=None),
+    product_id: str | None = Query(default=None),
+):
+    """Read-only: product registry from docs/dev-dashboard/products (no secrets)."""
+    from core.dev_dashboard_status_service import build_dcc_profile_block_response
+    from core.product_registry_contract import build_products_api_response
+
+    headers = {k: v for k, v in request.headers.items()}
+    blocked = build_dcc_profile_block_response(
+        request_headers=headers,
+        path="/api/dev-dashboard/products",
+    )
+    if blocked:
+        return JSONResponse(status_code=404, content=blocked)
+    return build_products_api_response(
+        visibility=visibility,
+        category=category,
+        product_id=product_id,
+    )
