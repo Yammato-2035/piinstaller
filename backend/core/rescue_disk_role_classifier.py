@@ -57,7 +57,19 @@ def classify_disk_roles(devices: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
 
 def validate_source_target_pair(source: dict[str, Any], target: dict[str, Any]) -> dict[str, Any]:
-    src_role = classify_disk_role(source)
+    explicit_src = str(source.get("role") or "")
+    explicit_map = {
+        "windows_system_disk": ROLE_WINDOWS_SYSTEM,
+        "linux_system_disk": ROLE_LINUX_SYSTEM,
+        "rescue_usb_stick": ROLE_RESCUE_STICK,
+        "rescue_stick": ROLE_RESCUE_STICK,
+        "external_backup_hdd": ROLE_EXTERNAL_BACKUP,
+        "backup_target": ROLE_EXTERNAL_BACKUP,
+    }
+    if explicit_src in explicit_map:
+        src_role = explicit_map[explicit_src]
+    else:
+        src_role = classify_disk_role(source)
     tgt_role = classify_disk_role(target)
     src_path = str(source.get("path") or "")
     tgt_path = str(target.get("path") or "")

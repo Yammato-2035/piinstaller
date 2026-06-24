@@ -8,9 +8,12 @@ import uuid
 from typing import Any
 
 from core.msi_windows_image_backup import (
-    OPERATOR_CONFIRMATION_1,
     OPERATOR_CONFIRMATION_2,
     compute_required_bytes,
+    discover_backup_target_mount,
+    is_allowed_backup_source,
+    operator_confirmation_1,
+    resolve_mount_free_bytes,
     run_f2_preflight,
 )
 from core.rescue_backup_encryption_contract import build_encryption_preflight
@@ -70,14 +73,33 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
     evidence = resolve_rescue_evidence_root()
 
     source_device = str(payload.get("source_device") or "")
-    target_mount = str(payload.get("target_mount") or "")
-    target_device = str(payload.get("target_device") or "")
-    free_bytes = int(payload.get("free_bytes") or 0)
     source_size = int(payload.get("source_size_bytes") or 0)
     fstype = str(payload.get("fstype") or "ext4")
+    source_tran = str(payload.get("source_tran") or "")
+    source_fstype = str(payload.get("source_fstype") or payload.get("fstype") or "")
+    source_role = str(payload.get("source_role") or "")
+
+    target_device = str(payload.get("target_device") or "")
+    target_mount = str(payload.get("target_mount") or "")
+    resolved_mount, resolved_part = (
+        discover_backup_target_mount(target_device, target_mount) if target_device else (target_mount, None)
+    )
+    if resolved_mount:
+        target_mount = resolved_mount
+    target_partition = str(payload.get("target_partition") or resolved_part or "")
+    free_bytes = resolve_mount_free_bytes(target_mount, int(payload.get("free_bytes") or 0))
+
+    allowed_src, source_scope = is_allowed_backup_source(
+        source_device,
+        tran=source_tran,
+        fstype=source_fstype,
+        role=source_role,
+    )
 
     if not source_device:
         errors.append(_err("source_missing", "Keine Windows-/NTFS-Quelle angegeben."))
+    elif not allowed_src and str(payload.get("backup_mode") or "") != "linux_full_root_tar":
+        errors.append(_err("source_ambiguous", f"Quelle nicht erlaubt: {source_device}"))
     elif source_device.startswith("/dev/nvme1") and str(payload.get("backup_mode") or "") != "linux_full_root_tar":
         errors.append(_err("source_ambiguous", "Interne Linux-Quelle blockiert."))
 
@@ -108,9 +130,13 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
             )
 
     pf = None
-    op_c1 = OPERATOR_CONFIRMATION_1 if payload.get("operator_confirm_source") and payload.get("operator_confirm_target") else None
+    op_c1 = (
+        operator_confirmation_1(source_device, target_device)
+        if payload.get("operator_confirm_source") and payload.get("operator_confirm_target")
+        else None
+    )
     op_c2 = OPERATOR_CONFIRMATION_2 if payload.get("operator_confirm_no_restore") else None
-    if source_device and target_mount and target_mode != "cloud" and not errors:
+    if source_device and (target_mount or target_device) and target_mode != "cloud" and not errors:
         pf = run_f2_preflight(
             source_device=source_device,
             source_size_bytes=source_size or 1,
@@ -120,11 +146,21 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
             fstype=fstype,
             operator_confirmation_1=op_c1,
             operator_confirmation_2=op_c2,
+            source_tran=source_tran or None,
+            source_fstype=source_fstype or None,
         )
         if pf.reason == "blocked_insufficient_target_capacity":
             errors.append(_err("target_capacity_insufficient", "Ziel zu klein für raw Image + 5%."))
         elif pf.reason == "blocked_external_target_mount_missing":
-            errors.append(_err("target_missing", "Externes Backup-Mount nicht aktiv."))
+            if target_partition:
+                warnings.append(
+                    _err(
+                        "target_mount_required",
+                        f"ext4-Partition {target_partition} ist nicht gemountet — bitte mounten.",
+                    )
+                )
+            else:
+                errors.append(_err("target_missing", "Externes Backup-Mount nicht aktiv."))
         elif pf.reason == "blocked_operator_confirmation_missing":
             warnings.append(_err("operator_confirmation_missing", "Operator-Bestätigungen fehlen noch."))
         elif pf.reason == "blocked_invalid_source":
@@ -146,11 +182,12 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
         "plan_status": plan_status,
         "plan_id": f"RBP-{session_id[:8]}",
         "backup_mode": backup_mode,
-        "source": {"device": source_device, "type": payload.get("source_type", "windows_ntfs_disk")},
+        "source": {"device": source_device, "scope": source_scope, "type": payload.get("source_type", "windows_ntfs_disk")},
         "target": {
             "mode": target_mode,
             "mount": target_mount,
             "device": target_device,
+            "partition": target_partition or None,
             "role": target_role,
         },
         "capacity": {
@@ -197,9 +234,10 @@ def build_rescue_full_backup_plan(body: dict[str, Any] | None = None) -> dict[st
 
     source_dev = {
         "path": payload.get("source_device"),
-        "fstype": payload.get("fstype"),
+        "fstype": payload.get("source_fstype") or payload.get("fstype"),
         "label": payload.get("source_label"),
-        "type": "disk",
+        "type": payload.get("source_type") or "disk",
+        "role": payload.get("source_role"),
     }
     target_dev = {
         "path": payload.get("target_device") or payload.get("target_mount"),
@@ -210,9 +248,13 @@ def build_rescue_full_backup_plan(body: dict[str, Any] | None = None) -> dict[st
     pair = validate_source_target_pair(source_dev, target_dev)
     errors = list(base.get("errors") or [])
     warnings = list(base.get("warnings") or [])
+    source_scope = str((base.get("source") or {}).get("scope") or "")
     for e in pair.get("errors") or []:
         if e not in errors:
             errors.append(e)
+    if source_scope == "external_test":
+        errors = [e for e in errors if e.get("code") != "source_unknown"]
+        warnings.append(_err("external_test_source", "Kleine USB-/NTFS-Testplatte als Quelle."))
 
     if target_mode in ("cloud", "cloud_pro"):
         errors.append(_err("cloud_pro_plan_only", "Cloud-Backup ist Pro/private-only — kein Execute im Public-Repo."))
@@ -229,13 +271,21 @@ def build_rescue_full_backup_plan(body: dict[str, Any] | None = None) -> dict[st
         warnings.append(_err("encryption_key_missing", "Verschlüsselung vor Execute klären."))
 
     verify = build_backup_verify_plan(
-        image_path=str(payload.get("planned_image_path") or ""),
-        manifest_path=str(payload.get("planned_manifest_path") or ""),
-        sha256_path=str(payload.get("planned_sha256_path") or ""),
+        image_path=str(
+            (pf_dict := (base.get("preflight") or {})).get("paths", {}).get("image_final")
+            or payload.get("planned_image_path")
+            or ""
+        ),
+        manifest_path=str(pf_dict.get("paths", {}).get("manifest_json") or payload.get("planned_manifest_path") or ""),
+        sha256_path=str(pf_dict.get("paths", {}).get("sha256_file") or payload.get("planned_sha256_path") or ""),
         encrypted=encryption.get("encryption_status") == "configured",
     )
     if payload.get("verify_requested", True) and verify.get("verify_status") == "blocked":
-        warnings.append(_err("verify_not_ready", "Verify-Preflight noch nicht bereit."))
+        # Post-execute verify — fehlendes Image vor Backup ist erwartet, kein Execute-Blocker.
+        if pf_dict.get("ok") and pf_dict.get("paths", {}).get("image_final"):
+            verify["verify_status"] = "ready"
+        else:
+            warnings.append(_err("verify_not_ready", "Verify nach Backup — Image-Pfad folgt aus Preflight."))
 
     plan_status = base.get("plan_status")
     if errors:
@@ -244,15 +294,35 @@ def build_rescue_full_backup_plan(body: dict[str, Any] | None = None) -> dict[st
         plan_status = "review_required"
 
     next_step = "Plan erneut prüfen nach Quell-/Zielwahl und Verschlüsselungskonfiguration."
-    if not errors and plan_status == "ready":
-        next_step = "Preflight OK — Execute folgt in RS-P3 nach Operator-Freigabe."
+    execute_allowed = False
+    booted = bool(payload.get("booted_from_rescue"))
+    if not errors and booted and target_mode not in ("cloud", "cloud_pro"):
+        pf_ok = bool((base.get("preflight") or {}).get("ok"))
+        enc_blocks = bool(encryption.get("blocks_execute")) and bool(payload.get("encryption_requested"))
+        if pf_ok and not enc_blocks:
+            execute_allowed = True
+            next_step = "Backup starten — Image wird auf externe HDD geschrieben und optional verifiziert."
+        elif pf_ok and enc_blocks:
+            next_step = "Verschlüsselung deaktivieren (Lab-Test) oder Schlüssel konfigurieren."
+        elif not pf_ok and (base.get("preflight") or {}).get("reason") == "blocked_external_target_mount_missing":
+            part = str((base.get("target") or {}).get("partition") or payload.get("target_partition") or "")
+            if part:
+                next_step = f"ext4-Partition {part} mounten (Button „Partition mounten“), dann Plan erneut prüfen."
+            else:
+                next_step = "Mountpoint der ext4-Backup-Partition eintragen (z. B. /media/.../Backup)."
+
+    if not errors and plan_status == "ready" and not booted:
+        next_step = "Preflight OK — Execute nach Boot vom Rettungsstick."
+    elif not errors and plan_status == "ready" and not execute_allowed:
+        next_step = "Preflight OK — Verschlüsselung deaktivieren oder Schlüssel konfigurieren für Execute."
 
     base.update(
         {
             "contract_version": CONTRACT_VERSION,
             "plan_status": plan_status,
             "backup_mode": backup_mode,
-            "full_backup": True,
+            "full_backup": backup_mode == "raw_image" and source_scope == "system_disk",
+            "source_scope": source_scope,
             "manual_selection_supported": True,
             "target_selection_supported": True,
             "verify_required": bool(payload.get("verify_requested", True)),
@@ -273,7 +343,7 @@ def build_rescue_full_backup_plan(body: dict[str, Any] | None = None) -> dict[st
             },
             "source_role": pair.get("source_role"),
             "target_role": pair.get("target_role"),
-            "execute_allowed": False,
+            "execute_allowed": execute_allowed,
             "errors": errors,
             "warnings": warnings,
             "next_safe_step": next_step,

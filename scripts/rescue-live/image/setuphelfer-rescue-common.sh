@@ -254,6 +254,17 @@ setuphelfer_rescue_prepare_tty1() {
   return 1
 }
 
+# RS-P3V.3+: hide kernel/systemd console noise on framebuffer during GUI boot.
+setuphelfer_rescue_blank_fb_tty() {
+  local tty_num="${1:-1}"
+  local tty_dev="/dev/tty${tty_num}"
+  [[ -c "$tty_dev" ]] || return 0
+  if command -v setterm >/dev/null 2>&1; then
+    setterm -term linux -cursor off -blank force -powersave off -clear all </dev/null >"$tty_dev" 2>/dev/null || true
+  fi
+  printf '\033[2J\033[3J\033[H\033[0m' >"$tty_dev" 2>/dev/null || true
+}
+
 setuphelfer_rescue_show_start_assistant_fallback() {
   setuphelfer_rescue_show_branding
   cat <<'EOF'
@@ -278,10 +289,53 @@ setuphelfer_rescue_write_json() {
   chmod 0640 "$dest" 2>/dev/null || true
 }
 
+setuphelfer_rescue_evidence_rw_usable() {
+  local d="$1" t
+  [[ -d "$d" ]] || return 1
+  t="$d/.sh-rw-test.$$"
+  if ( : >"$t" ) 2>/dev/null; then
+    rm -f "$t" 2>/dev/null || true
+    return 0
+  fi
+  return 1
+}
+
+# RS-P2J: prefer SETUP_LOGS rw mount (same strategy as boot-diagnostics), then live ESP.
+setuphelfer_rescue_evidence_writable_base() {
+  local cand logsdev dev m esp_rw="/run/setuphelfer/esp-rw"
+  if mountpoint -q "$esp_rw" 2>/dev/null && setuphelfer_rescue_evidence_rw_usable "$esp_rw"; then
+    printf '%s' "$esp_rw"
+    return 0
+  fi
+  for cand in /dev/disk/by-partlabel/SETUPHELFER_LOGS /dev/disk/by-label/SETUP_LOGS /dev/disk/by-label/SETUPHELFER_LOGS; do
+    if [[ -e "$cand" ]]; then
+      logsdev="$(readlink -f "$cand" 2>/dev/null || echo "$cand")"
+      mkdir -p "$esp_rw" 2>/dev/null || true
+      if timeout 10 mount -t vfat -o rw,flush,umask=0022 "$logsdev" "$esp_rw" 2>/dev/null \
+        && setuphelfer_rescue_evidence_rw_usable "$esp_rw"; then
+        printf '%s' "$esp_rw"
+        return 0
+      fi
+      umount "$esp_rw" 2>/dev/null || true
+      break
+    fi
+  done
+  for m in /run/live/medium /lib/live/mount/medium; do
+    if mountpoint -q "$m" 2>/dev/null; then
+      timeout 10 mount -o remount,rw "$m" 2>/dev/null || true
+      if setuphelfer_rescue_evidence_rw_usable "$m"; then
+        printf '%s' "$m"
+        return 0
+      fi
+    fi
+  done
+  setuphelfer_rescue_fat_esp_mount
+}
+
 setuphelfer_rescue_fat_esp_mount() {
   local candidate
-  for candidate in /run/live/medium /lib/live/mount/medium /media/*/SETUPHELFER; do
-    if [[ -d "$candidate/setuphelfer" || -d "$candidate/EFI" ]]; then
+  for candidate in /run/setuphelfer/esp-rw /run/live/medium /lib/live/mount/medium /media/*/SETUPHELFER; do
+    if [[ -d "$candidate/setuphelfer" || -d "$candidate/EFI" || -d "$candidate/setuphelfer/diagnostics" ]]; then
       printf '%s' "$candidate"
       return 0
     fi
@@ -290,12 +344,14 @@ setuphelfer_rescue_fat_esp_mount() {
 }
 
 setuphelfer_rescue_mirror_evidence_file() {
-  local src="$1" rel="$2" base dst_dir
+  local src="$1" rel="$2" base dst_dir dst
   [[ -f "$src" ]] || return 0
-  base="$(setuphelfer_rescue_fat_esp_mount)" || return 0
+  base="$(setuphelfer_rescue_evidence_writable_base)" || return 0
   dst_dir="$(dirname "${base}/${rel}")"
   mkdir -p "$dst_dir" 2>/dev/null || return 0
-  cp -f "$src" "${base}/${rel}" 2>/dev/null || true
+  dst="${base}/${rel}"
+  cp -f "$src" "$dst" 2>/dev/null || return 0
+  sync -f "$dst" 2>/dev/null || sync "$dst" 2>/dev/null || true
 }
 
 setuphelfer_rescue_payload_hash() {
@@ -414,6 +470,50 @@ setuphelfer_rescue_wizard_save_state() {
 setuphelfer_rescue_show_branding() {
   local branding="/usr/share/setuphelfer/rescue/boot-branding.txt"
   [[ -f "$branding" ]] && cat "$branding" || echo "Setuphelfer Rettungsstick"
+}
+
+setuphelfer_rescue_medium_version_json_path() {
+  local candidate
+  for candidate in \
+    "/run/live/medium/setuphelfer/rescue/version.json" \
+    "/lib/live/mount/medium/setuphelfer/rescue/version.json" \
+    "/media/setuphelfer/rescue/version.json"; do
+    if [[ -f "$candidate" ]]; then
+      printf '%s' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
+setuphelfer_rescue_show_version_banner() {
+  local vpath
+  vpath="$(setuphelfer_rescue_medium_version_json_path || true)"
+  if [[ -z "$vpath" || ! -f "$vpath" ]]; then
+    echo "Version: unbekannt (kein version.json auf Medium)"
+    return 1
+  fi
+  python3 - "$vpath" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+pv = str(data.get("project_version") or "?")
+commit = str(data.get("git_commit") or "?")
+if len(commit) > 12 and commit != "?":
+    commit = commit[:12]
+built = str(data.get("built_at") or "?")
+if len(built) > 19 and built != "?":
+    built = built[:19].replace("T", " ")
+sha = str(data.get("squashfs_sha256") or "?")
+if len(sha) > 16 and sha != "?":
+    sha = f"{sha[:16]}…"
+print(f"Version: {pv}")
+print(f"Commit:  {commit}")
+print(f"Build:   {built}")
+print(f"SHA256:  {sha}")
+PY
 }
 
 setuphelfer_rescue_wifi_ensure_managed() {
@@ -637,4 +737,309 @@ PY
   "backup_execute_allowed": false
 }
 EOF
+}
+
+SETUPHELFER_GUI_START_LOG="${SETUPHELFER_GUI_START_LOG:-/run/setuphelfer/gui-start.log}"
+SETUPHELFER_X11_LAUNCH_LOG="${SETUPHELFER_X11_LAUNCH_LOG:-/run/setuphelfer/x11-launch.log}"
+SETUPHELFER_CHROMIUM_LAUNCH_LOG="${SETUPHELFER_CHROMIUM_LAUNCH_LOG:-/run/setuphelfer/chromium-launch.log}"
+
+setuphelfer_rescue_forensic_log() {
+  local logfile="$1" step="$2" detail="${3:-}" rel="${4:-}"
+  local ts
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u)"
+  [[ -n "$rel" ]] || rel="setuphelfer/logs/boot/$(basename "$logfile")"
+  mkdir -p "$(dirname "$logfile")" /run/setuphelfer 2>/dev/null || true
+  {
+    printf '[%s]\n[%s]\n' "$ts" "$step"
+    [[ -n "$detail" ]] && printf '[%s]\n' "$detail"
+    printf '\n'
+  } >>"$logfile"
+  setuphelfer_rescue_mirror_evidence_file "$logfile" "$rel" 2>/dev/null || true
+}
+
+setuphelfer_rescue_x11_log() {
+  setuphelfer_rescue_forensic_log "$SETUPHELFER_X11_LAUNCH_LOG" "$1" "${2:-}" "setuphelfer/logs/boot/x11-launch.log"
+}
+
+setuphelfer_rescue_chromium_log() {
+  setuphelfer_rescue_forensic_log "$SETUPHELFER_CHROMIUM_LAUNCH_LOG" "$1" "${2:-}" "setuphelfer/logs/boot/chromium-launch.log"
+}
+
+setuphelfer_rescue_mirror_gui_forensic_logs() {
+  setuphelfer_rescue_mirror_evidence_file "$SETUPHELFER_GUI_START_LOG" "setuphelfer/logs/boot/gui-start.log" 2>/dev/null || true
+  setuphelfer_rescue_mirror_evidence_file "$SETUPHELFER_X11_LAUNCH_LOG" "setuphelfer/logs/boot/x11-launch.log" 2>/dev/null || true
+  setuphelfer_rescue_mirror_evidence_file "$SETUPHELFER_CHROMIUM_LAUNCH_LOG" "setuphelfer/logs/boot/chromium-launch.log" 2>/dev/null || true
+}
+
+setuphelfer_rescue_gui_chain_log_init() {
+  local log="$SETUPHELFER_GUI_START_LOG"
+  local boot_id session_id ts
+  boot_id="$(awk '{print $1}' /proc/sys/kernel/random/boot_id 2>/dev/null || echo unknown)"
+  session_id="$(date -u +%Y%m%d_%H%M%S)_gui"
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u)"
+  mkdir -p "$(dirname "$log")" /run/setuphelfer 2>/dev/null || true
+  : >"$SETUPHELFER_X11_LAUNCH_LOG" 2>/dev/null || true
+  : >"$SETUPHELFER_CHROMIUM_LAUNCH_LOG" 2>/dev/null || true
+  {
+    printf '[%s]\n[SESSION_META]\n[BOOT_ID=%s SESSION_ID=%s]\n\n' "$ts" "$boot_id" "$session_id"
+  } >"$log"
+  setuphelfer_rescue_x11_log "SESSION_META" "BOOT_ID=${boot_id} SESSION_ID=${session_id}"
+  setuphelfer_rescue_chromium_log "SESSION_META" "BOOT_ID=${boot_id} SESSION_ID=${session_id}"
+  setuphelfer_rescue_mirror_gui_forensic_logs
+}
+
+# RS-P2F/P2J: structured GUI chain log — /run/setuphelfer/gui-start.log (mirrored to SETUP_LOGS best-effort).
+setuphelfer_rescue_gui_chain_log() {
+  local step="$1"
+  local result="${2:-}"
+  local log="$SETUPHELFER_GUI_START_LOG"
+  local ts
+  ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u)"
+  mkdir -p "$(dirname "$log")" /run/setuphelfer 2>/dev/null || true
+  {
+    printf '[%s]\n' "$ts"
+    printf '[%s]\n' "$step"
+    [[ -n "$result" ]] && printf '[%s]\n' "$result"
+    printf '\n'
+  } >>"$log"
+  setuphelfer_rescue_mirror_evidence_file "$log" "setuphelfer/logs/boot/gui-start.log" 2>/dev/null || true
+}
+
+setuphelfer_rescue_gui_chain_log_display_ctx() {
+  local tty_name="none"
+  tty_name="$(tty 2>/dev/null || echo none)"
+  setuphelfer_rescue_gui_chain_log "DISPLAY_CTX" \
+    "DISPLAY=${DISPLAY:-} XAUTHORITY=${XAUTHORITY:-} USER=${USER:-root} TTY=${tty_name} PPID=${PPID:-} PGID=${PGID:-}"
+}
+
+setuphelfer_rescue_gui_chain_log_xorg_artifacts() {
+  local found="" line
+  for line in \
+    "/var/log/Xorg.0.log" \
+    "${HOME:-/root}/.local/share/xorg/Xorg.0.log" \
+    "/root/.local/share/xorg/Xorg.0.log"; do
+    if [[ -f "$line" ]]; then
+      found="${found}${line};"
+      setuphelfer_rescue_gui_chain_log "XORG_LOG_TAIL" "path=${line}"
+      tail -n 20 "$line" 2>/dev/null | while IFS= read -r _l; do
+        setuphelfer_rescue_gui_chain_log "XORG_LOG_LINE" "$_l"
+      done || true
+    fi
+  done
+  if [[ -z "$found" ]]; then
+    setuphelfer_rescue_gui_chain_log "XORG_LOG_MISSING" "checked=/var/log/Xorg.0.log ~/.local/share/xorg/"
+  fi
+  if [[ -d /tmp/.X11-unix ]]; then
+    setuphelfer_rescue_gui_chain_log "X11_UNIX" "sockets=$(ls -1 /tmp/.X11-unix 2>/dev/null | tr '\n' ',' || echo none)"
+  else
+    setuphelfer_rescue_gui_chain_log "X11_UNIX" "missing"
+  fi
+}
+
+# RS-P2G: GUI health probes, TUI marker, kiosk VT helpers.
+SETUPHELFER_RESCUE_TUI_ACTIVE_FILE="${SETUPHELFER_RESCUE_TUI_ACTIVE_FILE:-/run/setuphelfer/rescue-tui-active}"
+SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-2}"
+
+setuphelfer_rescue_tui_mark_active() {
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  touch "$SETUPHELFER_RESCUE_TUI_ACTIVE_FILE" 2>/dev/null || true
+}
+
+setuphelfer_rescue_tui_mark_inactive() {
+  rm -f "$SETUPHELFER_RESCUE_TUI_ACTIVE_FILE" 2>/dev/null || true
+}
+
+setuphelfer_rescue_tui_is_active() {
+  [[ -f "$SETUPHELFER_RESCUE_TUI_ACTIVE_FILE" ]]
+}
+
+setuphelfer_rescue_http_ok() {
+  local url="$1"
+  local timeout_sec="${2:-2}"
+  python3 - <<PY 2>/dev/null
+import sys
+import urllib.request
+try:
+    urllib.request.urlopen(${url@Q}, timeout=float(${timeout_sec@Q}))
+    sys.exit(0)
+except Exception:
+    sys.exit(1)
+PY
+}
+
+setuphelfer_rescue_chromium_running() {
+  pgrep -f 'chromium.*rescue\.html' >/dev/null 2>&1 \
+    || pgrep -f 'chromium-browser.*rescue\.html' >/dev/null 2>&1
+}
+
+setuphelfer_rescue_xorg_running() {
+  pgrep -f '[X]org|X :0' >/dev/null 2>&1
+}
+
+setuphelfer_rescue_xorg_pid() {
+  pgrep -f '[X]org|X :0' 2>/dev/null | head -1 || true
+}
+
+# RS-P2L: true only when Xorg is running and the display answers (not merely /tmp/.X11-unix).
+setuphelfer_rescue_x11_ready() {
+  setuphelfer_rescue_prepare_x11_env
+  setuphelfer_rescue_xorg_running || return 1
+  if command -v xdpyinfo >/dev/null 2>&1; then
+    xdpyinfo -display "${DISPLAY:-:0}" >/dev/null 2>&1 || return 1
+  elif [[ ! -S "/tmp/.X11-unix/X${DISPLAY#:}" ]]; then
+    return 1
+  fi
+  return 0
+}
+
+setuphelfer_rescue_log_x11_binaries() {
+  local _sx _xi _xo
+  _sx="$(command -v startx 2>/dev/null || echo missing)"
+  _xi="$(command -v xinit 2>/dev/null || echo missing)"
+  _xo="$(command -v Xorg 2>/dev/null || echo missing)"
+  setuphelfer_rescue_gui_chain_log "CHECK_X11_BINARIES" "startx=${_sx} xinit=${_xi} Xorg=${_xo}"
+  setuphelfer_rescue_x11_log "CHECK_X11_BINARIES" "startx=${_sx} xinit=${_xi} Xorg=${_xo}"
+  if [[ "$_xo" == "missing" ]]; then
+    setuphelfer_rescue_x11_log "XORG_MISSING" "which=Xorg"
+    setuphelfer_rescue_gui_chain_log "XORG_MISSING" "which=Xorg"
+  else
+    setuphelfer_rescue_x11_log "XORG_FOUND" "path=${_xo}"
+    setuphelfer_rescue_gui_chain_log "XORG_FOUND" "binary=${_xo}"
+  fi
+}
+
+setuphelfer_rescue_xauthority_prepare() {
+  local xauth="/run/setuphelfer/.Xauthority"
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  export DISPLAY="${DISPLAY:-:0}"
+  export XAUTHORITY="${XAUTHORITY:-$xauth}"
+  if touch "$XAUTHORITY" 2>/dev/null && [[ -f "$XAUTHORITY" ]]; then
+    setuphelfer_rescue_x11_log "XAUTHORITY_READY" "path=${XAUTHORITY}"
+    setuphelfer_rescue_gui_chain_log "XAUTHORITY_READY" "path=${XAUTHORITY}"
+    return 0
+  fi
+  setuphelfer_rescue_x11_log "XAUTHORITY_MISSING" "path=${xauth}"
+  setuphelfer_rescue_gui_chain_log "XAUTHORITY_MISSING" "path=${xauth}"
+  return 1
+}
+
+setuphelfer_rescue_x11_log_xorg_pid() {
+  local pid
+  pid="$(setuphelfer_rescue_xorg_pid)"
+  if [[ -n "$pid" ]]; then
+    setuphelfer_rescue_x11_log "XORG_PID" "pid=${pid}"
+    setuphelfer_rescue_gui_chain_log "XORG_PID" "pid=${pid}"
+    return 0
+  fi
+  setuphelfer_rescue_x11_log "XORG_NOT_FOUND" "pgrep=empty"
+  setuphelfer_rescue_gui_chain_log "XORG_NOT_FOUND" "pgrep=empty"
+  return 1
+}
+
+setuphelfer_rescue_capture_x11_forensics() {
+  local base session dest f
+  base="$(setuphelfer_rescue_evidence_writable_base)" || return 0
+  session="$(date -u +%Y%m%d_%H%M%S)_x11"
+  dest="${base}/setuphelfer/logs/x11/${session}"
+  mkdir -p "$dest" 2>/dev/null || return 0
+  for f in \
+    "/var/log/Xorg.0.log" \
+    "${HOME:-/root}/.local/share/xorg/Xorg.0.log" \
+    "/root/.local/share/xorg/Xorg.0.log"; do
+    [[ -f "$f" ]] && cp -a "$f" "${dest}/" 2>/dev/null || true
+  done
+  if command -v journalctl >/dev/null 2>&1; then
+    journalctl -b --no-pager 2>/dev/null | grep -Ei 'xorg|startx|xinit' >"${dest}/journal-xorg.txt" 2>/dev/null || true
+  fi
+  if [[ -d /tmp/.X11-unix ]]; then
+    ls -la /tmp/.X11-unix >"${dest}/x11-unix-ls.txt" 2>/dev/null || true
+  fi
+  setuphelfer_rescue_mirror_evidence_file "${SETUPHELFER_X11_LAUNCH_LOG}" "setuphelfer/logs/boot/x11-launch.log" 2>/dev/null || true
+  setuphelfer_rescue_gui_chain_log "X11_FORENSICS_CAPTURED" "dest=setuphelfer/logs/x11/${session}"
+}
+
+# Returns 0 only when backend, UI HTTP, display, and chromium are stable for min_sec.
+setuphelfer_rescue_gui_health_ok() {
+  local min_sec="${1:-5}"
+  local port_ui="${SETUPHELFER_RESCUE_UI_PORT:-8765}"
+  if ! setuphelfer_rescue_http_ok "http://127.0.0.1:8000/api/version"; then
+    return 1
+  fi
+  if ! setuphelfer_rescue_http_ok "http://127.0.0.1:${port_ui}/rescue.html"; then
+    return 2
+  fi
+  if ! setuphelfer_rescue_x11_ready; then
+    return 3
+  fi
+  if ! setuphelfer_rescue_chromium_running; then
+    return 4
+  fi
+  local elapsed=0
+  while [[ "$elapsed" -lt "$min_sec" ]]; do
+    if ! setuphelfer_rescue_chromium_running; then
+      return 5
+    fi
+    sleep 1
+    elapsed=$((elapsed + 1))
+  done
+  return 0
+}
+
+setuphelfer_rescue_run_on_kiosk_vt() {
+  local vt="$SETUPHELFER_RESCUE_KIOSK_VT" _rc=0
+  if command -v openvt >/dev/null 2>&1; then
+    setuphelfer_rescue_gui_chain_log "OPENVT_START" "vt=${vt} cmd=$*"
+    setuphelfer_rescue_x11_log "OPENVT_START" "vt=${vt} cmd=$*"
+    openvt -f -s -w -c "$vt" -- "$@"
+    _rc=$?
+    if [[ "$_rc" -eq 0 ]]; then
+      setuphelfer_rescue_gui_chain_log "OPENVT_OK" "vt=${vt} exit=0"
+      setuphelfer_rescue_x11_log "OPENVT_OK" "vt=${vt} exit=0"
+    else
+      setuphelfer_rescue_gui_chain_log "OPENVT_FAIL" "vt=${vt} exit=${_rc}"
+      setuphelfer_rescue_x11_log "OPENVT_FAIL" "vt=${vt} exit=${_rc}"
+    fi
+    return "$_rc"
+  fi
+  if [[ -c "/dev/tty${vt}" ]]; then
+    chvt "$vt" 2>/dev/null || true
+    setuphelfer_rescue_gui_chain_log "CHVT_EXEC" "vt=${vt} cmd=$*"
+    setuphelfer_rescue_x11_log "CHVT_EXEC" "vt=${vt} cmd=$*"
+    "$@"
+    return $?
+  fi
+  setuphelfer_rescue_gui_chain_log "TTY_UNAVAILABLE" "vt=${vt}"
+  setuphelfer_rescue_x11_log "TTY_UNAVAILABLE" "vt=${vt}"
+  return 1
+}
+
+setuphelfer_rescue_prepare_x11_env() {
+  export DISPLAY="${DISPLAY:-:0}"
+  if [[ -z "${XAUTHORITY:-}" ]]; then
+    if [[ -f "${HOME:-/root}/.Xauthority" ]]; then
+      export XAUTHORITY="${HOME:-/root}/.Xauthority"
+    elif [[ -f /run/setuphelfer/.Xauthority ]]; then
+      export XAUTHORITY=/run/setuphelfer/.Xauthority
+    fi
+  fi
+}
+
+# RS-P2O: non-blocking backend bootstrap (GUI chain may start X11 in parallel).
+setuphelfer_rescue_backend_start_async() {
+  local log="${1:-/run/setuphelfer/gui-start.log}"
+  local backend_start="${SETUPHELFER_RESCUE_SCRIPT_DIR:-/usr/local/sbin}/setuphelfer-rescue-backend-start.sh"
+  if setuphelfer_rescue_http_ok "http://127.0.0.1:8000/api/version" 2; then
+    setuphelfer_rescue_gui_chain_log "BACKEND_START" "async=skipped reason=already_up"
+    return 0
+  fi
+  (
+    if [[ -x "$backend_start" ]]; then
+      "$backend_start" >>"$log" 2>&1
+      _rc=$?
+    else
+      _rc=127
+    fi
+    setuphelfer_rescue_gui_chain_log "BACKEND_START" "async_done rc=${_rc}"
+  ) &
+  setuphelfer_rescue_gui_chain_log "BACKEND_START" "async_pid=$! log=${log}"
 }

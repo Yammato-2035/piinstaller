@@ -1,0 +1,72 @@
+#!/bin/bash
+# Minimal X session — branded splash card until kiosk/ui-launch attaches (RS-P3V.3).
+set -euo pipefail
+BG="#000000"
+FG="#ffffff"
+LOGO_CANDIDATES=(
+  "/opt/setuphelfer/assets/rescue/logo/setuphelfer-logo2.png"
+  "/usr/share/setuphelfer-rescue/logo/setuphelfer-logo2.png"
+  "/run/setuphelfer/ui/logo/setuphelfer-logo2.png"
+)
+
+if command -v xsetroot >/dev/null 2>&1; then
+  xsetroot -solid "$BG" 2>/dev/null || true
+fi
+
+_logo_path() {
+  local p
+  for p in "${LOGO_CANDIDATES[@]}"; do
+    if [[ -r "$p" ]]; then
+      printf '%s' "$p"
+      return 0
+    fi
+  done
+  return 1
+}
+
+_splash_text() {
+  cat <<'EOF'
+Setuphelfer Rettungsstick
+Rettungsumgebung wird vorbereitet
+
+Datenträger werden erkannt
+Netzwerk wird geprüft
+Dienste werden gestartet
+Oberfläche wird geladen
+EOF
+}
+
+_show_splash_card() {
+  local text_file
+  text_file="$(mktemp /run/setuphelfer/x11-hold-splash.XXXXXX)"
+  _splash_text >"$text_file"
+  if logo="$(_logo_path)" && command -v feh >/dev/null 2>&1; then
+    feh --fullscreen --auto-zoom --borderless --hide-pointer --image-bg "$BG" "$logo" \
+      >/dev/null 2>&1 &
+  fi
+  if command -v zenity >/dev/null 2>&1; then
+    zenity --info --no-wrap --title="Setuphelfer Rettungsstick" \
+      --text="$(cat "$text_file")" --width=520 >/dev/null 2>&1 &
+    rm -f "$text_file"
+    return 0
+  fi
+  if command -v xmessage >/dev/null 2>&1; then
+    xmessage -center -bg "$BG" -fg "$FG" -buttons "" -default ok \
+      -fn '-*-dejavu sans-bold-r-normal-*-16-*-*-*-*-*-*-*' \
+      -file "$text_file" >/dev/null 2>&1 &
+    rm -f "$text_file"
+    return 0
+  fi
+  if command -v xterm >/dev/null 2>&1; then
+    xterm -fullscreen -bg "$BG" -fg "$FG" -fa 'DejaVu Sans' -fs 16 \
+      -e sh -c "cat '$text_file'; exec sleep infinity" \
+      >/dev/null 2>&1 &
+    rm -f "$text_file"
+    return 0
+  fi
+  rm -f "$text_file"
+  return 1
+}
+
+_show_splash_card || true
+exec sleep infinity

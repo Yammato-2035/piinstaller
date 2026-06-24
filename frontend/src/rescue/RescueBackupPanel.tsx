@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   fetchCloudTargetStatus,
   fetchRescueCapabilities,
@@ -10,6 +10,7 @@ import {
   type BackupPlanResult,
   type RescueStorageDevice,
 } from './rescueBackupApi';
+import { backupSourceLabel, pickAutoBackupSource, sortBackupSources } from './backupSourceSelection';
 
 const BOOT_BG = '/assets/rescue/boot-menu/setuphelfer-boot-menu-de.png';
 const LOGO = '/assets/rescue/logo/setuphelfer-logo2.png';
@@ -32,7 +33,7 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [targetMount, setTargetMount] = useState('');
   const [capabilities, setCapabilities] = useState<{ booted_from_rescue?: boolean }>({});
   const [backupMode, setBackupMode] = useState<'raw_image' | 'linux_full_root_tar' | 'auto'>('auto');
-  const [encryptionRequested, setEncryptionRequested] = useState(true);
+  const [encryptionRequested, setEncryptionRequested] = useState(false);
   const [verifyRequested, setVerifyRequested] = useState(true);
   const [systemSummary, setSystemSummary] = useState<Record<string, unknown> | null>(null);
   const [plan, setPlan] = useState<BackupPlanResult | null>(null);
@@ -43,6 +44,7 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
   const [cloudPassword, setCloudPassword] = useState('');
   const [cloudBucket, setCloudBucket] = useState('');
   const [cloudSaved, setCloudSaved] = useState(false);
+  const autoPlanTriggered = useRef(false);
 
   useEffect(() => {
     (async () => {
@@ -54,12 +56,15 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
           fetchSystemSummary().catch(() => null),
         ]);
         setSystemSummary(summary as Record<string, unknown> | null);
-        setSources(disc.source_candidates || []);
+        const sorted = sortBackupSources(disc.source_candidates || []);
+        setSources(sorted);
         setTargets(disc.target_candidates || []);
         setCapabilities(caps);
-        const win = (disc.source_candidates || []).find((d) => d.type === 'disk') || disc.source_candidates[0];
-        if (win?.path) setSourcePath(win.path);
-        const ext = (disc.target_candidates || []).find((t) => t.role === 'external_backup_hdd');
+        const pick = pickAutoBackupSource(disc);
+        if (pick?.path) setSourcePath(pick.path);
+        const ext = (disc.target_candidates || []).find(
+          (t) => t.role === 'backup_target' || t.role === 'external_backup_hdd',
+        );
         if (ext?.path) {
           setTargetPath(ext.path);
           if (ext.mountpoint) setTargetMount(String(ext.mountpoint));
@@ -71,6 +76,11 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
       }
     })();
   }, []);
+
+  const selectedSource = useMemo(
+    () => sources.find((s) => s.path === sourcePath),
+    [sources, sourcePath],
+  );
 
   const selectedTarget = useMemo(
     () => targets.find((t) => t.path === targetPath),
@@ -84,7 +94,12 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
     try {
       const body = {
         source_device: sourcePath,
-        source_size_bytes: sources.find((s) => s.path === sourcePath)?.size || 0,
+        source_type: selectedSource?.type === 'system_group' ? 'system_group' : selectedSource?.type || 'disk',
+        source_size_bytes: selectedSource?.size_bytes || Number(selectedSource?.size) || 0,
+        source_tran: selectedSource?.tran,
+        source_fstype: selectedSource?.fstype,
+        source_role: selectedSource?.role,
+        source_label: selectedSource?.label,
         backup_mode: backupMode,
         target_mode: targetMode === 'cloud' ? 'cloud_pro' : 'external_hdd',
         target_mount: targetMount,
@@ -92,7 +107,7 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
         target_label: selectedTarget?.label,
         target_tran: selectedTarget?.tran,
         free_bytes: 0,
-        fstype: selectedTarget?.fstype || sources.find((s) => s.path === sourcePath)?.fstype || 'ext4',
+        fstype: selectedTarget?.fstype || selectedSource?.fstype || 'ext4',
         encryption_requested: encryptionRequested,
         verify_requested: verifyRequested,
         operator_confirm_source: true,
@@ -112,6 +127,15 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
       setPlanLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (loading || autoPlanTriggered.current || !sourcePath || !targetPath) return;
+    autoPlanTriggered.current = true;
+    const timer = window.setTimeout(() => {
+      void runPlanCheck();
+    }, 500);
+    return () => window.clearTimeout(timer);
+  }, [loading, sourcePath, targetPath]);
 
   const planCardStyle: React.CSSProperties = {
     marginTop: 12,
@@ -234,10 +258,13 @@ export const RescueBackupPanel: React.FC<{ onBack: () => void }> = ({ onBack }) 
 
         <section style={panel}>
           <h2 style={h2}>Quelle</h2>
+          <p style={{ fontSize: 14, color: '#94a3b8', marginTop: 0 }}>
+            Windows-System (EFI + Windows + Recovery) wird automatisch als eine Quelle erkannt.
+          </p>
           <select value={sourcePath} onChange={(e) => setSourcePath(e.target.value)} style={input}>
             {sources.map((s) => (
               <option key={s.path} value={s.path}>
-                {s.path} · {s.fstype || 'disk'} · {formatBytes(s.size)} · {s.role}
+                {backupSourceLabel(s)} · {formatBytes(s.size_bytes ?? s.size)}
               </option>
             ))}
           </select>

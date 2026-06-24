@@ -3,18 +3,27 @@ import type { RescueBootStatus } from './rescueTypes';
 export interface RescueStorageDevice {
   path: string;
   type?: string;
+  group_kind?: string;
   size?: number;
+  size_bytes?: number;
   fstype?: string;
   label?: string;
   mountpoint?: string | null;
+  parent_path?: string;
   tran?: string;
   rm?: boolean;
   role: string;
+  tags?: string[];
+  auto_select_score?: number;
+  recommended?: boolean;
+  partitions?: Array<{ path?: string; fstype?: string; label?: string; kind?: string }>;
 }
 
 export interface RescueStorageDiscovery {
   source_candidates: RescueStorageDevice[];
+  system_source_candidates?: RescueStorageDevice[];
   target_candidates: RescueStorageDevice[];
+  devices?: RescueStorageDevice[];
   blocked_devices: string[];
   cloud_target_available?: boolean;
 }
@@ -45,7 +54,11 @@ export interface BackupPlanResult {
   errors?: Array<{ code?: string; message?: string }>;
   warnings?: Array<{ code?: string; message?: string }>;
   wifi?: { required?: boolean; available?: boolean; blocks_plan?: boolean };
-  capacity?: { required_bytes?: number; free_bytes?: number };
+  source?: { device?: string; scope?: string };
+  source_scope?: string;
+  target?: { device?: string; mount?: string; partition?: string };
+  preflight?: { ok?: boolean; reason?: string };
+  capacity?: { required_bytes?: number; free_bytes?: number; source_size_bytes?: number };
   telemetry?: { local_evidence_path?: string; persistent?: boolean };
 }
 
