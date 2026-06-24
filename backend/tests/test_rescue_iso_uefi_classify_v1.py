@@ -99,6 +99,7 @@ class RescueIsoUefiClassifyTests(unittest.TestCase):
         codes = {e["code"] for e in result["errors"]}
         self.assertIn("RESCUE-UEFI-009", codes)
 
+    @patch("core.rescue_iso_uefi_classify._xorriso_plain", return_value="-no-emul-boot")
     @patch("core.rescue_iso_uefi_classify._xorriso_find", return_value=False)
     @patch("core.rescue_iso_uefi_classify._xorriso_report")
     @patch("core.rescue_iso_uefi_classify._sha256", return_value="1899f5c")
@@ -107,6 +108,7 @@ class RescueIsoUefiClassifyTests(unittest.TestCase):
         sha_mock,
         report_mock,
         find_mock,
+        plain_mock,
     ) -> None:
         report_mock.return_value = "-b '/isolinux/isolinux.bin'\n-no-emul-boot"
         iso = Path("/tmp/fake.iso")
