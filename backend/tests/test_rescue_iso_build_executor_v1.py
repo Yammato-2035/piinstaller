@@ -430,7 +430,7 @@ class RescueIsoBuildExecutorTests(unittest.TestCase):
             self.assertIn("WORKSPACE_MISSING", result["errors"])
 
     def test_path_resolution_uses_safe_directory_for_git_workspace(self) -> None:
-        repo = Path("/home/volker/piinstaller")
+        repo = Path(__file__).resolve().parents[2]
 
         def fake_run(cmd: list[str], **_: object) -> SimpleNamespace:
             self.assertIn("-c", cmd)
