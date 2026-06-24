@@ -124,8 +124,9 @@ class RescueIsoBuildExecutorTests(unittest.TestCase):
             (target / "root-owned").write_text("x", encoding="utf-8")
             with patch.object(executor, "_repo_root", return_value=self._runtime_root()):
                 with patch.object(executor, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
-                    with patch.object(executor, "_root_owned_under", return_value=[target / "root-owned"]):
-                        result = executor.run_rescue_iso_step("clean_user_state")
+                    with patch.object(operator_commands, "resolve_rescue_iso_paths", return_value=self._paths(repo)):
+                        with patch.object(executor, "_root_owned_under", return_value=[target / "root-owned"]):
+                            result = executor.run_rescue_iso_step("clean_user_state")
             self.assertEqual(result["status"], "operator_required")
             self.assertTrue((target / "root-owned").exists())
             commands = result["details"]["commands"]
