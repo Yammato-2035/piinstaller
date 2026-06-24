@@ -416,7 +416,11 @@ class TestDevDashboardApiV1(unittest.TestCase):
 
 
 class TestDevDashboardCockpit(unittest.TestCase):
-    def test_runtime_gate_allows_yellow_drift_without_actionable_suggestions(self) -> None:
+    @patch(
+        "core.dev_dashboard_cockpit._systemd_unit_state",
+        return_value={"unit": "setuphelfer-backend.service", "is_active": "active", "load_state": "loaded"},
+    )
+    def test_runtime_gate_allows_yellow_drift_without_actionable_suggestions(self, _mock_svc: MagicMock) -> None:
         from core.dev_dashboard_cockpit import build_runtime_gate
 
         rg = build_runtime_gate(

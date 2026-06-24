@@ -17,12 +17,14 @@ Preflight-Bundle (`scripts/preflight-before-push.sh`, `.github/workflows/ci.yml`
 | Gruppe | Tests | Fehlerbild | Ursache | Entscheidung | Fix-Plan |
 |--------|-------|------------|---------|--------------|----------|
 | fixture_or_seed_missing | `test_dev_dashboard_rescue_build_status_v1::test_usb_write_stays_false` | `AssertionError: True is not false` auf `usb_write_allowed` | Test ruft `build_rescue_build_dashboard_state()` ohne Isolation auf; getrackte Evidence `docs/evidence/runtime-results/rescue/usb_operator_selection_latest.json` enthält `write_allowed: true` | Test-Contract anpassen (Isolation), Safety-Ziel beibehalten | `patch(load_operator_selection_evidence, return_value=None)` — gleiches Muster wie fehlende Evidence in Temp-Repos |
+| runtime_required_in_ci | `test_dev_dashboard_v1::test_runtime_gate_allows_yellow_drift_without_actionable_suggestions` | `AssertionError: False is not true` auf `passed` | `build_runtime_gate` prüft `systemctl is-active setuphelfer-backend.service`; lokal aktiv, CI-Runner ohne Dienst | Unit-Test isolieren: Mock `_systemd_unit_state` → `active` | `@patch` auf Cockpit-Test |
 
 ## Fix-Nachweise
 
 | Fehler | Ursache | Fix | Nachweis |
 |--------|---------|-----|----------|
-| `test_usb_write_stays_false` CI-ROT | Getrackte Operator-Selection-Evidence mit `write_allowed: true` | Mock `load_operator_selection_evidence` → `None` | Lokal: `pytest tests/test_dev_dashboard_rescue_build_status_v1.py` grün; Vollsuite venv: 3529 passed |
+| `test_usb_write_stays_false` CI-ROT | Getrackte Operator-Selection-Evidence mit `write_allowed: true` | Mock `load_operator_selection_evidence` → `None` | Lokal: `pytest tests/test_dev_dashboard_rescue_build_status_v1.py` grün; Commit `c2f06c6` |
+| `test_runtime_gate_allows_yellow_drift_without_actionable_suggestions` CI-ROT | Systemd-Abhängigkeit im Unit-Test | Mock `_systemd_unit_state` → `active` | Lokal: Test grün auch bei simuliertem `inactive` Service |
 
 ## Ergebnis
 
