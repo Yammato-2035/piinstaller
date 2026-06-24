@@ -188,7 +188,9 @@ class RescueTelemetryLanProxyUtilityTests(unittest.TestCase):
                 "core.rescue_telemetry_lan_proxy.subprocess.check_output",
                 return_value="1.1.1.1 via default src 192.168.178.140 uid",
             ):
-                ip = detect_lan_ip()
+                with patch("core.rescue_telemetry_lan_proxy.socket.socket") as mock_sock:
+                    mock_sock.return_value.connect.side_effect = OSError("socket probe unavailable in test")
+                    ip = detect_lan_ip()
         self.assertEqual(ip, "192.168.178.140")
 
     def test_read_pid_file_missing(self) -> None:
