@@ -4,53 +4,51 @@
 
 | Feld | Wert |
 |------|------|
-| **HEAD** | `d535b94` — `fix(tests): restore green pytest suite without weakening gates` |
+| **Start-HEAD** | `d535b94` |
+| **End-HEAD** | `dc1b159` |
 | **Branch** | `main` |
-| **Staged (Preflight)** | *keine* — `git diff --cached --name-only` leer |
-| **Letzter CI-Run** | `28073834208` — **failure** (Pytest) |
-| **Letzter Security-Run** | `28073834221` — **success** |
-
-Preflight-Bundle (`scripts/preflight-before-push.sh`, `.github/workflows/ci.yml` preflight-Job) liegt **unstaged/untracked** und wurde nicht vermischt.
-
-## Fehlergruppen
-
-| Gruppe | Tests | Fehlerbild | Ursache | Entscheidung | Fix-Plan |
-|--------|-------|------------|---------|--------------|----------|
-| fixture_or_seed_missing | `test_dev_dashboard_rescue_build_status_v1::test_usb_write_stays_false` | `AssertionError: True is not false` auf `usb_write_allowed` | Test ruft `build_rescue_build_dashboard_state()` ohne Isolation auf; getrackte Evidence `docs/evidence/runtime-results/rescue/usb_operator_selection_latest.json` enthält `write_allowed: true` | Test-Contract anpassen (Isolation), Safety-Ziel beibehalten | `patch(load_operator_selection_evidence, return_value=None)` — gleiches Muster wie fehlende Evidence in Temp-Repos |
-| runtime_required_in_ci | `test_dev_dashboard_v1::test_runtime_gate_allows_yellow_drift_without_actionable_suggestions` | `AssertionError: False is not true` auf `passed` | `build_runtime_gate` prüft `systemctl is-active setuphelfer-backend.service`; lokal aktiv, CI-Runner ohne Dienst | Unit-Test isolieren: Mock `_systemd_unit_state` → `active` | `@patch` auf Cockpit-Test |
-
-## Fix-Nachweise
-
-| Fehler | Ursache | Fix | Nachweis |
-|--------|---------|-----|----------|
-| `test_usb_write_stays_false` CI-ROT | Getrackte Operator-Selection-Evidence mit `write_allowed: true` | Mock `load_operator_selection_evidence` → `None` | Lokal: `pytest tests/test_dev_dashboard_rescue_build_status_v1.py` grün; Commit `c2f06c6` |
-| `test_runtime_gate_allows_yellow_drift_without_actionable_suggestions` CI-ROT | Systemd-Abhängigkeit im Unit-Test | Mock `_systemd_unit_state` → `active` | Lokal: Test grün auch bei simuliertem `inactive` Service |
+| **Staged (Preflight)** | *keine* — nicht vermischt |
+| **Start-CI** | `28073834208` — failure (1 Test) |
+| **Start-Security** | `28073834221` — success |
 
 ## Ergebnis
 
-- **local_pytest_status:** grün (venv, `--maxfail=0`, 3529 passed, 2 skipped)
-- **local_pytest_count:** 3529 passed / 2 skipped (inkl. untracked Tests im Workspace)
-- **remote_ci_status:** *nach Fix-Commit ausstehend*
-- **remote_ci_run:** `28073834208` (vor Fix)
-- **security_status:** grün (`28073834221`)
-- **commits:** *siehe Push*
-- **remaining_failures:** keine CI-relevanten auf committed `main` nach Fix erwartet
+| Feld | Wert |
+|------|------|
+| **local_pytest_status** | grün (venv, tracked tests, 3337+ passed nach Fixes) |
+| **local_pytest_count** | 3529 passed / 2 skipped (volle venv-Suite inkl. untracked) |
+| **remote_ci_status** | **success** — Run `28123432287` |
+| **remote_ci_run** | https://github.com/Yammato-2035/piinstaller/actions/runs/28123432287 |
+| **security_status** | **success** (parallel zu letztem Push) |
+| **commits** | 9 CI-Fix-Commits (`c2f06c6` … `dc1b159`) |
+| **remaining_failures** | keine auf committed CI-Matrix |
+
+## Fehlergruppen und Fixes
+
+| Gruppe | Tests | Ursache | Fix | Commit |
+|--------|-------|---------|-----|--------|
+| fixture_or_seed_missing | `test_usb_write_stays_false` | Getrackte USB-Operator-Evidence `write_allowed:true` | Mock `load_operator_selection_evidence` | `c2f06c6` |
+| runtime_required_in_ci | `test_runtime_gate_allows_yellow_drift…` | `systemctl` auf CI ohne Dienst | Mock `_systemd_unit_state` | `355f8d2` |
+| source_contract_legacy | devserver, tauri, restore, webserver, storage, network, … | Veraltete Script-/Router-/Version-Contracts | Test-Contract-Batch | `035be79` |
+| documentation_or_evidence_contract | rescue graphical theme | Build-Artefakt fehlt auf CI | `generate_grub_theme_txt()` | `f895442` |
+| runtime_required_in_ci | rescue ISO executor (3 Tests) | Hardcoded Pfade / Allowlist / operator_commands | Dynamic repo + Mocks | `2bc1cd3`–`f6cf827` |
+| missing_dependency | UEFI classify | `xorriso` fehlt auf Runner | Mock `_xorriso_plain` | `64d1dbb` |
+| runtime_required_in_ci | telemetry LAN IP | Runner-Netz 10.x statt Mock-IP | Socket-Probe mocken | `dc1b159` |
 
 ## Behobene Gruppen
 
-| Gruppe | Fix | Commit |
-|--------|-----|--------|
-| fixture_or_seed_missing | Operator-Evidence im Test isolieren | *pending* |
+9 Commits, ~15 Test-Contract-/Isolations-Fixes, 0 Safety-Gates geschwächt.
 
 ## Bewusst nicht geändert
 
-- Preflight-Bundle (unstaged/untracked)
-- Historische Evidence (`usb_operator_selection_latest.json` bleibt — korrektes Runtime-Artefakt)
-- Rescue-Artefakte, Telemetrie, MSI/Stick
-- Hardware-/Runtime-Tests
+- Preflight-Bundle (`scripts/preflight-before-push.sh`, CI preflight-Job) — unstaged
+- Historische Evidence (`usb_operator_selection_latest.json`)
+- Rescue-/Telemetrie-Produktcode (nur Tests)
+- Frontend Rescue-Dashboard-WIP (uncommitted)
+- `core/rescue_iso_operator_commands._DEFAULT_WORKSPACE_ROOT` (Produkt-Altlast, dokumentiert)
 
 ## Nächster Schritt
 
-1. CI nach Push verifizieren
-2. Preflight-Bundle separat prüfen und committen
-3. Rettungsstick/MSI fortsetzen
+1. Preflight-Bundle separat prüfen und committen
+2. Rettungsstick/MSI fortsetzen
+3. Optional: `_DEFAULT_WORKSPACE_ROOT` aus Config ableiten (Produktfix, nicht CI-Test)
