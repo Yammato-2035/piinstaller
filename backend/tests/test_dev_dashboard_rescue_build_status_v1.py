@@ -41,7 +41,8 @@ class TestRescueBuildDashboardState(unittest.TestCase):
             self.assertNotEqual(state["status"], "green")
 
     def test_usb_write_stays_false(self) -> None:
-        state = rbd.build_rescue_build_dashboard_state()
+        with patch("core.rescue_usb_operator_selection.load_operator_selection_evidence", return_value=None):
+            state = rbd.build_rescue_build_dashboard_state()
         self.assertFalse(state["usb_write_gate"]["usb_write_allowed"])
         self.assertFalse(state["forbidden_actions"]["usb_write_allowed"])
 
