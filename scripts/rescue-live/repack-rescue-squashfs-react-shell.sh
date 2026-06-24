@@ -4,9 +4,49 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-SOURCE_SQ="${1:-${REPO_ROOT}/build/rescue/filesystem.squashfs.repacked-1.7.10.0}"
 PROJECT_VERSION="${SETUPHELFER_REPACK_VERSION:-$(python3 -c "import json; print(json.load(open('${REPO_ROOT}/config/version.json', encoding='utf-8')).get('project_version','1.7.10.1'))")}"
 OUT_SQ="${REPO_ROOT}/build/rescue/filesystem.squashfs.repacked-${PROJECT_VERSION}"
+
+resolve_repack_source_squashfs() {
+  python3 - "$1" "$2" <<'PY'
+import subprocess
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+out_name = f"filesystem.squashfs.repacked-{sys.argv[2]}"
+preferred = root / "filesystem.squashfs.repacked-1.9.16.2"
+candidates = [p for p in root.glob("filesystem.squashfs.repacked-*") if p.name != out_name]
+order = []
+if preferred.is_file():
+    order.append(preferred)
+order.extend(sorted((p for p in candidates if p not in order), key=lambda p: p.stat().st_mtime, reverse=True))
+
+def has_chromium(path: Path) -> bool:
+    proc = subprocess.run(
+        ["unsquashfs", "-ll", str(path)],
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=120,
+    )
+    blob = (proc.stdout or "") + (proc.stderr or "")
+    return "usr/bin/chromium" in blob
+
+for path in order:
+    if has_chromium(path):
+        print(path)
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+if [[ -n "${1:-}" ]]; then
+  SOURCE_SQ="$1"
+else
+  SOURCE_SQ="$(resolve_repack_source_squashfs "$REPO_ROOT/build/rescue" "$PROJECT_VERSION")" \
+    || die "no repack source squashfs with usr/bin/chromium found under build/rescue/" 21
+fi
 SUMMARY="${REPO_ROOT}/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
 
 die() { echo "ERROR: $*" >&2; exit "${2:-1}"; }
@@ -182,6 +222,7 @@ launcher_ok = (
     and verify.get("contains_network_boot_skip")
     and verify.get("contains_telemetry_default_skipped")
     and verify.get("contains_wait_online_neutralization")
+    and (verify.get("checks") or {}).get("chromium_browser")
 )
 summary = {
     "controlled_iso_build_summary_schema_version": 1,

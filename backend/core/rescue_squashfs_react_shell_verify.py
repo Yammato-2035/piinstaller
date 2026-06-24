@@ -45,6 +45,7 @@ def squashfs_contains_react_rescue_shell(squashfs_path: Path) -> dict[str, Any]:
         "evidence_spool_module": "rescue_evidence_spool.py" in blob,
         "machine_profile_module": "rescue_machine_profile.py" in blob,
         "boot_status_module": "rescue_boot_status.py" in blob,
+        "chromium_browser": "squashfs-root/usr/bin/chromium" in blob or " usr/bin/chromium" in blob,
     }
     ui_service_blob = blob
     network_blocker = "Requires=network-online.target" in ui_service_blob and "setuphelfer-rescue-ui.service" in ui_service_blob
