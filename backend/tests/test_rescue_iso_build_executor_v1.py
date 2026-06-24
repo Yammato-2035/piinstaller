@@ -442,8 +442,9 @@ class RescueIsoBuildExecutorTests(unittest.TestCase):
             return SimpleNamespace(returncode=0, stdout="main\n")
 
         with patch.object(operator_commands, "_configured_workspace_root", return_value=repo):
-            with patch.object(operator_commands.subprocess, "run", side_effect=fake_run):
-                payload = operator_commands.resolve_rescue_iso_paths(repo_root=Path("/opt/setuphelfer"))
+            with patch.object(operator_commands, "_allowed_workspace_roots", return_value=(repo,)):
+                with patch.object(operator_commands.subprocess, "run", side_effect=fake_run):
+                    payload = operator_commands.resolve_rescue_iso_paths(repo_root=Path("/opt/setuphelfer"))
         self.assertEqual(payload["path_status"], "ok")
         self.assertEqual(payload["workspace_head"], "751e2cf")
 
