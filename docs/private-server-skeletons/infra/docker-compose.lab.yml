@@ -1,0 +1,43 @@
+# Lab stack for private server skeletons (no production secrets).
+# Usage: docker compose -f infra/docker-compose.lab.yml up
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: setuphelfer_lab
+      POSTGRES_PASSWORD: lab_only_not_production
+      POSTGRES_DB: setuphelfer_beta
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_lab:/var/lib/postgresql/data
+
+  beta-registration:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ../beta-registration-server:/app:ro
+    command: pip install -q fastapi uvicorn pydantic && uvicorn app.main:app --host 0.0.0.0 --port 8100
+    ports:
+      - "8100:8100"
+
+  telemetry:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ../telemetry-server:/app:ro
+    command: pip install -q fastapi uvicorn && uvicorn app.main:app --host 0.0.0.0 --port 8101
+    ports:
+      - "8101:8101"
+
+  diagnostics:
+    image: python:3.12-slim
+    working_dir: /app
+    volumes:
+      - ../diagnostics-server:/app:ro
+    command: pip install -q fastapi uvicorn && uvicorn app.main:app --host 0.0.0.0 --port 8102
+    ports:
+      - "8102:8102"
+
+volumes:
+  pgdata_lab:
