@@ -1,6 +1,6 @@
 [package]
 name = "pi-installer"
-version = "1.9.16"
+version = "1.9.17"
 description = "PI-Installer Desktop"
 edition = "2021"
 

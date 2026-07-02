@@ -1,3 +1,3 @@
-SetupHelfer (1.9.16.3) — project version; Cargo/Tauri semver 1.9.16; patch W=3.
+SetupHelfer (1.9.17.0) — project version; Cargo/Tauri semver 1.9.17; patch W=0.
 
 See resources/setuphelfer-version.json for canonical version metadata.

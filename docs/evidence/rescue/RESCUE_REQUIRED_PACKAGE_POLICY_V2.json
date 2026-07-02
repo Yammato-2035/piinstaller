@@ -1,0 +1,74 @@
+{
+  "policy_version": "rescue-required-packages.v2",
+  "traceability": ["RS-011K", "MASTER_PHASE_2"],
+  "generated_at": "2026-07-02T12:00:00Z",
+  "debian_only": true,
+  "forbidden_package_names": ["linux-modules-extra"],
+  "required_packages": {
+    "kernel_firmware": [
+      "linux-image-amd64",
+      "firmware-linux",
+      "firmware-linux-nonfree",
+      "firmware-iwlwifi",
+      "firmware-realtek",
+      "firmware-amd-graphics",
+      "firmware-misc-nonfree",
+      "firmware-sof-signed",
+      "wireless-regdb"
+    ],
+    "network": [
+      "network-manager",
+      "wpasupplicant",
+      "iw",
+      "rfkill",
+      "iproute2",
+      "curl",
+      "dnsutils",
+      "ca-certificates",
+      "openssl"
+    ],
+    "hardware_diagnose": [
+      "pciutils",
+      "usbutils",
+      "dmidecode",
+      "lshw",
+      "hwinfo"
+    ],
+    "storage": [
+      "smartmontools",
+      "nvme-cli",
+      "hdparm",
+      "parted",
+      "gdisk",
+      "util-linux",
+      "dosfstools",
+      "exfatprogs",
+      "ntfs-3g",
+      "btrfs-progs",
+      "xfsprogs",
+      "e2fsprogs"
+    ],
+    "backup_transfer": [
+      "rsync",
+      "tar",
+      "pigz",
+      "zstd",
+      "jq",
+      "python3",
+      "python3-venv"
+    ],
+    "security_malware_optional_review_required": [
+      "clamav",
+      "clamav-freshclam",
+      "yara",
+      "rkhunter",
+      "chkrootkit",
+      "lynis"
+    ]
+  },
+  "package_list_path": "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot",
+  "review_required_notes": {
+    "security_malware_optional": "Not in default chroot until license/size review",
+    "backports_kernel": "See RESCUE_BACKPORTS_KERNEL_DECISION_V2.json"
+  }
+}
