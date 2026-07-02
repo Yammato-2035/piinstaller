@@ -1,6 +1,6 @@
 {
   "name": "pi-installer-frontend",
-  "version": "1.9.17.0",
+  "version": "1.9.17.1",
   "description": "SetupHelfer — Web GUI for Raspberry Pi and Linux",
   "private": true,
   "dependencies": {

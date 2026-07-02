@@ -7,6 +7,7 @@ import {
   scanWifiNetworks,
   type WifiNetwork,
 } from './rescueNetworkApi';
+import { NetworkTelemetryStatusPanel } from '../components/rescue/NetworkTelemetryStatusPanel';
 import { getRescueDict, tPath, type RescueLocale } from './rescueLocale';
 
 function chipsetLabel(hw: { wlan_chipset?: string | null; kernel_module?: string | null }) {
@@ -262,6 +263,8 @@ export const RescueNetworkPanel: React.FC<{ locale: RescueLocale }> = ({ locale 
           {error}
         </p>
       ) : null}
+
+      <NetworkTelemetryStatusPanel language={locale} />
 
       <p className="rescue-settings-hint">{tPath(dict, 'network.noAutoConnect')}</p>
     </section>
