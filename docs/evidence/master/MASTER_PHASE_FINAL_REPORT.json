@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-07-02T14:00:00Z",
   "phase": "master_rescue_hardware_assessment_beta",
-  "head": "pending_commit",
+  "head": "ce37af94",
   "branch": "cursor/master-phase-rescue-beta-30f2",
   "dirty_tree": false,
   "runtime_gate": "yellow_cloud_agent",
