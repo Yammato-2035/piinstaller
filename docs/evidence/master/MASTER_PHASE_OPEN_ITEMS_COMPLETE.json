@@ -1,0 +1,19 @@
+{
+  "generated_at": "2026-07-02T18:00:00Z",
+  "phase": "master_phase_open_items",
+  "version": "1.9.17.2",
+  "completed": [
+    "rescue_network.py API + rescue_network_live_status_v1 core",
+    "write-master-assessment-evidence.sh",
+    "private-server-skeletons: beta, telemetry, diagnostics, operator placeholder, infra docker-compose",
+    "scripts/bootstrap-setuphelfer-private-repo.sh",
+    "scripts/start-rescue-lab-mocks.sh",
+    "tests for skeletons, evidence script, live boot status"
+  ],
+  "still_blocked": [
+    "payload_build_operator_approval",
+    "ionos_production_deploy",
+    "gh_repo_create_requires_user_gh_auth_on_laptop"
+  ],
+  "status": "yellow_ready_for_laptop_bootstrap"
+}

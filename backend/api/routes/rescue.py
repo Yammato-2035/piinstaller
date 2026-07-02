@@ -27,6 +27,7 @@ from modules.rescue_restore_execute import RESTORE_LOG_PATH, run_rescue_restore
 try:
     from api.routes.data_rescue import router as data_rescue_router
     from api.routes.linux_migration import router as linux_migration_router
+    from api.routes.rescue_assessment_v2 import router as rescue_assessment_v2_router
     from api.routes.rescue_backup import router as rescue_backup_plan_router
     from api.routes.rescue_evidence import router as rescue_evidence_plan_router
     from api.routes.rescue_network import build_live_boot_status, router as rescue_network_router
@@ -34,6 +35,7 @@ try:
 except ImportError:
     data_rescue_router = None
     linux_migration_router = None
+    rescue_assessment_v2_router = None
     rescue_backup_plan_router = None
     rescue_evidence_plan_router = None
     rescue_network_router = None
@@ -99,5 +101,7 @@ if rescue_evidence_plan_router is not None:
     router.include_router(rescue_evidence_plan_router)
 if rescue_network_router is not None:
     router.include_router(rescue_network_router)
+if rescue_assessment_v2_router is not None:
+    router.include_router(rescue_assessment_v2_router)
 if rescue_ui_router is not None:
     router.include_router(rescue_ui_router)

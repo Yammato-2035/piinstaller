@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-07-02T10:45:00Z",
+  "phase": "master_rescue_hardware_assessment_beta",
+  "head": "96aa2771",
+  "branch": "cursor/master-phase-rescue-beta-30f2",
+  "dirty_tree": false,
+  "runtime_gate": {
+    "check_runtime_deploy_gate": "skipped_permission_denied_cloud_agent",
+    "check_backend_version_gate": "failed_service_inactive",
+    "setuphelfer_backend_active": false,
+    "setuphelfer_active": false,
+    "systemd_available": false,
+    "note": "Cloud agent environment — no /opt runtime, no systemd PID1"
+  },
+  "backend_version": {
+    "workspace_project_version": "1.9.16.3",
+    "api_version_reachable": false
+  },
+  "stick_payload": {
+    "last_known_commit": "96aa2771",
+    "rescue_version_workspace": "1.9.16.3",
+    "build_tree_path": "build/rescue/live-build/setuphelfer-rescue-live",
+    "payload_build_executed_this_run": false
+  },
+  "telemetry_lab_service": {
+    "present": false,
+    "port": 8101,
+    "health_ok": false,
+    "v1_health_ok": false
+  },
+  "wordpress_repo": {
+    "present": true,
+    "path": "website/setuphelfer-theme",
+    "plugins_path": "website/setuphelfer-theme (theme-based bridge planned)"
+  },
+  "private_server_repos": {
+    "present": false,
+    "note": "No separate private git repos in workspace — skeletons under docs/private-server-skeletons/"
+  },
+  "public_private_boundary": {
+    "repo_visibility": "public",
+    "allowed_this_run": [
+      "public contracts",
+      "client logic",
+      "mock servers",
+      "test fixtures without PII",
+      "architecture documentation",
+      "SQL schema skeletons",
+      "WordPress bridge plugin skeleton",
+      "evidence documentation"
+    ],
+    "blocked_this_run": [
+      "productive server deployment",
+      "real secrets",
+      "real beta tester data",
+      "IONOS production changes",
+      "USB/ISO write",
+      "dd/mkfs/wipefs/parted write",
+      "runtime tests against /opt without Phase 0 pass"
+    ]
+  },
+  "overall_gate_status": "yellow_cloud_agent_scope"
+}
