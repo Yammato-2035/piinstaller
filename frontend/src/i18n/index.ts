@@ -3,6 +3,8 @@ import { initReactI18next } from 'react-i18next'
 
 import de from '../locales/de.json'
 import en from '../locales/en.json'
+import fr from '../locales/fr.json'
+import nl from '../locales/nl.json'
 import dccVisDe from '../locales/dccVis001.de.json'
 import dccVisEn from '../locales/dccVis001.en.json'
 import dccVisFr from '../locales/dccVis001.fr.json'
@@ -10,8 +12,8 @@ import dccVisNl from '../locales/dccVis001.nl.json'
 
 const deMerged = { ...de, ...dccVisDe }
 const enMerged = { ...en, ...dccVisEn }
-const frMerged = { ...enMerged, ...dccVisFr }
-const nlMerged = { ...enMerged, ...dccVisNl }
+const frMerged = { ...fr, ...dccVisFr }
+const nlMerged = { ...nl, ...dccVisNl }
 
 export const LOCALE_STORAGE_KEY = 'setuphelfer-ui-locale'
 export const APP_LOCALES = ['de', 'en', 'fr', 'nl'] as const

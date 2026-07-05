@@ -152,7 +152,7 @@ export const RescueApp: React.FC = () => {
       case 'menu':
         return <RescueDashboard locale={locale} onSelectTile={(id) => setView(id)} />;
       case 'backup_create':
-        return <RescueBackupPanel onBack={goMenu} />;
+        return <RescueBackupPanel locale={locale} onBack={goMenu} />;
       case 'data_rescue':
         return (
           <RescueSectionPage
@@ -248,7 +248,7 @@ export const RescueApp: React.FC = () => {
               labels={statusPanelLabels}
               statusLabels={statusLabels}
             />
-            <RescueEvidencePanel locale={locale === 'en' ? 'en' : 'de'} />
+            <RescueEvidencePanel locale={locale} />
           </RescueSectionPage>
         );
       default:

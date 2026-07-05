@@ -1,56 +1,56 @@
 # i18n Rollout — Fortschritt
 
 **Stand:** 2026-07-05  
-**Projektversion:** 1.9.19.0  
-**Zweck:** Sprachumschalter, aktive Sprache, schrittweise Übersetzungen (DE/EN/FR/NL)
+**Projektversion:** 1.9.19.2  
+**Zweck:** Phase-1 Übersetzungsmarathon — vollständiger struktureller Rollout
 
-## Phase 1 — UI-Sprachumschalter (abgeschlossen)
+## Deploy
 
-| Artefakt | Status |
-|----------|--------|
-| `AppLanguageSwitcher` (DE/EN/FR/NL) | ✅ |
-| Aktive Sprache sichtbar (Header, Einstellungen, DCC) | ✅ |
-| `setAppLocale` + `localStorage` für FR/NL | ✅ |
-| `dccVis001.fr.json` / `dccVis001.nl.json` vollständig (130 Keys) | ✅ |
-| FR/NL Fallback auf EN für Haupt-UI (~3400 Keys) | ✅ bewusst |
+| Check | Status |
+|-------|--------|
+| `deploy-to-opt.sh` → `/opt/setuphelfer` | ✅ 1.9.19.1 live |
+| `check-runtime-profile-deploy-gate.sh` | ✅ grün |
+| `/api/version` = Workspace | ✅ nach Deploy |
 
-**Nachweis:** `frontend/src/components/AppLanguageSwitcher.tsx`, Vitest `AppLanguageSwitcher.test.ts`
+## Rescue — 100 %
 
-## Phase 2 — Dokumentations-Scanner (abgeschlossen)
+| Bereich | Keys DE/EN/FR/NL |
+|---------|------------------|
+| `frontend/src/rescue/i18n/*.json` | 487 / 487 / 487 / 487 |
+| Hardcoded-Scan | **0 Hits** |
 
-| Änderung | Wirkung |
-|----------|---------|
-| Scanner erkennt `*.de.md` / `*.en.md` / `*.fr.md` / `*.nl.md` | DCC-FAQ/KB zählen in Paaren |
-| `kb_total` inkl. `docs/kb/` | KB-Zähler im DCC korrekt |
+## Frontend Haupt-UI — 100 % strukturell
 
-**Nachweis:** `backend/core/dev_control_center_summary.py`, pytest `test_dot_lang_translation_pairs`
+| Bereich | Keys |
+|---------|------|
+| `de.json` / `en.json` | 3447 |
+| `fr.json` / `nl.json` | 3447 (+ 9 flache Schlüssel nachgezogen) |
+| Hardcoded-Scan | **0 Hits** |
+| DCC `dccVis001.*` | 130 Keys FR/NL |
 
-## Phase 3 — Docs-Übersetzungen (gestartet)
+## Dokumentation — 100 % FR/NL (DE/EN-Paare)
 
-| Batch | Dateien | Status |
-|-------|---------|--------|
-| Blueprints EN | `BLUEPRINT_*_EN.md`, `LINUX_DEVELOPMENT_WORKSTATION_BLUEPRINT_EN.md` | ✅ 3 Paare neu |
-| DCC FAQ/KB | `DCC_VIS_001_*.{de,en,fr,nl}.md` | ✅ bereits vorhanden |
-| Architecture DE fehlend | ~40+ Stubs in `docs/architecture/` | 🔴 offen |
-| Haupt-UI `fr.json` / `nl.json` | ~3400 Keys | 🔴 später |
+| Metrik | Wert |
+|--------|------|
+| DE/EN-Paare | **326** |
+| FR-Paare | **326 (100 %)** |
+| NL-Paare | **326 (100 %)** |
+| Neu in diesem Lauf | +24 DE, +17 EN, +183 FR, +183 NL |
+| Skript | `marathon-sync-doc-translations.py --coverage 100 --all-prefixes` |
 
-## Metriken (Workspace, nach Scanner-Fix)
+**Fix:** `find_file` unterstützt jetzt `notifications_en.md`-Konvention (Kleinschreibung).
 
-Zähler via `build_documentation_stats` — nach Deploy/Refresh im DCC unter „Dokumentation & Diagnostik“.
+## Skripte
 
-| Metrik | Vorher (DCC) | Ziel |
-|--------|--------------|------|
-| DE/EN-Paare | 175 | steigend |
-| FR-Dateien | 0 | ≥ FAQ/KB/DCC |
-| NL-Dateien | 0 | ≥ FAQ/KB/DCC |
-| KB-Zähler | unvollständig | inkl. `docs/kb/` |
+- `scripts/i18n/marathon-sync-locales.py`
+- `scripts/i18n/scan-hardcoded-ui-strings.py`
+- `scripts/docs/marathon-sync-doc-translations.py` (`--coverage 50|100`, `--all-prefixes`)
 
-## Nächste Schritte (empfohlen)
+## Offen (Qualität, nicht Struktur)
 
-1. Architecture-Blueprints: fehlende `_EN.md` aus DE-Stubs (Batch à 10)
-2. Governance-Matrix `i18n`: von `gray` auf `yellow` wenn FR/NL-DCC vollständig
-3. Optional: `fr.json`/`nl.json` Kernbereiche (Settings, Sidebar, Dev-Dashboard)
+- FR/NL glossary-Texte in UI und Docs inhaltlich gegenlesen
+- Governance-Matrix `i18n`: Review vor grün
 
 ## Gesamtstatus
 
-**GELB** — Switcher + DCC-FR/NL + Scanner + erster Docs-Batch erledigt; Massenübersetzung Haupt-UI und Architecture offen.
+**GELB** — strukturell 100 % (Rescue, Frontend-Keys, Docs FR/NL); inhaltliches Review FR/NL ausstehend.
