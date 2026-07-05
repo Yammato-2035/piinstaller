@@ -42,3 +42,19 @@ export async function fetchDccApi(path: string, init?: RequestInit): Promise<Res
   }
   return fetchApi(path, { ...init, headers })
 }
+
+export type DccTokenVerifyResult = 'missing' | 'invalid' | 'valid' | 'error'
+
+/** Verify stored token via capability-status — never logs token value. */
+export async function verifyStoredDccDeveloperToken(): Promise<DccTokenVerifyResult> {
+  const token = readStoredDccDeveloperToken()
+  if (!token) return 'missing'
+  try {
+    const r = await fetchDccApi('/api/dev-dashboard/capability-status', { cache: 'no-store' })
+    if (!r.ok) return r.status === 404 ? 'invalid' : 'error'
+    const body = (await r.json().catch(() => ({}))) as { developer_capability_valid?: boolean }
+    return body.developer_capability_valid === true ? 'valid' : 'invalid'
+  } catch {
+    return 'error'
+  }
+}

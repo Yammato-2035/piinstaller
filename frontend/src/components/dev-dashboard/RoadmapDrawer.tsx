@@ -13,6 +13,7 @@ import type { CockpitPanelProps } from './types'
 
 type RoadmapDrawerProps = CockpitPanelProps & {
   apiReachable?: boolean
+  localApiReachable?: boolean
 }
 
 const FILTER_OPTIONS: RoadmapFilterId[] = [
@@ -63,7 +64,8 @@ function fallbackItems(roadmap: JsonRow): JsonRow[] {
   ]
 }
 
-export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDrawerProps) {
+export function RoadmapDrawer({ dashboard, t, apiReachable = true, localApiReachable }: RoadmapDrawerProps) {
+  const localUp = localApiReachable ?? apiReachable
   const roadmap = (dashboard?.roadmap as JsonRow) || {}
   const roadmapDataSource = String(
     dashboard?.roadmap_data_source || dashboard?.data_source || (apiReachable ? 'live_api' : 'snapshot'),
@@ -192,8 +194,10 @@ export function RoadmapDrawer({ dashboard, t, apiReachable = true }: RoadmapDraw
   const dataSourceBanner = (
     <p className="text-[11px] text-slate-400 mt-1" data-testid="dev-dashboard-roadmap-data-source">
       {t('devDashboard.roadmap.dataSource')}: <span className="font-mono text-slate-300">{roadmapDataSource}</span>
-      {!apiReachable ? (
+      {!localUp ? (
         <span className="ml-2 text-amber-300/90">({t('devDashboard.roadmap.offlineHint')})</span>
+      ) : !apiReachable ? (
+        <span className="ml-2 text-amber-200/90" data-testid="roadmap-limited-hint">({t('devDashboard.vis.roadmap.limitedHint')})</span>
       ) : null}
     </p>
   )

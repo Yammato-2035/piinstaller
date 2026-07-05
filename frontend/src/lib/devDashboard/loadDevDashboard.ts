@@ -18,6 +18,7 @@ const API_PROBE_MS = 3500
 type RuntimeApiAttempt = {
   result: DevDashboardLoadResult | null
   offlineReason: string
+  devDashboardStatusCode?: string | null
 }
 
 async function fetchWithTimeout(path: string, init?: RequestInit): Promise<Response> {
@@ -62,9 +63,16 @@ async function tryRuntimeApi(statusQuery: string): Promise<RuntimeApiAttempt> {
     const roadmapQuery = statusQuery ? `?${statusQuery}` : ''
     const r1 = await fetchWithTimeout(`${API_STATUS_PATH}?${statusQuery}`)
     if (!r1.ok) {
+      const errBody = await r1.json().catch(() => ({}))
+      const code = typeof errBody?.code === 'string' ? errBody.code : null
+      let offlineReason = `backend_http_non_200:${r1.status}`
+      if (code === 'DEVELOPER_CAPABILITY_REQUIRED') offlineReason = 'developer_token_required'
+      else if (code === 'DEVELOPER_CAPABILITY_NOT_CONFIGURED') offlineReason = 'developer_capability_not_configured'
+      else if (code === 'PROFILE_ROUTE_BLOCKED') offlineReason = 'profile_route_blocked'
       return {
         result: null,
-        offlineReason: `backend_http_non_200:${r1.status}`,
+        offlineReason,
+        devDashboardStatusCode: code,
       }
     }
     const d1 = await r1.json().catch(() => ({}))
@@ -90,6 +98,7 @@ async function tryRuntimeApi(statusQuery: string): Promise<RuntimeApiAttempt> {
         modules: Array.isArray(d2?.modules) ? (d2.modules as ModuleRow[]) : [],
         evidenceIndex: d3 && typeof d3 === 'object' ? (d3 as Record<string, unknown>) : null,
         apiReachable: true,
+        localApiReachable: true,
         capabilities: capabilitiesForSource('runtime_api'),
       },
       offlineReason: 'none',
@@ -129,8 +138,13 @@ async function loadTauriScan(): Promise<WorkspaceScanResult | null> {
   return null
 }
 
+function withLocalApi<T extends DevDashboardLoadResult>(result: T, localApiReachable: boolean): T {
+  return { ...result, localApiReachable }
+}
+
 export async function loadDevDashboard(statusQuery: string): Promise<DevDashboardLoadResult> {
   const startup = await probeBackendStartup()
+  const localApiReachable = startup.healthOk === true && startup.versionOk === true
   if (startup.state !== 'backend_ok') {
     const offlineReason =
       startup.offlineReason ||
@@ -143,30 +157,36 @@ export async function loadDevDashboard(statusQuery: string): Promise<DevDashboar
     }
     if (!scan) {
       const dashboard = buildMinimalUnavailableDashboard(offlineReason)
-      return {
-        source: 'unavailable',
-        dashboard,
-        modules: [],
-        evidenceIndex: null,
-        apiReachable: false,
-        offlineReason,
-        metaPrompt: buildStandaloneMetaPrompt(dashboard, '(unavailable)'),
-        capabilities: capabilitiesForSource('unavailable'),
-      }
+      return withLocalApi(
+        {
+          source: 'unavailable',
+          dashboard,
+          modules: [],
+          evidenceIndex: null,
+          apiReachable: false,
+          offlineReason,
+          metaPrompt: buildStandaloneMetaPrompt(dashboard, '(unavailable)'),
+          capabilities: capabilitiesForSource('unavailable'),
+        },
+        false,
+      )
     }
     const matrixText = typeof scan.matrix?.text === 'string' ? scan.matrix.text : undefined
     const dashboard = buildStandaloneDashboardFromScan(scan, source, { matrixText, offlineReason })
-    return {
-      source,
-      dashboard,
-      modules: modulesFromScan(scan),
-      evidenceIndex: { status: 'standalone', gates: scan.evidence_files },
-      apiReachable: false,
-      offlineReason,
-      workspaceRoot: scan.workspace_root,
-      metaPrompt: buildStandaloneMetaPrompt(dashboard, scan.workspace_root),
-      capabilities: capabilitiesForSource(source),
-    }
+    return withLocalApi(
+      {
+        source,
+        dashboard,
+        modules: modulesFromScan(scan),
+        evidenceIndex: { status: 'standalone', gates: scan.evidence_files },
+        apiReachable: false,
+        offlineReason,
+        workspaceRoot: scan.workspace_root,
+        metaPrompt: buildStandaloneMetaPrompt(dashboard, scan.workspace_root),
+        capabilities: capabilitiesForSource(source),
+      },
+      false,
+    )
   }
 
   const runtime = await tryRuntimeApi(statusQuery)
@@ -184,16 +204,19 @@ export async function loadDevDashboard(statusQuery: string): Promise<DevDashboar
   if (!scan) {
     const dashboard = buildMinimalUnavailableDashboard(offlineReason)
     const metaPrompt = buildStandaloneMetaPrompt(dashboard, '(unavailable)')
-    return {
-      source: 'unavailable',
-      dashboard,
-      modules: [],
-      evidenceIndex: null,
-      apiReachable: false,
-      offlineReason,
-      metaPrompt,
-      capabilities: capabilitiesForSource('unavailable'),
-    }
+    return withLocalApi(
+      {
+        source: 'unavailable',
+        dashboard,
+        modules: [],
+        evidenceIndex: null,
+        apiReachable: false,
+        offlineReason,
+        metaPrompt,
+        capabilities: capabilitiesForSource('unavailable'),
+      },
+      localApiReachable,
+    )
   }
 
   const matrixText =
@@ -207,17 +230,20 @@ export async function loadDevDashboard(statusQuery: string): Promise<DevDashboar
   const modules = modulesFromScan(scan)
   const metaPrompt = buildStandaloneMetaPrompt(dashboard, scan.workspace_root)
 
-  return {
-    source,
-    dashboard,
-    modules,
-    evidenceIndex: { status: 'standalone', gates: scan.evidence_files },
-    apiReachable: false,
-    offlineReason,
-    workspaceRoot: scan.workspace_root,
-    metaPrompt,
-    capabilities: capabilitiesForSource(source),
-  }
+  return withLocalApi(
+    {
+      source,
+      dashboard,
+      modules,
+      evidenceIndex: { status: 'standalone', gates: scan.evidence_files },
+      apiReachable: false,
+      offlineReason,
+      workspaceRoot: scan.workspace_root,
+      metaPrompt,
+      capabilities: capabilitiesForSource(source),
+    },
+    localApiReachable,
+  )
 }
 
 export function getApiBaseLabel(): string {

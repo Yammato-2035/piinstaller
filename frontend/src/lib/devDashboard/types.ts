@@ -18,7 +18,10 @@ export type DevDashboardLoadResult = {
   dashboard: DashboardPayload
   modules: ModuleRow[]
   evidenceIndex: Record<string, unknown> | null
+  /** Dev-dashboard status API returned full payload */
   apiReachable: boolean
+  /** /health + /api/version reachable (local backend process) */
+  localApiReachable: boolean
   offlineReason?: string
   workspaceRoot?: string
   metaPrompt?: string

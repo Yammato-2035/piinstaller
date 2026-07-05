@@ -8,11 +8,34 @@ describe('governanceMatrix', () => {
       modules: [],
       source: 'snapshot',
       apiReachable: false,
+      localApiReachable: false,
     })
     const runtime = areas.find((a) => a.id === 'runtime')
     expect(runtime?.status).toBe('red')
-    const alerts = buildCockpitAlerts(areas, { apiReachable: false, source: 'snapshot' })
+    const alerts = buildCockpitAlerts(areas, { apiReachable: false, localApiReachable: false, source: 'snapshot' })
     expect(alerts.some((a) => a.code === 'backend_api_unreachable')).toBe(true)
+  })
+
+  it('shows yellow runtime when local API up but dashboard limited', () => {
+    const areas = buildGovernanceMatrix({
+      dashboard: { runtime_gate: { passed: false, status: 'red', blockers: ['phase0'] } },
+      modules: [],
+      source: 'snapshot',
+      apiReachable: false,
+      localApiReachable: true,
+      offlineReason: 'developer_token_required',
+    })
+    const runtime = areas.find((a) => a.id === 'runtime')
+    expect(runtime?.status).toBe('yellow')
+    expect(runtime?.blockers).toContain('developer_token_required')
+    const alerts = buildCockpitAlerts(areas, {
+      apiReachable: false,
+      localApiReachable: true,
+      source: 'snapshot',
+      offlineReason: 'developer_token_required',
+    })
+    expect(alerts.some((a) => a.code === 'backend_api_unreachable')).toBe(false)
+    expect(alerts.some((a) => a.code === 'developer_token_required')).toBe(true)
   })
 
   it('does not fake green runtime gate without API', () => {

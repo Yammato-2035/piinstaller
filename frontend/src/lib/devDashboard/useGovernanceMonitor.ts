@@ -33,6 +33,7 @@ export function useGovernanceMonitor(statusQuery: string) {
   const [modules, setModules] = useState<ModuleRow[]>([])
   const [source, setSource] = useState<DevDashboardDataSource>('unavailable')
   const [apiReachable, setApiReachable] = useState(false)
+  const [localApiReachable, setLocalApiReachable] = useState(false)
   const [capabilities, setCapabilities] = useState<DevDashboardCapabilities>({
     runtimeApi: false,
     workspaceAnalysis: false,
@@ -61,6 +62,7 @@ export function useGovernanceMonitor(statusQuery: string) {
       setModules(result.modules)
       setSource(result.source)
       setApiReachable(result.apiReachable)
+      setLocalApiReachable(result.localApiReachable)
       setCapabilities(result.capabilities)
       setWorkspaceRoot(result.workspaceRoot)
       setStandaloneMetaPrompt(result.metaPrompt)
@@ -71,6 +73,8 @@ export function useGovernanceMonitor(statusQuery: string) {
         modules: result.modules,
         source: result.source,
         apiReachable: result.apiReachable,
+        localApiReachable: result.localApiReachable,
+        offlineReason: result.offlineReason,
       })
       const rg = (result.dashboard?.runtime_gate as Record<string, unknown>) || {}
       const store = loadGovernanceHistory()
@@ -90,7 +94,12 @@ export function useGovernanceMonitor(statusQuery: string) {
       setRegressed(history.regressed)
       setTimeline(history.store.timeline)
       setAlerts(
-        buildCockpitAlerts(tagged, { apiReachable: result.apiReachable, source: result.source }),
+        buildCockpitAlerts(tagged, {
+          apiReachable: result.apiReachable,
+          localApiReachable: result.localApiReachable,
+          source: result.source,
+          offlineReason: result.offlineReason,
+        }),
       )
     } finally {
       setLoading(false)
@@ -137,6 +146,7 @@ export function useGovernanceMonitor(statusQuery: string) {
     modules,
     source,
     apiReachable,
+    localApiReachable,
     capabilities,
     workspaceRoot,
     offlineReason,
