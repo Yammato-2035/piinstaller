@@ -1,0 +1,3 @@
+check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh: ok
+check-pi-rs-tel-002-network-gated-telemetry-safety.sh: ok
+check-profile-aware-runtime-gate.sh: available (release default)

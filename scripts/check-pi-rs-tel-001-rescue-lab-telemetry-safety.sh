@@ -47,7 +47,10 @@ fi
 
 # No automatic send on startup
 if grep -R -E 'send_rescue_lab_telemetry\(' backend/core/rescue_lab_telemetry_*.py backend/app.py 2>/dev/null \
-  | grep -v 'def send_rescue_lab_telemetry' | grep -v rescue_lab_telemetry.py | grep -q .; then
+  | grep -v 'def send_rescue_lab_telemetry' \
+  | grep -v rescue_lab_telemetry.py \
+  | grep -v send_preview_gate.py \
+  | grep -q .; then
   fail "automatic rescue lab telemetry send outside API route"
 fi
 

@@ -1,0 +1,27 @@
+branch: main
+head_before: d5bbf7d
+date: 2026-07-05T14:23:44Z
+ M backend/api/routes/rescue_lab_telemetry.py
+ M backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_api.py
+ M docs/roadmap/STATUS_MATRIX.md
+ M frontend/src/components/dev-dashboard/RescueLabTelemetryClientPanel.tsx
+ M scripts/check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh
+ M scripts/run-tests.sh
+?? backend/core/profile_aware_runtime_gate.py
+?? backend/core/rescue_lab_telemetry_evidence_tel002.py
+?? backend/core/rescue_lab_telemetry_offline_queue_preview.py
+?? backend/core/rescue_lab_telemetry_reachability.py
+?? backend/core/rescue_lab_telemetry_send_preview_gate.py
+?? backend/tests/test_pi_rs_tel002_offline_queue_preview.py
+?? backend/tests/test_pi_rs_tel002_profile_aware_runtime_gate_contract.py
+?? backend/tests/test_pi_rs_tel002_reachability_api.py
+?? backend/tests/test_pi_rs_tel002_reachability_model.py
+?? backend/tests/test_pi_rs_tel002_send_preview_network_gate.py
+?? docs/evidence/pi_rs_tel_002_network_gated_telemetry_reachability_offline_queue_preview/
+?? docs/faq/PI_RS_TEL_002_FAQ.de.md
+?? docs/faq/PI_RS_TEL_002_FAQ.en.md
+?? docs/kb/PI_RS_TEL_002_KB.de.md
+?? docs/kb/PI_RS_TEL_002_KB.en.md
+?? docs/telemetry/PI_RS_TEL_002_NETWORK_GATED_REACHABILITY_OFFLINE_QUEUE_PREVIEW.md
+?? scripts/check-pi-rs-tel-002-network-gated-telemetry-safety.sh
+?? scripts/check-profile-aware-runtime-gate.sh

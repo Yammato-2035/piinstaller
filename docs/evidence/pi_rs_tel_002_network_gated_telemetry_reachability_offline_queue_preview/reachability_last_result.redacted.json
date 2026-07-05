@@ -1,0 +1,17 @@
+{
+  "network_state": "blocked_missing_config",
+  "telemetry_reachability": "skipped_missing_config",
+  "lab_base_url_configured": false,
+  "secret_configured": false,
+  "lab_base_url_redacted": null,
+  "client_id": "fake-rescue-stick-lab-client",
+  "product": "setuphelfer-rescue-stick",
+  "source": "rescue_stick_lab_preview",
+  "environment": "lab",
+  "production_ready": false,
+  "checked_at": "2026-07-05T14:23:36Z",
+  "warnings": [],
+  "errors": [
+    "lab_base_url_not_configured"
+  ]
+}

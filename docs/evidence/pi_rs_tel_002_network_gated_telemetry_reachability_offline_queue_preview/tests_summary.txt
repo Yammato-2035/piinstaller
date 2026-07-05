@@ -1,0 +1,11 @@
+PI-RS-TEL-002 pytest summary
+==========================
+test_pi_rs_tel002_profile_aware_runtime_gate_contract.py  5 passed
+test_pi_rs_tel002_reachability_model.py                     8 passed
+test_pi_rs_tel002_reachability_api.py                       6 passed
+test_pi_rs_tel002_send_preview_network_gate.py              8 passed
+test_pi_rs_tel002_offline_queue_preview.py                  7 passed
+PI-RS-TEL-001 regression (4 files)                         29 passed
+TOTAL                                                      63 passed
+check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh          ok
+check-pi-rs-tel-002-network-gated-telemetry-safety.sh     ok

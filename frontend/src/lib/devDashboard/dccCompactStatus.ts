@@ -76,8 +76,17 @@ export type DccCompactStatus = {
       secret_configured?: boolean
       lab_base_url_configured?: boolean
       last_send_status?: string
+      last_send_mode?: string
+      install_profile?: string
+      lab_api_enabled?: boolean
+      network_gate?: string
+      telemetry_reachability?: string
+      last_reachability_checked_at?: string | null
+      offline_queue_preview_count?: number
+      offline_queue_preview_latest_reason?: string | null
       production_ready?: boolean
       next_required_action?: string
+      auto_replay_enabled?: boolean
     }
     network_telemetry?: {
       status_tone?: string

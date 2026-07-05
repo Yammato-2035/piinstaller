@@ -1,0 +1,15 @@
+{
+  "profile": "release",
+  "status": "release_runtime_review_required",
+  "service_active": true,
+  "version_http_status": 200,
+  "project_version": "1.9.19.3",
+  "backend_runtime_path": "/opt/setuphelfer/backend",
+  "lab_status_http": 404,
+  "lab_endpoints_disabled": false,
+  "dcc_status_http": 404,
+  "warnings": [
+    "lab_status_404_runtime_may_lack_pi_rs_tel_deploy"
+  ],
+  "errors": []
+}

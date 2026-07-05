@@ -1,0 +1,41 @@
+{
+  "queue_preview_id": "476538ab-c8c8-4b0b-b649-330b38243948",
+  "created_at": "2026-07-05T14:23:36Z",
+  "reason": "missing_config",
+  "would_send_to": null,
+  "client_id": "fake-rescue-stick-lab-client",
+  "product": "setuphelfer-rescue-stick",
+  "source": "rescue_stick_lab_preview",
+  "environment": "lab",
+  "payload_kind": "rescue_preview",
+  "payload_redacted": {
+    "safety": {
+      "contains_real_host_data": false,
+      "contains_raw_logs": false,
+      "contains_secrets": false,
+      "contains_mac_addresses": false,
+      "contains_ip_addresses": false,
+      "production_ready": false
+    },
+    "product": "setuphelfer-rescue-stick",
+    "payload_kind": "rescue_preview",
+    "source": "rescue_stick_lab_preview",
+    "environment": "lab",
+    "created_for": "PI-RS-TEL-001",
+    "rescue_preview": {
+      "stick_version": "lab-preview-1.0",
+      "runtime_mode": "rescue_lab_preview",
+      "gui_available": true,
+      "network_state": "unknown",
+      "send_flow": "synthetic_lab_only"
+    },
+    "redaction": "preview_only_no_host_data"
+  },
+  "network_state": "blocked_missing_config",
+  "telemetry_reachability": null,
+  "send_allowed_now": false,
+  "auto_replay_enabled": false,
+  "production_ready": false,
+  "warnings": [],
+  "errors": []
+}

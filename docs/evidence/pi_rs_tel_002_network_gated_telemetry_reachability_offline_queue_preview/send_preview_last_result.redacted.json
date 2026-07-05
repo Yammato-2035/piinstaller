@@ -1,0 +1,24 @@
+{
+  "code": "RESCUE_LAB_TELEMETRY_BLOCKED",
+  "result": {
+    "client_id": "fake-rescue-stick-lab-client",
+    "product": "setuphelfer-rescue-stick",
+    "source": "rescue_stick_lab_preview",
+    "environment": "lab",
+    "payload_kind": "rescue_preview",
+    "send_mode": "offline_queue_preview",
+    "network_state": "blocked_missing_config",
+    "telemetry_reachability": "skipped_missing_config",
+    "send_executed": false,
+    "offline_queue_preview_created": true,
+    "offline_queue_preview_path": "/home/volker/piinstaller/docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/476538ab-c8c8-4b0b-b649-330b38243948.redacted.json",
+    "http_status": null,
+    "server_status": null,
+    "sent_at": "2026-07-05T14:23:36Z",
+    "production_ready": false
+  },
+  "warnings": [],
+  "errors": [
+    "lab_base_url_not_configured"
+  ]
+}

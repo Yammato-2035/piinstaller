@@ -8,6 +8,7 @@
 | Network/Telemetry Connectivity | GRÜN | V2 modules + Frontend panel |
 | Telemetry Client V2 | GRÜN | Contract + queue + signing |
 | PI-RS-TEL-001 Rescue Lab Send | GRÜN | `backend/core/rescue_lab_telemetry_*` + Tests + Evidence |
+| PI-RS-TEL-002 Reachability + Queue Preview | GRÜN | Network gate + offline preview + profile-aware runtime gate |
 | Beta Registration (public contract) | GRÜN | Architecture + SQL skeleton |
 | Telemetry Server beta.0.1 | GELB | Contract/Mock only |
 | Diagnostics Server beta.0.1 | GELB | Contract/Mock only |

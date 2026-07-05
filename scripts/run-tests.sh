@@ -29,4 +29,15 @@ python3 -m pytest \
 echo "== PI-RS-TEL-001 safety gate =="
 bash "$ROOT/scripts/check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh"
 
+echo "== PI-RS-TEL-002 pytest =="
+PYTHONPATH="$ROOT/backend" python3 -m pytest \
+  "$ROOT/backend/tests/test_pi_rs_tel002_profile_aware_runtime_gate_contract.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel002_reachability_model.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel002_reachability_api.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel002_send_preview_network_gate.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel002_offline_queue_preview.py"
+
+echo "== PI-RS-TEL-002 safety gate =="
+bash "$ROOT/scripts/check-pi-rs-tel-002-network-gated-telemetry-safety.sh"
+
 echo "run-tests.sh: ok"

@@ -579,6 +579,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             />
             <RescueLabTelemetryClientPanel
               labClient={compactStatus?.rescue?.lab_telemetry_client}
+              installProfile={compactStatus?.install_profile}
               dccVisible={compactStatus?.dcc_visible}
             />
             <RescueDeveloperPipelineCard summary={summary} />

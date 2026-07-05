@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PI-RS-TEL-002 Reachability Summary",
+  "type": "object",
+  "required": [
+    "network_state",
+    "telemetry_reachability",
+    "lab_base_url_configured",
+    "secret_configured",
+    "production_ready"
+  ],
+  "properties": {
+    "network_state": {
+      "type": "string"
+    },
+    "telemetry_reachability": {
+      "type": "string"
+    },
+    "production_ready": {
+      "const": false
+    }
+  }
+}
