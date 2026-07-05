@@ -71,6 +71,7 @@ import {
 } from '../lib/devDashboard/dccDeveloperToken'
 import { DccRuntimeStatusPanel } from '../components/dev-dashboard/DccRuntimeStatusPanel'
 import { DccDeployOptPanel } from '../components/dev-dashboard/DccDeployOptPanel'
+import { AppLanguageSwitcher } from '../components/AppLanguageSwitcher'
 import { DccGovernanceContextBanner } from '../components/dev-dashboard/DccGovernanceContextBanner'
 import { DccDeveloperTokenCard } from '../components/dev-dashboard/DccDeveloperTokenCard'
 import { DccVisibilityRoadmapSection } from '../components/dev-dashboard/DccVisibilityRoadmapSection'
@@ -768,6 +769,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           <p className="text-sm text-slate-400 mt-1">{t('devDashboard.governance.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <AppLanguageSwitcher variant="dcc" showActiveLabel />
           {viewBtn('operations', t('devDashboard.governance.view.operations'))}
           {viewBtn('compact', t('devDashboard.governance.view.compact'))}
           {viewBtn('timeline', t('devDashboard.governance.view.timeline'))}

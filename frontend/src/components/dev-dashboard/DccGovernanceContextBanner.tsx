@@ -12,6 +12,7 @@ type Props = {
 /** Explains expected red governance when token + API work but Hard-Safety gates stay closed. */
 export function DccGovernanceContextBanner({ model, workspaceVersion, runtimeVersion, redAreaCount }: Props) {
   const { t } = useTranslation()
+  if (!model) return null
   const tokenOk = model.developerTokenState === 'valid'
   const apiOk = model.dashboardApiReachable
   if (!tokenOk || !apiOk || redAreaCount === 0) return null

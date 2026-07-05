@@ -100,7 +100,8 @@ export function DccDeployOptPanel({ workspaceVersion, deployDrift, onOpenOperati
   }, [load])
 
   const wsVer = workspaceVersion || workspaceVersionLabel()
-  const uiStale = wsVer !== 'unknown' && snap?.runtimeVersion !== '—' && wsVer !== snap.runtimeVersion
+  const uiStale =
+    snap != null && wsVer !== 'unknown' && snap.runtimeVersion !== '—' && wsVer !== snap.runtimeVersion
   const tone = uiStale ? 'yellow' : snap?.driftStatus === 'green' ? 'green' : 'gray'
 
   return (

@@ -126,7 +126,7 @@ export function buildGovernanceMatrix(params: {
       [],
       'docs/roadmap/STATUS_MATRIX.md',
     ),
-    mk('i18n', 'gray', [], 'frontend/src/locales'),
+    mk('i18n', 'yellow', [], 'FR/NL: DCC vollständig; Haupt-UI EN-Fallback'),
     mk('prompt_export', 'green', [], 'KI-Export (read-only)'),
     mk(
       'runtime_gates',

@@ -17,7 +17,7 @@ import {
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
-import { setAppLocale } from '../i18n'
+import { AppLanguageSwitcher } from '../components/AppLanguageSwitcher'
 import PageHeader from '../components/layout/PageHeader'
 
 type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
@@ -805,22 +805,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-2">{t('settings.language.label')}</h3>
           <p className="text-sm text-slate-400 mb-3">{t('settings.language.hint')}</p>
-          <div className="flex flex-wrap gap-2">
-            {(['de', 'en'] as const).map((lng) => (
-              <button
-                key={lng}
-                type="button"
-                onClick={() => setAppLocale(lng)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                  i18n.language?.startsWith(lng)
-                    ? 'bg-sky-600 text-white'
-                    : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                {lng === 'de' ? t('settings.language.de') : t('settings.language.en')}
-              </button>
-            ))}
-          </div>
+          <AppLanguageSwitcher variant="settings" showActiveLabel />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-3">Verbindung zum Server</h3>

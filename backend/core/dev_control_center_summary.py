@@ -16,6 +16,17 @@ from typing import Any
 UTC = timezone.utc
 
 _DE_EN_PAIR_RE = re.compile(r"^(?P<base>.+)_(DE|EN|FR|NL)\.md$", re.I)
+_DOT_LANG_PAIR_RE = re.compile(r"^(?P<base>.+)\.(de|en|fr|nl)\.md$", re.I)
+
+
+def _lang_from_doc_filename(name: str) -> tuple[str, str] | None:
+    m = _DE_EN_PAIR_RE.match(name)
+    if m:
+        return f"{m.group('base')}", m.group(2).upper()
+    m = _DOT_LANG_PAIR_RE.match(name)
+    if m:
+        return f"{m.group('base')}", m.group(2).upper()
+    return None
 
 
 def _repo_root() -> Path:
@@ -62,11 +73,11 @@ def _scan_translation_pairs(repo: Path) -> dict[str, Any]:
         }
     try:
         for fp in docs.rglob("*.md"):
-            m = _DE_EN_PAIR_RE.match(fp.name)
-            if not m:
+            parsed = _lang_from_doc_filename(fp.name)
+            if not parsed:
                 continue
-            base_key = f"{fp.parent.relative_to(docs)}/{m.group('base')}".replace("\\", "/")
-            lang = fp.name.rsplit("_", 1)[-1][:2].upper()
+            base_name, lang = parsed
+            base_key = f"{fp.parent.relative_to(docs)}/{base_name}".replace("\\", "/")
             bases.setdefault(base_key, set()).add(lang)
     except OSError as exc:
         return {
@@ -125,7 +136,7 @@ def build_documentation_stats(repo_root: Path | None = None) -> dict[str, Any]:
         "status": "available" if docs.is_dir() else "not_available",
         "docs_total": _count_md_files(docs),
         "faq_total": _count_md_files(docs / "faq"),
-        "kb_total": _count_md_files(docs / "knowledge-base"),
+        "kb_total": _count_md_files(docs / "knowledge-base") + _count_md_files(docs / "kb"),
         "architecture_total": _count_md_files(docs / "architecture"),
         "runbooks_total": _count_md_files(docs / "runbooks"),
         "evidence_total": _count_md_files(docs / "evidence"),
