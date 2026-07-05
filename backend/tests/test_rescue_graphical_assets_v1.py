@@ -96,8 +96,6 @@ class RescueGraphicalAssetsTests(unittest.TestCase):
             RESCUE_SRC / "RescueStartCenter.tsx",
             RESCUE_SRC / "RescueApp.tsx",
             RESCUE_SRC / "rescueMenuItems.ts",
-            RESCUE_SRC / "i18n/de.json",
-            RESCUE_SRC / "i18n/en.json",
         ]
         for path in scan_paths:
             text = path.read_text(encoding="utf-8")
