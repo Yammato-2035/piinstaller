@@ -12,6 +12,7 @@ import { DeployStatusPanel } from '../components/dev-dashboard/DeployStatusPanel
 import { RescueStickBoard } from '../components/dev-dashboard/RescueStickBoard'
 import { RescueUsbOperatorToolbox } from '../components/dev-dashboard/RescueUsbOperatorToolbox'
 import { RescueTelemetryLanProxyToolbox } from '../components/dev-dashboard/RescueTelemetryLanProxyToolbox'
+import { RescueLabTelemetryClientPanel } from '../components/dev-dashboard/RescueLabTelemetryClientPanel'
 import { RescueBuildPanel } from '../components/dev-dashboard/RescueBuildPanel'
 import { WindowsRescueInspectCard } from '../components/dev-dashboard/WindowsRescueInspectCard'
 import { NotificationPanel } from '../components/dev-dashboard/NotificationPanel'
@@ -574,6 +575,10 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
             />
             <RescueTelemetryLanProxyToolbox
               telemetryLanProxy={compactStatus?.rescue?.telemetry_lan_proxy}
+              dccVisible={compactStatus?.dcc_visible}
+            />
+            <RescueLabTelemetryClientPanel
+              labClient={compactStatus?.rescue?.lab_telemetry_client}
               dccVisible={compactStatus?.dcc_visible}
             />
             <RescueDeveloperPipelineCard summary={summary} />

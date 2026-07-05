@@ -1,0 +1,30 @@
+branch: main
+head: ade5204
+date: 2026-07-05T14:11:55Z
+
+ M backend/app.py
+ M backend/core/dev_dashboard_compact_status.py
+ M docs/roadmap/STATUS_MATRIX.md
+ M frontend/src/lib/devDashboard/dccCompactStatus.ts
+ M frontend/src/pages/ExternalDevelopmentControlCenter.tsx
+ M scripts/run-tests.sh
+?? backend/api/routes/rescue_lab_telemetry.py
+?? backend/core/rescue_lab_telemetry_client.py
+?? backend/core/rescue_lab_telemetry_config.py
+?? backend/core/rescue_lab_telemetry_evidence.py
+?? backend/core/rescue_lab_telemetry_model.py
+?? backend/core/rescue_lab_telemetry_signing.py
+?? backend/core/rescue_lab_telemetry_status.py
+?? backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_api.py
+?? backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_client.py
+?? backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_model.py
+?? backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_signing.py
+?? docs/evidence/PI_RS_TEL_001_TELEMETRY_SERVER_CONTRACT_REFERENCE.md
+?? docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/
+?? docs/faq/PI_RS_TEL_001_FAQ.de.md
+?? docs/faq/PI_RS_TEL_001_FAQ.en.md
+?? docs/kb/PI_RS_TEL_001_KB.de.md
+?? docs/kb/PI_RS_TEL_001_KB.en.md
+?? docs/telemetry/PI_RS_TEL_001_RESCUE_LAB_TELEMETRY_SEND_FLOW.md
+?? frontend/src/components/dev-dashboard/RescueLabTelemetryClientPanel.tsx
+?? scripts/check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh

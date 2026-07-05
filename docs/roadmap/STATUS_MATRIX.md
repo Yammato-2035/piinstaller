@@ -7,6 +7,7 @@
 | Safe Action Engine | GRÜN | `backend/core/rescue_repair_advice_engine_v1.py` |
 | Network/Telemetry Connectivity | GRÜN | V2 modules + Frontend panel |
 | Telemetry Client V2 | GRÜN | Contract + queue + signing |
+| PI-RS-TEL-001 Rescue Lab Send | GRÜN | `backend/core/rescue_lab_telemetry_*` + Tests + Evidence |
 | Beta Registration (public contract) | GRÜN | Architecture + SQL skeleton |
 | Telemetry Server beta.0.1 | GELB | Contract/Mock only |
 | Diagnostics Server beta.0.1 | GELB | Contract/Mock only |

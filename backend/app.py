@@ -2640,6 +2640,16 @@ except Exception:
     )
 
 try:
+    from api.routes.rescue_lab_telemetry import router as rescue_lab_telemetry_router
+
+    app.include_router(rescue_lab_telemetry_router)
+except Exception:
+    logger.exception(
+        "Rescue-Lab-Telemetry-Router konnte nicht registriert werden; "
+        "/api/rescue/telemetry/lab/* fehlt dann (404)."
+    )
+
+try:
     from api.routes.diagnostics import router as diagnostics_router
     app.include_router(diagnostics_router)
 except ImportError:

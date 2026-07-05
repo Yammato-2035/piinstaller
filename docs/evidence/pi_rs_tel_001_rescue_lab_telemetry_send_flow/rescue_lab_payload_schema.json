@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PI-RS-TEL-001 Rescue Lab Telemetry Payload",
+  "type": "object",
+  "required": [
+    "product",
+    "source",
+    "environment",
+    "payload_kind",
+    "created_for",
+    "rescue_preview",
+    "safety"
+  ],
+  "properties": {
+    "product": {
+      "const": "setuphelfer-rescue-stick"
+    },
+    "source": {
+      "const": "rescue_stick_lab_preview"
+    },
+    "environment": {
+      "const": "lab"
+    },
+    "payload_kind": {
+      "const": "rescue_preview"
+    },
+    "created_for": {
+      "const": "PI-RS-TEL-001"
+    },
+    "rescue_preview": {
+      "type": "object",
+      "required": [
+        "stick_version",
+        "runtime_mode",
+        "network_state",
+        "send_flow"
+      ]
+    },
+    "safety": {
+      "type": "object",
+      "required": [
+        "contains_real_host_data",
+        "contains_raw_logs",
+        "contains_secrets",
+        "contains_mac_addresses",
+        "contains_ip_addresses",
+        "production_ready"
+      ],
+      "properties": {
+        "production_ready": {
+          "const": false
+        }
+      }
+    }
+  },
+  "additionalProperties": true
+}

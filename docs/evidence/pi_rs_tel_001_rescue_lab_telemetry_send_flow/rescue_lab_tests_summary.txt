@@ -1,0 +1,8 @@
+PI-RS-TEL-001 pytest summary (2026-07-05)
+=====================================
+test_pi_rs_tel001_rescue_lab_telemetry_model.py   7 passed
+test_pi_rs_tel001_rescue_lab_telemetry_signing.py 4 passed
+test_pi_rs_tel001_rescue_lab_telemetry_client.py  6 passed
+test_pi_rs_tel001_rescue_lab_telemetry_api.py     6 passed
+TOTAL                                            23 passed
+check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh ok

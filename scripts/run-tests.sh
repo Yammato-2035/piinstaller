@@ -19,4 +19,14 @@ bash "$ROOT/scripts/check-dcc-vis-001-safety.sh"
 echo "== version consistency =="
 python3 "$ROOT/backend/tools/check_version_consistency.py" --repo-root "$ROOT"
 
+echo "== PI-RS-TEL-001 pytest =="
+python3 -m pytest \
+  "$ROOT/backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_model.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_signing.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_client.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel001_rescue_lab_telemetry_api.py"
+
+echo "== PI-RS-TEL-001 safety gate =="
+bash "$ROOT/scripts/check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh"
+
 echo "run-tests.sh: ok"

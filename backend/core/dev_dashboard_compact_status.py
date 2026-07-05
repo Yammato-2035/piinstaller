@@ -45,6 +45,23 @@ def _detect_usb_rescue_mount() -> dict[str, Any]:
     return {"detected": False, "mount_path": None, "source": "none"}
 
 
+def _rescue_lab_telemetry_client_summary() -> dict[str, Any]:
+    try:
+        from core.rescue_lab_telemetry_status import build_rescue_lab_telemetry_dashboard_status
+
+        status = build_rescue_lab_telemetry_dashboard_status()
+        status.pop("last_result", None)
+        return status
+    except Exception:
+        return {
+            "title": "Rescue Telemetry Lab Client",
+            "client_id": "fake-rescue-stick-lab-client",
+            "production_ready": False,
+            "last_send_status": "pending",
+            "next_required_action": "module_unavailable",
+        }
+
+
 def _deploy_exposure_summary() -> dict[str, Any]:
     from core.profile_deploy_manifest import enrich_deploy_drift_profile_aware
 
@@ -203,6 +220,7 @@ def build_compact_dcc_status(
             "usb_writer_modes": usb_operator.get("usb_writer_modes") or {},
             "telemetry_lan_proxy": build_compact_telemetry_lan_proxy_status(),
             "network_telemetry": build_compact_network_telemetry_status(),
+            "lab_telemetry_client": _rescue_lab_telemetry_client_summary(),
         },
         "blockers": blockers,
         "next_operator_action": str(next_action),

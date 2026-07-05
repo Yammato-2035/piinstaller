@@ -66,6 +66,19 @@ export type DccCompactStatus = {
       blockers?: string[]
       secrets_exposed?: boolean
     }
+    lab_telemetry_client?: {
+      title?: string
+      client_id?: string
+      product?: string
+      source?: string
+      environment?: string
+      payload_kind?: string
+      secret_configured?: boolean
+      lab_base_url_configured?: boolean
+      last_send_status?: string
+      production_ready?: boolean
+      next_required_action?: string
+    }
     network_telemetry?: {
       status_tone?: string
       target_laptop_booted_from_stick?: boolean

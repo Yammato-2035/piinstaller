@@ -1,0 +1,18 @@
+{
+  "title": "Rescue Telemetry Lab Client",
+  "client_id": "fake-rescue-stick-lab-client",
+  "product": "setuphelfer-rescue-stick",
+  "source": "rescue_stick_lab_preview",
+  "environment": "lab",
+  "payload_kind": "rescue_preview",
+  "secret_configured": false,
+  "lab_base_url_configured": false,
+  "last_send_status": "pending",
+  "production_ready": false,
+  "next_required_action": "set_SETUPHELPER_LAB_CLIENT_FAKE_RESCUE_STICK_SECRET",
+  "env_keys": {
+    "lab_base_url": "SETUPHELPER_TELEMETRY_LAB_BASE_URL",
+    "client_id": "SETUPHELPER_LAB_CLIENT_FAKE_RESCUE_STICK_ID",
+    "client_secret": "SETUPHELPER_LAB_CLIENT_FAKE_RESCUE_STICK_SECRET"
+  }
+}
