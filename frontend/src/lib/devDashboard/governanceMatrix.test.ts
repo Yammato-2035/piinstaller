@@ -47,4 +47,20 @@ describe('governanceMatrix', () => {
     })
     expect(areas.find((a) => a.id === 'runtime')?.status).toBe('red')
   })
+
+  it('uses recommendedAction in red area alerts when blockers empty', () => {
+    const areas = buildGovernanceMatrix({
+      dashboard: {
+        runtime_gate: { passed: false, status: 'red', blockers: ['blocked_runtime_outdated'] },
+        br001_gates: { offline: { status: 'red' } },
+      },
+      modules: [],
+      source: 'runtime_api',
+      apiReachable: true,
+      localApiReachable: true,
+    })
+    const alerts = buildCockpitAlerts(areas, { apiReachable: true, localApiReachable: true, source: 'runtime_api' })
+    const backupAlert = alerts.find((a) => a.areaId === 'backup')
+    expect(backupAlert?.message).toContain('BR-001')
+  })
 })

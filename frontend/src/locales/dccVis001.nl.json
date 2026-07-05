@@ -34,4 +34,8 @@
   "devDashboard.vis.runtime.ops.title": "Operationele acties",
   "devDashboard.vis.runtime.ops.deploy": "Deploy",
   "devDashboard.vis.runtime.ops.state.blocked": "geblokkeerd",
+  "devDashboard.vis.governance.redContextTitle": "Veel rood — maar DCC en token werken",
+  "devDashboard.vis.governance.redContextBody": "Rode gebieden zijn hard-safety gates, geen totale storing: backup, restore en rescue blijven rood zonder hardware-evidence.",
+  "devDashboard.vis.governance.versionDrift": "Workspace {{workspace}} · Runtime /opt {{runtime}} — deploy-drift",
+  "devDashboard.vis.governance.deployHint": "Volgende operatorstap: workspace naar /opt/setuphelfer deployen en backend/frontend herstarten."
 }

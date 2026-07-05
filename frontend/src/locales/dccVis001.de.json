@@ -123,5 +123,9 @@
   "devDashboard.vis.roadmap.blockers": "Blocker",
   "devDashboard.vis.roadmap.noVisibleUi": "Technisch abgeschlossen, noch nicht im DCC sichtbar",
   "devDashboard.vis.roadmap.techCompleteNotVisible": "technisch abgeschlossen — DCC-Sichtbarkeit fehlt noch",
-  "devDashboard.vis.roadmap.limitedHint": "Local API ok — Snapshot/Roadmap eingeschränkt"
+  "devDashboard.vis.roadmap.limitedHint": "Local API ok — Snapshot/Roadmap eingeschränkt",
+  "devDashboard.vis.governance.redContextTitle": "Viel Rot — aber DCC und Token funktionieren",
+  "devDashboard.vis.governance.redContextBody": "Die roten Bereiche sind Hard-Safety-Gates, kein Totalausfall: Backup, Restore und Rescue bleiben rot ohne Hardware-Evidence; Safe-Test-Mode sperrt bewusst operative Aktionen.",
+  "devDashboard.vis.governance.versionDrift": "Workspace {{workspace}} · Runtime /opt {{runtime}} — Deploy-Drift",
+  "devDashboard.vis.governance.deployHint": "Nächster Operator-Schritt: Workspace nach /opt/setuphelfer deployen und Backend/Frontend neu starten — danach DCC-VIS-UI und Summary-Daten sichtbar."
 }

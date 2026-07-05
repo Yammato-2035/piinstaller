@@ -71,6 +71,7 @@ import {
 } from '../lib/devDashboard/dccDeveloperToken'
 import { DccRuntimeStatusPanel } from '../components/dev-dashboard/DccRuntimeStatusPanel'
 import { DccDeployOptPanel } from '../components/dev-dashboard/DccDeployOptPanel'
+import { DccGovernanceContextBanner } from '../components/dev-dashboard/DccGovernanceContextBanner'
 import { DccDeveloperTokenCard } from '../components/dev-dashboard/DccDeveloperTokenCard'
 import { DccVisibilityRoadmapSection } from '../components/dev-dashboard/DccVisibilityRoadmapSection'
 import {
@@ -361,10 +362,18 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
     bootProbe?.versionPayload,
   ])
 
+  const redAreaCount = useMemo(() => mon.areas.filter((a) => a.status === 'red').length, [mon.areas])
+
   const governanceBlockers = useMemo(
     () => mon.areas.filter((a) => a.status === 'red').flatMap((a) => a.blockers).filter(Boolean),
     [mon.areas],
   )
+
+  const runtimeVersion = String((bootProbe?.versionPayload as Record<string, unknown>)?.project_version || '')
+  const workspaceVersion =
+    typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim()
+      ? String(__APP_VERSION__).trim()
+      : buildProfileMeta.project_version ?? ''
 
   const retryGate = () => setStatusT(Date.now())
 
@@ -707,7 +716,18 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
         deployDrift={(mon.dashboard?.deploy_drift as Record<string, unknown>) || null}
         onOpenOperations={() => setActiveTab('operations')}
       />
-      <DccDeveloperTokenCard onTokenChanged={retryGate} />
+      <DccDeveloperTokenCard
+        onTokenChanged={() => {
+          retryGate()
+          void loadSummary()
+        }}
+      />
+      <DccGovernanceContextBanner
+        model={runtimeStatusModel}
+        workspaceVersion={workspaceVersion}
+        runtimeVersion={runtimeVersion}
+        redAreaCount={redAreaCount}
+      />
       {tokenRequired ? (
         <div
           className="mb-4 rounded-xl border border-amber-700/50 bg-amber-950/25 p-4"

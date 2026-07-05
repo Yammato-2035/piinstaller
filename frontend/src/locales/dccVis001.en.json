@@ -124,5 +124,9 @@
   "devDashboard.vis.roadmap.blockers": "Blockers",
   "devDashboard.vis.roadmap.noVisibleUi": "Technically complete, not yet visible in DCC",
   "devDashboard.vis.roadmap.techCompleteNotVisible": "technically complete — DCC visibility pending",
-  "devDashboard.vis.roadmap.limitedHint": "Local API ok — snapshot/roadmap limited"
+  "devDashboard.vis.roadmap.limitedHint": "Local API ok — snapshot/roadmap limited",
+  "devDashboard.vis.governance.redContextTitle": "Lots of red — but DCC and token work",
+  "devDashboard.vis.governance.redContextBody": "Red areas are hard-safety gates, not a total outage: backup, restore and rescue stay red without hardware evidence; safe-test mode deliberately locks operational actions.",
+  "devDashboard.vis.governance.versionDrift": "Workspace {{workspace}} · Runtime /opt {{runtime}} — deploy drift",
+  "devDashboard.vis.governance.deployHint": "Next operator step: deploy workspace to /opt/setuphelfer and restart backend/frontend — then DCC-VIS UI and summary data become visible."
 }

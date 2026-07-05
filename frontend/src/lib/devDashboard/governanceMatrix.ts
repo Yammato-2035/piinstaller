@@ -180,8 +180,8 @@ export function buildCockpitAlerts(
       alerts.push({
         id: `area-red-${a.id}`,
         severity: 'critical',
-        code: `${a.id}_blocked`,
-        message: a.blockers[0] || `${a.id} rot`,
+        code: a.blockers[0] || `${a.id}_blocked`,
+        message: a.blockers[0] || a.recommendedAction || `${a.id} rot`,
         areaId: a.id,
       })
     }

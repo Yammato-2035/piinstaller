@@ -34,4 +34,8 @@
   "devDashboard.vis.runtime.ops.title": "Actions opérationnelles",
   "devDashboard.vis.runtime.ops.deploy": "Déploiement",
   "devDashboard.vis.runtime.ops.state.blocked": "bloqué",
+  "devDashboard.vis.governance.redContextTitle": "Beaucoup de rouge — mais DCC et jeton fonctionnent",
+  "devDashboard.vis.governance.redContextBody": "Les zones rouges sont des gates de sécurité, pas une panne totale : sauvegarde, restauration et rescue restent rouges sans preuve matérielle.",
+  "devDashboard.vis.governance.versionDrift": "Workspace {{workspace}} · Runtime /opt {{runtime}} — dérive de déploiement",
+  "devDashboard.vis.governance.deployHint": "Prochaine étape opérateur : déployer le workspace vers /opt/setuphelfer et redémarrer backend/frontend."
 }
