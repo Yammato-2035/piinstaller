@@ -36,6 +36,28 @@ export function DccRuntimeStatusPanel({ model }: Props) {
           </div>
         ))}
       </div>
+
+      <div className="mt-3 rounded-lg border border-slate-700/60 bg-slate-950/40 p-3" data-testid="dcc-runtime-operational-actions">
+        <div className="text-[10px] uppercase tracking-wide text-slate-500 mb-2">
+          {t('devDashboard.vis.runtime.ops.title')}
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {(['deploy', 'backup', 'restore'] as const).map((op) => {
+            const state = model.operationalActions[op]
+            const tone = state === 'allowed' ? 'green' : 'red'
+            return (
+              <span
+                key={op}
+                className={`rounded border px-2 py-1 text-[11px] font-medium ${toneClass(tone)}`}
+                data-testid={`dcc-runtime-op-${op}`}
+              >
+                {t(`devDashboard.vis.runtime.ops.${op}`)}: {t(`devDashboard.vis.runtime.ops.state.${state}`)}
+              </span>
+            )
+          })}
+        </div>
+        <p className="mt-2 text-[11px] text-slate-400">{t(model.operationalActions.reasonKey)}</p>
+      </div>
     </section>
   )
 }

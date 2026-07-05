@@ -70,6 +70,7 @@ import {
   writeStoredDccDeveloperToken,
 } from '../lib/devDashboard/dccDeveloperToken'
 import { DccRuntimeStatusPanel } from '../components/dev-dashboard/DccRuntimeStatusPanel'
+import { DccDeployOptPanel } from '../components/dev-dashboard/DccDeployOptPanel'
 import { DccDeveloperTokenCard } from '../components/dev-dashboard/DccDeveloperTokenCard'
 import { DccVisibilityRoadmapSection } from '../components/dev-dashboard/DccVisibilityRoadmapSection'
 import {
@@ -326,6 +327,13 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
   const runtimeStatusModel = useMemo(() => {
     const rg = (mon.dashboard?.runtime_gate as Record<string, unknown>) || {}
+    const stm = (mon.dashboard?.safe_test_mode as Record<string, unknown>) || {}
+    const wsVer =
+      typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim()
+        ? String(__APP_VERSION__).trim()
+        : buildProfileMeta.project_version ?? ''
+    const rtVer = String((bootProbe?.versionPayload as Record<string, unknown>)?.project_version || '')
+    const workspaceAheadOfRuntime = Boolean(wsVer && rtVer && wsVer !== rtVer)
     return buildDccRuntimeStatusModel({
       localApiReachable: mon.localApiReachable,
       dashboardApiReachable: mon.apiReachable,
@@ -339,6 +347,8 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       dataSource: mon.source,
       offlineReason: mon.offlineReason,
       capability: liveStatus?.capability ?? null,
+      safeTestModeLocked: stm.locked === true,
+      workspaceAheadOfRuntime,
     })
   }, [
     mon.localApiReachable,
@@ -348,6 +358,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
     mon.offlineReason,
     liveStatus,
     bootProbe?.statusCode,
+    bootProbe?.versionPayload,
   ])
 
   const governanceBlockers = useMemo(
@@ -509,6 +520,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
               localApiReachable={mon.localApiReachable}
               offlineReason={mon.offlineReason}
             />
+            <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
             {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
             <section className="mb-4">
               <h2 className="text-sm font-semibold text-slate-300 mb-2">{t('devDashboard.governance.matrixTitle')}</h2>
@@ -691,6 +703,10 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
     return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
       <DccRuntimeStatusPanel model={runtimeStatusModel} />
+      <DccDeployOptPanel
+        deployDrift={(mon.dashboard?.deploy_drift as Record<string, unknown>) || null}
+        onOpenOperations={() => setActiveTab('operations')}
+      />
       <DccDeveloperTokenCard onTokenChanged={retryGate} />
       {tokenRequired ? (
         <div

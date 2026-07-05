@@ -3,6 +3,7 @@ import {
   buildDccRuntimeStatusModel,
   deriveDeveloperTokenState,
   deriveDccActionMode,
+  deriveOperationalActions,
 } from './runtimeStatusModel'
 
 describe('runtimeStatusModel', () => {
@@ -48,5 +49,31 @@ describe('runtimeStatusModel', () => {
     expect(
       deriveDeveloperTokenState({ storedTokenPresent: true, capability: { developer_capability_valid: true } }),
     ).toBe('valid')
+  })
+
+  it('blocks deploy backup restore when runtime gate red', () => {
+    const ops = deriveOperationalActions({
+      localApiReachable: true,
+      dashboardApiReachable: true,
+      runtimeGatePassed: false,
+      developerTokenState: 'valid',
+      dataSource: 'runtime_api',
+    })
+    expect(ops.deploy).toBe('blocked')
+    expect(ops.backup).toBe('blocked')
+    expect(ops.restore).toBe('blocked')
+    expect(ops.reasonKey).toBe('devDashboard.vis.runtime.ops.reason.runtime_gate')
+  })
+
+  it('exposes operational actions on model', () => {
+    const model = buildDccRuntimeStatusModel({
+      localApiReachable: true,
+      dashboardApiReachable: false,
+      runtimeGatePassed: false,
+      developerTokenState: 'missing',
+      dataSource: 'snapshot',
+      offlineReason: 'developer_token_required',
+    })
+    expect(model.operationalActions.deploy).toBe('blocked')
   })
 })

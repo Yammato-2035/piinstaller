@@ -7,6 +7,7 @@
 3. **Developer Token** — `X-Setuphelfer-Developer-Token`
 4. **Aktionsmodus** — `read_only` | `developer_capable` | `blocked`
 5. **Datenquelle** — `runtime_api` | `standalone_workspace` | `snapshot` | `unavailable`
+6. **Operative Aktionen** — Deploy / Backup / Restore jeweils `erlaubt` | `gesperrt` (kein Fake-Green)
 
 ## Regel
 

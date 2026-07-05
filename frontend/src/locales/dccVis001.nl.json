@@ -31,5 +31,7 @@
   "devDashboard.vis.changelog.status.in_progress": "in uitvoering",
   "devDashboard.vis.changelog.status.completed": "afgerond",
   "devDashboard.vis.changelog.status.blocked": "geblokkeerd",
-  "devDashboard.vis.localization.beta": "Vertaling nl — localisatie-review aanbevolen"
+  "devDashboard.vis.runtime.ops.title": "Operationele acties",
+  "devDashboard.vis.runtime.ops.deploy": "Deploy",
+  "devDashboard.vis.runtime.ops.state.blocked": "geblokkeerd",
 }

@@ -31,5 +31,7 @@
   "devDashboard.vis.changelog.status.in_progress": "en cours",
   "devDashboard.vis.changelog.status.completed": "terminé",
   "devDashboard.vis.changelog.status.blocked": "bloqué",
-  "devDashboard.vis.localization.beta": "Traduction fr — revue localisation recommandée"
+  "devDashboard.vis.runtime.ops.title": "Actions opérationnelles",
+  "devDashboard.vis.runtime.ops.deploy": "Déploiement",
+  "devDashboard.vis.runtime.ops.state.blocked": "bloqué",
 }

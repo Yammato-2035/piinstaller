@@ -5,6 +5,14 @@ export type DeveloperTokenState = 'missing' | 'invalid' | 'valid' | 'unknown'
 
 export type DccActionMode = 'read_only' | 'developer_capable' | 'blocked'
 
+export type OperationalActionId = 'deploy' | 'backup' | 'restore'
+
+export type OperationalActionState = 'allowed' | 'blocked'
+
+export type DccOperationalActions = Record<OperationalActionId, OperationalActionState> & {
+  reasonKey: string
+}
+
 export type DccRuntimeStatusInput = {
   localApiReachable: boolean
   dashboardApiReachable: boolean
@@ -14,6 +22,8 @@ export type DccRuntimeStatusInput = {
   dataSource: DevDashboardDataSource
   offlineReason?: string
   capability?: DccCapabilityStatus | null
+  safeTestModeLocked?: boolean
+  workspaceAheadOfRuntime?: boolean
 }
 
 export type DccRuntimeStatusAxis = {
@@ -33,6 +43,7 @@ export type DccRuntimeStatusModel = {
   dataSource: DevDashboardDataSource
   offlineReason?: string
   axes: DccRuntimeStatusAxis[]
+  operationalActions: DccOperationalActions
   misleadingApiOffline: boolean
 }
 
@@ -57,9 +68,34 @@ export function deriveDccActionMode(input: DccRuntimeStatusInput): DccActionMode
   return 'developer_capable'
 }
 
+export function deriveOperationalActions(input: DccRuntimeStatusInput): DccOperationalActions {
+  const blocked = (reasonKey: string): DccOperationalActions => ({
+    deploy: 'blocked',
+    backup: 'blocked',
+    restore: 'blocked',
+    reasonKey,
+  })
+
+  if (!input.localApiReachable) return blocked('devDashboard.vis.runtime.ops.reason.api_unreachable')
+  if (input.developerTokenState !== 'valid' || !input.dashboardApiReachable) {
+    return blocked('devDashboard.vis.runtime.ops.reason.read_only')
+  }
+  if (input.runtimeGatePassed !== true) return blocked('devDashboard.vis.runtime.ops.reason.runtime_gate')
+  if (input.safeTestModeLocked) return blocked('devDashboard.vis.runtime.ops.reason.safe_test_mode')
+  if (input.workspaceAheadOfRuntime) return blocked('devDashboard.vis.runtime.ops.reason.deploy_required')
+
+  return {
+    deploy: 'allowed',
+    backup: 'allowed',
+    restore: 'allowed',
+    reasonKey: 'devDashboard.vis.runtime.ops.reason.allowed',
+  }
+}
+
 export function buildDccRuntimeStatusModel(input: DccRuntimeStatusInput): DccRuntimeStatusModel {
   const runtimeGateBlocked = input.runtimeGatePassed !== true
   const actionMode = deriveDccActionMode(input)
+  const operationalActions = deriveOperationalActions(input)
   const misleadingApiOffline = input.localApiReachable && !input.dashboardApiReachable
 
   const localApiTone: DccRuntimeStatusAxis['tone'] = input.localApiReachable ? 'green' : 'red'
@@ -126,6 +162,7 @@ export function buildDccRuntimeStatusModel(input: DccRuntimeStatusInput): DccRun
     dataSource: input.dataSource,
     offlineReason: input.offlineReason,
     axes,
+    operationalActions,
     misleadingApiOffline,
   }
 }
