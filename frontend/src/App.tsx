@@ -41,7 +41,8 @@ import { getThemeShot, isThemeScreenshotCapture } from './themeScreenshot'
 import { PlatformProvider, platformRawFromSystemInfo, usePlatform } from './context/PlatformContext'
 import { MainStatusBarProvider, useMainStatusBar, useOptionalMainStatusBar } from './context/MainStatusBarContext'
 import { UIModeProvider } from './context/UIModeContext'
-import i18n, { setAppLocale } from './i18n'
+import i18n from './i18n'
+import { AppLanguageSwitcher } from './components/AppLanguageSwitcher'
 import { useTranslation } from 'react-i18next'
 import './App.css'
 
@@ -144,15 +145,6 @@ function AppTopHeader({ headerBackendOk }: { headerBackendOk: boolean | null }) 
   const { t } = useTranslation()
   const { identitySubtitle } = usePlatform()
   const { status } = useMainStatusBar()
-  const [uiLang, setUiLang] = useState<'de' | 'en'>(() => (i18n.language?.startsWith('en') ? 'en' : 'de'))
-
-  useEffect(() => {
-    const onLang = (lng: string) => setUiLang(lng.startsWith('en') ? 'en' : 'de')
-    i18n.on('languageChanged', onLang)
-    return () => {
-      i18n.off('languageChanged', onLang)
-    }
-  }, [])
 
   const hostLabel = identitySubtitle || ''
 
@@ -213,38 +205,7 @@ function AppTopHeader({ headerBackendOk }: { headerBackendOk: boolean | null }) 
           aria-hidden
         />
       </div>
-      <div
-        className="inline-flex shrink-0 self-center rounded-lg border border-slate-300 dark:border-slate-600 overflow-hidden shadow-sm text-[11px] leading-none"
-        role="group"
-        aria-label={i18n.t('sidebar.language.aria')}
-      >
-        <button
-          type="button"
-          onClick={() => setAppLocale('de')}
-          aria-pressed={uiLang === 'de'}
-          title={i18n.t('settings.language.de')}
-          className={`px-3 py-1 flex items-center justify-center transition-colors ${
-            uiLang === 'de'
-              ? 'bg-sky-600 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          DE
-        </button>
-        <button
-          type="button"
-          onClick={() => setAppLocale('en')}
-          aria-pressed={uiLang === 'en'}
-          title={i18n.t('settings.language.en')}
-          className={`px-3 py-1 flex items-center justify-center border-l border-slate-300 dark:border-slate-600 transition-colors ${
-            uiLang === 'en'
-              ? 'bg-sky-600 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
-        >
-          EN
-        </button>
-      </div>
+      <AppLanguageSwitcher variant="compact" showActiveLabel className="shrink-0 self-center" />
     </header>
   )
 }

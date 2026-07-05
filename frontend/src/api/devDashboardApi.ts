@@ -1,4 +1,4 @@
-import { fetchApi } from '../api'
+import { fetchDccApi } from '../lib/devDashboard/dccDeveloperToken'
 
 export type BackendHealthSnapshot = {
   task?: string
@@ -34,7 +34,7 @@ export type BackendHealthResponse = {
 
 export async function fetchBackendHealth(historyLimit = 5): Promise<BackendHealthResponse | null> {
   try {
-    const res = await fetchApi(
+    const res = await fetchDccApi(
       `/api/dev-dashboard/backend-health?history_limit=${Math.min(20, Math.max(0, historyLimit))}`,
     )
     if (!res.ok) return null
@@ -60,7 +60,7 @@ export type ControlCenterSummary = {
 
 export async function fetchControlCenterSummary(): Promise<ControlCenterSummary | null> {
   try {
-    const res = await fetchApi('/api/dev-dashboard/control-center-summary')
+    const res = await fetchDccApi('/api/dev-dashboard/control-center-summary')
     if (!res.ok) return null
     const data = await res.json()
     return (data?.summary as ControlCenterSummary) ?? null

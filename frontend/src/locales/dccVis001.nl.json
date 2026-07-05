@@ -1,0 +1,184 @@
+{
+  "devDashboard": {
+    "controlCenter": {
+      "translationFr": "FR-bestanden",
+      "translationNl": "NL-bestanden"
+    },
+    "vis": {
+      "changelog": {
+        "dccVis001": {
+          "next": "Make roadmap tab and status model visible in DCC",
+          "result": "Roadmap + graphical changelog in DCC",
+          "title": "Visible roadmap, graphical changelog & workspace handoff"
+        },
+        "spCse014": {
+          "result": "Cloudserver lab client sends HMAC-v2 telemetry",
+          "title": "Cloudserver lab client — HMAC-v2 telemetry"
+        },
+        "status": {
+          "blocked": "geblokkeerd",
+          "completed": "afgerond",
+          "in_progress": "in uitvoering",
+          "planned": "gepland"
+        },
+        "tel011": {
+          "result": "fake-cloudserver-lab-client accepted (HTTP 202 accepted_lab_telemetry)",
+          "title": "Lab client registration bridge"
+        },
+        "tel012": {
+          "next": "Dual-source developer dashboard in telemetry server",
+          "result": "Rescue stick lab client as second source",
+          "title": "Rescue stick lab client registration"
+        }
+      },
+      "controlCenter": {
+        "limitedMode": "Limited: {{reason}}"
+      },
+      "deployOpt": {
+        "commandHint": "Operator: Operations tab → request deploy, or ./scripts/deploy-to-opt.sh (with gate approval)",
+        "deployStatus": "Deploy status",
+        "driftFiles": "Drift files",
+        "driftStatus": "Deploy drift",
+        "manifestMatch": "Manifest",
+        "openDeploy": "Open deploy panel",
+        "runtimePath": "Runtime path",
+        "runtimeVersion": "Runtime /opt version",
+        "staleHint": "Workspace {{workspace}} ≠ runtime {{runtime}}. New DCC UI (DCC-VIS-001) appears only after controlled deploy to /opt.",
+        "subtitle": "Workspace vs. production runtime — DCC UI changes are visible under /opt only after deploy.",
+        "title": "Deploy naar /opt/setuphelfer",
+        "tokenRequired": "Deploy details and request require a valid developer token.",
+        "uiStale": "UI verouderd",
+        "workspaceHead": "Workspace HEAD",
+        "workspaceVersion": "Workspace version"
+      },
+      "governance": {
+        "deployHint": "Next operator step: deploy workspace to /opt/setuphelfer and restart backend/frontend — then DCC-VIS UI and summary data become visible.",
+        "redContextBody": "Red areas are hard-safety gates, not a total outage: backup, restore and rescue stay red without hardware evidence; safe-test mode deliberately locks operational actions.",
+        "redContextTitle": "Lots of red — but DCC and token work",
+        "versionDrift": "Workspace {{workspace}} · Runtime /opt {{runtime}} — deploy drift"
+      },
+      "handoff": {
+        "allowed": "Allowed there",
+        "allowedTel012": "Lab client registration, dual-source dashboard, tests against mock",
+        "current": "Currently responsible",
+        "forbidden": "Forbidden there",
+        "forbiddenTel012": "No production deploy, no Plesk CLI, no real secrets",
+        "next": "Next",
+        "reason": "Reason",
+        "reasonTel012": "TEL-012 requires rescue stick lab client registration in the telemetry server.",
+        "subtitle": "When and why to switch workspace",
+        "title": "Volgende workspace"
+      },
+      "no": "nee",
+      "results": {
+        "evidence": "Evidence",
+        "subtitle": "Completed phases, visible surfaces and evidence links",
+        "title": "Zichtbare resultaten",
+        "workspace": "Workspace"
+      },
+      "roadmap": {
+        "blockers": "Blockers",
+        "inProgress": "Currently in progress",
+        "lastCompleted": "Last completed",
+        "limitedHint": "Local API ok — snapshot/roadmap limited",
+        "nextPhase": "Next phase",
+        "nextWorkspace": "Next workspace",
+        "noVisibleUi": "Technically complete, not yet visible in DCC",
+        "sectionTitle": "Projectvoortgang (zichtbaar)",
+        "techCompleteNotVisible": "technically complete — DCC visibility pending"
+      },
+      "runtime": {
+        "action": {
+          "blocked": "blocked",
+          "developer_capable": "developer capable",
+          "read_only": "read-only"
+        },
+        "actionMode": "Action mode",
+        "dataSource": "Data source",
+        "developerToken": "Developer token",
+        "localApi": "Local API",
+        "localApiReachable": "bereikbaar",
+        "localApiUnreachable": "niet bereikbaar",
+        "misleadingHint": "Note: /api/version may be reachable while the dev dashboard stays limited without a token or with a red runtime gate — that is not simply \"API offline\".",
+        "ops": {
+          "backup": "Backup",
+          "deploy": "Deploy",
+          "reason": {
+            "allowed": "Allowed — only when all gates are green and safe test mode is open.",
+            "api_unreachable": "Blocked — local API unreachable.",
+            "deploy_required": "Blocked — workspace newer than /opt; deploy to /opt/setuphelfer required.",
+            "read_only": "Blocked — read-only (missing token or limited dev dashboard).",
+            "runtime_gate": "Blocked — runtime gate not green (Phase 0).",
+            "safe_test_mode": "Blocked — safe test mode active."
+          },
+          "restore": "Restore",
+          "state": {
+            "allowed": "allowed",
+            "blocked": "blocked"
+          },
+          "title": "Operational actions"
+        },
+        "runtimeGate": "Runtime gate",
+        "runtimeGateBlocked": "geblokkeerd",
+        "runtimeGateDetail": "check Phase-0 gate",
+        "runtimeGateOk": "groen",
+        "source": {
+          "runtime_api": "runtime_api",
+          "snapshot": "snapshot",
+          "standalone_workspace": "standalone",
+          "unavailable": "unavailable"
+        },
+        "subtitle": "Aparte weergave: lokale API, runtime gate, developer token, actiemodus, gegevensbron",
+        "title": "Runtime- en API-status",
+        "token": {
+          "invalid": "invalid",
+          "missing": "missing",
+          "unknown": "unknown",
+          "valid": "valid"
+        }
+      },
+      "standalone": {
+        "limitedBody": "Backend responds on /health and /api/version. Dev dashboard, backup, restore and deploy stay read-only until token and runtime gate are green.",
+        "limitedReason": "Local API ok — {{reason}}",
+        "limitedTitle": "Limited mode — local API reachable",
+        "localApiOnly": "LOCAL OK / DASHBOARD LIMITED"
+      },
+      "surface": {
+        "dcc": "DCC",
+        "plesk": "Plesk",
+        "telemetry_dashboard": "Telemetry dashboard",
+        "website": "Website"
+      },
+      "token": {
+        "clear": "Token wissen",
+        "headerLabel": "Expected header",
+        "inputLabel": "Enter token",
+        "replaceLabel": "Enter new token (stored value is not shown)",
+        "save": "Token opslaan",
+        "serverConfigured": "Server token",
+        "serverConfiguredNo": "not configured",
+        "serverConfiguredYes": "configured (/etc/setuphelfer/dcc_developer.token)",
+        "serverHint": "The server expects a developer token. Save the value from /etc/setuphelfer/dcc_developer.token locally in the DCC (never commit or screenshot).",
+        "sourceLabel": "Source",
+        "sourceValue": "Browser local storage",
+        "status": {
+          "error": "verification failed",
+          "invalid": "invalid",
+          "missing": "missing",
+          "stored": "stored (value hidden)",
+          "valid": "valid"
+        },
+        "statusLabel": "Status",
+        "storedPlaceholder": "••••••••",
+        "subtitle": "Token is stored locally in the browser only — never in logs or evidence.",
+        "title": "Developer token",
+        "verify": "Token verifiëren",
+        "verifyError": "Verification failed — is the backend reachable?",
+        "verifyInvalid": "Token invalid or capability not active.",
+        "verifyMissing": "No token stored.",
+        "verifyValid": "Token valid — developer capability active."
+      },
+      "yes": "ja"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+[project]
+name = "setuphelfer-beta-registration"
+version = "0.1.0-beta"
+description = "Setuphelfer beta registration server (private)"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.110",
+  "uvicorn[standard]>=0.27",
+  "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = ["httpx>=0.27", "pytest>=8.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

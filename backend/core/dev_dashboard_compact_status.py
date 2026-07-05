@@ -107,6 +107,13 @@ def build_compact_dcc_status(
         if isinstance(item, dict) and item.get("id"):
             blockers.append(str(item["id"]))
 
+    try:
+        from core.rescue_usb_operator_selection import reconcile_stale_usb_absent_blockers
+
+        blockers = reconcile_stale_usb_absent_blockers(blockers, gate=gate)
+    except Exception:
+        pass
+
     usb_operator: dict[str, Any] = {}
     try:
         from core.rescue_fat32_esp_usb_writer import build_compact_usb_writer_modes_summary

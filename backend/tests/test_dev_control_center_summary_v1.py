@@ -124,6 +124,20 @@ class TestDevControlCenterSummary(unittest.TestCase):
             self.assertGreaterEqual(pairs["complete"], 0)
             self.assertIn("SAMPLE_FAQ", str(pairs.get("missing_en") or pairs.get("missing_de")))
 
+    def test_dot_lang_translation_pairs(self):
+        with tempfile.TemporaryDirectory() as td:
+            repo = Path(td)
+            faq = repo / "docs" / "faq"
+            faq.mkdir(parents=True)
+            (faq / "DCC_VIS_001_FAQ.de.md").write_text("# DE", encoding="utf-8")
+            (faq / "DCC_VIS_001_FAQ.en.md").write_text("# EN", encoding="utf-8")
+            (faq / "DCC_VIS_001_FAQ.fr.md").write_text("# FR", encoding="utf-8")
+            stats = build_documentation_stats(repo)
+            pairs = stats["translation_pairs"]
+            self.assertEqual(pairs["complete_de_en"], 1)
+            self.assertEqual(pairs["complete_fr"], 1)
+            self.assertIn("faq/DCC_VIS_001_FAQ", pairs.get("missing_nl") or [])
+
     def test_no_write_actions_in_summary(self):
         with tempfile.TemporaryDirectory() as td:
             summary = build_control_center_summary(repo_root=Path(td), dashboard={})

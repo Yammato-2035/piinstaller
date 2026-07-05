@@ -228,6 +228,45 @@ class RescueUsbOperatorSelectionTests(unittest.TestCase):
         self.assertFalse(rus._is_backup_mountpoint("/media/gabriel/SETUPHELFER"))
         self.assertTrue(rus._is_backup_mountpoint("/media/gabriel/BACKUP_DISK"))
 
+    def test_removable_usb_sda_not_blocked(self) -> None:
+        from core.safe_device import ClassifiedDevice
+
+        cd = ClassifiedDevice(
+            id="/dev/sda",
+            name="sda",
+            type="disk",
+            size="59G",
+            removable=True,
+            is_system_disk=False,
+            is_boot_disk=False,
+            is_foreign_os_disk=False,
+            is_write_allowed=True,
+            mountpoints=[],
+            partitions=[],
+            filesystems=[],
+        )
+        self.assertIsNone(
+            rus.device_blocked_reason(
+                device_path="/dev/sda",
+                classified=cd,
+                transport="usb",
+                removable=True,
+            )
+        )
+
+    def test_reconcile_stale_usb_absent_when_selectable_usb_present(self) -> None:
+        blockers = [rus.STALE_USB_ABSENT_BLOCKER]
+        with patch.object(
+            rus,
+            "build_usb_candidates_payload",
+            return_value={"devices": [{"device": "/dev/sda", "selectable": True}]},
+        ):
+            out = rus.reconcile_stale_usb_absent_blockers(
+                blockers,
+                gate={"usb_target_device": "/dev/sdb"},
+            )
+        self.assertNotIn(rus.STALE_USB_ABSENT_BLOCKER, out)
+
 
 @unittest.skipUnless(_HAS_TC, "FastAPI TestClient nicht verfügbar")
 class RescueUsbOperatorHttpTests(unittest.TestCase):

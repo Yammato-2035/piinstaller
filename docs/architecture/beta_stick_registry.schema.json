@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.de/schemas/beta_stick_registry.v1.json",
+  "title": "beta_stick_registry.v1",
+  "description": "Logical stick registry entry for beta registration server (public-safe reference schema).",
+  "type": "object",
+  "required": [
+    "stick_id",
+    "stick_type",
+    "status",
+    "device_public_key_id",
+    "attestation_mode",
+    "created_at"
+  ],
+  "properties": {
+    "stick_id": {
+      "type": "string",
+      "pattern": "^stick_[a-zA-Z0-9_-]{8,64}$",
+      "description": "Stable stick identifier assigned by beta registration."
+    },
+    "stick_type": {
+      "type": "string",
+      "enum": ["team_provisioned", "registered_iso", "mock"],
+      "description": "Provisioning model; mock is lab-only."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["provisioned", "active", "revoked", "expired"]
+    },
+    "device_public_key_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 64
+    },
+    "attestation_mode": {
+      "type": "string",
+      "enum": ["hmac", "signature", "mock"]
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "revoked_at": {
+      "type": ["string", "null"],
+      "format": "date-time"
+    },
+    "team_batch_id": {
+      "type": "string",
+      "description": "Present for team_provisioned sticks."
+    },
+    "account_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Opaque account reference for registered_iso."
+    },
+    "iso_build_id": {
+      "type": "string",
+      "description": "Authorized ISO build for registered_iso activation."
+    },
+    "last_seen_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": {
+        "type": ["string", "number", "boolean"]
+      },
+      "description": "Non-PII operator tags only."
+    }
+  },
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": { "stick_type": { "const": "team_provisioned" } }
+      },
+      "then": {
+        "required": ["team_batch_id"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "stick_type": { "const": "registered_iso" } }
+      },
+      "then": {
+        "required": ["account_id", "iso_build_id"]
+      }
+    }
+  ]
+}

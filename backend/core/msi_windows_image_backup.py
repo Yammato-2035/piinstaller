@@ -109,6 +109,83 @@ def discover_external_backup_mount(
     return None
 
 
+def discover_backup_target_mount(
+    target_device: str,
+    target_mount: str,
+) -> tuple[str | None, str | None]:
+    """Resolve active backup mount for a target partition/device."""
+    mount = (target_mount or "").strip()
+    device = (target_device or "").strip()
+    if mount and mount_path_is_active(mount):
+        return mount, device or None
+    if not device:
+        return (mount or None), None
+    try:
+        proc = subprocess.run(
+            ["findmnt", "-J", "-n", "-S", device],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
+        )
+        data = json.loads(proc.stdout or "{}")
+        found = discover_external_backup_mount(data, target_sources=frozenset({device}))
+        if found:
+            mount_path, src, _fst = found
+            return mount_path, src
+    except (subprocess.CalledProcessError, FileNotFoundError, json.JSONDecodeError, subprocess.TimeoutExpired):
+        pass
+    return None, device
+
+
+def is_allowed_backup_source(
+    source_device: str,
+    *,
+    tran: str = "",
+    fstype: str = "",
+    role: str = "",
+) -> tuple[bool, str]:
+    """Return whether source may be used for rescue backup planning."""
+    dev = (source_device or "").strip()
+    if not dev:
+        return False, "missing"
+    fs = (fstype or "").lower()
+    transport = (tran or "").lower()
+    device_role = (role or "").lower()
+    if fs == "ntfs":
+        if transport == "usb" or device_role in ("external_test", "usb_backup_source"):
+            return True, "external_test"
+        return True, "ntfs_partition"
+    if dev.startswith("/dev/nvme0n1"):
+        return True, "system_partition" if "p" in dev.rsplit("/", 1)[-1] else "system_disk"
+    if dev == F2_ALLOWED_SOURCE:
+        return True, "system_disk"
+    if transport == "usb":
+        return True, "external_test"
+    return False, "unknown"
+
+
+def operator_confirmation_1(source_device: str, target_device: str) -> str:
+    """Operator confirmation text for source/target pairing (plan contract)."""
+    _ = (source_device, target_device)
+    return OPERATOR_CONFIRMATION_1
+
+
+def resolve_mount_free_bytes(target_mount: str, fallback: int = 0) -> int:
+    if fallback and fallback > 0:
+        return int(fallback)
+    mount = (target_mount or "").strip()
+    if not mount:
+        return 0
+    try:
+        import os
+
+        stat = os.statvfs(mount)
+        return int(stat.f_frsize * stat.f_bavail)
+    except OSError:
+        return 0
+
+
 def _parse_size_bytes(size_val: Any) -> int:
     if isinstance(size_val, int):
         return size_val
@@ -202,6 +279,8 @@ def run_f2_preflight(
     operator_confirmation_1: str | None = None,
     operator_confirmation_2: str | None = None,
     timestamp: str | None = None,
+    source_tran: str | None = None,
+    source_fstype: str | None = None,
 ) -> F2PreflightResult:
     warnings: list[str] = []
     errors: list[str] = []
@@ -224,7 +303,12 @@ def run_f2_preflight(
             errors=["operator_confirmation_missing"],
         )
 
-    if source_device != F2_ALLOWED_SOURCE:
+    allowed_source, _source_scope = is_allowed_backup_source(
+        source_device,
+        tran=source_tran or "",
+        fstype=source_fstype or "",
+    )
+    if not allowed_source:
         return F2PreflightResult(
             ok=False,
             status="blocked",

@@ -26,19 +26,39 @@ from modules.rescue_restore_execute import RESTORE_LOG_PATH, run_rescue_restore
 
 try:
     from api.routes.data_rescue import router as data_rescue_router
-    from api.routes.linux_migration import router as linux_migration_router
-    from api.routes.rescue_backup import router as rescue_backup_plan_router
-    from api.routes.rescue_evidence import router as rescue_evidence_plan_router
-    from api.routes.rescue_network import build_live_boot_status, router as rescue_network_router
-    from api.routes.rescue_ui import router as rescue_ui_router
 except ImportError:
     data_rescue_router = None
+
+try:
+    from api.routes.linux_migration import router as linux_migration_router
+except ImportError:
     linux_migration_router = None
+
+try:
+    from api.routes.rescue_assessment_v2 import router as rescue_assessment_v2_router
+except ImportError:
+    rescue_assessment_v2_router = None
+
+try:
+    from api.routes.rescue_backup import router as rescue_backup_plan_router
+except ImportError:
     rescue_backup_plan_router = None
+
+try:
+    from api.routes.rescue_evidence import router as rescue_evidence_plan_router
+except ImportError:
     rescue_evidence_plan_router = None
+
+try:
+    from api.routes.rescue_network import build_live_boot_status, router as rescue_network_router
+except ImportError:
     rescue_network_router = None
-    rescue_ui_router = None
     build_live_boot_status = None
+
+try:
+    from api.routes.rescue_ui import router as rescue_ui_router
+except ImportError:
+    rescue_ui_router = None
 
 router = APIRouter(prefix="/api/rescue", tags=["rescue"])
 
@@ -99,5 +119,7 @@ if rescue_evidence_plan_router is not None:
     router.include_router(rescue_evidence_plan_router)
 if rescue_network_router is not None:
     router.include_router(rescue_network_router)
+if rescue_assessment_v2_router is not None:
+    router.include_router(rescue_assessment_v2_router)
 if rescue_ui_router is not None:
     router.include_router(rescue_ui_router)

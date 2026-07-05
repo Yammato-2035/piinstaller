@@ -5,6 +5,7 @@ import type { DevDashboardCapabilities, DevDashboardDataSource } from '../../lib
 type StandaloneModeBannerProps = {
   source: DevDashboardDataSource
   apiReachable: boolean
+  localApiReachable?: boolean
   capabilities: DevDashboardCapabilities
   workspaceRoot?: string
   offlineReason?: string
@@ -13,22 +14,33 @@ type StandaloneModeBannerProps = {
 export function StandaloneModeBanner({
   source,
   apiReachable,
+  localApiReachable,
   capabilities,
   workspaceRoot,
   offlineReason,
 }: StandaloneModeBannerProps) {
   const { t } = useTranslation()
+  const localUp = localApiReachable ?? apiReachable
   if (apiReachable && source === 'runtime_api') return null
+  if (source === 'limited_live') return null
+  if (localUp && offlineReason === 'developer_token_required') return null
   const isBackendHang = String(offlineReason || '').includes('backend_hanging_timeout')
-  const borderClass = isBackendHang ? 'border-red-600/60 bg-red-950/40 text-red-50' : 'border-orange-600/60 bg-orange-950/40 text-orange-50'
-  const titleClass = isBackendHang ? 'text-red-100' : 'text-orange-100'
-  const bodyClass = isBackendHang ? 'text-red-100/90' : 'text-orange-100/90'
-  const mutedClass = isBackendHang ? 'text-red-200/80' : 'text-orange-200/80'
-  const footerClass = isBackendHang ? 'text-red-200/70' : 'text-orange-200/70'
-  const codeClass = isBackendHang ? 'text-red-100' : 'text-orange-100'
+  const isLimitedLocal = localUp && !apiReachable
+  const borderClass = isBackendHang
+    ? 'border-red-600/60 bg-red-950/40 text-red-50'
+    : isLimitedLocal
+      ? 'border-amber-600/60 bg-amber-950/40 text-amber-50'
+      : 'border-orange-600/60 bg-orange-950/40 text-orange-50'
+  const titleClass = isBackendHang ? 'text-red-100' : isLimitedLocal ? 'text-amber-100' : 'text-orange-100'
+  const bodyClass = isBackendHang ? 'text-red-100/90' : isLimitedLocal ? 'text-amber-100/90' : 'text-orange-100/90'
+  const mutedClass = isBackendHang ? 'text-red-200/80' : isLimitedLocal ? 'text-amber-200/80' : 'text-orange-200/80'
+  const footerClass = isBackendHang ? 'text-red-200/70' : isLimitedLocal ? 'text-amber-200/70' : 'text-orange-200/70'
+  const codeClass = isBackendHang ? 'text-red-100' : isLimitedLocal ? 'text-amber-100' : 'text-orange-100'
   const reasonText = isBackendHang
     ? t('devDashboard.standalone.backendHangReason')
-    : t('devDashboard.standalone.backendOfflineReason')
+    : isLimitedLocal
+      ? t('devDashboard.vis.standalone.limitedReason', { reason: offlineReason || 'dev_dashboard_unavailable' })
+      : t('devDashboard.standalone.backendOfflineReason')
 
   return (
     <div
@@ -36,9 +48,15 @@ export function StandaloneModeBanner({
       data-testid="dev-dashboard-standalone-banner"
     >
       <p className={`font-semibold ${titleClass}`}>
-        {isBackendHang ? t('devDashboard.standalone.backendHangTitle') : t('devDashboard.standalone.bannerTitle')}
+        {isBackendHang
+          ? t('devDashboard.standalone.backendHangTitle')
+          : isLimitedLocal
+            ? t('devDashboard.vis.standalone.limitedTitle')
+            : t('devDashboard.standalone.bannerTitle')}
       </p>
-      <p className={bodyClass}>{t('devDashboard.standalone.bannerBody')}</p>
+      <p className={bodyClass}>
+        {isLimitedLocal ? t('devDashboard.vis.standalone.limitedBody') : t('devDashboard.standalone.bannerBody')}
+      </p>
       <p className="text-xs">
         {t('devDashboard.standalone.detectedState')}: <strong>{reasonText}</strong>
       </p>
@@ -55,7 +73,13 @@ export function StandaloneModeBanner({
         </li>
         <li>
           {t('devDashboard.standalone.cap.api')}:{' '}
-          <strong>{apiReachable ? t('devDashboard.standalone.online') : t('devDashboard.standalone.offline')}</strong>
+          <strong data-testid="standalone-banner-api-status">
+            {localUp
+              ? apiReachable
+                ? t('devDashboard.standalone.online')
+                : t('devDashboard.vis.standalone.localApiOnly')
+              : t('devDashboard.standalone.offline')}
+          </strong>
         </li>
         <li>
           {t('devDashboard.standalone.cap.workspace')}:{' '}

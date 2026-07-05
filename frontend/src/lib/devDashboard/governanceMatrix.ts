@@ -39,8 +39,11 @@ export function buildGovernanceMatrix(params: {
   modules: ModuleRow[]
   source: DevDashboardDataSource
   apiReachable: boolean
+  localApiReachable?: boolean
+  offlineReason?: string
 }): GovernanceAreaStatus[] {
   const { dashboard, modules, source, apiReachable } = params
+  const localApiReachable = params.localApiReachable ?? apiReachable
   const now = new Date().toISOString()
   const rg = (dashboard?.runtime_gate as Record<string, unknown>) || {}
   const dd = (dashboard?.deploy_drift as Record<string, unknown>) || {}
@@ -69,14 +72,30 @@ export function buildGovernanceMatrix(params: {
     lastCheckedAt: now,
   })
 
+  const runtimeBlockers = !localApiReachable
+    ? ['backend_api_unreachable']
+    : !apiReachable
+      ? [params.offlineReason || 'dev_dashboard_unavailable']
+      : ((rg.blockers as string[]) || [])
+
+  const runtimeTraffic: Traffic = !localApiReachable
+    ? 'red'
+    : params.source === 'limited_live' || !apiReachable
+      ? 'yellow'
+      : runtimeGatePassed
+        ? 'green'
+        : governanceTrafficFromInput(rg.status)
+
   const areas: GovernanceAreaStatus[] = [
     mk(
       'runtime',
-      !apiReachable || source !== 'runtime_api' ? 'red' : runtimeGatePassed ? 'green' : governanceTrafficFromInput(rg.status),
-      !apiReachable ? ['backend_api_unreachable'] : ((rg.blockers as string[]) || []),
-      !apiReachable
+      runtimeTraffic,
+      runtimeBlockers,
+      !localApiReachable
         ? 'Runtime-API starten; check-runtime-deploy-gate.sh'
-        : './scripts/check-runtime-deploy-gate.sh',
+        : !apiReachable
+          ? 'Local API erreichbar — Dev-Dashboard-Token oder Capability prüfen'
+          : './scripts/check-runtime-deploy-gate.sh',
     ),
     mk(
       'backup',
@@ -107,7 +126,7 @@ export function buildGovernanceMatrix(params: {
       [],
       'docs/roadmap/STATUS_MATRIX.md',
     ),
-    mk('i18n', 'gray', [], 'frontend/src/locales'),
+    mk('i18n', 'yellow', [], 'FR/NL: DCC vollständig; Haupt-UI EN-Fallback'),
     mk('prompt_export', 'green', [], 'KI-Export (read-only)'),
     mk(
       'runtime_gates',
@@ -124,18 +143,31 @@ export function buildGovernanceMatrix(params: {
 
 export function buildCockpitAlerts(
   areas: GovernanceAreaStatus[],
-  params: { apiReachable: boolean; source: DevDashboardDataSource },
+  params: {
+    apiReachable: boolean
+    localApiReachable?: boolean
+    source: DevDashboardDataSource
+    offlineReason?: string
+  },
 ): CockpitAlert[] {
   const alerts: CockpitAlert[] = []
-  if (!params.apiReachable) {
+  const localApiReachable = params.localApiReachable ?? params.apiReachable
+  if (!localApiReachable) {
     alerts.push({
       id: 'api-offline',
       severity: 'critical',
       code: 'backend_api_unreachable',
       message: 'Runtime-API offline — Live-Daten nur aus Workspace/Snapshot',
     })
+  } else if (!params.apiReachable) {
+    alerts.push({
+      id: 'dev-dashboard-limited',
+      severity: 'warning',
+      code: params.offlineReason || 'dev_dashboard_unavailable',
+      message: 'Local API erreichbar — Dev-Dashboard eingeschränkt (nicht pauschal API offline)',
+    })
   }
-  if (params.source !== 'runtime_api') {
+  if (params.source !== 'runtime_api' && params.source !== 'limited_live') {
     alerts.push({
       id: 'non-runtime-source',
       severity: 'warning',
@@ -148,8 +180,8 @@ export function buildCockpitAlerts(
       alerts.push({
         id: `area-red-${a.id}`,
         severity: 'critical',
-        code: `${a.id}_blocked`,
-        message: a.blockers[0] || `${a.id} rot`,
+        code: a.blockers[0] || `${a.id}_blocked`,
+        message: a.blockers[0] || a.recommendedAction || `${a.id} rot`,
         areaId: a.id,
       })
     }

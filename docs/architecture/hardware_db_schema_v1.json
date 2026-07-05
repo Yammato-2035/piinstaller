@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.de/schemas/hardware_db_schema.v1.json",
+  "title": "hardware_db_schema.v1",
+  "description": "Reference document for diagnostics hardware profile records (no PII).",
+  "type": "object",
+  "required": ["hardware_key", "trait_vector", "schema_version"],
+  "properties": {
+    "schema_version": {
+      "const": "hardware_db.v1"
+    },
+    "hardware_key": {
+      "type": "string",
+      "pattern": "^hw_[a-zA-Z0-9]{16,64}$"
+    },
+    "trait_vector": {
+      "type": "object",
+      "required": ["cpu_family", "platform_class"],
+      "properties": {
+        "cpu_family": { "type": "string" },
+        "cpu_vendor": { "type": "string" },
+        "platform_class": {
+          "type": "string",
+          "enum": ["desktop", "laptop", "mini_pc", "workstation", "unknown"]
+        },
+        "firmware_mode": {
+          "type": "string",
+          "enum": ["uefi", "legacy", "unknown"]
+        },
+        "storage_bus": {
+          "type": "string",
+          "enum": ["nvme", "sata", "usb", "mixed", "unknown"]
+        },
+        "gpu_class": {
+          "type": "string",
+          "enum": ["integrated", "discrete", "none", "unknown"]
+        },
+        "network_wifi_present": { "type": "boolean" },
+        "network_ethernet_present": { "type": "boolean" }
+      },
+      "additionalProperties": {
+        "type": ["string", "boolean", "number"]
+      }
+    },
+    "observation_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "last_observation_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": ["pending", "approved", "rejected"]
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "maxItems": 32
+    }
+  },
+  "additionalProperties": false
+}

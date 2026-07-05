@@ -1,6 +1,6 @@
 import type { DashboardPayload, ModuleRow } from '../../pages/DevDashboardBody'
 
-export type DevDashboardDataSource = 'runtime_api' | 'standalone_workspace' | 'snapshot' | 'unavailable'
+export type DevDashboardDataSource = 'runtime_api' | 'standalone_workspace' | 'snapshot' | 'limited_live' | 'unavailable'
 
 export type WorkspaceScanResult = {
   workspace_root: string
@@ -18,7 +18,10 @@ export type DevDashboardLoadResult = {
   dashboard: DashboardPayload
   modules: ModuleRow[]
   evidenceIndex: Record<string, unknown> | null
+  /** Dev-dashboard status API returned full payload */
   apiReachable: boolean
+  /** /health + /api/version reachable (local backend process) */
+  localApiReachable: boolean
   offlineReason?: string
   workspaceRoot?: string
   metaPrompt?: string

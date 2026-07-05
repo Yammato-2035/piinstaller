@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-07-02T14:00:00Z",
+  "decision": "ready_for_payload_build",
+  "payload_build_executed": false,
+  "iso_build_executed": false,
+  "usb_write_executed": false,
+  "operator_approval_required": true,
+  "gates": {
+    "package_policy_ok": true,
+    "tests_green": true,
+    "schemas_valid": true,
+    "no_secrets_committed": true,
+    "no_forbidden_packages_in_list": true
+  },
+  "planned_stick_version": "1.9.17.0",
+  "notes": "Contracts and client logic ready; controlled live-build repack awaits operator gate"
+}

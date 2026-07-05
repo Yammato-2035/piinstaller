@@ -41,7 +41,8 @@ class TestRescueBackupPlanContractV1(unittest.TestCase):
         self.assertEqual(plan["commands"], [])
 
     def test_wifi_missing_hdd_warning_not_blocked(self):
-        plan = build_rescue_backup_plan(self._base())
+        with patch("core.msi_windows_image_backup.mount_path_is_active", return_value=True):
+            plan = build_rescue_backup_plan(self._base(wifi_status="missing"))
         codes = [w.get("code") for w in plan.get("warnings") or []]
         if plan["plan_status"] != "blocked":
             self.assertIn("wifi_missing_but_not_required", codes)

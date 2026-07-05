@@ -17,7 +17,7 @@ import {
 import SudoPasswordModal from '../components/SudoPasswordModal'
 import ScreenshotDocCard from '../components/ScreenshotDocCard'
 import { usePlatform } from '../context/PlatformContext'
-import { setAppLocale } from '../i18n'
+import { AppLanguageSwitcher } from '../components/AppLanguageSwitcher'
 import PageHeader from '../components/layout/PageHeader'
 
 type GeneralSubTab = 'init' | 'network' | 'basic' | 'screenshots'
@@ -712,7 +712,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                   : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
-              Ersteinrichtung
+              {t('settings.general.subtab.init')}
             </button>
             <button
               onClick={() => setGeneralSubTab('network')}
@@ -722,7 +722,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                   : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
               }`}
             >
-              Frontend-Netzwerk-Zugriff
+              {t('settings.general.subtab.network')}
             </button>
             {(advancedSettings) && (
               <>
@@ -734,7 +734,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                       : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
-                  Grundlegende Einstellungen
+                  {t('settings.general.subtab.basic')}
                 </button>
                 <button
                   onClick={() => setGeneralSubTab('screenshots')}
@@ -744,7 +744,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                       : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
                   }`}
                 >
-                  Dokumentations-Screenshots
+                  {t('settings.general.subtab.screenshots')}
                 </button>
               </>
             )}
@@ -762,7 +762,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
               }}
               className="rounded border-slate-600 bg-slate-700 text-sky-500 focus:ring-sky-500"
             />
-            Erfahrene Einstellungen anzeigen
+            {t('settings.general.advancedToggle')}
           </label>
         )}
       </motion.div>
@@ -780,9 +780,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
             {generalSubTab === 'init' && (
         <>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-2">Erfahrungslevel</h3>
+          <h3 className="text-lg font-bold text-white mb-2">{t('settings.experience.title')}</h3>
           <p className="text-sm text-slate-400 mb-3">
-            Bestimmt, wie viele Menüpunkte in der Sidebar angezeigt werden. Einsteiger sehen nur die wichtigsten; Fortgeschrittene und Entwickler erhalten zusätzliche Einträge.
+            {t('settings.experience.description')}
           </p>
           <div className="flex flex-wrap gap-2">
             {(['beginner', 'advanced', 'developer'] as const).map((level) => (
@@ -797,7 +797,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                     : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
                 } disabled:opacity-50 disabled:cursor-not-allowed`}
               >
-                {level === 'beginner' ? 'Einsteiger' : level === 'advanced' ? 'Fortgeschritten' : 'Entwickler'}
+                {level === 'beginner' ? t('settings.experience.beginner') : level === 'advanced' ? t('settings.experience.advanced') : t('settings.experience.developer')}
               </button>
             ))}
           </div>
@@ -805,27 +805,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
           <h3 className="text-lg font-bold text-white mb-2">{t('settings.language.label')}</h3>
           <p className="text-sm text-slate-400 mb-3">{t('settings.language.hint')}</p>
-          <div className="flex flex-wrap gap-2">
-            {(['de', 'en'] as const).map((lng) => (
-              <button
-                key={lng}
-                type="button"
-                onClick={() => setAppLocale(lng)}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                  i18n.language?.startsWith(lng)
-                    ? 'bg-sky-600 text-white'
-                    : 'bg-slate-700/60 text-slate-300 hover:bg-slate-700 hover:text-white'
-                }`}
-              >
-                {lng === 'de' ? t('settings.language.de') : t('settings.language.en')}
-              </button>
-            ))}
-          </div>
+          <AppLanguageSwitcher variant="settings" showActiveLabel />
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-3">Verbindung zum Server</h3>
+          <h3 className="text-lg font-bold text-white mb-3">{t('settings.serverConnection.title')}</h3>
           <p className="text-sm text-slate-400 mb-3">
-            Backend-Standard in der Produktions-Web-UI: <code className="text-sky-300">http://127.0.0.1:8000</code> (ohne <code className="text-sky-300">/api</code> am Ende). Bei Remote-Backend die Adresse eintragen (z. B. <code className="text-sky-300">http://192.168.1.10:8000</code>).
+            {t('settings.serverConnection.description')}
           </p>
           <div className="flex flex-wrap items-center gap-2">
             <input
@@ -840,7 +825,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
               onClick={() => saveApiBaseUrl(apiBaseUrl)}
               className="px-4 py-2 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-medium text-sm"
             >
-              Übernehmen
+              {t('settings.serverConnection.apply')}
             </button>
             <button
               type="button"
@@ -854,36 +839,36 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
               }}
               className="px-3 py-2 text-slate-400 hover:text-white text-sm"
             >
-              Auf Standard zurücksetzen
+              {t('settings.serverConnection.resetDefault')}
             </button>
           </div>
         </motion.div>
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-3">Ersteinrichtung</h3>
+          <h3 className="text-lg font-bold text-white mb-3">{t('settings.initSetup.title')}</h3>
           {!initStatus ? (
-            <div className="text-sm text-slate-400">Lade…</div>
+            <div className="text-sm text-slate-400">{t('settings.initSetup.loading')}</div>
           ) : (
             <div className="space-y-2 text-sm text-slate-200">
               <div>
-                <span className="text-slate-400">Device-ID:</span> <span className="font-semibold">{initStatus.device_id}</span>
+                <span className="text-slate-400">{t('settings.initSetup.deviceId')}:</span> <span className="font-semibold">{initStatus.device_id}</span>
               </div>
               <div>
-                <span className="text-slate-400">Config:</span> <span className="font-mono text-xs">{initStatus.config_path}</span>
+                <span className="text-slate-400">{t('settings.initSetup.config')}:</span> <span className="font-mono text-xs">{initStatus.config_path}</span>
               </div>
               <div>
-                <span className="text-slate-400">Erster Start:</span>{' '}
+                <span className="text-slate-400">{t('settings.initSetup.firstRun')}:</span>{' '}
                 <span className={initStatus.first_run ? 'text-yellow-300 font-semibold' : 'text-green-300 font-semibold'}>
-                  {initStatus.first_run ? 'ja' : 'nein'}
+                  {initStatus.first_run ? t('settings.initSetup.yes') : t('settings.initSetup.no')}
                 </span>
               </div>
               <div>
-                <span className="text-slate-400">Device Match:</span>{' '}
+                <span className="text-slate-400">{t('settings.initSetup.deviceMatch')}:</span>{' '}
                 <span className={initStatus.matched_device ? 'text-green-300 font-semibold' : 'text-yellow-300 font-semibold'}>
-                  {initStatus.matched_device ? 'ja' : 'nein'}
+                  {initStatus.matched_device ? t('settings.initSetup.yes') : t('settings.initSetup.no')}
                 </span>
               </div>
               <button onClick={loadAll} className="mt-2 px-3 py-2 bg-slate-700/60 hover:bg-slate-700 text-white rounded-lg">
-                Neu laden
+                {t('settings.initSetup.reload')}
               </button>
             </div>
           )}
@@ -893,7 +878,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
 
             {generalSubTab === 'network' && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-3">Frontend-Netzwerk-Zugriff</h3>
+          <h3 className="text-lg font-bold text-white mb-3">{t('settings.networkAccess.title')}</h3>
           {settings && (
             <div className="space-y-3 p-3 bg-slate-800/50 rounded-lg border border-slate-600 mb-4">
               <div className="flex flex-wrap items-center gap-3 gap-y-2">
@@ -910,7 +895,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                     disabled={saving}
                     className="w-5 h-5 shrink-0 accent-amber-500"
                   />
-                  <span className="text-white whitespace-nowrap">Remote Zugriff deaktivieren</span>
+                  <span className="text-white whitespace-nowrap">{t('settings.networkAccess.disableRemote')}</span>
                   {saving && <span className="text-sm text-slate-400">…</span>}
                 </label>
                 <button
@@ -919,7 +904,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
                   disabled={rebooting}
                   className="ml-auto px-4 py-2 bg-red-600 hover:bg-red-500 text-white rounded-lg font-medium text-sm shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {rebooting ? '…' : 'Neustart'}
+                  {rebooting ? '…' : t('settings.networkAccess.reboot')}
                 </button>
               </div>
               <p className="text-xs text-slate-500">
@@ -1034,7 +1019,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ setCurrentPage, onExperienc
 
             {generalSubTab === 'basic' && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="card">
-          <h3 className="text-lg font-bold text-white mb-3">Grundlegende Einstellungen</h3>
+          <h3 className="text-lg font-bold text-white mb-3">{t('settings.general.subtab.basic')}</h3>
           {!settings ? (
             <div className="text-sm text-slate-400">Lade…</div>
           ) : (

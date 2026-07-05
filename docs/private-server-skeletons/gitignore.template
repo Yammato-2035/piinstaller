@@ -1,0 +1,9 @@
+# Private repo — never commit
+.env
+.env.*
+*.pem
+*.key
+secrets/
+__pycache__/
+.venv/
+node_modules/

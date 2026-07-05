@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.de/schemas/telemetry_server_ingest_contract.v1.json",
+  "title": "telemetry_server_ingest_contract.v1",
+  "description": "Telemetry server ingest request/response wrapper around telemetry.rescue.beta.v2 envelope.",
+  "definitions": {
+    "rescue_envelope": {
+      "$ref": "telemetry_rescue_beta_v2.schema.json"
+    },
+    "ingest_request": {
+      "type": "object",
+      "required": ["envelope", "signature", "signature_alg"],
+      "properties": {
+        "envelope": { "$ref": "#/definitions/rescue_envelope" },
+        "signature": {
+          "type": "string",
+          "description": "Base64-encoded signature or HMAC over canonical envelope JSON."
+        },
+        "signature_alg": {
+          "type": "string",
+          "enum": ["hmac-sha256", "ed25519", "mock"]
+        },
+        "client_sent_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ingest_response": {
+      "type": "object",
+      "required": ["accepted", "status", "event_id"],
+      "properties": {
+        "accepted": { "type": "boolean" },
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "dry_run_ok",
+            "quarantine_pending_agreement",
+            "quarantine_pending_approval",
+            "quarantine",
+            "rejected_schema",
+            "rejected_auth",
+            "rejected_machine",
+            "rejected_pii"
+          ]
+        },
+        "event_id": { "type": "string", "format": "uuid" },
+        "redaction_applied": { "type": "boolean" },
+        "diagnostics_forwarded": { "type": "boolean" },
+        "learning_export_allowed": { "type": "boolean" },
+        "message_de": { "type": "string" },
+        "message_en": { "type": "string" },
+        "quarantine_expires_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/definitions/ingest_request" },
+    { "$ref": "#/definitions/ingest_response" }
+  ]
+}

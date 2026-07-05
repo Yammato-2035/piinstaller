@@ -69,6 +69,16 @@ import {
   readStoredDccDeveloperToken,
   writeStoredDccDeveloperToken,
 } from '../lib/devDashboard/dccDeveloperToken'
+import { DccRuntimeStatusPanel } from '../components/dev-dashboard/DccRuntimeStatusPanel'
+import { DccDeployOptPanel } from '../components/dev-dashboard/DccDeployOptPanel'
+import { AppLanguageSwitcher } from '../components/AppLanguageSwitcher'
+import { DccGovernanceContextBanner } from '../components/dev-dashboard/DccGovernanceContextBanner'
+import { DccDeveloperTokenCard } from '../components/dev-dashboard/DccDeveloperTokenCard'
+import { DccVisibilityRoadmapSection } from '../components/dev-dashboard/DccVisibilityRoadmapSection'
+import {
+  buildDccRuntimeStatusModel,
+  deriveDeveloperTokenState,
+} from '../dcc/visibility/runtimeStatusModel'
 
 function trafficDot(status: Traffic): string {
   if (status === 'green') return 'bg-emerald-500'
@@ -317,6 +327,55 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
   const mon = useGovernanceMonitor(statusQuery)
 
+  const runtimeStatusModel = useMemo(() => {
+    const rg = (mon.dashboard?.runtime_gate as Record<string, unknown>) || {}
+    const stm = (mon.dashboard?.safe_test_mode as Record<string, unknown>) || {}
+    const wsVer =
+      typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim()
+        ? String(__APP_VERSION__).trim()
+        : buildProfileMeta.project_version ?? ''
+    const rtVer = String((bootProbe?.versionPayload as Record<string, unknown>)?.project_version || '')
+    const workspaceAheadOfRuntime = Boolean(wsVer && rtVer && wsVer !== rtVer)
+    return buildDccRuntimeStatusModel({
+      localApiReachable: mon.localApiReachable,
+      dashboardApiReachable: mon.apiReachable,
+      runtimeGatePassed: rg.passed === true ? true : rg.passed === false ? false : null,
+      runtimeGateStatus: String(rg.status || ''),
+      developerTokenState: deriveDeveloperTokenState({
+        storedTokenPresent: Boolean(readStoredDccDeveloperToken()),
+        capability: liveStatus?.capability ?? null,
+        statusCode: bootProbe?.statusCode ?? null,
+      }),
+      dataSource: mon.source,
+      offlineReason: mon.offlineReason,
+      capability: liveStatus?.capability ?? null,
+      safeTestModeLocked: stm.locked === true,
+      workspaceAheadOfRuntime,
+    })
+  }, [
+    mon.localApiReachable,
+    mon.apiReachable,
+    mon.dashboard,
+    mon.source,
+    mon.offlineReason,
+    liveStatus,
+    bootProbe?.statusCode,
+    bootProbe?.versionPayload,
+  ])
+
+  const redAreaCount = useMemo(() => mon.areas.filter((a) => a.status === 'red').length, [mon.areas])
+
+  const governanceBlockers = useMemo(
+    () => mon.areas.filter((a) => a.status === 'red').flatMap((a) => a.blockers).filter(Boolean),
+    [mon.areas],
+  )
+
+  const runtimeVersion = String((bootProbe?.versionPayload as Record<string, unknown>)?.project_version || '')
+  const workspaceVersion =
+    typeof __APP_VERSION__ !== 'undefined' && String(__APP_VERSION__).trim()
+      ? String(__APP_VERSION__).trim()
+      : buildProfileMeta.project_version ?? ''
+
   const retryGate = () => setStatusT(Date.now())
 
   useEffect(() => {
@@ -464,7 +523,14 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       case 'overview':
         return (
           <>
-            <ControlCenterOverviewHeader summary={summary} loading={summaryLoading} apiReachable={mon.apiReachable} />
+            <ControlCenterOverviewHeader
+              summary={summary}
+              loading={summaryLoading}
+              apiReachable={mon.apiReachable}
+              localApiReachable={mon.localApiReachable}
+              offlineReason={mon.offlineReason}
+            />
+            <DeployStatusPanel refreshSec={Math.max(mon.refreshSec, 10)} />
             {mon.dashboard ? <ReadyStableSection dashboard={mon.dashboard} t={t} /> : null}
             <section className="mb-4">
               <h2 className="text-sm font-semibold text-slate-300 mb-2">{t('devDashboard.governance.matrixTitle')}</h2>
@@ -475,12 +541,20 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           </>
         )
       case 'roadmap':
-        return mon.dashboard ? (
-          <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} />
-        ) : (
-          <section className="rounded-xl border border-amber-700/40 bg-amber-950/20 p-4" data-testid="roadmap-unavailable">
-            <p className="text-sm text-amber-100">{t('devDashboard.roadmap.unavailable')}</p>
-          </section>
+        return (
+          <>
+            <DccVisibilityRoadmapSection
+              blockers={governanceBlockers}
+              currentBranch={String((mon.dashboard?.git as Record<string, unknown>)?.branch || 'dcc-vis-001-visible-roadmap-changelog')}
+            />
+            {mon.dashboard ? (
+              <RoadmapDrawer dashboard={mon.dashboard} t={t} apiReachable={mon.apiReachable} localApiReachable={mon.localApiReachable} />
+            ) : (
+              <section className="rounded-xl border border-amber-700/40 bg-amber-950/20 p-4" data-testid="roadmap-unavailable">
+                <p className="text-sm text-amber-100">{t('devDashboard.roadmap.unavailable')}</p>
+              </section>
+            )}
+          </>
         )
       case 'telemetry':
         return (
@@ -638,6 +712,23 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
 
     return (
     <div className="max-w-[1600px] mx-auto px-4 py-5" data-testid="external-development-control-center">
+      <DccRuntimeStatusPanel model={runtimeStatusModel} />
+      <DccDeployOptPanel
+        deployDrift={(mon.dashboard?.deploy_drift as Record<string, unknown>) || null}
+        onOpenOperations={() => setActiveTab('operations')}
+      />
+      <DccDeveloperTokenCard
+        onTokenChanged={() => {
+          retryGate()
+          void loadSummary()
+        }}
+      />
+      <DccGovernanceContextBanner
+        model={runtimeStatusModel}
+        workspaceVersion={workspaceVersion}
+        runtimeVersion={runtimeVersion}
+        redAreaCount={redAreaCount}
+      />
       {tokenRequired ? (
         <div
           className="mb-4 rounded-xl border border-amber-700/50 bg-amber-950/25 p-4"
@@ -678,6 +769,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
           <p className="text-sm text-slate-400 mt-1">{t('devDashboard.governance.subtitle')}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <AppLanguageSwitcher variant="dcc" showActiveLabel />
           {viewBtn('operations', t('devDashboard.governance.view.operations'))}
           {viewBtn('compact', t('devDashboard.governance.view.compact'))}
           {viewBtn('timeline', t('devDashboard.governance.view.timeline'))}
@@ -739,6 +831,7 @@ export const ExternalDevelopmentControlCenter: React.FC = () => {
       <StandaloneModeBanner
         source={mon.source}
         apiReachable={mon.apiReachable}
+        localApiReachable={mon.localApiReachable}
         capabilities={mon.capabilities}
         workspaceRoot={mon.workspaceRoot}
         offlineReason={mon.offlineReason}

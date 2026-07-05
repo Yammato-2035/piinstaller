@@ -46,6 +46,7 @@ describe('loadDevDashboard', () => {
     const result = await loadDevDashboard('frontend_runtime_source=dev')
     expect(result.source).toBe('runtime_api')
     expect(result.apiReachable).toBe(true)
+    expect(result.localApiReachable).toBe(true)
     expect(result.capabilities.runtimeTests).toBe(true)
     const roadmap = result.dashboard?.roadmap as Record<string, unknown>
     expect(Array.isArray(roadmap?.areas)).toBe(true)
@@ -61,8 +62,7 @@ describe('loadDevDashboard', () => {
     })
     const result = await loadDevDashboard('')
     expect(result.apiReachable).toBe(false)
-    expect(result.source).toBe('unavailable')
-    expect(result.offlineReason).toBe('backend_api_unreachable')
+    expect(result.localApiReachable).toBe(false)
     expect(result.dashboard).not.toBeNull()
     const rg = result.dashboard?.runtime_gate as Record<string, unknown>
     expect(rg.passed).toBe(false)
@@ -80,5 +80,31 @@ describe('loadDevDashboard', () => {
     expect(result.apiReachable).toBe(false)
     expect(result.source).toBe('unavailable')
     expect(result.offlineReason).toBe('backend_hanging_timeout')
+  })
+
+  it('sets localApiReachable when health/version ok but dev-dashboard blocked', async () => {
+    vi.mocked(fetchApi).mockImplementation(async (path: string) => {
+      if (path === '/health' || path === '/api/version') {
+        return { ok: true, json: async () => ({ status: 'ok' }) } as Response
+      }
+      if (path.includes('/status')) {
+        return {
+          ok: false,
+          status: 404,
+          json: async () => ({ code: 'DEVELOPER_CAPABILITY_REQUIRED' }),
+        } as Response
+      }
+      throw new Error('offline')
+    })
+    const result = await loadDevDashboard('')
+    expect(result.localApiReachable).toBe(true)
+    expect(result.apiReachable).toBe(false)
+    expect(result.offlineReason).toBe('developer_token_required')
+    expect(result.source).toBe('limited_live')
+    expect(result.localApiReachable).toBe(true)
+    expect(result.apiReachable).toBe(false)
+    const rg = result.dashboard?.runtime_gate as Record<string, unknown>
+    expect(rg.passed).toBe(false)
+    expect((rg.checks as Array<Record<string, unknown>>)?.[0]?.ok).toBe(true)
   })
 })

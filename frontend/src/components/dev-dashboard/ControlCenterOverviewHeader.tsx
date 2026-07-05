@@ -9,6 +9,8 @@ type Props = {
   summary: ControlCenterSummary | null
   loading?: boolean
   apiReachable?: boolean
+  localApiReachable?: boolean
+  offlineReason?: string
 }
 
 function trafficFromGate(passed: unknown, status: unknown): string {
@@ -16,8 +18,9 @@ function trafficFromGate(passed: unknown, status: unknown): string {
   return dashboardLegacyToneFromInput(status)
 }
 
-export function ControlCenterOverviewHeader({ summary, loading, apiReachable = true }: Props) {
+export function ControlCenterOverviewHeader({ summary, loading, apiReachable = true, localApiReachable, offlineReason }: Props) {
   const { t } = useTranslation()
+  const localUp = localApiReachable ?? apiReachable
   const runtime = (summary?.runtime as Record<string, unknown>) || {}
   const roadmap = (summary?.roadmap as Record<string, unknown>) || {}
   const devServer = (summary?.dev_server as Record<string, unknown>) || {}
@@ -36,9 +39,13 @@ export function ControlCenterOverviewHeader({ summary, loading, apiReachable = t
           <h2 className="text-base font-semibold text-white">{t('devDashboard.controlCenter.overviewTitle')}</h2>
           <p className="text-xs text-slate-400 mt-1">{t('devDashboard.controlCenter.overviewSubtitle')}</p>
         </div>
-        {!apiReachable ? (
+        {!localUp ? (
           <span className="text-xs text-amber-300 border border-amber-700/50 rounded px-2 py-1">
             {t('devDashboard.controlCenter.offlineMode')}
+          </span>
+        ) : !apiReachable ? (
+          <span className="text-xs text-amber-200 border border-amber-600/50 rounded px-2 py-1" data-testid="control-center-limited-mode">
+            {t('devDashboard.vis.controlCenter.limitedMode', { reason: offlineReason || '—' })}
           </span>
         ) : null}
       </div>

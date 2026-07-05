@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.de/schemas/diagnostics_learning_import_contract.v1.json",
+  "title": "diagnostics_learning_import_contract.v1",
+  "description": "Payload forwarded from telemetry server to diagnostics learning import (redacted, no PII).",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "hardware_key",
+    "source",
+    "assessment_summary",
+    "imported_at"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "diagnostics.learning.import.v1"
+    },
+    "event_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "hardware_key": {
+      "type": "string",
+      "pattern": "^hw_[a-zA-Z0-9]{16,64}$"
+    },
+    "source": {
+      "type": "object",
+      "required": ["stick_id", "rescue_version", "build_id"],
+      "properties": {
+        "stick_id": { "type": "string" },
+        "rescue_version": { "type": "string" },
+        "build_id": { "type": "string" },
+        "boot_session_id": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "assessment_summary": {
+      "type": "object",
+      "description": "Redacted subset of system_assessment — no PII keys allowed.",
+      "properties": {
+        "issue_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "recommendation_codes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "boot_outcome": {
+          "type": "string",
+          "enum": ["ok", "degraded", "failed", "unknown"]
+        },
+        "network_reachable": { "type": "boolean" }
+      },
+      "additionalProperties": true
+    },
+    "trait_vector": {
+      "$ref": "hardware_db_schema_v1.json#/properties/trait_vector"
+    },
+    "imported_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "not": {
+    "anyOf": [
+      { "required": ["email"] },
+      { "required": ["ip"] },
+      { "required": ["mac"] },
+      { "required": ["account_id"] },
+      { "required": ["phone"] }
+    ]
+  }
+}

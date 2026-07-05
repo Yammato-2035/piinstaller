@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.de/schemas/telemetry.rescue.beta.v2.json",
+  "title": "telemetry.rescue.beta.v2",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "event_id",
+    "created_at",
+    "rescue_version",
+    "build_id",
+    "boot_session_id",
+    "stick",
+    "beta",
+    "machine",
+    "system_assessment",
+    "privacy"
+  ],
+  "properties": {
+    "schema_version": { "const": "telemetry.rescue.beta.v2" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "created_at": { "type": "string" },
+    "rescue_version": { "type": "string" },
+    "build_id": { "type": "string" },
+    "boot_session_id": { "type": "string" },
+    "stick": {
+      "type": "object",
+      "required": ["stick_id", "stick_type", "device_public_key_id", "attestation_mode"],
+      "properties": {
+        "stick_id": { "type": "string" },
+        "stick_type": { "enum": ["team_provisioned", "registered_iso", "mock"] },
+        "device_public_key_id": { "type": "string" },
+        "attestation_mode": { "enum": ["hmac", "signature", "mock"] }
+      }
+    },
+    "beta": {
+      "type": "object",
+      "required": ["account_status", "agreement_status", "upload_allowed"],
+      "properties": {
+        "account_status": { "enum": ["unknown", "verified", "restricted", "revoked"] },
+        "agreement_status": { "enum": ["unknown", "valid", "missing", "expired"] },
+        "upload_allowed": { "type": "boolean" }
+      }
+    },
+    "machine": {
+      "type": "object",
+      "required": ["machine_fingerprint", "approval_status"],
+      "properties": {
+        "machine_fingerprint": { "type": "string" },
+        "approval_status": { "enum": ["unknown", "pending", "approved", "blocked"] }
+      }
+    },
+    "system_assessment": { "type": "object" },
+    "privacy": {
+      "type": "object",
+      "required": [
+        "redaction_version",
+        "contains_mac",
+        "contains_ip",
+        "contains_email",
+        "contains_serial_plaintext",
+        "contains_file_list",
+        "contains_user_files",
+        "contains_secrets"
+      ],
+      "properties": {
+        "redaction_version": { "type": "string" },
+        "contains_mac": { "const": false },
+        "contains_ip": { "const": false },
+        "contains_email": { "const": false },
+        "contains_serial_plaintext": { "const": false },
+        "contains_file_list": { "const": false },
+        "contains_user_files": { "const": false },
+        "contains_secrets": { "const": false }
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -378,6 +378,34 @@ def build_operator_gate_blockers(evidence: Mapping[str, Any] | None) -> list[str
     return sorted(set(blockers))
 
 
+STALE_USB_ABSENT_BLOCKER = "RESCUE_USB_TARGET_SDB_ABSENT"
+
+
+def reconcile_stale_usb_absent_blockers(
+    blockers: list[str],
+    *,
+    gate: Mapping[str, Any] | None = None,
+    runner: Runner | None = None,
+) -> list[str]:
+    """Drop legacy /dev/sdb-absent blocker when a selectable USB stick is present (e.g. /dev/sda)."""
+    if STALE_USB_ABSENT_BLOCKER not in blockers:
+        return blockers
+    gate_target = str((gate or {}).get("usb_target_device") or "").strip()
+    if gate_target.startswith("/dev/"):
+        try:
+            if Path(gate_target).exists():
+                return [b for b in blockers if b != STALE_USB_ABSENT_BLOCKER]
+        except OSError:
+            pass
+    try:
+        payload = build_usb_candidates_payload(runner=runner)
+        if any(d.get("selectable") for d in payload.get("devices") or []):
+            return [b for b in blockers if b != STALE_USB_ABSENT_BLOCKER]
+    except Exception:
+        pass
+    return blockers
+
+
 def build_compact_usb_operator_summary(
     *,
     runner: Runner | None = None,
