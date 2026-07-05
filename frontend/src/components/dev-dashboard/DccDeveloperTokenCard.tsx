@@ -6,6 +6,7 @@ import {
   writeStoredDccDeveloperToken,
   type DccTokenVerifyResult,
 } from '../../lib/devDashboard/dccDeveloperToken'
+import { fetchApi } from '../../api'
 
 const HEADER_NAME = 'X-Setuphelfer-Developer-Token'
 
@@ -20,6 +21,8 @@ export function DccDeveloperTokenCard({ onTokenChanged }: Props) {
   const [verifyState, setVerifyState] = useState<DccTokenVerifyResult | 'idle'>('idle')
   const [verifyMessage, setVerifyMessage] = useState<string | null>(null)
 
+  const [serverConfigured, setServerConfigured] = useState<boolean | null>(null)
+
   const refreshStored = useCallback(() => {
     const token = readStoredDccDeveloperToken()
     setStored(Boolean(token))
@@ -30,6 +33,17 @@ export function DccDeveloperTokenCard({ onTokenChanged }: Props) {
     refreshStored()
     const handler = () => refreshStored()
     window.addEventListener('setuphelfer-dcc-developer-token-changed', handler)
+    void (async () => {
+      try {
+        const r = await fetchApi('/api/dev-dashboard/capability-status', { cache: 'no-store' })
+        if (r.ok) {
+          const body = (await r.json()) as { developer_capability_configured?: boolean }
+          setServerConfigured(body.developer_capability_configured === true)
+        }
+      } catch {
+        setServerConfigured(null)
+      }
+    })()
     return () => window.removeEventListener('setuphelfer-dcc-developer-token-changed', handler)
   }, [refreshStored])
 
@@ -92,7 +106,23 @@ export function DccDeveloperTokenCard({ onTokenChanged }: Props) {
           <dt className="text-slate-500">{t('devDashboard.vis.token.sourceLabel')}</dt>
           <dd>{t('devDashboard.vis.token.sourceValue')}</dd>
         </div>
+        <div>
+          <dt className="text-slate-500">{t('devDashboard.vis.token.serverConfigured')}</dt>
+          <dd data-testid="dcc-token-server-configured">
+            {serverConfigured === true
+              ? t('devDashboard.vis.token.serverConfiguredYes')
+              : serverConfigured === false
+                ? t('devDashboard.vis.token.serverConfiguredNo')
+                : '—'}
+          </dd>
+        </div>
       </dl>
+
+      {serverConfigured && !stored ? (
+        <p className="mt-2 text-xs text-amber-200/90 rounded border border-amber-700/40 bg-amber-950/20 px-2 py-1.5" data-testid="dcc-token-server-hint">
+          {t('devDashboard.vis.token.serverHint')}
+        </p>
+      ) : null}
 
       <div className="mt-3 flex flex-wrap items-end gap-2">
         <label className="flex-1 min-w-[200px] text-xs text-slate-300">

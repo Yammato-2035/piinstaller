@@ -1,6 +1,6 @@
 import type { DashboardPayload, ModuleRow } from '../../pages/DevDashboardBody'
 
-export type DevDashboardDataSource = 'runtime_api' | 'standalone_workspace' | 'snapshot' | 'unavailable'
+export type DevDashboardDataSource = 'runtime_api' | 'standalone_workspace' | 'snapshot' | 'limited_live' | 'unavailable'
 
 export type WorkspaceScanResult = {
   workspace_root: string

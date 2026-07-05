@@ -15,7 +15,7 @@ from typing import Any
 
 UTC = timezone.utc
 
-_DE_EN_PAIR_RE = re.compile(r"^(?P<base>.+)_(DE|EN)\.md$", re.I)
+_DE_EN_PAIR_RE = re.compile(r"^(?P<base>.+)_(DE|EN|FR|NL)\.md$", re.I)
 
 
 def _repo_root() -> Path:
@@ -41,14 +41,23 @@ def _count_md_files(base: Path, *, max_files: int = 5000) -> int:
 def _scan_translation_pairs(repo: Path) -> dict[str, Any]:
     missing_de: list[str] = []
     missing_en: list[str] = []
-    complete = 0
+    missing_fr: list[str] = []
+    missing_nl: list[str] = []
+    complete_de_en = 0
+    complete_fr = 0
+    complete_nl = 0
     bases: dict[str, set[str]] = {}
     docs = repo / "docs"
     if not docs.is_dir():
         return {
             "complete": 0,
+            "complete_de_en": 0,
+            "complete_fr": 0,
+            "complete_nl": 0,
             "missing_de": [],
             "missing_en": [],
+            "missing_fr": [],
+            "missing_nl": [],
             "warnings": ["docs_dir_missing"],
         }
     try:
@@ -56,28 +65,54 @@ def _scan_translation_pairs(repo: Path) -> dict[str, Any]:
             m = _DE_EN_PAIR_RE.match(fp.name)
             if not m:
                 continue
-            rel = str(fp.relative_to(docs)).replace("\\", "/")
             base_key = f"{fp.parent.relative_to(docs)}/{m.group('base')}".replace("\\", "/")
             lang = fp.name.rsplit("_", 1)[-1][:2].upper()
             bases.setdefault(base_key, set()).add(lang)
     except OSError as exc:
-        return {"complete": 0, "missing_de": [], "missing_en": [], "warnings": [f"scan_error:{exc}"]}
+        return {
+            "complete": 0,
+            "complete_de_en": 0,
+            "complete_fr": 0,
+            "complete_nl": 0,
+            "missing_de": [],
+            "missing_en": [],
+            "missing_fr": [],
+            "missing_nl": [],
+            "warnings": [f"scan_error:{exc}"],
+        }
 
     for base_key, langs in sorted(bases.items()):
         if "DE" in langs and "EN" in langs:
-            complete += 1
+            complete_de_en += 1
         elif "EN" in langs:
             missing_de.append(base_key)
         elif "DE" in langs:
             missing_en.append(base_key)
+        if "FR" in langs:
+            complete_fr += 1
+        else:
+            missing_fr.append(base_key)
+        if "NL" in langs:
+            complete_nl += 1
+        else:
+            missing_nl.append(base_key)
 
     warnings: list[str] = []
     if missing_de or missing_en:
         warnings.append("translation_pairs_incomplete")
+    if missing_fr:
+        warnings.append("translation_fr_incomplete")
+    if missing_nl:
+        warnings.append("translation_nl_incomplete")
     return {
-        "complete": complete,
+        "complete": complete_de_en,
+        "complete_de_en": complete_de_en,
+        "complete_fr": complete_fr,
+        "complete_nl": complete_nl,
         "missing_de": missing_de[:40],
         "missing_en": missing_en[:40],
+        "missing_fr": missing_fr[:40],
+        "missing_nl": missing_nl[:40],
         "warnings": warnings,
     }
 

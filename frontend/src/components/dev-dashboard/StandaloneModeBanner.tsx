@@ -22,6 +22,8 @@ export function StandaloneModeBanner({
   const { t } = useTranslation()
   const localUp = localApiReachable ?? apiReachable
   if (apiReachable && source === 'runtime_api') return null
+  if (source === 'limited_live') return null
+  if (localUp && offlineReason === 'developer_token_required') return null
   const isBackendHang = String(offlineReason || '').includes('backend_hanging_timeout')
   const isLimitedLocal = localUp && !apiReachable
   const borderClass = isBackendHang

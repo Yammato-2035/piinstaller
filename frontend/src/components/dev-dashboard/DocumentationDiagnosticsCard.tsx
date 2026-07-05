@@ -56,7 +56,11 @@ export function DocumentationDiagnosticsCard({ summary }: Props) {
             <dt className="text-slate-400">{t('devDashboard.controlCenter.evidence')}</dt>
             <dd className="text-slate-200 font-mono">{doc.evidence_total ?? '—'}</dd>
             <dt className="text-slate-400">{t('devDashboard.controlCenter.translationPairs')}</dt>
-            <dd className="text-slate-200 font-mono">{pairs.complete ?? 0}</dd>
+            <dd className="text-slate-200 font-mono">{pairs.complete_de_en ?? pairs.complete ?? 0}</dd>
+            <dt className="text-slate-400">{t('devDashboard.controlCenter.translationFr')}</dt>
+            <dd className="text-slate-200 font-mono">{pairs.complete_fr ?? 0}</dd>
+            <dt className="text-slate-400">{t('devDashboard.controlCenter.translationNl')}</dt>
+            <dd className="text-slate-200 font-mono">{pairs.complete_nl ?? 0}</dd>
           </dl>
           {missingDe.length || missingEn.length ? (
             <div className="mt-2 text-[11px] text-amber-200/90">

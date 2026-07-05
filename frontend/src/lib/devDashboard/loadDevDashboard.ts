@@ -10,6 +10,7 @@ import {
 import { buildStandaloneMetaPrompt } from './buildStandalonePrompt'
 import { API_STATUS_PATH, STANDALONE_SNAPSHOT_PATH } from './constants'
 import { invokeTauriWorkspaceScan, isTauriRuntime } from './isTauri'
+import { buildLimitedLiveDashboardResult } from './buildLimitedLiveDashboard'
 import { probeBackendStartup } from './probeBackendStartup'
 import type { DevDashboardLoadResult, WorkspaceScanResult } from './types'
 
@@ -193,6 +194,16 @@ export async function loadDevDashboard(statusQuery: string): Promise<DevDashboar
   if (runtime.result) return runtime.result
 
   const offlineReason = runtime.offlineReason || 'backend_api_unreachable'
+
+  if (
+    localApiReachable &&
+    (offlineReason === 'developer_token_required' ||
+      offlineReason === 'developer_capability_not_configured' ||
+      offlineReason === 'profile_route_blocked')
+  ) {
+    return buildLimitedLiveDashboardResult(offlineReason)
+  }
+
   let scan = await loadTauriScan()
   let source: DevDashboardLoadResult['source'] = 'standalone_workspace'
 

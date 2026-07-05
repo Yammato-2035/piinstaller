@@ -80,7 +80,7 @@ export function buildGovernanceMatrix(params: {
 
   const runtimeTraffic: Traffic = !localApiReachable
     ? 'red'
-    : !apiReachable
+    : params.source === 'limited_live' || !apiReachable
       ? 'yellow'
       : runtimeGatePassed
         ? 'green'
@@ -167,7 +167,7 @@ export function buildCockpitAlerts(
       message: 'Local API erreichbar — Dev-Dashboard eingeschränkt (nicht pauschal API offline)',
     })
   }
-  if (params.source !== 'runtime_api') {
+  if (params.source !== 'runtime_api' && params.source !== 'limited_live') {
     alerts.push({
       id: 'non-runtime-source',
       severity: 'warning',

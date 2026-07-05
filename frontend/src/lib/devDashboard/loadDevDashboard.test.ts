@@ -100,5 +100,11 @@ describe('loadDevDashboard', () => {
     expect(result.localApiReachable).toBe(true)
     expect(result.apiReachable).toBe(false)
     expect(result.offlineReason).toBe('developer_token_required')
+    expect(result.source).toBe('limited_live')
+    expect(result.localApiReachable).toBe(true)
+    expect(result.apiReachable).toBe(false)
+    const rg = result.dashboard?.runtime_gate as Record<string, unknown>
+    expect(rg.passed).toBe(false)
+    expect((rg.checks as Array<Record<string, unknown>>)?.[0]?.ok).toBe(true)
   })
 })
