@@ -69,15 +69,25 @@ Menüeinträge: Rettung starten, Netzwerk-Assistent, MSI/NVIDIA-Kompat, Diagnose
 
 ---
 
-## Telemetrie (Developer-Laptop)
+## Telemetrie (IONOS Cloud)
 
-| Endpoint | Standard |
-|----------|----------|
+| Endpoint | Standard (Produktion) |
+|----------|------------------------|
+| Base | `https://telemetrie.setuphelfer.de` |
+| Health | `/v1/telemetry/health` |
+| Ingest | `/v1/telemetry/ingest` |
+
+Kanonisch: `config/rescue_telemetry_endpoints.json`. Override per `SETUPHELFER_RESCUE_TELEMETRY_SERVER` oder `network.env` auf dem Stick.
+
+### Legacy LAN-Proxy (nur Lab)
+
+| Endpoint | Legacy |
+|----------|--------|
 | LAN-Proxy | `http://192.168.178.140:8001` |
 | Health | `/api/rescue/telemetry/health` |
 | Ingest | `/api/rescue/telemetry/v1/ingest` |
 
-Proxy ist **allowlist-only** — `/api/version` und `/openapi.json` liefern bewusst **404**.
+`SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE=legacy` — Proxy ist **allowlist-only** (kein `/api/version`).
 
 Optional vor Boot: `SETUPHELFER_RESCUE_TELEMETRY_BIND=192.168.178.140 ./scripts/rescue-live/start-rescue-telemetry-lan-proxy.sh`
 

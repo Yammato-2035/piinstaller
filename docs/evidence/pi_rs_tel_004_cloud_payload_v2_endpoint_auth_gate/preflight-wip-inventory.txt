@@ -1,0 +1,35 @@
+== status ==
+ M backend/core/rescue_lab_telemetry_model.py
+ M backend/core/rescue_lab_telemetry_reachability.py
+ M backend/core/rescue_telemetry_connectivity_v1.py
+ M docs/evidence/PI_RS_TEL_001_TELEMETRY_SERVER_CONTRACT_REFERENCE.md
+ M docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+ M docs/faq/RESCUE_STICK_FAQ_DE.md
+ M docs/knowledge-base/rescue/RESCUE_START_ASSISTANT_OVERVIEW.md
+ M frontend/src-tauri/resources/setuphelfer-version.json
+ M scripts/rescue-live/image/setuphelfer-rescue-common.sh
+ M scripts/rescue-live/update-fat32-esp-live-payload.sh
+?? backend/core/rescue_telemetry_endpoints.py
+?? backend/tests/test_rescue_telemetry_endpoints.py
+?? config/rescue_telemetry_endpoints.json
+?? docs/evidence/pi_rs_tel_004_cloud_payload_v2_endpoint_auth_gate/
+
+== tracked diff stat ==
+ backend/core/rescue_lab_telemetry_model.py         |  7 ++++-
+ backend/core/rescue_lab_telemetry_reachability.py  | 25 +++++++++-------
+ backend/core/rescue_telemetry_connectivity_v1.py   |  5 +++-
+ ..._TEL_001_TELEMETRY_SERVER_CONTRACT_REFERENCE.md |  4 ++-
+ .../controlled_iso_build_latest_summary.json       | 15 +++++-----
+ docs/faq/RESCUE_STICK_FAQ_DE.md                    | 24 ++++++++++++----
+ .../rescue/RESCUE_START_ASSISTANT_OVERVIEW.md      | 18 +++++++++---
+ .../src-tauri/resources/setuphelfer-version.json   |  2 +-
+ .../rescue-live/image/setuphelfer-rescue-common.sh | 24 ++++++++++++----
+ .../rescue-live/update-fat32-esp-live-payload.sh   | 33 +++++++++++++++++++---
+ 10 files changed, 117 insertions(+), 40 deletions(-)
+
+== suspected cloud endpoint WIP ==
+ M docs/faq/RESCUE_STICK_FAQ_DE.md
+ M scripts/rescue-live/image/setuphelfer-rescue-common.sh
+?? backend/core/rescue_telemetry_endpoints.py
+?? backend/tests/test_rescue_telemetry_endpoints.py
+?? config/rescue_telemetry_endpoints.json

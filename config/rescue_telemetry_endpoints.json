@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "updated_at": "2026-07-10",
+  "default_profile": "cloud",
+  "profiles": {
+    "cloud": {
+      "base_url": "https://telemetrie.setuphelfer.de",
+      "path_style": "cloud",
+      "health_path": "/v1/telemetry/health",
+      "ingest_path": "/v1/telemetry/ingest",
+      "dry_run_path": "/v1/telemetry/dry-run",
+      "schema": "telemetry.rescue.beta.v2",
+      "production_ready": false,
+      "operator_consent_required": true,
+      "hosting": "ionos_plesk"
+    },
+    "legacy_lan_lab": {
+      "base_url": "http://192.168.178.140:8001",
+      "path_style": "legacy",
+      "health_path": "/api/rescue/telemetry/health",
+      "ingest_path": "/api/rescue/telemetry/v1/ingest",
+      "schema": "rescue_boot_network_telemetry",
+      "production_ready": false,
+      "operator_consent_required": true,
+      "legacy": true
+    }
+  }
+}

@@ -3,8 +3,11 @@
 set -euo pipefail
 
 SETUPHELFER_RESCUE_STATE_DIR="${SETUPHELFER_RESCUE_STATE_DIR:-/run/setuphelfer-rescue}"
-SETUPHELFER_RESCUE_TELEMETRY_SERVER="${SETUPHELFER_RESCUE_TELEMETRY_SERVER:-http://192.168.178.140:8001}"
+# Production default: IONOS cloud telemetry (see config/rescue_telemetry_endpoints.json).
+SETUPHELFER_RESCUE_TELEMETRY_BASE_URL="${SETUPHELFER_RESCUE_TELEMETRY_BASE_URL:-https://telemetrie.setuphelfer.de}"
+SETUPHELFER_RESCUE_TELEMETRY_SERVER="${SETUPHELFER_RESCUE_TELEMETRY_SERVER:-$SETUPHELFER_RESCUE_TELEMETRY_BASE_URL}"
 SETUPHELFER_RESCUE_TELEMETRY_URL="${SETUPHELFER_RESCUE_TELEMETRY_URL:-$SETUPHELFER_RESCUE_TELEMETRY_SERVER}"
+SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE="${SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE:-cloud}"
 SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL="${SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL:-}"
 SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL="${SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL:-}"
 SETUPHELFER_RESCUE_WIFI_SSID="${SETUPHELFER_RESCUE_WIFI_SSID:-}"
@@ -383,13 +386,23 @@ setuphelfer_rescue_trim_url() {
 }
 
 setuphelfer_rescue_resolve_telemetry_urls() {
-  local base
+  local base path_style
   base="$(setuphelfer_rescue_trim_url "${SETUPHELFER_RESCUE_TELEMETRY_URL:-$SETUPHELFER_RESCUE_TELEMETRY_SERVER}")"
+  path_style="${SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE:-cloud}"
   if [[ -z "$SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL" ]]; then
-    SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL="${base}/api/rescue/telemetry/health"
-  fi
-  if [[ -z "$SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL" ]]; then
-    SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL="${base}/api/rescue/telemetry/v1/ingest"
+    if [[ "$path_style" == "legacy" || "$path_style" == "local" || "$path_style" == "local_backend_proxy" ]]; then
+      SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL="${base}/api/rescue/telemetry/health"
+      SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL="${base}/api/rescue/telemetry/v1/ingest"
+    else
+      SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL="${base}/v1/telemetry/health"
+      SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL="${base}/v1/telemetry/ingest"
+    fi
+  elif [[ -z "$SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL" ]]; then
+    if [[ "$path_style" == "legacy" || "$path_style" == "local" || "$path_style" == "local_backend_proxy" ]]; then
+      SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL="${base}/api/rescue/telemetry/v1/ingest"
+    else
+      SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL="${base}/v1/telemetry/ingest"
+    fi
   fi
   export SETUPHELFER_RESCUE_TELEMETRY_HEALTH_URL SETUPHELFER_RESCUE_TELEMETRY_INGEST_URL
 }

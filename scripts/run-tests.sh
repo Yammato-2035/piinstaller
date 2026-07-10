@@ -51,4 +51,15 @@ PYTHONPATH="$ROOT/backend" python3 -m pytest \
   "$ROOT/backend/tests/test_pi_rs_tel003_security_negative_cases.py" \
   "$ROOT/backend/tests/test_pi_rs_tel003_version_bump.py"
 
+echo "== PI-RS-TEL-004 pytest =="
+PYTHONPATH="$ROOT/backend" python3 -m pytest \
+  "$ROOT/backend/tests/test_pi_rs_tel004_endpoint_config.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel004_payload_v2_contract.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel004_cloud_path_style.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel004_auth_gate.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel004_reachability_gate.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel004_security_negative_cases.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel004_version_bump.py" \
+  "$ROOT/backend/tests/test_rescue_telemetry_endpoints.py"
+
 echo "run-tests.sh: ok"

@@ -4,6 +4,7 @@ PI-RS-TEL-001 — synthetic Rescue Stick lab telemetry payload model (no PII, no
 
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -219,8 +220,12 @@ def build_rescue_lab_envelope(
     wire_payload = adapt_payload_for_tel012_ingest(payload)
     body_bytes = wire_json_bytes(wire_payload)
     headers = build_hmac_headers(config.client_id, wire_payload, secret)
+    from core.rescue_telemetry_endpoints import resolve_telemetry_urls
+
     base = (config.lab_base_url or "").rstrip("/")
-    ingest_url = f"{base}/api/telemetry/ingest"
+    path_style = os.environ.get("SETUPHELPER_TELEMETRY_LAB_PATH_STYLE", "cloud")
+    resolved = resolve_telemetry_urls(base_url=base or None, path_style=path_style)
+    ingest_url = resolved["ingest_url"]
     return RescueLabTelemetryEnvelope(
         client_id=config.client_id,
         payload=wire_payload,
