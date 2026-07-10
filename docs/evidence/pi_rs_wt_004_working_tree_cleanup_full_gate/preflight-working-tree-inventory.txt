@@ -1,0 +1,17 @@
+== HEAD ==
+749d21bede906d5b1f8401cd492102fb8c5dc0ee
+
+== status short count ==
+989
+
+== changed tracked files ==
+ckb-next
+docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+
+== diff stat ==
+ ckb-next                                                                | 0
+ .../rescue_lab_payload_synthetic_example.redacted.json                  | 2 +-
+ 2 files changed, 1 insertion(+), 1 deletion(-)
+
+== untracked count ==
+3181

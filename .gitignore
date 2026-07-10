@@ -81,6 +81,11 @@ debian/pi-installer/
 *.buildinfo
 *.changes
 
+# Laufzeit-Evidence-Remnants (root-owned nach Rescue-VM-Tests; PI-RS-WT-004)
+docs/evidence/runtime-results/rescue/fat32_esp_payload_update_*/
+docs/evidence/runtime-results/rescue/fat32_esp_write_*/
+docs/evidence/runtime-results/rescue/qemu/qemu_rescue_developer_autopilot_*/
+
 # Sonstiges
 *.bak
 Freenove_Computer_Case_Kit_Pro_for_Raspberry_Pi/

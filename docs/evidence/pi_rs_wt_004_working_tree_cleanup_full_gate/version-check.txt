@@ -1,0 +1,16 @@
+== version refs ==
+frontend/src-tauri/resources/setuphelfer-version.json:2:  "project_version": "1.9.19.4",
+package.json:3:  "version": "1.9.19.4",
+frontend/package.json:3:  "version": "1.9.19.4",
+VERSION:1:1.9.19.4
+config/version.json:3:  "project_version": "1.9.19.4",
+
+1.9.19.4
+{
+  "generated_at": "2026-07-05T10:32:00Z",
+  "project_version": "1.9.19.4",
+  "release_stage": "internal_testing",
+  "schema_version": 1,
+  "version_source_of_truth": true,
+  "version_track": "setuphelfer_identifier_unification"
+}

@@ -12,6 +12,7 @@ cd frontend && npm test -- --run \
   src/lib/devDashboard/loadDevDashboard.test.ts \
   src/lib/devDashboard/governanceMatrix.test.ts \
   src/components/AppLanguageSwitcher.test.ts
+cd "$ROOT"
 
 echo "== DCC-VIS-001 safety gate =="
 bash "$ROOT/scripts/check-dcc-vis-001-safety.sh"

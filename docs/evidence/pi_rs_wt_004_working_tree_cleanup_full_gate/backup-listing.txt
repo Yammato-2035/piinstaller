@@ -1,0 +1,8 @@
+insgesamt 28M
+drwxrwxr-x   2 volker volker 4,0K Jul 10 08:14 .
+drwxrwxrwt 829 root   root    40K Jul 10 08:14 ..
+-rw-rw-r--   1 volker volker  56K Jul 10 08:13 git-status-porcelain-v2.txt
+-rw-rw-r--   1 volker volker  56K Jul 10 08:13 git-status-short.txt
+-rw-rw-r--   1 volker volker  873 Jul 10 08:13 tracked-working-tree.diff
+-rw-rw-r--   1 volker volker  27M Jul 10 08:14 untracked-files.tar.gz
+-rw-rw-r--   1 volker volker 277K Jul 10 08:13 untracked-files.txt

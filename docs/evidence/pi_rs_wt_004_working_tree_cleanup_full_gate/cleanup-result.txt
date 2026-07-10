@@ -1,0 +1,13 @@
+== status after cleanup ==
+ M .gitignore
+?? docs/evidence/pi_rs_wt_004_working_tree_cleanup_full_gate/
+# branch.oid 749d21bede906d5b1f8401cd492102fb8c5dc0ee
+# branch.head main
+# branch.upstream origin/main
+# branch.ab +0 -0
+1 .M N... 100644 100644 100644 7c21d7963771cfc7e70465b4960edbd859d3bfb5 7c21d7963771cfc7e70465b4960edbd859d3bfb5 .gitignore
+? docs/evidence/pi_rs_wt_004_working_tree_cleanup_full_gate/
+
+== diff after cleanup ==
+ .gitignore | 5 +++++
+ 1 file changed, 5 insertions(+)

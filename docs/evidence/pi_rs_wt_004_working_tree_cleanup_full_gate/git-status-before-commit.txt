@@ -1,0 +1,20 @@
+ M .gitignore
+ M backend/tests/support/pi_rs_tel003_cross_repo_harness.py
+ M docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+ M docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_latest.redacted.json
+ M scripts/run-tests.sh
+?? docs/evidence/pi_rs_wt_004_working_tree_cleanup_full_gate/
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/0b4c3754-401d-4b7a-a704-2b857aed8a6a.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/1c059079-15d9-4e99-96e2-3fd80978d97d.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/40802294-33b6-4180-9abf-2863e80818a2.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/43d19947-1e0f-4d27-a9e4-7d9d55606fc6.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/6ba2b2d1-1178-4f05-bd3a-56b2c7b4b523.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/7ce8f138-fc23-42a6-83d6-e427dc192569.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/a10d1601-a795-46fe-abb4-e1dd98d280c9.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/b60d6296-bc58-4f99-99e1-46aeaae99095.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/b62d3a2f-0af1-4c6e-8ab5-10ef6995dc4b.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/c85146d9-906b-4e8b-a769-52e07623f5a0.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/d72a2b26-9c77-4c93-a9b4-8a69bb11af46.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/e19576e2-37ff-4408-850c-ae8d56e3ddc0.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/edbadb50-6cab-476e-bcfe-46475fee3eb2.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/faedbaab-5dc2-4aa8-a8b5-7f28e12fed6e.redacted.json

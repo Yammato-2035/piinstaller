@@ -92,6 +92,7 @@ def local_diagnostics_server() -> Iterator[str]:
 
     port = _pick_free_port()
     env = dict(os.environ)
+    env.pop("PYTHONPATH", None)
     env["DS_REQUIRE_DATABASE"] = "false"
     env["SETUPHELFER_DIAGNOSTICS_LAB_RECEIVER_ENABLED"] = "false"
     process = subprocess.Popen(
