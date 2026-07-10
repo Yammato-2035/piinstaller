@@ -1,0 +1,8 @@
+== backup ==
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717
+28K	/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717/git-status-porcelain-v2.txt
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717/git-status-short.txt
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717/tracked-working-tree.diff
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717/untracked-files.tar.gz
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-001a-wip-20260710-094717/untracked-files.txt

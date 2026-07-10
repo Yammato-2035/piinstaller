@@ -1,0 +1,10 @@
+== SETUPHELFER listing ==
+/media/volker/SETUPHELFER/boot/grub/grub.cfg
+/media/volker/SETUPHELFER/EFI/BOOT/BOOTX64.EFI
+/media/volker/SETUPHELFER/live/filesystem.squashfs
+/media/volker/SETUPHELFER/live/filesystem.squashfs.prev-1.10.0.4
+/media/volker/SETUPHELFER/live/initrd.img
+/media/volker/SETUPHELFER/live/vmlinuz
+/media/volker/SETUPHELFER/setuphelfer/rescue/boot-branding.txt
+/media/volker/SETUPHELFER/setuphelfer/rescue/evidence.json
+/media/volker/SETUPHELFER/setuphelfer/rescue/version.json
