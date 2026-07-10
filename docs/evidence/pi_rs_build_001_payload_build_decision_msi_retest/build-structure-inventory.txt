@@ -1,0 +1,36 @@
+== build scripts ==
+scripts/build-deb.sh
+scripts/release-service.sh
+scripts/rescue/build-rescue-iso-controlled.sh
+scripts/rescue/build-rescue-iso.sh
+scripts/rescue-live/build-fat32-esp-bootx64.sh
+scripts/rescue-live/build-fat32-esp-usb-layout.sh
+scripts/rescue-live/build-rescue-react-ui.sh
+scripts/rescue-live/clean-controlled-live-build-tree.sh
+scripts/rescue-live/patch-rescue-iso-uefi-x64.sh
+scripts/rescue-live/preflight-developer-controlled-iso-build.sh
+scripts/rescue-live/prepare-controlled-live-build-tree.sh
+scripts/rescue-live/repack-rescue-squashfs-react-shell.sh
+scripts/rescue-live/run-controlled-iso-build-with-logging.sh
+scripts/rescue-live/run-qemu-developer-iso-smoke.sh
+scripts/rescue-live/run-rescue-standard-iso-vm-test.sh
+scripts/rescue-live/test_fleet_session_shell_payloads_v1.sh
+scripts/rescue-live/update-fat32-esp-live-payload.sh
+scripts/rescue-live/validate-controlled-live-build-tree.sh
+scripts/rescue-live/validate-live-build-dpkg-preflight.sh
+scripts/rescue-live/validate-rescue-iso-squashfs.sh
+scripts/rescue-live/validate-rescue-iso-uefi-boot.sh
+scripts/rescue-live/verify-fat32-esp-rescue-usb.sh
+scripts/rescue-live/verify-rescue-grub-theme.sh
+scripts/rescue-live/write-fat32-esp-rescue-usb.sh
+scripts/verify-setuphelfer-install.sh
+
+== latest squashfs all ==
+-rw-r--r-- 1 volker workspace 1,2G Jun 29 19:40 build/rescue/filesystem.squashfs.repacked-1.10.0.5
+-rw-r--r-- 1 volker workspace 1,2G Jun 29 21:32 build/rescue/filesystem.squashfs.repacked-1.10.0.6
+-rw-r--r-- 1 volker workspace 1,2G Jun 29 21:46 build/rescue/filesystem.squashfs.repacked-1.10.0.7
+-rw-r--r-- 1 volker workspace 1,2G Jun 30 01:36 build/rescue/filesystem.squashfs.repacked-1.10.0.8
+-rw-r--r-- 1 volker workspace 1,2G Jun 30 20:33 build/rescue/filesystem.squashfs.repacked-1.10.0.9
+
+== build artifact count ==
+4

@@ -14,4 +14,6 @@
 | Telemetry Server beta.0.1 | GELB | Contract/Mock only — cross-repo preview verified via PI-RS-TEL-003 |
 | Diagnostics Server beta.0.1 | GELB | DIAG-LAB-003 preview APIs verified from Rescue Stick |
 | WordPress Beta Bridge | GELB | Plugin skeleton |
-| Stick Payload Build | GELB | `ready_for_payload_build` |
+| PI-RS-WT-004 Working Tree Cleanup + Full Gate | GRÜN | `docs/maintenance/PI_RS_WT_004_WORKING_TREE_CLEANUP_FULL_GATE.md` |
+| PI-RS-BUILD-001 Payload Build Decision (MSI Retest) | GRÜN | `build_deferred` — Entscheidung dokumentiert, kein Build in diesem Sprint |
+| Stick Payload Build | GELB | Repack auf 1.9.19.4 deferred → PI-RS-MSI-RETEST-001 |

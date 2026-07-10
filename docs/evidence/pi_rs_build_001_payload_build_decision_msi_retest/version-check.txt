@@ -1,0 +1,24 @@
+== version refs ==
+frontend/src-tauri/resources/setuphelfer-version.json:2:  "project_version": "1.9.19.4",
+config/version.json:3:  "project_version": "1.9.19.4",
+frontend/package.json:3:  "version": "1.9.19.4",
+VERSION:1:1.9.19.4
+package.json:3:  "version": "1.9.19.4",
+
+1.9.19.4
+{
+  "generated_at": "2026-07-05T10:32:00Z",
+  "project_version": "1.9.19.4",
+  "release_stage": "internal_testing",
+  "schema_version": 1,
+  "version_source_of_truth": true,
+  "version_track": "setuphelfer_identifier_unification"
+}
+
+== latest payload artifacts ==
+-rw-r--r-- 1 volker workspace 1,2G Jun 19 12:44 build/rescue/filesystem.squashfs.repacked-1.9.7.1
+-rw-r--r-- 1 volker workspace 1,2G Jun 19 17:12 build/rescue/filesystem.squashfs.repacked-1.9.8.0
+-rw-r--r-- 1 volker workspace 1,2G Jun 19 19:10 build/rescue/filesystem.squashfs.repacked-1.9.9.0
+-rw-rw-r-- 1 volker workspace 1,3G Jun 28 19:21 build/rescue/binary.hybrid.repacked-1.10.0.1.iso
+-rw-rw-r-- 1 volker workspace 1,3G Jun 28 20:21 build/rescue/binary.hybrid.repacked-1.10.0.2.iso
+-rw-rw-r-- 1 volker workspace 1,3G Jun 28 23:28 build/rescue/binary.hybrid.repacked-1.10.0.3.iso

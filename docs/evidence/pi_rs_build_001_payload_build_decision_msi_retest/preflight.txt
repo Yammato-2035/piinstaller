@@ -1,0 +1,9 @@
+== preflight ==
+/home/volker/piinstaller
+main
+0f7123f0eafb644872c3032ae9a0f6718be3c668
+?? docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/
+
+== persistent backup ==
+/home/volker/setuphelfer-backups/pi-rs-wt004-20260710-081359
+90M	/home/volker/setuphelfer-backups/pi-rs-wt004-20260710-081359
