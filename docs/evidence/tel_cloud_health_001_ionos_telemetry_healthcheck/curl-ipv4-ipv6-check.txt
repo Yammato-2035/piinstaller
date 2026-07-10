@@ -1,0 +1,69 @@
+== curl IPv4 ==
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Host telemetrie.setuphelfer.de:443 was resolved.
+* IPv6: (none)
+* IPv4: 217.160.0.254
+*   Trying 217.160.0.254:443...
+* Connected to telemetrie.setuphelfer.de (217.160.0.254) port 443
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS alert, internal error (592):
+{ [2 bytes data]
+* OpenSSL/3.0.13: error:0A000438:SSL routines::tlsv1 alert internal error
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+* Closing connection
+curl: (35) OpenSSL/3.0.13: error:0A000438:SSL routines::tlsv1 alert internal error
+
+== curl IPv4 status ==
+curl: (35) OpenSSL/3.0.13: error:0A000438:SSL routines::tlsv1 alert internal error
+http_code=000
+remote_ip=217.160.0.254
+ssl_verify_result=1
+
+== curl IPv6 ==
+  % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
+                                 Dload  Upload   Total   Spent    Left  Speed
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0* Host telemetrie.setuphelfer.de:443 was resolved.
+* IPv6: 2001:8d8:100f:f000::200
+* IPv4: (none)
+*   Trying [2001:8d8:100f:f000::200]:443...
+* Connected to telemetrie.setuphelfer.de (2001:8d8:100f:f000::200) port 443
+* ALPN: curl offers h2,http/1.1
+} [5 bytes data]
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+} [512 bytes data]
+*  CAfile: /etc/ssl/certs/ca-certificates.crt
+*  CApath: /etc/ssl/certs
+{ [5 bytes data]
+* TLSv1.3 (IN), TLS alert, internal error (592):
+{ [2 bytes data]
+* OpenSSL/3.0.13: error:0A000438:SSL routines::tlsv1 alert internal error
+  0     0    0     0    0     0      0      0 --:--:-- --:--:-- --:--:--     0
+* Closing connection
+curl: (35) OpenSSL/3.0.13: error:0A000438:SSL routines::tlsv1 alert internal error
+
+== openssl IPv4 ==
+40771D2972770000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:../ssl/record/rec_layer_s3.c:1599:SSL alert number 80
+CONNECTED(00000005)
+---
+no peer certificate available
+---
+No client certificate CA names sent
+---
+SSL handshake has read 7 bytes and written 327 bytes
+Verification: OK
+---
+New, (NONE), Cipher is (NONE)
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---

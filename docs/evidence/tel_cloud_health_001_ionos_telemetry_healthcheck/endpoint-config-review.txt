@@ -1,0 +1,71 @@
+== endpoint config ==
+{
+  "schema_version": 1,
+  "updated_at": "2026-07-10",
+  "default_profile": "cloud",
+  "profiles": {
+    "cloud": {
+      "base_url": "https://telemetrie.setuphelfer.de",
+      "path_style": "cloud",
+      "health_path": "/v1/telemetry/health",
+      "ingest_path": "/v1/telemetry/ingest",
+      "dry_run_path": "/v1/telemetry/dry-run",
+      "schema": "telemetry.rescue.beta.v2",
+      "production_ready": false,
+      "operator_consent_required": true,
+      "hosting": "ionos_plesk"
+    },
+    "legacy_lan_lab": {
+      "base_url": "http://192.168.178.140:8001",
+      "path_style": "legacy",
+      "health_path": "/api/rescue/telemetry/health",
+      "ingest_path": "/api/rescue/telemetry/v1/ingest",
+      "schema": "rescue_boot_network_telemetry",
+      "production_ready": false,
+      "operator_consent_required": true,
+      "legacy": true
+    }
+  }
+}
+
+== endpoint refs ==
+config/rescue_telemetry_endpoints.json:7:      "base_url": "https://telemetrie.setuphelfer.de",
+config/rescue_telemetry_endpoints.json:9:      "health_path": "/v1/telemetry/health",
+config/rescue_telemetry_endpoints.json:10:      "ingest_path": "/v1/telemetry/ingest",
+config/rescue_telemetry_endpoints.json:12:      "schema": "telemetry.rescue.beta.v2",
+config/rescue_telemetry_endpoints.json:18:      "base_url": "http://192.168.178.140:8001",
+config/rescue_telemetry_endpoints.json:20:      "health_path": "/api/rescue/telemetry/health",
+config/rescue_telemetry_endpoints.json:21:      "ingest_path": "/api/rescue/telemetry/v1/ingest",
+docs/deployment/TELEMETRY_SERVER_IONOS_PLESK_DEPLOYMENT_PLAN_V1.md:93:curl -sS https://telemetry.setuphelfer.de/v1/telemetry/health
+docs/architecture/telemetry_rescue_beta_v2.schema.json:3:  "$id": "https://setuphelfer.de/schemas/telemetry.rescue.beta.v2.json",
+docs/architecture/telemetry_rescue_beta_v2.schema.json:4:  "title": "telemetry.rescue.beta.v2",
+docs/architecture/telemetry_rescue_beta_v2.schema.json:20:    "schema_version": { "const": "telemetry.rescue.beta.v2" },
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:3:**Schema:** `telemetry.rescue.beta.v2`
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:9:Migrate rescue-stick telemetry preview from legacy `rescue_boot_network_telemetry` (schema v1, LAN proxy) to the IONOS cloud contract `telemetry.rescue.beta.v2`.
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:15:| `schema_version` | Must be `telemetry.rescue.beta.v2` |
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:32:- `event_kind`: `telemetry.rescue.beta.v2`
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:51:| Health | `https://telemetrie.setuphelfer.de/v1/telemetry/health` |
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:52:| Ingest | `https://telemetrie.setuphelfer.de/v1/telemetry/ingest` |
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:58:`SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE=legacy` → `/api/rescue/telemetry/*` on LAN proxy.
+docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md:63:- Schema reference: `docs/architecture/telemetry_rescue_beta_v2.schema.json`
+docs/architecture/BETA_DATA_FLOW_V1.md:32:  RS->>TS: POST /v1/telemetry/ingest
+docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md:5:| Profile | DCC API | DCC UI | Telemetrie `/api/rescue/telemetry/*` |
+docs/architecture/DEVELOPER_CAPABILITY_AND_DCC_PROFILE_MODEL.md:66:- Telemetrie: `route_exposure.py` — `/api/rescue/telemetry/*` vom DCC-Gate getrennt
+docs/architecture/PUBLIC_PRIVATE_BOUNDARY_V1.md:38:| JSON schemas | `telemetry_rescue_beta_v2.schema.json`, `beta_stick_registry.schema.json` |
+docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md:14:| `/api/rescue/telemetry/health` | GET | immer erlaubt | immer |
+docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md:15:| `/api/rescue/telemetry/v1/ingest` | POST | immer erlaubt | `RESCUE_TELEMETRY_INGEST_ENABLED=1` |
+docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md:68:POST /api/rescue/telemetry/v1/ingest
+docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md:82:  "ingest_path": "/api/rescue/telemetry/v1/ingest",
+docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md:83:  "health_path": "/api/rescue/telemetry/health",
+docs/architecture/WINDOWS_RESCUE_TELEMETRY_SERVER_CONTRACT.md:171:`/api/rescue/telemetry/*` ist explizit **nicht** blockiert (`backend/runtime_governance/route_exposure.py`).
+docs/architecture/SETUPHELFER_BETA_SYSTEM_ARCHITECTURE_V1.md:76:3. **Ingest (telemetry):** Schema `telemetry.rescue.beta.v2`; unknown stick → `403`; missing agreement → `202 quarantine`.
+docs/private-server-skeletons/telemetry-server/app/main.py:21:    schema_path = Path(__file__).resolve().parents[2] / "public-contracts" / "docs" / "architecture" / "telemetry_rescue_beta_v2.schema.json"
+docs/private-server-skeletons/telemetry-server/app/main.py:29:@app.get("/v1/telemetry/health")
+docs/private-server-skeletons/telemetry-server/app/main.py:45:    if payload.get("schema_version") != "telemetry.rescue.beta.v2":
+docs/architecture/SERVICE_INTERACTION_MATRIX_V1.md:44:| **TS** | RS, LAB | `/v1/telemetry/ingest`, `/dry-run`, `/health` |
+docs/architecture/SERVICE_INTERACTION_MATRIX_V1.md:83:| RS → TS | `telemetry.rescue.beta.v2` | No (privacy flags false) |
+docs/architecture/TELEMETRY_SERVER_BETA_0_1.md:33:| GET | `/v1/telemetry/health` | None | Versioned health |
+docs/architecture/TELEMETRY_SERVER_BETA_0_1.md:35:| POST | `/v1/telemetry/ingest` | Stick sig required | Main ingest |
+docs/architecture/TELEMETRY_SERVER_BETA_0_1.md:99:- Client envelope: `telemetry.rescue.beta.v2`  
+docs/architecture/RESCUE_TELEMETRY_CLIENT_CONTRACT_V2.md:3:**Version:** 2.0 · **Schema ID:** `telemetry.rescue.beta.v2`  
+docs/architecture/RESCUE_TELEMETRY_CLIENT_CONTRACT_V2.md:5:**JSON Schema:** `docs/architecture/telemetry_rescue_beta_v2.schema.json`

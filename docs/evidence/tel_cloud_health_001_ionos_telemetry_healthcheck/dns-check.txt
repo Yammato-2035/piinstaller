@@ -1,0 +1,8 @@
+== getent hosts ==
+2001:8d8:100f:f000::200 telemetrie.setuphelfer.de
+
+== dig A ==
+217.160.0.254
+
+== dig AAAA ==
+2001:8d8:100f:f000::200
