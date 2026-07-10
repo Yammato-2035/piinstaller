@@ -10,10 +10,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 ### Added
 
 - **PI-RS-BUILD-001:** Payload-/Build-Entscheidung für MSI-Retest dokumentiert (`docs/build/PI_RS_BUILD_001_PAYLOAD_BUILD_DECISION_MSI_RETEST.md`); Entscheidung `no-build/deferred`, Repack/USB deferred.
+- **PI-RS-MSI-RETEST-001A:** WIP-Reconciliation und MSI-Retest-Readiness (Testpläne, Evidence, `wip_reconciled` / `retest_not_run`).
 
 ### Changed
 
-- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 Status
+- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 + PI-RS-MSI-RETEST-001A Status
 
 ---
 

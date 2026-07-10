@@ -1,0 +1,6 @@
+== project version ==
+frontend/package.json:3:  "version": "1.9.19.4",
+VERSION:1:1.9.19.4
+package.json:3:  "version": "1.9.19.4",
+config/version.json:3:  "project_version": "1.9.19.4",
+1.9.19.4

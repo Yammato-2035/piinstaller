@@ -1,0 +1,23 @@
+== SETUP_LOGS meta files count ==
+40
+== msi-rs011b evidence files ==
+api-endpoint-status.json
+api-version.json
+backup-preflight.json
+beta-operator-behavior.jsonl
+boot_state_redacted.json
+collector-summary.json
+collector-summary.json.prev-20260630T210511Z
+collector-summary.json.prev-20260630T212534Z
+collector-summary.json.prev-20260701T001127Z
+collector-version-check.json
+console-shield-state.json
+disk-discovery.json
+disk-discovery.json.prev-20260630T210511Z
+disk-discovery.json.prev-20260630T212534Z
+disk-discovery.json.prev-20260701T001127Z
+disk-discovery-summary.md
+disk-inventory.json
+disk-inventory.json.prev-20260630T210511Z
+disk-inventory.json.prev-20260630T212534Z
+disk-role-map.md

@@ -1,0 +1,49 @@
+== status short ==
+ M docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+ M docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_latest.redacted.json
+?? docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/
+?? docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/84194b19-7408-4821-8f83-13581271cd30.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/e37f999e-b48f-4296-b247-83f93f56d45c.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/eaf8ec63-4d70-4d57-90e3-6e426cf92056.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/ececb363-b3c5-4e16-907e-06940ec0c3d1.redacted.json
+?? docs/test-plans/
+
+== tracked diff stat ==
+ ...cue_lab_payload_synthetic_example.redacted.json |  2 +-
+ .../queue_preview_latest.redacted.json             | 28 +++++++++++-----------
+ 2 files changed, 15 insertions(+), 15 deletions(-)
+
+== untracked files ==
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/backup-path.txt
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/backup-summary.txt
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/wip-inventory.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/payload-baseline.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/preflight.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/run-tests.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/safety-gates.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/setuphelfer-partition-readonly.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/setup-logs-inventory.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/stick-payload-version-detection.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/usb-readonly-inventory.txt
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/version-check.txt
+docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/84194b19-7408-4821-8f83-13581271cd30.redacted.json
+docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/e37f999e-b48f-4296-b247-83f93f56d45c.redacted.json
+docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/eaf8ec63-4d70-4d57-90e3-6e426cf92056.redacted.json
+docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/ececb363-b3c5-4e16-907e-06940ec0c3d1.redacted.json
+docs/test-plans/PI_RS_MSI_RETEST_001_GE63_RAIDER.md
+docs/test-plans/PI_RS_MSI_RETEST_001_IMPORT_AND_REVIEW.md
+docs/test-plans/PI_RS_MSI_RETEST_001_OPERATOR_RUNBOOK.md
+
+== likely MSI retest WIP ==
+?? docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/
+?? docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/
+?? docs/test-plans/
+
+== likely telemetry preview WIP ==
+ M docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+ M docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_latest.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/84194b19-7408-4821-8f83-13581271cd30.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/e37f999e-b48f-4296-b247-83f93f56d45c.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/eaf8ec63-4d70-4d57-90e3-6e426cf92056.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/ececb363-b3c5-4e16-907e-06940ec0c3d1.redacted.json

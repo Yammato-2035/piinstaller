@@ -1,0 +1,5 @@
+== baseline squashfs ==
+-rw-r--r-- 1 volker workspace 1,2G Jun 30 23:59 build/rescue/filesystem.squashfs.repacked-1.10.0.12
+1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6  build/rescue/filesystem.squashfs.repacked-1.10.0.12
+== ISO latest ==
+-rw-rw-r-- 1 volker workspace 1,3G Jun 28 23:28 build/rescue/binary.hybrid.repacked-1.10.0.3.iso
