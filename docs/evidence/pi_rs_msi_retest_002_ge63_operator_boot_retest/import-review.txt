@@ -1,0 +1,8 @@
+== import dir ==
+# No import — physical retest not performed (operator_action_required)
+
+== imported files ==
+(none)
+
+== expected evidence candidates ==
+(pending operator boot retest)

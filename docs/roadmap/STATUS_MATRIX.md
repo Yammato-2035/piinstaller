@@ -18,4 +18,4 @@
 | PI-RS-BUILD-001 Payload Build Decision (MSI Retest) | GRÜN | `build_deferred` — Entscheidung dokumentiert, kein Build in diesem Sprint |
 | Stick Payload Build | GELB | Repack auf 1.9.19.4 deferred → PI-RS-MSI-RETEST-001 |
 | PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` / `branch_ready` / `retest_not_run` — Stick **1.10.0.12**, kein USB-Write |
-| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | Testpläne + Evidence bereit; Operator-Go erforderlich |
+| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | `operator_action_required` — Preflight + Runbook bereit, Payload **1.10.0.12**, physischer Boot ausstehend |

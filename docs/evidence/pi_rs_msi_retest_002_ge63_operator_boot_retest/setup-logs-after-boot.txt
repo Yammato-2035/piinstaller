@@ -1,0 +1,5 @@
+== SETUP_LOGS after boot ==
+Retest not performed in this sprint — no post-boot delta.
+
+See setup-logs-before-boot.txt for pre-retest baseline.
+Import dir: none (operator_action_required)

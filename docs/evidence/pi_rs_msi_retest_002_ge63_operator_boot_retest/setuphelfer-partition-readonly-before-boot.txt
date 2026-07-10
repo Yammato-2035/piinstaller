@@ -1,0 +1,32 @@
+== SETUPHELFER mount ==
+TARGET                    SOURCE    FSTYPE OPTIONS
+/media/volker/SETUPHELFER /dev/sda1 vfat   ro,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro
+
+== SETUPHELFER version.json ==
+--- /media/volker/SETUPHELFER/setuphelfer/rescue/version.json
+{
+  "project_version": "1.10.0.12",
+  "git_commit": "96aa277116f32980d2099c5a7b049e517ab9f290",
+  "built_at": "2026-06-30T22:01:13.490113+00:00",
+  "squashfs_sha256": "1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6",
+  "contract_name": "rescue_build_manifest_v1",
+  "schema_version": 1,
+  "version_source_of_truth": false,
+  "payload_updated_at": "2026-06-30T22:01:13.490141+00:00",
+  "update_method": "fat32_esp_payload_update"
+}
+--- /media/volker/SETUPHELFER/live/filesystem.squashfs sha
+1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6  /media/volker/SETUPHELFER/live/filesystem.squashfs
+
+== SETUPHELFER files (maxdepth 4) ==
+--- root: /tmp/setuphelfer-stick-ro
+--- root: /media/volker/SETUPHELFER
+/media/volker/SETUPHELFER/boot/grub/grub.cfg
+/media/volker/SETUPHELFER/EFI/BOOT/BOOTX64.EFI
+/media/volker/SETUPHELFER/live/filesystem.squashfs
+/media/volker/SETUPHELFER/live/filesystem.squashfs.prev-1.10.0.4
+/media/volker/SETUPHELFER/live/initrd.img
+/media/volker/SETUPHELFER/live/vmlinuz
+/media/volker/SETUPHELFER/setuphelfer/rescue/boot-branding.txt
+/media/volker/SETUPHELFER/setuphelfer/rescue/evidence.json
+/media/volker/SETUPHELFER/setuphelfer/rescue/version.json

@@ -11,10 +11,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 - **PI-RS-BUILD-001:** Payload-/Build-Entscheidung für MSI-Retest dokumentiert (`docs/build/PI_RS_BUILD_001_PAYLOAD_BUILD_DECISION_MSI_RETEST.md`); Entscheidung `no-build/deferred`, Repack/USB deferred.
 - **PI-RS-MSI-RETEST-001A:** WIP-Reconciliation und MSI-Retest-Readiness (Testpläne, Evidence, `wip_reconciled` / `retest_not_run`).
+- **PI-RS-MSI-RETEST-002:** Operator Boot Runbook + Preflight-Evidence; Status `operator_action_required` (Payload **1.10.0.12**, kein physischer Boot in diesem Sprint).
 
 ### Changed
 
-- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 + PI-RS-MSI-RETEST-001A Status
+- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 + PI-RS-MSI-RETEST-001A/002 Status
 
 ---
 

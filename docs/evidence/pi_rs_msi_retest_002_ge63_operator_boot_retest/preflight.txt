@@ -1,0 +1,15 @@
+== preflight ==
+/home/volker/piinstaller
+main
+3557e82fca4ad5aabc34d5c95764cb248d15c848
+?? docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/
+?? docs/test-plans/PI_RS_MSI_RETEST_002_OPERATOR_BOOT_RUNBOOK.md
+?? docs/test-results/
+
+== runtime-artifact-backup ==
+/home/volker/setuphelfer-backups/pi-rs-msi-retest-002-preflight-runtime-artifacts-20260710-100431
+16K	/home/volker/setuphelfer-backups/pi-rs-msi-retest-002-preflight-runtime-artifacts-20260710-100431
+
+== cleanup ==
+untracked queue_preview_items removed: yes
+tracked queue_preview_items restored: yes
