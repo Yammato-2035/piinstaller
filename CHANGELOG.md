@@ -9,6 +9,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
+- **TEL-CLOUD-HEALTH-001:** IONOS telemetry health probe evidence — DNS ok, TLS `internal error` on `telemetrie.setuphelfer.de`; ingest not tested; repack allowed with cloud send disabled.
 - **PI-RS-TEL-004:** Cloud telemetry endpoint defaults (`telemetrie.setuphelfer.de`), `telemetry.rescue.beta.v2` preview payload builder, auth/reachability gates, tests + evidence; repack/USB still deferred.
 - **PI-RS-BUILD-001:** Payload-/Build-Entscheidung für MSI-Retest dokumentiert (`docs/build/PI_RS_BUILD_001_PAYLOAD_BUILD_DECISION_MSI_RETEST.md`); Entscheidung `no-build/deferred`, Repack/USB deferred.
 - **PI-RS-MSI-RETEST-001A:** WIP-Reconciliation und MSI-Retest-Readiness (Testpläne, Evidence, `wip_reconciled` / `retest_not_run`).

@@ -1,0 +1,8 @@
+== preflight ==
+/home/volker/piinstaller
+tel-cloud-health-001-ionos-telemetry-healthcheck
+9cf66f618f79a37e1a3cf4e07a133c2ff9cb01d0
+?? docs/evidence/tel_cloud_health_001_ionos_telemetry_healthcheck/
+
+== endpoint ==
+https://telemetrie.setuphelfer.de/v1/telemetry/health
