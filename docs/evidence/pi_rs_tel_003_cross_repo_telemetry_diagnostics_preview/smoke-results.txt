@@ -1,0 +1,208 @@
+== PI-RS-TEL-003 Cross-Repo Telemetry Diagnostics Preview Smoke ==
+check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
+check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
+check-pi-rs-tel-002-network-gated-telemetry-safety: ok
+.......FFF.........                                                      [100%]
+=================================== FAILURES ===================================
+_______ DiagnosticsValidatePreviewTests.test_validate_accepted_localhost _______
+
+self = <backend.tests.test_pi_rs_tel003_diagnostics_validate_preview.DiagnosticsValidatePreviewTests testMethod=test_validate_accepted_localhost>
+
+    def test_validate_accepted_localhost(self) -> None:
+        rescue = build_rescue_cross_repo_telemetry_payload()
+        cloudserver = build_diagnostics_cloudserver_payload_from_rescue(rescue)
+>       with local_diagnostics_server() as base_url:
+
+backend/tests/test_pi_rs_tel003_diagnostics_validate_preview.py:24: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @contextmanager
+    def local_diagnostics_server() -> Iterator[str]:
+        monorepo = locate_monorepo_root()
+        if monorepo is None:
+            raise RuntimeError("monorepo_missing")
+        diagnostics_path = monorepo / "diagnostics-server"
+        python_bin = diagnostics_path / ".venv" / "bin" / "python"
+        if not python_bin.is_file():
+            raise RuntimeError("diagnostics_venv_missing")
+    
+        port = _pick_free_port()
+        env = dict(os.environ)
+        env["DS_REQUIRE_DATABASE"] = "false"
+        env["SETUPHELFER_DIAGNOSTICS_LAB_RECEIVER_ENABLED"] = "false"
+        process = subprocess.Popen(
+            [
+                str(python_bin),
+                "-m",
+                "uvicorn",
+                "app.main:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(port),
+                "--log-level",
+                "warning",
+            ],
+            cwd=str(diagnostics_path),
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        base_url = f"http://127.0.0.1:{port}"
+        try:
+            deadline = time.time() + 20.0
+            while time.time() < deadline:
+                try:
+                    with urlopen(f"{base_url}/health", timeout=1.0) as response:
+                        if response.status == 200:
+                            break
+                except URLError:
+                    time.sleep(0.2)
+            else:
+>               raise RuntimeError("diagnostics_server_start_timeout")
+E               RuntimeError: diagnostics_server_start_timeout
+
+backend/tests/support/pi_rs_tel003_cross_repo_harness.py:125: RuntimeError
+_____________ FindingsPreviewTests.test_findings_preview_generated _____________
+
+self = <backend.tests.test_pi_rs_tel003_findings_preview.FindingsPreviewTests testMethod=test_findings_preview_generated>
+
+    def test_findings_preview_generated(self) -> None:
+        rescue = build_rescue_cross_repo_telemetry_payload()
+        cloudserver = build_diagnostics_cloudserver_payload_from_rescue(rescue)
+>       with local_diagnostics_server() as base_url:
+
+backend/tests/test_pi_rs_tel003_findings_preview.py:31: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @contextmanager
+    def local_diagnostics_server() -> Iterator[str]:
+        monorepo = locate_monorepo_root()
+        if monorepo is None:
+            raise RuntimeError("monorepo_missing")
+        diagnostics_path = monorepo / "diagnostics-server"
+        python_bin = diagnostics_path / ".venv" / "bin" / "python"
+        if not python_bin.is_file():
+            raise RuntimeError("diagnostics_venv_missing")
+    
+        port = _pick_free_port()
+        env = dict(os.environ)
+        env["DS_REQUIRE_DATABASE"] = "false"
+        env["SETUPHELFER_DIAGNOSTICS_LAB_RECEIVER_ENABLED"] = "false"
+        process = subprocess.Popen(
+            [
+                str(python_bin),
+                "-m",
+                "uvicorn",
+                "app.main:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(port),
+                "--log-level",
+                "warning",
+            ],
+            cwd=str(diagnostics_path),
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        base_url = f"http://127.0.0.1:{port}"
+        try:
+            deadline = time.time() + 20.0
+            while time.time() < deadline:
+                try:
+                    with urlopen(f"{base_url}/health", timeout=1.0) as response:
+                        if response.status == 200:
+                            break
+                except URLError:
+                    time.sleep(0.2)
+            else:
+>               raise RuntimeError("diagnostics_server_start_timeout")
+E               RuntimeError: diagnostics_server_start_timeout
+
+backend/tests/support/pi_rs_tel003_cross_repo_harness.py:125: RuntimeError
+__________ FindingsPreviewTests.test_findings_production_ready_false ___________
+
+self = <backend.tests.test_pi_rs_tel003_findings_preview.FindingsPreviewTests testMethod=test_findings_production_ready_false>
+
+    def test_findings_production_ready_false(self) -> None:
+        rescue = build_rescue_cross_repo_telemetry_payload()
+        cloudserver = build_diagnostics_cloudserver_payload_from_rescue(rescue)
+>       with local_diagnostics_server() as base_url:
+
+backend/tests/test_pi_rs_tel003_findings_preview.py:42: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/usr/lib/python3.12/contextlib.py:137: in __enter__
+    return next(self.gen)
+           ^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    @contextmanager
+    def local_diagnostics_server() -> Iterator[str]:
+        monorepo = locate_monorepo_root()
+        if monorepo is None:
+            raise RuntimeError("monorepo_missing")
+        diagnostics_path = monorepo / "diagnostics-server"
+        python_bin = diagnostics_path / ".venv" / "bin" / "python"
+        if not python_bin.is_file():
+            raise RuntimeError("diagnostics_venv_missing")
+    
+        port = _pick_free_port()
+        env = dict(os.environ)
+        env["DS_REQUIRE_DATABASE"] = "false"
+        env["SETUPHELFER_DIAGNOSTICS_LAB_RECEIVER_ENABLED"] = "false"
+        process = subprocess.Popen(
+            [
+                str(python_bin),
+                "-m",
+                "uvicorn",
+                "app.main:app",
+                "--host",
+                "127.0.0.1",
+                "--port",
+                str(port),
+                "--log-level",
+                "warning",
+            ],
+            cwd=str(diagnostics_path),
+            env=env,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        base_url = f"http://127.0.0.1:{port}"
+        try:
+            deadline = time.time() + 20.0
+            while time.time() < deadline:
+                try:
+                    with urlopen(f"{base_url}/health", timeout=1.0) as response:
+                        if response.status == 200:
+                            break
+                except URLError:
+                    time.sleep(0.2)
+            else:
+>               raise RuntimeError("diagnostics_server_start_timeout")
+E               RuntimeError: diagnostics_server_start_timeout
+
+backend/tests/support/pi_rs_tel003_cross_repo_harness.py:125: RuntimeError
+=============================== warnings summary ===============================
+../.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434
+  /home/volker/.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_pi_rs_tel003_diagnostics_validate_preview.py::DiagnosticsValidatePreviewTests::test_validate_accepted_localhost
+FAILED backend/tests/test_pi_rs_tel003_findings_preview.py::FindingsPreviewTests::test_findings_preview_generated
+FAILED backend/tests/test_pi_rs_tel003_findings_preview.py::FindingsPreviewTests::test_findings_production_ready_false
+3 failed, 16 passed, 1 warning in 60.53s (0:01:00)
+19 passed

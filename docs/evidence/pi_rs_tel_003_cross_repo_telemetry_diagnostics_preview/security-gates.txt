@@ -1,0 +1,3 @@
+check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
+check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
+check-pi-rs-tel-002-network-gated-telemetry-safety: ok
