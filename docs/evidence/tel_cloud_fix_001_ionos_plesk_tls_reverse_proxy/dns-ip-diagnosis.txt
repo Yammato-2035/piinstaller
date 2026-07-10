@@ -1,0 +1,72 @@
+== openssl telemetrie @ 85.215.118.240 ==
+depth=3 C = US, O = Internet Security Research Group, CN = ISRG Root X1
+verify return:1
+depth=2 C = US, O = ISRG, CN = Root YR
+verify return:1
+depth=1 C = US, O = Let's Encrypt, CN = YR1
+verify return:1
+depth=0 CN = server.windogs.de
+verify return:1
+CONNECTED(00000005)
+---
+Certificate chain
+ 0 s:CN = server.windogs.de
+   i:C = US, O = Let's Encrypt, CN = YR1
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Jun 25 21:52:38 2026 GMT; NotAfter: Sep 23 21:52:37 2026 GMT
+ 1 s:C = US, O = Let's Encrypt, CN = YR1
+   i:C = US, O = ISRG, CN = Root YR
+   a:PKEY: rsaEncryption, 2048 (bit); sigalg: RSA-SHA256
+   v:NotBefore: Sep  3 00:00:00 2025 GMT; NotAfter: Sep  2 23:59:59 2028 GMT
+ 2 s:C = US, O = ISRG, CN = Root YR
+   i:C = US, O = Internet Security Research Group, CN = ISRG Root X1
+   a:PKEY: rsaEncryption, 4096 (bit); sigalg: RSA-SHA256
+   v:NotBefore: May 13 00:00:00 2026 GMT; NotAfter: Sep  2 23:59:59 2032 GMT
+---
+Server certificate
+-----BEGIN CERTIFICATE-----
+MIIE+jCCA+KgAwIBAgISBQymh5k6DODLJ/Wh9MeNB1MIMA0GCSqGSIb3DQEBCwUA
+MDMxCzAJBgNVBAYTAlVTMRYwFAYDVQQKEw1MZXQncyBFbmNyeXB0MQwwCgYDVQQD
+EwNZUjEwHhcNMjYwNjI1MjE1MjM4WhcNMjYwOTIzMjE1MjM3WjAcMRowGAYDVQQD
+ExFzZXJ2ZXIud2luZG9ncy5kZTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoC
+ggEBAJK6lMPyD1ydAAfCRIniSMpFoZe70iHe7Xh+t43ewh0ev+q69uphbDU8GbR+
+fXeUQYum/m6sAHPQpSISlKMaDKzivhcf4IX47v3KVbyB//jYSgbTXO8VclgJuVBg
+tn6J7+SbooUazLeV2ErxzZQ+p2S7SEFgd/DXcOHUvRJuIykGeMm4iKVvQvz5RcYI
+fu+/9/6CPu/LVoreBTbF6nk8wYHO/JX0oN30ogl+g04FXsmkv33YbZw4WXdjQXuM
+KPaz0AZEKBZrduaujbWE6E0CoMHOaFwGMqKX0ErN5JW77aW/23ttqF0e2bR8BOBM
+PblHLv3aKckGHMrAhDAMFWxTAncCAwEAAaOCAh0wggIZMA4GA1UdDwEB/wQEAwIF
+oDATBgNVHSUEDDAKBggrBgEFBQcDATAMBgNVHRMBAf8EAjAAMB0GA1UdDgQWBBTy
+8+v7xzMv3aP2pFWXFJoLvdUblzAfBgNVHSMEGDAWgBQfLzW+RhSCzUCxrnksVXj6
+99Ro+zAzBggrBgEFBQcBAQQnMCUwIwYIKwYBBQUHMAKGF2h0dHA6Ly95cjEuaS5s
+ZW5jci5vcmcvMBwGA1UdEQQVMBOCEXNlcnZlci53aW5kb2dzLmRlMBMGA1UdIAQM
+
+== curl health @ 85.215.118.240 ==
+curl: (60) SSL: no alternative certificate subject name matches target host name 'telemetrie.setuphelfer.de'
+More details here: https://curl.se/docs/sslcerts.html
+
+curl failed to verify the legitimacy of the server and therefore could not
+establish a secure connection to it. To learn more about this situation and
+how to fix it, please visit the web page mentioned above.
+http_code=000
+ssl_verify=1
+body:
+
+== openssl telemetrie @ 217.160.0.254 ==
+407726D960730000:error:0A000438:SSL routines:ssl3_read_bytes:tlsv1 alert internal error:../ssl/record/rec_layer_s3.c:1599:SSL alert number 80
+CONNECTED(00000005)
+---
+no peer certificate available
+---
+No client certificate CA names sent
+---
+SSL handshake has read 7 bytes and written 327 bytes
+Verification: OK
+---
+New, (NONE), Cipher is (NONE)
+Secure Renegotiation IS NOT supported
+Compression: NONE
+Expansion: NONE
+No ALPN negotiated
+Early data was not sent
+Verify return code: 0 (ok)
+---
