@@ -25,7 +25,9 @@ Read-only inventory for the piinstaller Rescue Stick lab telemetry send flow.
 
 ## HMAC-v2 ingest contract
 
-- Endpoint: `POST {SETUPHELPER_TELEMETRY_LAB_BASE_URL}/api/telemetry/ingest`
+- Endpoint (cloud, default): `POST {SETUPHELPER_TELEMETRY_LAB_BASE_URL}/v1/telemetry/ingest`
+- Endpoint (legacy LAN lab): `POST {SETUPHELPER_TELEMETRY_LAB_BASE_URL}/api/telemetry/ingest` with `SETUPHELPER_TELEMETRY_LAB_PATH_STYLE=legacy`
+- Canonical base: `https://telemetrie.setuphelfer.de` (`config/rescue_telemetry_endpoints.json`)
 - Headers: `X-Setuphelfer-Timestamp`, `X-Setuphelfer-Signature`, `X-Setuphelfer-Client-Id`, `X-Setuphelfer-Nonce`
 - Signature message: `{timestamp}.{nonce}.{raw_json_body_bytes}`
 - Algorithm: HMAC-SHA256 hex digest

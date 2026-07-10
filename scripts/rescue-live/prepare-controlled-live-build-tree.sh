@@ -313,7 +313,11 @@ write_rescue_network_telemetry_overlay() {
 # SETUPHELFER_RESCUE_WIFI_SSID=
 # SETUPHELFER_RESCUE_WIFI_SECURITY=wpa-psk
 # SETUPHELFER_RESCUE_WIFI_PSK_FILE=/path/to/local/psk.txt
-# SETUPHELFER_RESCUE_TELEMETRY_SERVER=http://192.168.178.140:8001
+# SETUPHELFER_RESCUE_TELEMETRY_BASE_URL=https://telemetrie.setuphelfer.de
+# SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE=cloud
+# Legacy lab only:
+# SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE=legacy
+# SETUPHELFER_RESCUE_TELEMETRY_BASE_URL=http://192.168.178.140:8001
 EOF
   ln -sf setuphelfer-rescue-network-onboarding "${sbin}/setuphelfer-network"
 

@@ -44,20 +44,34 @@ Passwort wird über **`whiptail --passwordbox`** abgefragt — **nicht** geloggt
 
 ---
 
-## Wie verbindet sich der Stick mit dem Developer-Laptop?
+## Wohin sendet der Stick Telemetrie?
 
-Standard-Telemetrie-Ziel: **`http://192.168.178.140:8001`** (LAN-Proxy zum Backend).
+**Produktionsziel (ab 1.9.19.x):** **`https://telemetrie.setuphelfer.de`** (IONOS Cloud-Server).
 
-Vor dem MSI-Test auf dem Developer-Rechner:
+- Health: `https://telemetrie.setuphelfer.de/v1/telemetry/health`
+- Ingest: `https://telemetrie.setuphelfer.de/v1/telemetry/ingest`
+
+Kanonische Konfiguration: `config/rescue_telemetry_endpoints.json`.
+
+Ohne Internet wird nach `/run/setuphelfer-rescue/telemetry-spool/` gespoolt und per Retry-Timer erneut gesendet.
+
+### Legacy: Developer-Laptop LAN-Proxy (nur Lab)
+
+Für lokale Tests gegen das Backend über LAN-Proxy (veraltet für Produktions-Sticks):
 
 ```bash
-SETUPHELFER_RESCUE_TELEMETRY_BIND=192.168.178.140 \
+SETUPHELFER_RESCUE_TELEMETRY_PATH_STYLE=legacy \
+SETUPHELFER_RESCUE_TELEMETRY_SERVER=http://192.168.178.140:8001 \
   ./scripts/rescue-live/start-rescue-telemetry-lan-proxy.sh
 ```
 
-UFW muss den MSI (`192.168.178.96` o. ä.) auf Port **8001** erlauben.
+UFW muss den MSI auf Port **8001** erlauben, wenn der Proxy genutzt wird.
 
 ---
+
+## Wie verbindet sich der Stick mit dem Developer-Laptop? (veraltet)
+
+Siehe Abschnitt **Wohin sendet der Stick Telemetrie?** — Produktion nutzt den Cloud-Server, nicht mehr den LAN-Proxy als Standard.
 
 ## Was passiert ohne WLAN?
 

@@ -21,6 +21,7 @@ from core.rescue_lab_telemetry_model import (
     RESCUE_LAB_PRODUCT,
     RESCUE_LAB_SOURCE,
 )
+from core.rescue_telemetry_endpoints import resolve_telemetry_urls
 
 HttpProbe = Callable[[str, float], tuple[int | None, str]]
 
@@ -108,7 +109,20 @@ def check_telemetry_endpoint_reachability(
 ) -> str:
     probe = http_probe or _default_http_probe
     base = lab_base_url.rstrip("/")
-    for path in ("/api/telemetry/health", "/health", "/"):
+    path_style = os.environ.get("SETUPHELPER_TELEMETRY_LAB_PATH_STYLE", "cloud")
+    resolved = resolve_telemetry_urls(base_url=base, path_style=path_style)
+    health_candidates = [
+        resolved["health_url"].removeprefix(base),
+        "/v1/telemetry/health",
+        "/health",
+        "/api/telemetry/health",
+        "/",
+    ]
+    seen: set[str] = set()
+    for path in health_candidates:
+        if path in seen:
+            continue
+        seen.add(path)
         url = f"{base}{path}"
         status, kind = probe(url, timeout_seconds)
         if status in {200, 202, 204}:
@@ -121,15 +135,6 @@ def check_telemetry_endpoint_reachability(
             return "dns_error"
         if kind == "http_error" and status is not None:
             continue
-    status, kind = probe(f"{base}/api/telemetry/health", timeout_seconds)
-    if kind == "timeout":
-        return "timeout"
-    if kind == "tls_error":
-        return "tls_error"
-    if kind == "dns_error":
-        return "dns_error"
-    if status in {200, 202}:
-        return "reachable"
     return "unreachable"
 
 

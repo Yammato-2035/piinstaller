@@ -10,12 +10,13 @@
 | PI-RS-TEL-001 Rescue Lab Send | GRÜN | `backend/core/rescue_lab_telemetry_*` + Tests + Evidence |
 | PI-RS-TEL-002 Reachability + Queue Preview | GRÜN | Network gate + offline preview + profile-aware runtime gate |
 | PI-RS-TEL-003 Cross-Repo Preview Verification | GRÜN | Rescue → Diagnostics validate/findings preview (localhost lab) |
+| PI-RS-TEL-004 Cloud Endpoint + beta.v2 Payload Gate | GRÜN | Cloud default `telemetrie.setuphelfer.de`, preview payload v2, auth/reachability gates; send gated; repack deferred |
 | Beta Registration (public contract) | GRÜN | Architecture + SQL skeleton |
 | Telemetry Server beta.0.1 | GELB | Contract/Mock only — cross-repo preview verified via PI-RS-TEL-003 |
 | Diagnostics Server beta.0.1 | GELB | DIAG-LAB-003 preview APIs verified from Rescue Stick |
 | WordPress Beta Bridge | GELB | Plugin skeleton |
 | PI-RS-WT-004 Working Tree Cleanup + Full Gate | GRÜN | `docs/maintenance/PI_RS_WT_004_WORKING_TREE_CLEANUP_FULL_GATE.md` |
 | PI-RS-BUILD-001 Payload Build Decision (MSI Retest) | GRÜN | `build_deferred` — Entscheidung dokumentiert, kein Build in diesem Sprint |
-| Stick Payload Build | GELB | Repack auf 1.9.19.4 deferred → PI-RS-MSI-RETEST-001 |
+| Stick Payload Build | GELB | Repack deferred → **PI-RS-REPACK-001** (nach TEL-004 beta.v2) |
 | PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` / `branch_ready` / `retest_not_run` — Stick **1.10.0.12**, kein USB-Write |
 | PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | `operator_action_required` — Preflight + Runbook bereit, Payload **1.10.0.12**, physischer Boot ausstehend |

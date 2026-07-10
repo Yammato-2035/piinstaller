@@ -1,0 +1,14 @@
+== PI-RS-TEL-004 Cloud Payload v2 Endpoint Auth Gate Smoke ==
+..............................                                           [100%]
+=============================== warnings summary ===============================
+../.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434
+  /home/volker/.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+30 passed, 1 warning in 0.36s
+check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
+check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
+check-pi-rs-tel-002-network-gated-telemetry-safety: ok
+PI-RS-TEL-004 Smoke PASSED

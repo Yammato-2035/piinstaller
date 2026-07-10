@@ -12,11 +12,14 @@ from typing import Any
 
 from core.rescue_issue_codes_v2 import RescueIssueCodeV2
 
+from core.rescue_telemetry_endpoints import production_telemetry_profile
+
 TELEMETRY_CONNECTIVITY_SCHEMA = "telemetry-connectivity.v1"
 
+_PROFILE = production_telemetry_profile()
 TARGETS = {
   "dev_laptop_lab": "http://127.0.0.1:8101/v1/telemetry/health",
-  "beta_server": "https://telemetrie.setuphelfer.de/v1/telemetry/health",
+  "beta_server": _PROFILE["health_url"],
 }
 
 

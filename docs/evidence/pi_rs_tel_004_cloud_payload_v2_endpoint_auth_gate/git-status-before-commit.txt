@@ -1,0 +1,37 @@
+ M CHANGELOG.md
+ M VERSION
+ M backend/core/rescue_lab_telemetry_model.py
+ M backend/core/rescue_lab_telemetry_reachability.py
+ M backend/core/rescue_telemetry_connectivity_v1.py
+ M config/version.json
+ M docs/evidence/PI_RS_TEL_001_TELEMETRY_SERVER_CONTRACT_REFERENCE.md
+ M docs/faq/RESCUE_STICK_FAQ_DE.md
+ M docs/knowledge-base/rescue/RESCUE_START_ASSISTANT_OVERVIEW.md
+ M docs/roadmap/STATUS_MATRIX.md
+ M frontend/package-lock.json
+ M frontend/package.json
+ M frontend/src-tauri/deb-changelog.txt
+ M frontend/src-tauri/resources/setuphelfer-version.json
+ M package.json
+ M scripts/rescue-live/image/setuphelfer-rescue-common.sh
+ M scripts/rescue-live/prepare-controlled-live-build-tree.sh
+?? backend/core/rescue_telemetry_auth_gate.py
+?? backend/core/rescue_telemetry_cloud_reachability.py
+?? backend/core/rescue_telemetry_endpoints.py
+?? backend/core/rescue_telemetry_payload_v2.py
+?? backend/tests/test_pi_rs_tel004_auth_gate.py
+?? backend/tests/test_pi_rs_tel004_cloud_path_style.py
+?? backend/tests/test_pi_rs_tel004_endpoint_config.py
+?? backend/tests/test_pi_rs_tel004_payload_v2_contract.py
+?? backend/tests/test_pi_rs_tel004_reachability_gate.py
+?? backend/tests/test_pi_rs_tel004_security_negative_cases.py
+?? backend/tests/test_pi_rs_tel004_version_bump.py
+?? backend/tests/test_rescue_telemetry_endpoints.py
+?? config/rescue_telemetry_endpoints.json
+?? docs/config/
+?? docs/contracts/PI_RS_TEL_004_RESCUE_TELEMETRY_BETA_V2_CONTRACT.md
+?? docs/evidence/pi_rs_tel_004_cloud_payload_v2_endpoint_auth_gate/
+?? docs/faq/PI_RS_TEL_004_FAQ.de.md
+?? docs/faq/PI_RS_TEL_004_FAQ.en.md
+?? docs/telemetry/PI_RS_TEL_004_CLOUD_ENDPOINT_PAYLOAD_V2.md
+?? scripts/smoke-pi-rs-tel004-cloud-payload-v2-endpoint-auth-gate.sh
