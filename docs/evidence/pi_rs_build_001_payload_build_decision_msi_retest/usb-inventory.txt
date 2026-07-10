@@ -1,21 +1,19 @@
 == block devices ==
-NAME        MODEL                     SIZE FSTYPE LABEL       MOUNTPOINT               TRAN   TYPE
-sda         Ultra Line                 59G                                             usb    disk
-├─sda1                                  4G vfat   SETUPHELFER                                 part
-└─sda2                                 55G vfat   SETUP_LOGS  /media/volker/SETUP_LOGS        part
-nvme1n1     Samsung SSD 980 PRO 2TB   1,8T                                             nvme   disk
-├─nvme1n1p1                           512M vfat               /boot/efi                nvme   part
-└─nvme1n1p2                           1,8T ext4               /                        nvme   part
-nvme0n1     Samsung SSD 980 PRO 2TB   1,8T                                             nvme   disk
-├─nvme0n1p1                           757M ntfs                                        nvme   part
-├─nvme0n1p2                         512,1M vfat                                        nvme   part
-├─nvme0n1p3                            16M                                             nvme   part
-├─nvme0n1p4                         928,8G ntfs                                        nvme   part
-├─nvme0n1p5                           924M ntfs                                        nvme   part
-└─nvme0n1p6                           931G ntfs                                        nvme   part
+NAME        MODEL                     SIZE FSTYPE LABEL       MOUNTPOINT                TRAN   TYPE
+sda         Ultra Line                 59G                                              usb    disk
+├─sda1                                  4G vfat   SETUPHELFER /media/volker/SETUPHELFER        part
+└─sda2                                 55G vfat   SETUP_LOGS  /media/volker/SETUP_LOGS         part
+nvme1n1     Samsung SSD 980 PRO 2TB   1,8T                                              nvme   disk
+├─nvme1n1p1                           512M vfat               /boot/efi                 nvme   part
+└─nvme1n1p2                           1,8T ext4               /                         nvme   part
+nvme0n1     Samsung SSD 980 PRO 2TB   1,8T                                              nvme   disk
+├─nvme0n1p1                           757M ntfs                                         nvme   part
+├─nvme0n1p2                         512,1M vfat                                         nvme   part
+├─nvme0n1p3                            16M                                              nvme   part
+├─nvme0n1p4                         928,8G ntfs                                         nvme   part
+├─nvme0n1p5                           924M ntfs                                         nvme   part
+└─nvme0n1p6                           931G ntfs                                         nvme   part
 
-== mounted setuphelfer ==
+== mounted setuphelfer labels ==
+├─/media/volker/SETUPHELFER                                                                        /dev/sda1              vfat            ro,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro
 └─/media/volker/SETUP_LOGS                                                                         /dev/sda2              vfat            rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro
-Dateisystem    Größe Benutzt Verf. Verw% Eingehängt auf
-/dev/nvme1n1p2  1,8T    746G  994G   43% /
-/dev/nvme1n1p2  1,8T    746G  994G   43% /

@@ -2,3 +2,5 @@
 check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
 check-pi-rs-tel-001-rescue-lab-telemetry-safety: ok
 check-pi-rs-tel-002-network-gated-telemetry-safety: ok
+check-no-secrets: skipped or missing
+check-no-dangerous-commands: skipped or missing

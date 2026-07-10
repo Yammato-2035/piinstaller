@@ -1,7 +1,15 @@
- M CHANGELOG.md
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/full-run-tests-after.txt
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/full-run-tests-before-build.txt
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/git-status-after-build.txt
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/preflight.txt
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/safety-gates.txt
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/usb-inventory.txt
+ M docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/version-check.txt
  M docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
  M docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_latest.redacted.json
- M docs/roadmap/STATUS_MATRIX.md
-?? docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/
-?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/3b610951-f18c-4ddc-a9e0-5515bcafa240.redacted.json
-?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/6665e405-8a1d-4689-bd62-1eb3042fba7b.redacted.json
+?? docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/84194b19-7408-4821-8f83-13581271cd30.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/e37f999e-b48f-4296-b247-83f93f56d45c.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/eaf8ec63-4d70-4d57-90e3-6e426cf92056.redacted.json
+?? docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/ececb363-b3c5-4e16-907e-06940ec0c3d1.redacted.json
+?? docs/test-plans/

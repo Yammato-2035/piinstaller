@@ -1,7 +1,7 @@
 # PI-RS-BUILD-001 — Payload-/Build-Entscheidung für MSI-Retest
 
 Stand: 2026-07-10  
-Repo: `/home/volker/piinstaller` @ `0f7123f` (vor BUILD-001-Doku-Commit)
+Repo: `/home/volker/piinstaller` @ `e913367` (BUILD-001-Doku-Commit, origin/main)
 
 ## Ausgangsstand
 
@@ -10,7 +10,7 @@ Repo: `/home/volker/piinstaller` @ `0f7123f` (vor BUILD-001-Doku-Commit)
 | Projektversion (Workspace) | **1.9.19.4** |
 | PI-RS-TEL-003 | Cross-Repo Preview verifiziert (CSE `0.1.0-lab2`, DIAG-LAB-003), `preview_only=true` |
 | PI-RS-WT-004 | Working Tree sauber, Full Gate grün (94 Tests) |
-| WT-004 Backup persistent | `/home/volker/setuphelfer-backups/pi-rs-wt004-20260710-081359` (90 MB) |
+| WT-004 Backup persistent | `/home/volker/setuphelfer-backups/pi-rs-wt004-20260710-081359` (180 MB) |
 
 ## Full Gate vor Build-Entscheidung
 
@@ -30,8 +30,8 @@ Evidence: `docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/full-
 
 | Gerät | Label | Größe | Mount |
 |-------|-------|-------|-------|
-| `sda1` | SETUPHELFER | 4G vfat | nicht gemountet |
-| `sda2` | SETUP_LOGS | 55G vfat | `/media/volker/SETUP_LOGS` |
+| `sda1` | SETUPHELFER | 4G vfat | `/media/volker/SETUPHELFER` (ro) |
+| `sda2` | SETUP_LOGS | 55G vfat | `/media/volker/SETUP_LOGS` (rw) |
 
 **USB-Schreiboperation:** **nein** (kein Operator-Go in diesem Sprint).
 

@@ -1,10 +1,86 @@
 == version refs ==
-frontend/src-tauri/resources/setuphelfer-version.json:2:  "project_version": "1.9.19.4",
-config/version.json:3:  "project_version": "1.9.19.4",
-frontend/package.json:3:  "version": "1.9.19.4",
-VERSION:1:1.9.19.4
 package.json:3:  "version": "1.9.19.4",
+package.json:8:    "build": "npm run build --prefix frontend",
+package.json:11:    "tauri:build": "npm run tauri:build --prefix frontend",
+VERSION:1:1.9.19.4
+tests/fixtures/deploy/sample-setuphelfer-deploy-manifest.json:2:  "manifest_version": 1,
+tests/fixtures/deploy/sample-setuphelfer-deploy-manifest.json:4:  "project_version": "0.0.0-fixture",
+tests/fixtures/deploy/sample-setuphelfer-deploy-manifest.json:5:  "release_stage": "internal_testing",
+tests/fixtures/deploy/sample-setuphelfer-deploy-manifest.json:6:  "version_track": "fixture",
+tests/fixtures/deploy/sample-setuphelfer-deploy-manifest.json:13:      "relative_path": "config/version.json",
+config/version.json:3:  "project_version": "1.9.19.4",
+config/version.json:4:  "release_stage": "internal_testing",
+config/version.json:5:  "schema_version": 1,
+config/version.json:6:  "version_source_of_truth": true,
+config/version.json:7:  "version_track": "setuphelfer_identifier_unification"
+frontend/vite.rescue.config.ts:13:    __APP_VERSION__: JSON.stringify(pkg.version || '0.0.0'),
+frontend/vite.rescue.config.ts:17:  build: {
+frontend/vite.rescue.config.ts:18:    outDir: path.resolve(__dirname, '../build/rescue/ui'),
+config/runtime_ports.json:2:  "version": 1,
+config/runtime_ports.json:37:    "release": {
+config/runtime_ports.json:53:    "api_version": "http://127.0.0.1:8000/api/version",
+frontend/TAURI_DEV_SETUP.md:5:## Fehler: „failed to parse config: package > version must be a semver string“
+frontend/TAURI_DEV_SETUP.md:7:Die Version in `src-tauri/tauri.conf.json` muss **SemVer** sein (nur drei Teile: z. B. `1.3.5`, nicht `1.3.4.2`). Bei diesem Fehler die Version in der Config anpassen.
+frontend/TAURI_DEV_SETUP.md:25:Prüfen: `cargo --version` und `rustc --version` sollten etwas ausgeben.
+frontend/TAURI_DEV_SETUP.md:31:sudo apt install -y libwebkit2gtk-4.1-dev build-essential curl wget file libxdo-dev libssl-dev libayatana-appindicator3-dev librsvg2-dev
+backend/requirements.txt:2:# Supply-chain: Version ranges limit drift. For reproducible builds use pip freeze or requirements-lock.txt.
+backend/safety/write_guard.py:231:def build_write_safety_summary(inspect_result: dict[str, Any]) -> dict[str, Any]:
+backend/safety/routes.py:27:build_write_safety_summary = _wg_mod.build_write_safety_summary
+backend/safety/routes.py:40:    summary = build_write_safety_summary(payload)
+docs/host-env/WISSENSDATENBANK.md:44:## KB-004: MCP-Pakete unter ~/.local, Node-Version
+docs/host-env/WISSENSDATENBANK.md:121:| **Nachweis** | `local_lab` aktiv, `/api/fleet/sessions*` live `HTTP 200`, manueller Run `manual_fleet_phase1_acceptance_20260602_125333` mit final `timeout`, `qemu.exit_code=124`, `serial_empty`, `guest_report_missing`; Persistenz unter `/opt/setuphelfer/docs/evidence/runtime-results/dev-dashboard/fleet_sessions*.json*`; danach `release` wiederhergestellt mit Fleet-Routen `HTTP 404 PROFILE_ROUTE_BLOCKED`. |
+docs/host-env/WISSENSDATENBANK.md:122:| **Maßnahme** | Für profilabhängige Runtime-Schritte immer interaktives Operator-`sudo` nutzen; Abnahme strikt in Reihenfolge `release -> local_lab -> smoke -> release` durchführen. |
+docs/host-env/WISSENSDATENBANK.md:145:| **Fix** | Separates Modul `setuphelfer-rescue-telemetry-build-payload.py`; Shell-Wrapper ohne JSON-Injection im Heredoc. |
+docs/host-env/WISSENSDATENBANK.md:177:| **Symptom** | `validate-controlled-live-build-tree.sh` endet mit `FORBIDDEN: chroot/.../firmware/...` oder root-owned Artefakte. |
+docs/host-env/WISSENSDATENBANK.md:178:| **Ursache** | Vorheriger `lb build` hinterließ root-owned `chroot/`/`binary/` — Validate ist read-only-strikt. |
+docs/host-env/WISSENSDATENBANK.md:179:| **Maßnahme** | `sudo bash scripts/rescue-live/clean-controlled-live-build-tree.sh --operator-confirm-clean`, dann Prepare + Validate erneut. **Kein** `rm -rf` auf gemounteten Pfaden. |
+docs/host-env/WISSENSDATENBANK.md:180:| **Referenz** | `docs/faq/rescue_iso_build_faq.md` (Chroot-Cleanup), Prompt `RESCUE_START_ASSISTANT_ISO_REBUILD_OPERATOR_COMPLETION` |
+docs/host-env/FAQ.md:43:## Warum warnt npm beim Inspector wegen der Node-Version?
+docs/host-env/FAQ.md:45:Neuere `@modelcontextprotocol/inspector`-Versionen deklarieren **Node ≥ 22.7.5**. Unter älterem Node kann es trotz Installation laufen oder früh scheitern — **Node 22 LTS** installieren, wenn du den Inspector produktiv nutzt.
+docs/host-env/FAQ.md:51:(Version siehe [Release Notes](https://docs.docker.com/desktop/release-notes/)).
+docs/host-env/DOCKER_DESKTOP_AND_MCP.md:22:- x86-64, unterstützte Ubuntu-Version (Linux Mint mit passender Ubuntu-Basis ist üblich).
+docs/host-env/DOCKER_DESKTOP_AND_MCP.md:77:**Node-Version:** Viele aktuelle MCP-Pakete erwarten **Node 20+** bzw. der Inspector **≥ 22.7.5**. Bei älterem System-Node (z. B. 18.x) Node 22 LTS nachinstallieren (z. B. nvm oder NodeSource), damit Warnungen und Laufzeitfehler vermieden werden.
+frontend/package-lock.json:3:  "version": "1.9.19.4",
+frontend/package-lock.json:4:  "lockfileVersion": 3,
+frontend/package-lock.json:9:      "version": "1.9.19.4",
+frontend/package-lock.json:41:      "version": "5.2.0",
+frontend/package-lock.json:53:      "version": "7.29.7",
+frontend/package-lock.json:67:      "version": "7.29.7",
+frontend/package-lock.json:76:      "version": "7.29.7",
+frontend/package-lock.json:106:      "version": "7.29.7",
+frontend/package-lock.json:122:      "version": "7.29.7",
+frontend/package-lock.json:138:      "version": "7.29.7",
+frontend/package-lock.json:147:      "version": "7.29.7",
+frontend/package-lock.json:160:      "version": "7.29.7",
+frontend/package-lock.json:177:      "version": "7.28.6",
+frontend/package-lock.json:186:      "version": "7.29.7",
+frontend/package-lock.json:195:      "version": "7.29.7",
+frontend/package-lock.json:204:      "version": "7.29.7",
+frontend/package-lock.json:213:      "version": "7.29.7",
+frontend/package-lock.json:226:      "version": "7.29.7",
+frontend/package-lock.json:241:      "version": "7.27.1",
+frontend/package-lock.json:256:      "version": "7.27.1",
+frontend/package-lock.json:271:      "version": "7.29.2",
+frontend/package-lock.json:279:      "version": "7.29.7",
+frontend/package-lock.json:293:      "version": "7.29.7",
+frontend/package-lock.json:311:      "version": "7.29.7",
+frontend/package-lock.json:323:    "node_modules/@esbuild/aix-ppc64": {
+frontend/package-lock.json:324:      "version": "0.21.5",
+frontend/package-lock.json:325:      "resolved": "https://registry.npmjs.org/@esbuild/aix-ppc64/-/aix-ppc64-0.21.5.tgz",
+frontend/package-lock.json:339:    "node_modules/@esbuild/android-arm": {
+frontend/package-lock.json:340:      "version": "0.21.5",
+frontend/package-lock.json:341:      "resolved": "https://registry.npmjs.org/@esbuild/android-arm/-/android-arm-0.21.5.tgz",
+frontend/package-lock.json:355:    "node_modules/@esbuild/android-arm64": {
+frontend/package-lock.json:356:      "version": "0.21.5",
+frontend/package-lock.json:357:      "resolved": "https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.21.5.tgz",
+frontend/package-lock.json:371:    "node_modules/@esbuild/android-x64": {
+frontend/package-lock.json:372:      "version": "0.21.5",
+frontend/package-lock.json:373:      "resolved": "https://registry.npmjs.org/@esbuild/android-x64/-/android-x64-0.21.5.tgz",
+frontend/package-lock.json:387:    "node_modules/@esbuild/darwin-arm64": {
+frontend/package-lock.json:388:      "version": "0.21.5",
+frontend/package-lock.json:389:      "resolved": "https://registry.npmjs.org/@esbuild/darwin-arm64/-/darwin-arm64-0.21.5.tgz",
 
+== key version files ==
 1.9.19.4
 {
   "generated_at": "2026-07-05T10:32:00Z",
@@ -14,11 +90,42 @@ package.json:3:  "version": "1.9.19.4",
   "version_source_of_truth": true,
   "version_track": "setuphelfer_identifier_unification"
 }
-
-== latest payload artifacts ==
--rw-r--r-- 1 volker workspace 1,2G Jun 19 12:44 build/rescue/filesystem.squashfs.repacked-1.9.7.1
--rw-r--r-- 1 volker workspace 1,2G Jun 19 17:12 build/rescue/filesystem.squashfs.repacked-1.9.8.0
--rw-r--r-- 1 volker workspace 1,2G Jun 19 19:10 build/rescue/filesystem.squashfs.repacked-1.9.9.0
--rw-rw-r-- 1 volker workspace 1,3G Jun 28 19:21 build/rescue/binary.hybrid.repacked-1.10.0.1.iso
--rw-rw-r-- 1 volker workspace 1,3G Jun 28 20:21 build/rescue/binary.hybrid.repacked-1.10.0.2.iso
--rw-rw-r-- 1 volker workspace 1,3G Jun 28 23:28 build/rescue/binary.hybrid.repacked-1.10.0.3.iso
+{
+  "name": "pi-installer",
+  "version": "1.9.19.4",
+  "private": true,
+  "description": "Raspberry Pi Installer – Backend, Frontend (Tauri), Skripte",
+  "scripts": {
+    "dev": "npm run dev --prefix frontend",
+    "build": "npm run build --prefix frontend",
+    "tauri": "npm run tauri --prefix frontend --",
+    "tauri:dev": "npm run tauri:dev --prefix frontend",
+    "tauri:build": "npm run tauri:build --prefix frontend",
+    "lint": "npm run lint --prefix frontend"
+  }
+}
+{
+  "name": "pi-installer-frontend",
+  "version": "1.9.19.4",
+  "description": "SetupHelfer — Web GUI for Raspberry Pi and Linux",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.18.1",
+    "framer-motion": "^12.29.0",
+    "html2canvas": "^1.4.1",
+    "i18next": "^25.9.0",
+    "lucide-react": "^0.294.0",
+    "qrcode": "^1.5.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-i18next": "^16.5.8",
+    "react-router-dom": "^6.18.0",
+    "recharts": "^3.7.0",
+    "tauri-plugin-screenshots-api": "^2",
+    "zustand": "^4.4.0"
+{
+  "project_version": "1.9.19.4",
+  "semver_package_version": "1.9.19",
+  "patch_component": 3
+}
