@@ -1,0 +1,7 @@
+TEL-CLOUD-FIX-001 operator runbook summary
+1. DNS: telemetrie.setuphelfer.de A -> 85.215.118.240 (not 217.160.0.254)
+2. Plesk: subdomain + Let's Encrypt for telemetrie.setuphelfer.de
+3. nginx: proxy_pass http://127.0.0.1:8101/v1/telemetry/
+4. Server: curl http://127.0.0.1:8101/v1/telemetry/health
+5. Client: curl https://telemetrie.setuphelfer.de/v1/telemetry/health
+Classification: tls_error_persists (no server access from dev agent)
