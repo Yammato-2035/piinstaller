@@ -9,8 +9,9 @@
 | Telemetry Client V2 | GRÜN | Contract + queue + signing |
 | PI-RS-TEL-001 Rescue Lab Send | GRÜN | `backend/core/rescue_lab_telemetry_*` + Tests + Evidence |
 | PI-RS-TEL-002 Reachability + Queue Preview | GRÜN | Network gate + offline preview + profile-aware runtime gate |
+| PI-RS-TEL-003 Cross-Repo Preview Verification | GRÜN | Rescue → Diagnostics validate/findings preview (localhost lab) |
 | Beta Registration (public contract) | GRÜN | Architecture + SQL skeleton |
-| Telemetry Server beta.0.1 | GELB | Contract/Mock only |
-| Diagnostics Server beta.0.1 | GELB | Contract/Mock only |
+| Telemetry Server beta.0.1 | GELB | Contract/Mock only — cross-repo preview verified via PI-RS-TEL-003 |
+| Diagnostics Server beta.0.1 | GELB | DIAG-LAB-003 preview APIs verified from Rescue Stick |
 | WordPress Beta Bridge | GELB | Plugin skeleton |
 | Stick Payload Build | GELB | `ready_for_payload_build` |

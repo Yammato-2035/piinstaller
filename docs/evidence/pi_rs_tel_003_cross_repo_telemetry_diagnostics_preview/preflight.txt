@@ -1,0 +1,28 @@
+/home/volker/piinstaller
+pi-rs-tel-003-cross-repo-telemetry-diagnostics-preview
+ba53384b54d26effeaa5110e60efbf2911bc78f9
+ M VERSION
+ M backend/tests/test_pi_rs_tel002_reachability_model.py
+ m ckb-next
+ M config/version.json
+ M docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+ M docs/roadmap/STATUS_MATRIX.md
+ M frontend/package-lock.json
+ M frontend/package.json
+ M frontend/src-tauri/deb-changelog.txt
+ M frontend/src-tauri/resources/setuphelfer-version.json
+ M package.json
+ M scripts/run-tests.sh
+?? .cursor/rules/quality-evidence-v1.2.mdc
+?? assets/rescue/mascot/
+?? backend/api/handlers/rescue_ai_export_http_handlers.py
+?? backend/api/handlers/rescue_rs003_handlers.py
+?? backend/api/routes/data_rescue.py
+?? backend/api/routes/linux_migration.py
+?? backend/api/routes/rescue_operator_telemetry.py
+?? backend/api/routes/rescue_rs003.py
+?? backend/api/routes/runtime_status.py
+?? backend/core/data_rescue_execute.py
+?? backend/core/data_rescue_plan_contract.py
+?? backend/core/data_rescue_teacher_mode.py
+?? backend/core/data_rescue_verify.py

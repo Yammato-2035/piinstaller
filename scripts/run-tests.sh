@@ -40,4 +40,14 @@ PYTHONPATH="$ROOT/backend" python3 -m pytest \
 echo "== PI-RS-TEL-002 safety gate =="
 bash "$ROOT/scripts/check-pi-rs-tel-002-network-gated-telemetry-safety.sh"
 
+echo "== PI-RS-TEL-003 pytest =="
+PYTHONPATH="$ROOT/backend" python3 -m pytest \
+  "$ROOT/backend/tests/test_pi_rs_tel003_cross_repo_contract.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel003_rescue_payload_compatibility.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel003_diagnostics_validate_preview.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel003_findings_preview.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel003_offline_queue_compatibility.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel003_security_negative_cases.py" \
+  "$ROOT/backend/tests/test_pi_rs_tel003_version_bump.py"
+
 echo "run-tests.sh: ok"

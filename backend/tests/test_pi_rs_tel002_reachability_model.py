@@ -79,13 +79,13 @@ class ReachabilityModelTests(unittest.TestCase):
     def test_summary_has_no_pii(self) -> None:
         summary = build_reachability_summary(
             profile_allowed=True,
-            lab_base_url="https://telemetrie.setuphelfer.de/private",
+            lab_base_url="https://lab.example.test/private",
             secret="test-secret",
             http_probe=lambda _u, _t: (200, "ok"),
         )
         blob = str(summary)
         self.assertNotIn("test-secret", blob)
-        self.assertEqual(summary["lab_base_url_redacted"], "https://telemetrie.setuphelfer.de/[redacted]")
+        self.assertEqual(summary["lab_base_url_redacted"], "https://lab.example.test/[redacted]")
         self.assertNotIn("private", summary.get("lab_base_url_redacted", ""))
 
 
