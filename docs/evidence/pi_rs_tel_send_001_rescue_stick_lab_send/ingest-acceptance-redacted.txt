@@ -1,0 +1,38 @@
+== telemetry health ==
+{"status":"ok","service":"telemetry-server","version":"0.2.0-beta","port":8101,"lab_ingest":"cse_bearer_enabled","production_ready":false}
+== lab status ==
+{"enabled":true,"production_ready":false,"lab_only":true,"recent_events_count":1,"last_event":{"request_id":"req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca","source":"rescue_stick","event_type":"rescue_stick.health_probe","accepted":true,"status":"accepted","created_at":"2026-07-11T21:24:31.554446Z","payload_hash":"sha256:827cdc637268597ff48c3ae0b1c7fbc47f80b25d09ecafe36f445c94a0f8d323","client_id":"rescue_stick_lab","raw_payload_visible":false}}
+== recent lab events ==
+{"events":[{"request_id":"req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca","source":"rescue_stick","event_type":"rescue_stick.health_probe","accepted":true,"status":"accepted","created_at":"2026-07-11T21:24:31.554446Z","payload_hash":"sha256:827cdc637268597ff48c3ae0b1c7fbc47f80b25d09ecafe36f445c94a0f8d323","client_id":"rescue_stick_lab","raw_payload_visible":false}]}
+== telemetry journal redacted ==
+Jul 10 18:56:19 server systemd[1]: Started setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (health only).
+Jul 10 18:56:19 server uvicorn[4170822]: INFO:     Started server process [4170822]
+Jul 10 18:56:19 server uvicorn[4170822]: INFO:     Waiting for application startup.
+Jul 10 18:56:19 server uvicorn[4170822]: INFO:     Application startup complete.
+Jul 10 18:56:19 server uvicorn[4170822]: INFO:     Uvicorn running on http://127.0.0.1:8101 (Press CTRL+C to quit)
+Jul 11 21:01:24 server systemd[1]: Stopping setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (lab ingest)...
+Jul 11 21:01:24 server uvicorn[4170822]: INFO:     Shutting down
+Jul 11 21:01:24 server uvicorn[4170822]: INFO:     Waiting for application shutdown.
+Jul 11 21:01:24 server uvicorn[4170822]: INFO:     Application shutdown complete.
+Jul 11 21:01:24 server uvicorn[4170822]: INFO:     Finished server process [4170822]
+Jul 11 21:01:24 server systemd[1]: setuphelfer-telemetry-core.service: Deactivated successfully.
+Jul 11 21:01:24 server systemd[1]: Stopped setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (lab ingest).
+Jul 11 21:01:24 server systemd[1]: setuphelfer-telemetry-core.service: Consumed 46.545s CPU time, 29.8M memory peak, 0B memory swap peak.
+Jul 11 21:01:24 server systemd[1]: Started setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (lab ingest).
+Jul 11 21:01:25 server uvicorn[344893]: INFO:     Started server process [344893]
+Jul 11 21:01:25 server uvicorn[344893]: INFO:     Waiting for application startup.
+Jul 11 21:01:25 server uvicorn[344893]: INFO:     Application startup complete.
+Jul 11 21:01:25 server uvicorn[344893]: INFO:     Uvicorn running on http://127.0.0.1:8101 (Press CTRL+C to quit)
+Jul 11 21:24:13 server systemd[1]: Stopping setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (lab ingest)...
+Jul 11 21:24:13 server uvicorn[344893]: INFO:     Shutting down
+Jul 11 21:24:13 server uvicorn[344893]: INFO:     Waiting for application shutdown.
+Jul 11 21:24:13 server uvicorn[344893]: INFO:     Application shutdown complete.
+Jul 11 21:24:13 server uvicorn[344893]: INFO:     Finished server process [344893]
+Jul 11 21:24:13 server systemd[1]: setuphelfer-telemetry-core.service: Deactivated successfully.
+Jul 11 21:24:13 server systemd[1]: Stopped setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (lab ingest).
+Jul 11 21:24:13 server systemd[1]: setuphelfer-telemetry-core.service: Consumed 1.177s CPU time.
+Jul 11 21:24:13 server systemd[1]: Started setuphelfer-telemetry-core.service - Setuphelfer Telemetry Core (lab ingest).
+Jul 11 21:24:13 server uvicorn[349796]: INFO:     Started server process [349796]
+Jul 11 21:24:13 server uvicorn[349796]: INFO:     Waiting for application startup.
+Jul 11 21:24:13 server uvicorn[349796]: INFO:     Application startup complete.
+Jul 11 21:24:13 server uvicorn[349796]: INFO:     Uvicorn running on http://127.0.0.1:8101 (Press CTRL+C to quit)

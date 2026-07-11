@@ -1,0 +1,17 @@
+{
+  "auth_present": true,
+  "client_id": "rescue_stick_lab",
+  "consent_status": "granted_lab",
+  "contains_pii": false,
+  "health_prerequisite": "health_ok",
+  "lab_send_enabled": true,
+  "operator_approval": "explicit",
+  "raw_logs_visible": false,
+  "raw_secret_visible": false,
+  "real_send_executed": true,
+  "request_id": "req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca",
+  "response_classification": "lab_send_accepted",
+  "response_status_code": 200,
+  "send_status": "lab_send_accepted",
+  "source": "rescue_stick"
+}

@@ -9,6 +9,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
+- **PI-RS-TEL-SEND-001:** Erster kontrollierter Rescue-Stick Lab Send gegen Cloud-Ingest (`rs.telemetry.lab.v1`, Bearer, Gates); `lab_send_accepted` (`req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca`); Preview/Send-Scripts + Tests + Evidence.
 - **TEL-CLOUD-FIX-001:** IONOS/Plesk TLS diagnosis — DNS split (`telemetrie` → 217.160.0.254 broken TLS; Plesk 85.215.118.240 needs subdomain/cert/proxy); operator runbook; `tls_error_persists`.
 - **TEL-CLOUD-HEALTH-001:** IONOS telemetry health probe evidence — DNS ok, TLS `internal error` on `telemetrie.setuphelfer.de`; ingest not tested; repack allowed with cloud send disabled.
 - **PI-RS-TEL-004:** Cloud telemetry endpoint defaults (`telemetrie.setuphelfer.de`), `telemetry.rescue.beta.v2` preview payload builder, auth/reachability gates, tests + evidence; repack/USB still deferred.
@@ -18,6 +19,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Changed
 
+- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-SEND-001 rescue stick cloud lab send accepted
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-004 cloud endpoint + beta.v2 payload gate
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 + PI-RS-MSI-RETEST-001A/002 Status
 

@@ -1,0 +1,1 @@
+present: /etc/setuphelfer/rescue/telemetry-lab-token size_bytes=44 mode=600 owner=root:root
