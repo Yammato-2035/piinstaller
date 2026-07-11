@@ -1,21 +1,23 @@
 # Central Next Steps
 
-Stand: 2026-07-12 (PI-RS-MSI-FIX-001 Payload 1.10.0.14)
+Stand: 2026-07-12 (PI-RS-USB-MSI-FIX-001 Payload 1.10.0.14)
 
 ## Empfohlene Reihenfolge
 
-1. **PI-RS-USB-MSI-FIX-001** — Stick auf Payload **1.10.0.14** aktualisieren + GE63 MSI-Boot-Retest (`docs/rescue-stick/PI_RS_MSI_FIX_001_CONSOLE_SHIELD_BOOT_PROGRESS_TTY1.md`)
-2. SETUP_LOGS importieren → TUI-Stabilität + optional Telemetry Preview
-3. **CSE-OPS-MAINT-001** — Server Updates + kontrollierter Reboot
+1. **PI-RS-USB-MSI-FIX-001 Operator Boot** — GE63 mit Stick **1.10.0.14** + **MSI-Compat** GRUB booten (`docs/rescue-stick/PI_RS_USB_MSI_FIX_001_USB_UPDATE_1_10_0_14_BOOT_RETEST.md`)
+2. SETUP_LOGS importieren → TUI-Stabilität + Console-Shield prüfen
+3. Optional: Telemetry Preview vom gebooteten Stick (kein Send ohne Token)
+4. **CSE-OPS-MAINT-001** — Server Updates + kontrollierter Reboot
 
 ## Abgeschlossen (Referenz)
 
-- PI-RS-MSI-FIX-001 — SquashFS **1.10.0.14** repacked (Console-Shield, boot-progress Race, GUI-Fallback)
-- PI-RS-MSI-RETEST-002 Session 3 — Root Cause dokumentiert (fehlende Helper, tty1 Race)
-- PI-RS-USB-TELEMETRY-001 — USB Payload-Update auf **1.10.0.13** (verify OK)
-- PI-RS-PAYLOAD-TELEMETRY-001 — SquashFS Repack
+- PI-RS-USB-MSI-FIX-001 — USB Payload **1.10.0.13 → 1.10.0.14**, verify OK
+- PI-RS-MSI-FIX-001 — SquashFS 1.10.0.14 (Console-Shield, boot-progress Race, GUI-Fallback)
+- PI-RS-MSI-RETEST-002 Session 3 — Root Cause dokumentiert
 - PI-RS-TEL-SEND-001 — Lab Send accepted (`req-fd36496e-…`)
 
 ## Offen
 
-- USB-Update auf **1.10.0.14** + MSI-Boot-Smoke (Token nicht im Payload)
+- GE63 MSI-Compat Boot-Retest mit **1.10.0.14**
+- SETUP_LOGS Import nach Boot
+- `version.json` auf FAT32: `project_version` noch 1.10.0.13 (Metadaten-Drift, SquashFS-SHA maßgeblich)

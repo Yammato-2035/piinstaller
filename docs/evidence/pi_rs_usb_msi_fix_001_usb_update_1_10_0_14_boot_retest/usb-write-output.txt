@@ -1,0 +1,61 @@
+=== FAT32 ESP payload update safety ===
+{
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "blocked": false,
+  "blockers": [],
+  "write_allowed": true,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}
+=== FAT32 ESP payload update plan ===
+{
+  "schema_version": 1,
+  "operation": "fat32_esp_live_payload_update",
+  "mode": "execute",
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "new_squashfs": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.14",
+  "new_squashfs_sha256": "665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7",
+  "payload_paths": [
+    "live/filesystem.squashfs"
+  ],
+  "atomic_squashfs": ".sqtmp/filesystem.squashfs.new \u2192 live/filesystem.squashfs",
+  "safety": {
+    "target_device": "/dev/sda",
+    "target_partition": "/dev/sda1",
+    "blocked": false,
+    "blockers": [],
+    "write_allowed": true,
+    "partition_rewritten": false,
+    "filesystem_reformatted": false,
+    "secrets_exposed": false
+  },
+  "blocked": false,
+  "blockers": [],
+  "payload_update_executed": false,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}
+OLD_SQUASHFS_SHA256=3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c
+STEP: mkdir_sqtmp
+OK: mkdir_sqtmp
+STEP: cp_squashfs_new
+OK: cp_squashfs_new
+STEP: mv_squashfs_atomic
+OK: mv_squashfs_atomic
+STICK_SQUASHFS_SHA256_AFTER=665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7
+STEP: cp_evidence_json
+OK: cp_evidence_json
+STEP: cp_version_json
+OK: cp_version_json
+STEP: cleanup_sqtmp
+OK: cleanup_sqtmp
+OK: staging artifacts cleaned
+OK: verify with expected squashfs hash
+{"payload_update_status": "success", "verify_status": "success"}
+OK: FAT32 ESP payload update complete — evidence: /home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260711_232944
+payload_update_executed=true
+rs001_status=yellow (hardware retest pending)

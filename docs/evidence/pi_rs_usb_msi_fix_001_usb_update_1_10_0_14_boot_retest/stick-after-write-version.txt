@@ -1,0 +1,1 @@
+665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7  /mnt/pi-rs-setuphelfer-ro/live/filesystem.squashfs

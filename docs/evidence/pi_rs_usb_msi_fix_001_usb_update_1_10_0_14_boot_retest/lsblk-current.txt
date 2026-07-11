@@ -1,0 +1,57 @@
+== lsblk ==
+NAME        PATH             SIZE MODEL                   SERIAL          TRAN   TYPE MOUNTPOINTS               FSTYPE LABEL       UUID
+sda         /dev/sda          59G Ultra Line              24111412110686  usb    disk                                              
+├─sda1      /dev/sda1          4G                                                part /mnt/pi-rs-setuphelfer-ro vfat   SETUPHELFER 9BB9-A4A6
+└─sda2      /dev/sda2         55G                                                part /media/volker/SETUP_LOGS  vfat   SETUP_LOGS  9BC7-3950
+nvme1n1     /dev/nvme1n1     1,8T Samsung SSD 980 PRO 2TB S736NL0X905338X nvme   disk                                              
+├─nvme1n1p1 /dev/nvme1n1p1   512M                                         nvme   part /boot/efi                 vfat               94A7-F964
+└─nvme1n1p2 /dev/nvme1n1p2   1,8T                                         nvme   part /                         ext4               57b5dd3e-2461-41f2-821a-3c81ed058dcd
+nvme0n1     /dev/nvme0n1     1,8T Samsung SSD 980 PRO 2TB S736NL0X905337T nvme   disk                                              
+├─nvme0n1p1 /dev/nvme0n1p1   757M                                         nvme   part                           ntfs               6268DDF068DDC349
+├─nvme0n1p2 /dev/nvme0n1p2 512,1M                                         nvme   part                           vfat               A8E5-5B95
+├─nvme0n1p3 /dev/nvme0n1p3    16M                                         nvme   part                                              
+├─nvme0n1p4 /dev/nvme0n1p4 928,8G                                         nvme   part                           ntfs               0252FA5552FA4CC3
+├─nvme0n1p5 /dev/nvme0n1p5   924M                                         nvme   part                           ntfs               5E9888B698888DE9
+└─nvme0n1p6 /dev/nvme0n1p6   931G                                         nvme   part                           ntfs               242CFF0B2CFED730
+
+== findmnt ==
+sysfs /sys sysfs rw,nosuid,nodev,noexec,relatime
+proc /proc proc rw,nosuid,nodev,noexec,relatime
+udev /dev devtmpfs rw,nosuid,relatime,size=15975056k,nr_inodes=3993764,mode=755,inode64
+devpts /dev/pts devpts rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000
+tmpfs /run tmpfs rw,nosuid,nodev,noexec,relatime,size=3203968k,mode=755,inode64
+efivarfs /sys/firmware/efi/efivars efivarfs rw,nosuid,nodev,noexec,relatime
+/dev/nvme1n1p2 / ext4 rw,relatime,errors=remount-ro
+securityfs /sys/kernel/security securityfs rw,nosuid,nodev,noexec,relatime
+tmpfs /dev/shm tmpfs rw,nosuid,nodev,inode64
+tmpfs /run/lock tmpfs rw,nosuid,nodev,noexec,relatime,size=5120k,inode64
+cgroup2 /sys/fs/cgroup cgroup2 rw,nosuid,nodev,noexec,relatime,nsdelegate,memory_recursiveprot
+pstore /sys/fs/pstore pstore rw,nosuid,nodev,noexec,relatime
+bpf /sys/fs/bpf bpf rw,nosuid,nodev,noexec,relatime,mode=700
+systemd-1 /proc/sys/fs/binfmt_misc autofs rw,relatime,fd=32,pgrp=1,timeout=0,minproto=5,maxproto=5,direct,pipe_ino=36045
+mqueue /dev/mqueue mqueue rw,nosuid,nodev,noexec,relatime
+hugetlbfs /dev/hugepages hugetlbfs rw,nosuid,nodev,relatime,pagesize=2M
+debugfs /sys/kernel/debug debugfs rw,nosuid,nodev,noexec,relatime
+tracefs /sys/kernel/tracing tracefs rw,nosuid,nodev,noexec,relatime
+fusectl /sys/fs/fuse/connections fusectl rw,nosuid,nodev,noexec,relatime
+configfs /sys/kernel/config configfs rw,nosuid,nodev,noexec,relatime
+/dev/nvme1n1p1 /boot/efi vfat rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro
+binfmt_misc /proc/sys/fs/binfmt_misc binfmt_misc rw,nosuid,nodev,noexec,relatime
+overlay /var/lib/docker/overlay2/d078a0dcea4345bc14b83f4bc12d8e5295adabc48e6b2b55adc3e383bcfd9aae/merged overlay rw,relatime,lowerdir=/var/lib/docker/overlay2/l/6YQ3XKF2F6B6WGDVQO7QBTOPJP:/var/lib/docker/overlay2/l/D6RZ6NUDEIZ6QHBTPZGDE4OAH5:/var/lib/docker/overlay2/l/S3PMLW3X75A6JUINJBHGQQQTKK:/var/lib/docker/overlay2/l/TO3NGVWBVFZO6AM7RTZMP7ZPZ3,upperdir=/var/lib/docker/overlay2/d078a0dcea4345bc14b83f4bc12d8e5295adabc48e6b2b55adc3e383bcfd9aae/diff,workdir=/var/lib/docker/overlay2/d078a0dcea4345bc14b83f4bc12d8e5295adabc48e6b2b55adc3e383bcfd9aae/work,nouserxattr
+overlay /var/lib/docker/overlay2/0641fa37695a40f50dc90f3149575d95bbe67571bbcd8a2fce61b3e171480ce5/merged overlay rw,relatime,lowerdir=/var/lib/docker/overlay2/l/ZRYVMHHV45IPC3T5SISNQQF7WY:/var/lib/docker/overlay2/l/YGGQE67O6JJWX4KKSPKSVDYMPZ:/var/lib/docker/overlay2/l/YP6FRXCTVMP4HDYJPGZZT24APG:/var/lib/docker/overlay2/l/CX3WROKOICDFMOEVRGMIJPL3HD:/var/lib/docker/overlay2/l/75BRM2D6HD6CQJ66XH5VXZB5ML:/var/lib/docker/overlay2/l/4UMI2TSXZBQJ4UXKX4K6W7BMFI:/var/lib/docker/overlay2/l/KHULUTNDGDRQIQK7P767TGIZE4:/var/lib/docker/overlay2/l/364F5UE4JAVDLIF75JEVDML7XF:/var/lib/docker/overlay2/l/5YQEG67SC3YORAZZ3V6KTRIJAV,upperdir=/var/lib/docker/overlay2/0641fa37695a40f50dc90f3149575d95bbe67571bbcd8a2fce61b3e171480ce5/diff,workdir=/var/lib/docker/overlay2/0641fa37695a40f50dc90f3149575d95bbe67571bbcd8a2fce61b3e171480ce5/work,nouserxattr
+overlay /var/lib/docker/overlay2/04d8dd4a8d7d2afc586ccfb9f603c5cddec57b815cdc8a2a758cc62b2e9ec64f/merged overlay rw,relatime,lowerdir=/var/lib/docker/overlay2/l/55FY5LSIVT4RHLT7BYGOOX6BJX:/var/lib/docker/overlay2/l/O6COXJ5MYHRA7OPSPPVRMZWZ5O:/var/lib/docker/overlay2/l/OCESSB4HJ3XD7NH2AE2JJY3UVS:/var/lib/docker/overlay2/l/42TDM53LCZSVTLO2XUIWB7IFMF:/var/lib/docker/overlay2/l/LANIZOV7XC2Q2L6KL4L6W2I2P6:/var/lib/docker/overlay2/l/SWY2NI723GHSN7TVH5NYP5HWUP:/var/lib/docker/overlay2/l/I2T57IXM4NX7ZQTWTV6MBAXBF7:/var/lib/docker/overlay2/l/OKG3F2F7BE3YY6UZAY4QABCEKD:/var/lib/docker/overlay2/l/LQL3W2KULNBNPC2JGR42UC52BP,upperdir=/var/lib/docker/overlay2/04d8dd4a8d7d2afc586ccfb9f603c5cddec57b815cdc8a2a758cc62b2e9ec64f/diff,workdir=/var/lib/docker/overlay2/04d8dd4a8d7d2afc586ccfb9f603c5cddec57b815cdc8a2a758cc62b2e9ec64f/work,nouserxattr
+overlay /var/lib/docker/overlay2/5db0e478d9d94b3f11804f5381f29d60303fe7ae33f6c2173b15a01a17777448/merged overlay rw,relatime,lowerdir=/var/lib/docker/overlay2/l/MLJPKSEIS4QJMK34VBNK43LTR5:/var/lib/docker/overlay2/l/HIDVTEOSMTOSKQRF54WA7OCSI3:/var/lib/docker/overlay2/l/VY37SH44PF6LBKWXBHEKGP6HFB:/var/lib/docker/overlay2/l/55QVJ5LPY3YPC3H4GDTB6PPUP4:/var/lib/docker/overlay2/l/LA5WGP4LGBTSPXJXWR4TOPEIUX:/var/lib/docker/overlay2/l/IIHRALUSKI5ENF42SCWNXEH4J6:/var/lib/docker/overlay2/l/7BQTUOY3VOSFVZ74AUDTV2DPFM:/var/lib/docker/overlay2/l/ZJZTNAVVCYWLWYPENESOSWRLF7:/var/lib/docker/overlay2/l/CLTL7Q5XSIEVTJH6DPLJJBYLSN:/var/lib/docker/overlay2/l/VYAIWF2CDN2HTX6MTRWNG3RML3:/var/lib/docker/overlay2/l/RGRHDGLFPBZL24STMIJUXUSB2X:/var/lib/docker/overlay2/l/QLDNWZT2NBOCLSQ64DA77BQHX4:/var/lib/docker/overlay2/l/BYFR5JP6ZWYXCTAJQ4DD4XXQRO:/var/lib/docker/overlay2/l/OYLRB3V42O3YAZEIW23LVNZJHS:/var/lib/docker/overlay2/l/HE7PZR34LHZYRBCAWLLKFXEXZL:/var/lib/docker/overlay2/l/T4A7MUBQ6QIJIZBV5VO6QCL6P6:/var/lib/docker/overlay2/l/FMYWAECTWJGOWRYCQWTFMTT3YM:/var/lib/docker/overlay2/l/TO3NGVWBVFZO6AM7RTZMP7ZPZ3,upperdir=/var/lib/docker/overlay2/5db0e478d9d94b3f11804f5381f29d60303fe7ae33f6c2173b15a01a17777448/diff,workdir=/var/lib/docker/overlay2/5db0e478d9d94b3f11804f5381f29d60303fe7ae33f6c2173b15a01a17777448/work,nouserxattr
+overlay /var/lib/docker/overlay2/ca7da876d068f9fd64e720601babba2004b71bb3ca7b76372365cf5a2afcac70/merged overlay rw,relatime,lowerdir=/var/lib/docker/overlay2/l/V2GXAUCCKO7TFTDOMS33O5XSHG:/var/lib/docker/overlay2/l/FNQ63GIATCYM6EMBYTYXX3WAUF:/var/lib/docker/overlay2/l/IELJBK3AQM7IOSXYHFICYX6IVO:/var/lib/docker/overlay2/l/RCB5JYMA2QAZK73WSORO2Q63NQ:/var/lib/docker/overlay2/l/SUGUMW4E5SNXVVR5LZL4S2CARK:/var/lib/docker/overlay2/l/XFRFSXPRLGKIS3PKUHHN4WWO7S:/var/lib/docker/overlay2/l/OHC3MOZEJCUZ6TVF6VB3NR5Q6R:/var/lib/docker/overlay2/l/USDHIUYBPW67PVM3J2SQ4VJFVE:/var/lib/docker/overlay2/l/KGQZVJKKCKCF5PWKMCQS3G7AS4:/var/lib/docker/overlay2/l/K7LCGUOZWFV2WMCADR4PMVAM4V:/var/lib/docker/overlay2/l/5E3EJUEKRJPUJXBMB7LA5PBMUA:/var/lib/docker/overlay2/l/O7LSL4JKFG3ZL5VIOQJ72YY5L3:/var/lib/docker/overlay2/l/XB53PYGTP23VQP3JBZEZVOKPBD:/var/lib/docker/overlay2/l/V7MFIEJZKBVQLT5SFLGNPGH2ZI:/var/lib/docker/overlay2/l/V2HSYNC5Q4VHP5OZKFHO5MXYJG:/var/lib/docker/overlay2/l/QMVGCYLWRVKJPUPZGPPFCJBDBC:/var/lib/docker/overlay2/l/YTSIX4ACWUFGNLIQ3QM5K6BK4V:/var/lib/docker/overlay2/l/4G24PJ3QCVA5EMDZUTZ7R77SA7:/var/lib/docker/overlay2/l/PH5GDGCP4DEYF3LQLEFIKRNF3L:/var/lib/docker/overlay2/l/IXIQGVBLT74IREYY3VCJTEBIEN:/var/lib/docker/overlay2/l/2GJWGAWOWEE45LIZ3VMIAV5N3K:/var/lib/docker/overlay2/l/HMZNDAUQBBLM5YN5TGOBDF3U4W,upperdir=/var/lib/docker/overlay2/ca7da876d068f9fd64e720601babba2004b71bb3ca7b76372365cf5a2afcac70/diff,workdir=/var/lib/docker/overlay2/ca7da876d068f9fd64e720601babba2004b71bb3ca7b76372365cf5a2afcac70/work,nouserxattr
+nsfs[net:[4026533561]] /run/docker/netns/ef401ce9d056 nsfs rw
+nsfs[net:[4026533502]] /run/docker/netns/0e7e338c6d56 nsfs rw
+nsfs[net:[4026533622]] /run/docker/netns/8e31439725c5 nsfs rw
+nsfs[net:[4026533682]] /run/docker/netns/82a7dadf0df3 nsfs rw
+nsfs[net:[4026533742]] /run/docker/netns/856ee8844a70 nsfs rw
+tmpfs /run/user/1000 tmpfs rw,nosuid,nodev,relatime,size=3203964k,nr_inodes=800991,mode=700,uid=1000,gid=1000,inode64
+gvfsd-fuse /run/user/1000/gvfs fuse.gvfsd-fuse rw,nosuid,nodev,relatime,user_id=1000,group_id=1000
+portal /run/user/1000/doc fuse.portal rw,nosuid,nodev,relatime,user_id=1000,group_id=1000
+/dev/sda2 /media/volker/SETUP_LOGS vfat rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro
+/dev/sda1 /mnt/pi-rs-setuphelfer-ro vfat ro,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,errors=remount-ro
+
+== root ==
+/dev/nvme1n1p2
