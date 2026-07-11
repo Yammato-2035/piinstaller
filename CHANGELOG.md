@@ -17,14 +17,16 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **PI-RS-TEL-004:** Cloud telemetry endpoint defaults (`telemetrie.setuphelfer.de`), `telemetry.rescue.beta.v2` preview payload builder, auth/reachability gates, tests + evidence; repack/USB still deferred.
 - **PI-RS-BUILD-001:** Payload-/Build-Entscheidung für MSI-Retest dokumentiert (`docs/build/PI_RS_BUILD_001_PAYLOAD_BUILD_DECISION_MSI_RETEST.md`); Entscheidung `no-build/deferred`, Repack/USB deferred.
 - **PI-RS-MSI-RETEST-001A:** WIP-Reconciliation und MSI-Retest-Readiness (Testpläne, Evidence, `wip_reconciled` / `retest_not_run`).
-- **PI-RS-MSI-RETEST-002:** Operator Boot Runbook + Preflight-Evidence; Status `operator_action_required` (Payload **1.10.0.12**, kein physischer Boot in diesem Sprint).
+- **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.
+- **PI-RS-MSI-RETEST-002 (Payload 1.10.0.13):** Stick-Bereitschaft verifiziert, historische SETUP_LOGS-Baseline importiert, Operator-Boot ausstehend; Evidence + Runbook aktualisiert.
+- **PI-RS-MSI-RETEST-002 (initial):** Operator Boot Runbook + Preflight-Evidence; Status `operator_action_required` (Payload **1.10.0.12**, kein physischer Boot in diesem Sprint).
 
 ### Changed
 
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-USB-TELEMETRY-001 USB write complete, boot smoke pending
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-SEND-001 rescue stick cloud lab send accepted
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-004 cloud endpoint + beta.v2 payload gate
-- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 + PI-RS-MSI-RETEST-001A/002 Status
+- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-MSI-RETEST-002 Payload 1.10.0.13 stick ready, operator boot pending
 
 ---
 

@@ -1,0 +1,25 @@
+== stick version.json (SETUPHELFER) ==
+{
+  "project_version": "1.10.0.13",
+  "git_commit": "ddf0a85ce834f75f93be4caedf5be9b9bcec978e",
+  "built_at": "2026-06-30T22:01:13.490113+00:00",
+  "squashfs_sha256": "3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c",
+  "contract_name": "rescue_build_manifest_v1",
+  "schema_version": 1,
+  "version_source_of_truth": false,
+  "payload_updated_at": "2026-07-11T21:59:29.472251+00:00",
+  "update_method": "fat32_esp_payload_update_pi_rs_usb_telemetry_001"
+}
+
+== squashfs sha256 on stick ==
+3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c  /mnt/pi-rs-msi-setuphelfer/live/filesystem.squashfs
+
+== no 1.10.0.13 boot artifacts on SETUP_LOGS ==
+0
+
+== latest boot diagnostic dir ==
+insgesamt 1280
+drwxr-xr-x 2 root root 32768 Jul 10 19:20 20260710_192019_boot
+drwxr-xr-x 2 root root 32768 Jul 10 19:19 20260710_191930_boot
+drwxr-xr-x 2 root root 32768 Jul 10 19:19 20260710_191926_early
+drwxr-xr-x 2 root root 32768 Jul  1 00:10 20260701_001053_boot
