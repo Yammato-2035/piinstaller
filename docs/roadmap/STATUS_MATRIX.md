@@ -24,4 +24,5 @@
 | PI-RS-BUILD-001 Payload Build Decision (MSI Retest) | GRÜN | `build_deferred` — Entscheidung dokumentiert, kein Build in diesem Sprint |
 | Stick Payload Build | GRÜN | Stick **1.10.0.13** auf SETUPHELFER geschrieben — Boot-Smoke ausstehend |
 | PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` — physischer Stick jetzt **1.10.0.13** Payload |
-| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | Boot **1.10.0.13** auf GE63 — `partial_fail` (PCIe-AER TUI, GUI fail); Retry mit MSI-Compat GRUB |
+| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | Boot **1.10.0.13** auf GE63 — `partial_fail` (TUI overwrite, GUI fail); Root Cause in PI-RS-MSI-FIX-001 |
+| PI-RS-MSI-FIX-001 Console Shield + boot-progress tty1 | GRÜN | SquashFS **1.10.0.14** lokal repacked; Helper + Race-Fix; Content/Secret-Check ok; **USB update pending** |

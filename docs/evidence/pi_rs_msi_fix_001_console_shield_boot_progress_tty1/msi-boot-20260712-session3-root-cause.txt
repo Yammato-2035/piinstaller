@@ -1,0 +1,14 @@
+PI-RS-MSI-RETEST-002 Session 3 (20260712_010101) — Root Cause
+
+TUI overwritten (confirmed in journal):
+1. setuphelfer_rescue_shield_console_early: Kommando nicht gefunden (boot-progress line 19)
+2. setuphelfer_rescue_should_auto_msi_evidence: Kommando nicht gefunden (auto-msi-evidence)
+3. boot-progress finishes 01:00:30 with forced show_tty (ESC[2J clear) while start-assistant/TUI already on tty1 since 01:00:28
+4. Backend startup logs (ERROR/WARNING/INFO) on journal at 01:00:30-33 — no console shield active
+
+PCIe-AER: 0 (MSI compat + pci=noaer OK)
+
+GUI: startx_not_started, openvt VT2 fail, no Xorg.0.log (nomodeset)
+
+Verdict: Payload 1.10.0.13 regression — scripts call missing common.sh functions; boot-progress races TUI.
+Fix requires workspace patch + repack/USB update (not operator workaround).

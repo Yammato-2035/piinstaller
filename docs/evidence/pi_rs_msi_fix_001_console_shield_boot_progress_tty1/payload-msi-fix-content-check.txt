@@ -1,0 +1,26 @@
+{
+  "boot_progress_forbidden_present": {
+    "show_tty \"$msg\" 1": false,
+    "show_tty \"Bootvorbereitung abgeschlossen \u2014 GUI \u00fcbernimmt.\" 1": false
+  },
+  "boot_progress_required": {
+    "Textmen\u00fc bereit": true,
+    "setuphelfer_rescue_shield_console_early": true,
+    "setuphelfer_rescue_tty1_clear_allowed": true
+  },
+  "common_markers": {
+    "setuphelfer_rescue_shield_console_early": true,
+    "setuphelfer_rescue_should_auto_msi_evidence": true,
+    "setuphelfer_rescue_tty1_clear_allowed": true,
+    "setuphelfer_rescue_write_gui_fallback_status": true
+  },
+  "content_ok": true,
+  "lab_scripts": {
+    "lab-rs-tel-send001-preview.sh": true,
+    "lab-rs-tel-send001-send.sh": true
+  },
+  "squashfs_path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.14",
+  "version_expected": "1.10.0.14",
+  "version_in_payload": "1.10.0.14",
+  "version_match": true
+}

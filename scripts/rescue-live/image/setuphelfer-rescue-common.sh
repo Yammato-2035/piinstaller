@@ -262,10 +262,153 @@ setuphelfer_rescue_blank_fb_tty() {
   local tty_num="${1:-1}"
   local tty_dev="/dev/tty${tty_num}"
   [[ -c "$tty_dev" ]] || return 0
+  if command -v setuphelfer_rescue_tty1_clear_allowed >/dev/null 2>&1 \
+     && ! setuphelfer_rescue_tty1_clear_allowed; then
+    return 0
+  fi
   if command -v setterm >/dev/null 2>&1; then
     setterm -term linux -cursor off -blank force -powersave off -clear all </dev/null >"$tty_dev" 2>/dev/null || true
   fi
   printf '\033[2J\033[3J\033[H\033[0m' >"$tty_dev" 2>/dev/null || true
+}
+
+# RS-MSI-FIX-001: console shield + MSI safe-UI helpers (idempotent, non-fatal).
+SETUPHELFER_CONSOLE_SHIELD_JSON="${SETUPHELFER_CONSOLE_SHIELD_JSON:-/run/setuphelfer/console-shield.json}"
+
+setuphelfer_rescue_cmdline_has_flag() {
+  local flag="$1"
+  grep -Eq "(^| )${flag}( |$)" /proc/cmdline 2>/dev/null
+}
+
+setuphelfer_rescue_msi_compat_active() {
+  setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_compat=1" \
+    || setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_profile=1" \
+    || setuphelfer_rescue_cmdline_has_flag "pci=noaer"
+}
+
+setuphelfer_rescue_safe_ui_active() {
+  setuphelfer_rescue_cmdline_has_flag "setuphelfer_safe_ui=1" \
+    || setuphelfer_rescue_msi_compat_active
+}
+
+setuphelfer_rescue_console_shield_path() {
+  printf '%s' "$SETUPHELFER_CONSOLE_SHIELD_JSON"
+}
+
+setuphelfer_rescue_write_console_shield_status() {
+  local reason="$1"
+  local enabled="${2:-true}"
+  local clear_allowed="${3:-false}"
+  local journal_blocked="${4:-true}"
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  setuphelfer_rescue_write_json "$(setuphelfer_rescue_console_shield_path)" <<EOF
+{
+  "schema_version": 1,
+  "enabled": ${enabled},
+  "reason": "${reason}",
+  "tty1_clear_allowed": ${clear_allowed},
+  "journal_to_console_blocked": ${journal_blocked},
+  "production_ready": false
+}
+EOF
+}
+
+setuphelfer_rescue_tty1_clear_allowed() {
+  if setuphelfer_rescue_tui_is_active 2>/dev/null; then
+    return 1
+  fi
+  if pgrep -x whiptail >/dev/null 2>&1; then
+    return 1
+  fi
+  if setuphelfer_rescue_safe_ui_active; then
+    return 1
+  fi
+  local shield
+  shield="$(setuphelfer_rescue_console_shield_path)"
+  if [[ -f "$shield" ]]; then
+    if python3 -c 'import json,sys; print("false" if json.load(open(sys.argv[1])).get("tty1_clear_allowed") is False else "true")' "$shield" 2>/dev/null | grep -qx false; then
+      return 1
+    fi
+  fi
+  return 0
+}
+
+setuphelfer_rescue_shield_console_early() {
+  local reason="${1:-early}"
+  local clear_allowed=false
+  setuphelfer_rescue_ensure_state_dir
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  if command -v dmesg >/dev/null 2>&1; then
+    dmesg --console-off 2>/dev/null || dmesg -n 1 2>/dev/null || true
+  fi
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl set-log-level warning 2>/dev/null || true
+  fi
+  if setuphelfer_rescue_safe_ui_active; then
+    clear_allowed=false
+  fi
+  setuphelfer_rescue_write_console_shield_status "$reason" true "$clear_allowed" true
+  touch /run/setuphelfer/console-shield-active 2>/dev/null || true
+  return 0
+}
+
+setuphelfer_rescue_should_auto_msi_evidence() {
+  setuphelfer_rescue_msi_compat_active || return 1
+  setuphelfer_rescue_is_live || return 1
+  return 0
+}
+
+setuphelfer_rescue_run_msi_rs011b_collect() {
+  local root="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}"
+  local script_dir="${SETUPHELFER_RESCUE_SCRIPT_DIR:-/usr/local/sbin}"
+  local collect=""
+  for collect in \
+    "${root}/scripts/rescue/collect-msi-rs011b-evidence.sh" \
+    "${script_dir}/setuphelfer-rescue-msi-rs011b-collect" \
+    "/usr/local/sbin/setuphelfer-rescue-msi-rs011b-collect"; do
+    if [[ -x "$collect" ]]; then
+      "$collect"
+      return $?
+    fi
+    if [[ -f "$collect" ]]; then
+      bash "$collect"
+      return $?
+    fi
+  done
+  return 127
+}
+
+setuphelfer_rescue_write_gui_fallback_status() {
+  local gui_status="$1"
+  local gui_reason="$2"
+  local dest="${SETUPHELFER_RESCUE_STATE_DIR}/gui-fallback.json"
+  setuphelfer_rescue_write_json "$dest" <<EOF
+{
+  "schema_version": 1,
+  "gui_status": "${gui_status}",
+  "gui_reason": "${gui_reason}",
+  "operator_next_action": "use_tui_safe_mode",
+  "tui_preserved": true,
+  "production_ready": false
+}
+EOF
+  setuphelfer_rescue_mirror_evidence_file "$dest" "setuphelfer/evidence/boot/gui-fallback.json" 2>/dev/null || true
+}
+
+setuphelfer_rescue_gui_failure_code() {
+  local raw="${1:-unknown_gui_failure}"
+  case "$raw" in
+    startx_not_started)
+      if setuphelfer_rescue_msi_compat_active; then
+        printf 'openvt_console_2_not_released'
+        return 0
+      fi
+      printf '%s' "$raw"
+      ;;
+    *)
+      printf '%s' "$raw"
+      ;;
+  esac
 }
 
 setuphelfer_rescue_show_start_assistant_fallback() {

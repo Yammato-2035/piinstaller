@@ -1,0 +1,40 @@
+== git ==
+518188c770381e98417cf67b7bef2edeb7bdc41f
+ M CHANGELOG.md
+ M backend/core/rescue_payload_version.py
+ M backend/tests/test_pi_rs_payload_telemetry001_content.py
+ M backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py
+ M backend/tests/test_pi_rs_payload_telemetry001_version.py
+ M config/rescue_payload_version.json
+ M docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+ M docs/roadmap/CENTRAL_NEXT_STEPS.md
+ M docs/roadmap/STATUS_MATRIX.md
+ M scripts/rescue-live/image/setuphelfer-rescue-common.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-entrypoint.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-tui.sh
+ M scripts/rescue-live/repack-rescue-squashfs-react-shell.sh
+?? backend/core/rescue_payload_msi_fix_content.py
+?? backend/tests/test_pi_rs_msi_fix001_boot_progress_tty1.py
+?? backend/tests/test_pi_rs_msi_fix001_common_helpers.py
+?? backend/tests/test_pi_rs_msi_fix001_console_shield.py
+?? backend/tests/test_pi_rs_msi_fix001_gui_vt_fallback.py
+?? backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py
+?? docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-retry/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-session3/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-retry-summary.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-session3-root-cause.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/operator-feedback-20260712-retry.txt
+?? docs/rescue-stick/PI_RS_MSI_FIX_001_CONSOLE_SHIELD_BOOT_PROGRESS_TTY1.md
+?? scripts/check-rescue-payload-msi-fix001-content.sh
+?? scripts/rescue-live/image/setuphelfer-rescue-auto-msi-evidence
+?? scripts/rescue-live/image/setuphelfer-rescue-boot-progress
+?? scripts/rescue-live/image/setuphelfer-rescue-msi-rs011b-collect
+?? scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-msi-evidence.service
+?? scripts/rescue-live/image/systemd/setuphelfer-rescue-boot-progress.service
+stash@{0}: On master: cursor-agent: stash before master-phase branch
+stash@{1}: On master: foreign WIP
+
+== branch ==
+pi-rs-msi-fix-001-console-shield-boot-progress-tty1

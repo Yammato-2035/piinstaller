@@ -1,0 +1,17 @@
+[Unit]
+Description=Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot)
+After=setuphelfer-backend.service network-online.target
+Wants=setuphelfer-backend.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence
+ConditionPathExists=!/run/setuphelfer-rescue/auto-msi-evidence.done
+
+[Service]
+Type=oneshot
+TimeoutStartSec=180
+ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence
+StandardOutput=journal
+StandardError=journal
+SuccessExitStatus=0
+
+[Install]
+WantedBy=multi-user.target

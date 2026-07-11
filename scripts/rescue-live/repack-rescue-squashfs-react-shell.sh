@@ -15,12 +15,8 @@ from pathlib import Path
 
 root = Path(sys.argv[1])
 out_name = f"filesystem.squashfs.repacked-{sys.argv[2]}"
-preferred = root / "filesystem.squashfs.repacked-1.9.16.2"
 candidates = [p for p in root.glob("filesystem.squashfs.repacked-*") if p.name != out_name]
-order = []
-if preferred.is_file():
-    order.append(preferred)
-order.extend(sorted((p for p in candidates if p not in order), key=lambda p: p.stat().st_mtime, reverse=True))
+order = sorted(candidates, key=lambda p: p.stat().st_mtime, reverse=True)
 
 def has_chromium(path: Path) -> bool:
     proc = subprocess.run(
@@ -95,7 +91,10 @@ for script in \
   setuphelfer-rescue-media-check \
   setuphelfer-rescue-disk-discovery \
   setuphelfer-rescue-boot-diagnostics \
-  setuphelfer-rescue-boot-evidence-init; do
+  setuphelfer-rescue-boot-evidence-init \
+  setuphelfer-rescue-boot-progress \
+  setuphelfer-rescue-auto-msi-evidence \
+  setuphelfer-rescue-msi-rs011b-collect; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script}"
 done
 for script in setuphelfer-rescue-gui-watchdog.sh setuphelfer-rescue-entrypoint.sh setuphelfer-rescue-tui.sh; do
@@ -125,7 +124,8 @@ SYSTEMD="${ROOT}/etc/systemd/system"
 WANTS="${SYSTEMD}/multi-user.target.wants"
 TIMERS="${SYSTEMD}/timers.target.wants"
 mkdir -p "$WANTS" "$TIMERS"
-for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service; do
+for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service \
+  setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service; do
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done

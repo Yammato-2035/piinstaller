@@ -17,7 +17,7 @@ class PayloadTelemetry001NoSecretsTests(unittest.TestCase):
 
     def test_squashfs_listing_has_no_token_filename(self) -> None:
         root = Path(__file__).resolve().parents[2]
-        squashfs = root / "build" / "rescue" / "filesystem.squashfs.repacked-1.10.0.13"
+        squashfs = root / "build" / "rescue" / "filesystem.squashfs.repacked-1.10.0.14"
         if not squashfs.is_file():
             self.skipTest("squashfs not built yet")
         proc = subprocess.run(

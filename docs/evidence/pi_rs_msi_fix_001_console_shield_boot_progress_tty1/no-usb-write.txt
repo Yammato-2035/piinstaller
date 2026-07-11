@@ -1,0 +1,6 @@
+PI-RS-MSI-FIX-001
+
+USB write: not performed
+Block devices touched: no
+Payload repack only: yes
+Next required sprint: PI-RS-USB-MSI-FIX-001 USB update + MSI boot retest with payload 1.10.0.14

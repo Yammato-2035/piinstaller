@@ -1,0 +1,21 @@
+[Unit]
+Description=Setuphelfer Rescue Boot Progress and Timeline (RS-005/RS-008)
+After=local-fs.target
+Before=setuphelfer-backend.service getty@tty1.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-progress
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=180
+Environment=SETUPHELFER_RESCUE_ROOT=/opt/setuphelfer-rescue
+Environment=SETUPHELFER_BOOT_STATUS_INTERVAL=2
+Environment=SETUPHELFER_BOOT_TTY=/dev/tty1
+Environment=SETUPHELFER_RESCUE_PYTHON=/opt/setuphelfer-rescue/backend/venv/bin/python3
+Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend
+ExecStart=/usr/local/sbin/setuphelfer-rescue-boot-progress
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
