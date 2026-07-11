@@ -1,0 +1,19 @@
+ M CHANGELOG.md
+ M backend/core/rescue_stick_cloud_lab_config.py
+ M backend/core/rescue_telemetry_payload_v2.py
+ M backend/tests/test_pi_rs_tel004_payload_v2_contract.py
+ M docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+ M docs/roadmap/STATUS_MATRIX.md
+ M scripts/rescue-live/repack-rescue-squashfs-react-shell.sh
+?? backend/core/rescue_payload_telemetry_content.py
+?? backend/core/rescue_payload_version.py
+?? backend/tests/test_pi_rs_payload_telemetry001_content.py
+?? backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py
+?? backend/tests/test_pi_rs_payload_telemetry001_scripts.py
+?? backend/tests/test_pi_rs_payload_telemetry001_version.py
+?? config/rescue_payload_version.json
+?? docs/evidence/pi_rs_payload_telemetry_001_repack_confirmed_lab_send/
+?? docs/roadmap/CENTRAL_NEXT_STEPS.md
+?? docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md
+?? scripts/check-rescue-payload-no-secrets.sh
+?? scripts/check-rescue-payload-telemetry-content.sh

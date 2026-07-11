@@ -1,0 +1,10 @@
+PI-RS-PAYLOAD-TELEMETRY-001 payload smoke (without USB)
+
+Performed:
+- check-rescue-payload-telemetry-content.sh (content_ok=true)
+- check-rescue-payload-no-secrets.sh (passed)
+- lab-rs-tel-send001-preview.sh (dry_run_ready, health_ok)
+
+Skipped (no ISO for 1.10.0.13, no block devices):
+- validate-rescue-iso-squashfs.sh (requires binary.hybrid.iso)
+- write-fat32-esp-rescue-usb.sh

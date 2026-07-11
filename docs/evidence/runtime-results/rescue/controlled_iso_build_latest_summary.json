@@ -1,17 +1,17 @@
 {
   "controlled_iso_build_summary_schema_version": 1,
-  "generated_at": "2026-06-18T18:11:15.742193+00:00",
+  "generated_at": "2026-07-11T21:44:16.057598+00:00",
   "build_status": "success",
   "controlled_lb_build": "not_run",
   "repack_status": "success",
   "build_mode": "squashfs_repack",
-  "version": "1.9.5.2",
+  "version": "1.10.0.13",
   "iso_found": false,
   "iso_path": null,
   "iso_sha256": null,
-  "squashfs_path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.9.5.2",
-  "squashfs_sha256": "843d93b2fabbcd59b5d5c6cc7c36e192b3cd8bb1c543d98aae1441829e8bfc26",
-  "source_squashfs_sha256": "b8619ca61774baade694ae7569484b61053c45c0da2b380d2ea9235aea2e4275",
+  "squashfs_path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.13",
+  "squashfs_sha256": "3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c",
+  "source_squashfs_sha256": "1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6",
   "contains_react_rescue_shell": true,
   "contains_rescue_ui_launcher_fix": true,
   "contains_fallback_tui": true,
@@ -26,7 +26,7 @@
   "telemetry_required_before_menu": false,
   "no_fake_green": true,
   "squashfs_verify": {
-    "squashfs_path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.9.5.2",
+    "squashfs_path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.13",
     "unsquashfs_ok": true,
     "checks": {
       "react_ui_html": true,
@@ -38,7 +38,8 @@
       "offline_first_policy": true,
       "evidence_spool_module": true,
       "machine_profile_module": true,
-      "boot_status_module": true
+      "boot_status_module": true,
+      "chromium_browser": true
     },
     "contains_react_rescue_shell": true,
     "contains_rescue_ui_manifest": true,

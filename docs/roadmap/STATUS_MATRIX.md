@@ -12,6 +12,7 @@
 | PI-RS-TEL-003 Cross-Repo Preview Verification | GRÜN | Rescue → Diagnostics validate/findings preview (localhost lab) |
 | PI-RS-TEL-004 Cloud Endpoint + beta.v2 Payload Gate | GRÜN | Cloud default `telemetrie.setuphelfer.de`, preview payload v2, auth/reachability gates; send gated; repack deferred |
 | PI-RS-TEL-SEND-001 Rescue Stick Cloud Lab Send | GRÜN | `rs.telemetry.lab.v1` Bearer send accepted (`req-fd36496e-…`); gates + Evidence; repack/USB deferred |
+| PI-RS-PAYLOAD-TELEMETRY-001 Payload Repack Lab Send | GRÜN | SquashFS **1.10.0.13** lokal gebaut; Lab-Module + Scripts enthalten; Secret-Check ok; **USB deferred** |
 | TEL-CLOUD-HEALTH-001 IONOS Telemetry Healthcheck | ROT | DNS ok; **TLS error** (`internal error`, no cert); health not reachable; ingest not tested |
 | TEL-CLOUD-FIX-001 IONOS/Plesk TLS + Proxy | GELB | DNS split diagnosed; Plesk vhost/cert/proxy pending — **operator_action_required** |
 | Beta Registration (public contract) | GRÜN | Architecture + SQL skeleton |
@@ -20,6 +21,6 @@
 | WordPress Beta Bridge | GELB | Plugin skeleton |
 | PI-RS-WT-004 Working Tree Cleanup + Full Gate | GRÜN | `docs/maintenance/PI_RS_WT_004_WORKING_TREE_CLEANUP_FULL_GATE.md` |
 | PI-RS-BUILD-001 Payload Build Decision (MSI Retest) | GRÜN | `build_deferred` — Entscheidung dokumentiert, kein Build in diesem Sprint |
-| Stick Payload Build | GELB | Repack → **PI-RS-REPACK-001** allowed with **cloud_send_disabled** until `health_ok` after operator Plesk/DNS fix |
-| PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` / `branch_ready` / `retest_not_run` — Stick **1.10.0.12**, kein USB-Write |
-| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | `operator_action_required` — Preflight + Runbook bereit, Payload **1.10.0.12**, physischer Boot ausstehend |
+| Stick Payload Build | GELB | Lokal **1.10.0.13** repacked — **PI-RS-USB-TELEMETRY-001** für USB-Write + Boot Smoke |
+| PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` / `branch_ready` / `retest_not_run` — physischer Stick noch **1.10.0.12** bis USB Sprint |
+| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | `operator_action_required` — Payload **1.10.0.13** lokal bereit; physischer Boot/USB ausstehend |

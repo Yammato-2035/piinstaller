@@ -1,0 +1,6 @@
+PI-RS-PAYLOAD-TELEMETRY-001
+
+USB write: not performed
+Block devices touched: no
+Repack only: yes
+Physical stick still unchanged unless a later explicit USB writer sprint is run.

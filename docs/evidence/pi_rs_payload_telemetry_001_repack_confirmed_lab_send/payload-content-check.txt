@@ -1,0 +1,22 @@
+{
+  "content_ok": true,
+  "lab_modules": {
+    "rescue_stick_cloud_lab_config.py": true,
+    "rescue_stick_cloud_lab_models.py": true,
+    "rescue_stick_cloud_lab_payload.py": true,
+    "rescue_stick_cloud_lab_send.py": true
+  },
+  "lab_modules_present": true,
+  "lab_scripts": {
+    "lab-rs-tel-send001-preview.sh": true,
+    "lab-rs-tel-send001-send.sh": true
+  },
+  "lab_scripts_present": true,
+  "secret_markers_in_listing": [],
+  "secrets_absent": true,
+  "squashfs_path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.13",
+  "unsquashfs_ok": true,
+  "version_expected": "1.10.0.13",
+  "version_in_payload": "1.10.0.13",
+  "version_match": true
+}

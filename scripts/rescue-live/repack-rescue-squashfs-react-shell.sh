@@ -4,7 +4,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-PROJECT_VERSION="${SETUPHELFER_REPACK_VERSION:-$(python3 -c "import json; print(json.load(open('${REPO_ROOT}/config/version.json', encoding='utf-8')).get('project_version','1.7.10.1'))")}"
+PROJECT_VERSION="${SETUPHELFER_REPACK_VERSION:-$(python3 -c "import json; from pathlib import Path; root=Path('${REPO_ROOT}'); payload=root/'config/rescue_payload_version.json'; print(json.loads(payload.read_text(encoding='utf-8')).get('rescue_payload_version') if payload.is_file() else json.loads((root/'config/version.json').read_text(encoding='utf-8')).get('project_version','1.7.10.1'))")}"
 OUT_SQ="${REPO_ROOT}/build/rescue/filesystem.squashfs.repacked-${PROJECT_VERSION}"
 
 resolve_repack_source_squashfs() {
@@ -112,6 +112,14 @@ RSYNC_EX=(--exclude='__pycache__' --exclude='*.pyc' --exclude='.env' --exclude='
 mkdir -p "${ROOT}/opt/setuphelfer-rescue/backend" "${ROOT}/opt/setuphelfer-rescue/scripts/rescue-live"
 rsync -rlt "${RSYNC_EX[@]}" "${REPO_ROOT}/backend/" "${ROOT}/opt/setuphelfer-rescue/backend/"
 rsync -rlt "${RSYNC_EX[@]}" "${REPO_ROOT}/scripts/rescue-live/" "${ROOT}/opt/setuphelfer-rescue/scripts/rescue-live/"
+
+mkdir -p "${ROOT}/opt/setuphelfer-rescue/scripts" "${ROOT}/opt/setuphelfer-rescue/config"
+for script in lab-rs-tel-send001-preview.sh lab-rs-tel-send001-send.sh; do
+  install -m 0755 "${REPO_ROOT}/scripts/${script}" "${ROOT}/opt/setuphelfer-rescue/scripts/${script}"
+done
+for cfg in rescue_payload_version.json rescue_telemetry_endpoints.json; do
+  [[ -f "${REPO_ROOT}/config/${cfg}" ]] && install -m 0644 "${REPO_ROOT}/config/${cfg}" "${ROOT}/opt/setuphelfer-rescue/config/${cfg}"
+done
 
 SYSTEMD="${ROOT}/etc/systemd/system"
 WANTS="${SYSTEMD}/multi-user.target.wants"

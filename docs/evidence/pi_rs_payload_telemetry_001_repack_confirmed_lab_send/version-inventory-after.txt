@@ -1,0 +1,25 @@
+== version inventory after ==
+docs/roadmap/STATUS_MATRIX.md:24:| PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` / `branch_ready` / `retest_not_run` — Stick **1.10.0.12**, kein USB-Write |
+docs/roadmap/STATUS_MATRIX.md:25:| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | `operator_action_required` — Preflight + Runbook bereit, Payload **1.10.0.12**, physischer Boot ausstehend |
+docs/telemetry/PI_RS_TEL_004_CLOUD_ENDPOINT_PAYLOAD_V2.md:4:**Physical stick payload (unchanged):** 1.10.0.12
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:10:- Physischer Stick/Payload vorher: **1.10.0.12**
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:15:Payload **1.10.0.13** enthält den bestätigten Lab-Send-Code aus PI-RS-TEL-SEND-001.
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:21:| Vorher | `1.10.0.12` |
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:22:| Nachher | `1.10.0.13` |
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:51:| Quelle | `build/rescue/filesystem.squashfs.repacked-1.10.0.12` |
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:58:| Pfad | `build/rescue/filesystem.squashfs.repacked-1.10.0.13` |
+docs/telemetry/PI_RS_PAYLOAD_TELEMETRY_001_REPACK_CONFIRMED_LAB_SEND.md:77:**PI-RS-USB-TELEMETRY-001** — USB Write + Boot Smoke mit Payload 1.10.0.13
+docs/telemetry/PI_RS_TEL_SEND_001_RESCUE_STICK_LAB_SEND.md:112:- Physischer Stick noch **1.10.0.12** — Lab Send aus Workspace, nicht vom Stick-Boot
+config/rescue_payload_version.json:3:  "rescue_payload_version": "1.10.0.13",
+config/rescue_payload_version.json:4:  "previous_rescue_payload_version": "1.10.0.12",
+backend/tests/test_pi_rs_payload_telemetry001_content.py:23:        self.assertEqual(result["version_in_payload"], "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_content.py:27:        expected = Path("build/rescue/filesystem.squashfs.repacked-1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py:20:        squashfs = root / "build" / "rescue" / "filesystem.squashfs.repacked-1.10.0.13"
+backend/core/rescue_payload_version.py:12:_PREVIOUS_DEFAULT = "1.10.0.12"
+backend/core/rescue_payload_version.py:13:_CURRENT_DEFAULT = "1.10.0.13"
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py:24:        payload = build_rescue_stick_lab_payload(stick_version="1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py:34:            stick_version="1.10.0.13",
+backend/tests/test_pi_rs_payload_telemetry001_version.py:18:        self.assertEqual(rescue_payload_version(), "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:21:        self.assertEqual(previous_rescue_payload_version(), "1.10.0.12")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:27:        self.assertEqual(data["rescue_payload_version"], "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:33:        self.assertEqual(cfg["rescue_payload_version"], "1.10.0.13")
