@@ -1,0 +1,6 @@
+ M CHANGELOG.md
+ M docs/evidence/runtime-results/rescue/fat32_esp_payload_update_latest.json
+ M docs/roadmap/CENTRAL_NEXT_STEPS.md
+ M docs/roadmap/STATUS_MATRIX.md
+?? docs/evidence/pi_rs_usb_telemetry_001_usb_write_boot_smoke/
+?? docs/telemetry/PI_RS_USB_TELEMETRY_001_USB_WRITE_BOOT_SMOKE.md

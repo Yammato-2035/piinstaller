@@ -1,0 +1,15 @@
+== after plug ==
+NAME        PATH             SIZE MODEL                   SERIAL          TRAN   TYPE MOUNTPOINTS               FSTYPE LABEL       UUID
+sda         /dev/sda          59G Ultra Line              24111412110686  usb    disk                                              
+├─sda1      /dev/sda1          4G                                                part /media/volker/SETUPHELFER vfat   SETUPHELFER 9BB9-A4A6
+└─sda2      /dev/sda2         55G                                                part /media/volker/SETUP_LOGS  vfat   SETUP_LOGS  9BC7-3950
+nvme1n1     /dev/nvme1n1     1,8T Samsung SSD 980 PRO 2TB S736NL0X905338X nvme   disk                                              
+├─nvme1n1p1 /dev/nvme1n1p1   512M                                         nvme   part /boot/efi                 vfat               94A7-F964
+└─nvme1n1p2 /dev/nvme1n1p2   1,8T                                         nvme   part /                         ext4               57b5dd3e-2461-41f2-821a-3c81ed058dcd
+nvme0n1     /dev/nvme0n1     1,8T Samsung SSD 980 PRO 2TB S736NL0X905337T nvme   disk                                              
+├─nvme0n1p1 /dev/nvme0n1p1   757M                                         nvme   part                           ntfs               6268DDF068DDC349
+├─nvme0n1p2 /dev/nvme0n1p2 512,1M                                         nvme   part                           vfat               A8E5-5B95
+├─nvme0n1p3 /dev/nvme0n1p3    16M                                         nvme   part                                              
+├─nvme0n1p4 /dev/nvme0n1p4 928,8G                                         nvme   part                           ntfs               0252FA5552FA4CC3
+├─nvme0n1p5 /dev/nvme0n1p5   924M                                         nvme   part                           ntfs               5E9888B698888DE9
+└─nvme0n1p6 /dev/nvme0n1p6   931G                                         nvme   part                           ntfs               242CFF0B2CFED730

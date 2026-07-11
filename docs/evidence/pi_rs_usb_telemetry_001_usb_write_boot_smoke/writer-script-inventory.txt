@@ -1,0 +1,19 @@
+== writer scripts ==
+/home/volker/piinstaller/scripts/check-rescue-payload-no-secrets.sh
+/home/volker/piinstaller/scripts/check-rescue-payload-telemetry-content.sh
+/home/volker/piinstaller/scripts/rescue-live/build-fat32-esp-usb-layout.sh
+/home/volker/piinstaller/scripts/rescue-live/image/__pycache__/setuphelfer-rescue-telemetry-build-payload.cpython-312.pyc
+/home/volker/piinstaller/scripts/rescue-live/image/setuphelfer-rescue-state-write
+/home/volker/piinstaller/scripts/rescue-live/image/setuphelfer-rescue-telemetry-build-payload.py
+/home/volker/piinstaller/scripts/rescue-live/repack-rescue-squashfs-react-shell.sh
+/home/volker/piinstaller/scripts/rescue-live/test_fleet_session_shell_payloads_v1.sh
+/home/volker/piinstaller/scripts/rescue-live/update-fat32-esp-grub-branding.sh
+/home/volker/piinstaller/scripts/rescue-live/update-fat32-esp-live-payload.sh
+/home/volker/piinstaller/scripts/rescue-live/validate-rescue-iso-squashfs.sh
+/home/volker/piinstaller/scripts/rescue-live/verify-fat32-esp-rescue-usb.sh
+/home/volker/piinstaller/scripts/rescue-live/verify-rescue-grub-theme.sh
+/home/volker/piinstaller/scripts/rescue-live/write-fat32-esp-rescue-usb.sh
+/home/volker/piinstaller/scripts/rescue/write-master-assessment-evidence.sh
+/home/volker/piinstaller/scripts/smoke-pi-rs-tel004-cloud-payload-v2-endpoint-auth-gate.sh
+/home/volker/piinstaller/scripts/verify-setuphelfer-install.sh
+/home/volker/piinstaller/scripts/write-dev-workspace-systemd-dropin.sh
