@@ -1,0 +1,10 @@
+boot_session=20260712_002439
+product=GE63 Raider RGB 8RF
+board=MS-16P5
+payload=1.10.0.13
+aer_related_lines=428
+pcie_device_05_00_0=Killer E2500 (alx)
+gui_status=failed
+gui_error=startx_not_started
+openvt_error=Konsole 2 konnte nicht freigegeben werden
+setup_logs_writable=yes (diagnostics persisted)

@@ -1,0 +1,14 @@
+PI-RS-MSI-RETEST-002 — Operator Feedback (2026-07-12)
+
+Quelle: Volker, nach MSI-Boot mit Payload 1.10.0.13
+
+Bericht:
+- Textmenü (TUI) erneut durch PCIe-Fehler zerstört, nahezu unbrauchbar
+- Graphisches Menü vom Textmenü aus nicht gestartet
+
+SETUP_LOGS-Korrelation (automatisch importiert):
+- Boot-Session: 20260712_002439 (GE63 Raider RGB 8RF / MS-16P5)
+- ~428 PCIe-AER-Zeilen im Journal (Killer E2500 @ 05:00.0, Treiber alx)
+- GUI: failed / startx_not_started
+- openvt: "Konsole 2 konnte nicht freigegeben werden"
+- Kiosk-PID beendet nach 4s

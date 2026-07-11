@@ -43,6 +43,10 @@ Der Retest erfolgt mit dem vorhandenen physischen Stick/Payload:
 
 ## Boot-Test-Schritte (Operator am MSI)
 
+**Wichtig (GE63):** Nicht den Default-Eintrag „sicherer Textmodus“ wählen — dort fehlen `pci=noaer` und MSI-Compat. Stattdessen:
+
+**„Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)“** (Menüpunkt 5 in `grub.cfg`)
+
 1. Stick am MSI einstecken.
 2. MSI einschalten.
 3. Boot-Menü öffnen (UEFI).

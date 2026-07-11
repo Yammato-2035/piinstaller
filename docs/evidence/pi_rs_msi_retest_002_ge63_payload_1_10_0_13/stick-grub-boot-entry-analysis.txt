@@ -1,0 +1,36 @@
+PI-RS-MSI-RETEST-002 — GRUB Boot Entry Analysis (Stick SETUPHELFER)
+
+Date: 2026-07-12
+Payload: 1.10.0.13
+
+Boot session cmdline (from SETUP_LOGS 20260712_002439):
+  setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1
+  NO setuphelfer_msi_compat=1
+  NO pci=noaer
+  NO nouveau.modeset=0 nomodeset
+
+=> Operator booted default entry: "Setuphelfer starten - sicherer Textmodus" (grub default=0)
+
+Stick grub.cfg entries:
+
+1. "Setuphelfer starten - sicherer Textmodus" (DEFAULT)
+   - Missing: setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset
+
+2. "Setuphelfer starten - grafische Oberflaeche"
+   - Missing MSI compat params
+
+5. "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)"
+   - HAS: setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset
+
+Conclusion:
+- PCIe AER flood (~428 journal lines, Killer E2500 @ 05:00.0) is expected without pci=noaer
+- TUI console flooding matches operator report ("nahezu unbrauchbar")
+- GUI from TUI failed: startx_not_started, openvt VT2 release error
+
+Recommendation for next MSI boot:
+- Use menu entry 5 (MSI/NVIDIA Kompatibilitaetsmodus Text), OR
+- Fix default text entry to include MSI compat params (grub.cfg / USB writer — separate sprint)
+
+Reference code expectation:
+  backend/core/rescue_fat32_esp_usb_writer.py includes pci=noaer in text mode snippets
+  Actual stick grub.cfg diverges (pre-telemetry USB update may not have refreshed grub)

@@ -1,0 +1,170 @@
+== /run/setuphelfer/rescue-ui-status.json ==
+{
+  "schema_version": 1,
+  "browser_started": false,
+  "server_started": false,
+  "menu_visible": false,
+  "status": "failed",
+  "reason": "startx_not_started",
+  "display_mode": "failed",
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 8, "message": "Bootvorbereitung abgeschlossen \u2014 GUI \u00fcbernimmt.", "updated_at": "2026-07-12T00:23:07Z"}
+
+== /run/setuphelfer-rescue/boot_state.json ==
+{
+  "schema_version": 1,
+  "phase": "evidence_collected",
+  "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1",
+  "selected_mode": "text",
+  "kiosk_requested": false,
+  "text_mode_started": true,
+  "gui_requested": false,
+  "backup_execute_allowed": false
+}
+
+== /run/setuphelfer-rescue/disk-discovery.json ==
+{
+  "schema_version": 1,
+  "checked_at": "2026-07-12T00:23:53Z",
+  "read_only": true,
+  "status": "failed",
+  "error_code": "disk_discovery_exception",
+  "devices": [],
+  "recommendation": {
+    "recommended_next_action": "diagnostics_only",
+    "risks": [
+      "discover_exception:TypeError"
+    ]
+  },
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/gui-watchdog.json ==
+{
+  "schema_version": 1,
+  "gui_started": false,
+  "gui_failed": true,
+  "gui_error_code": "startx_not_started",
+  "fallback_to_tui": true,
+  "execute_allowed": false,
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/media-check.json ==
+{
+  "checked_at": "2026-07-12T00:23:04Z",
+  "squashfs_path": "/run/live/medium/live/filesystem.squashfs",
+  "medium_root": "/run/live/medium",
+  "medium_mode": "fat32_esp",
+  "squashfs_read_ok": true,
+  "spot_checks_ok": false,
+  "spot_check_failures": [
+    "usr/bin/nmcli",
+    "usr/bin/curl",
+    "usr/local/sbin/setuphelfer-rescue-telemetry-push",
+    "usr/local/sbin/setuphelfer-rescue-telemetry-build-payload.py",
+    "usr/local/sbin/setuphelfer-rescue-network-onboarding",
+    "usr/local/sbin/setuphelfer-rescue-start-assistant",
+    "usr/share/setuphelfer/rescue/boot-branding.txt"
+  ],
+  "required_files_ok": true,
+  "required_files_missing": [],
+  "squashfs_hash_ok": true,
+  "expected_squashfs_sha256": "3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c",
+  "actual_squashfs_sha256": "3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c",
+  "live_media_runtime_stable": true,
+  "evidence_status": "complete",
+  "operator_hints": [],
+  "error_code": null,
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/rescue-state.json ==
+{
+  "schema_version": 1,
+  "boot_status": {
+    "medium": {
+      "status": "review_required",
+      "squashfs_hash_ok": null,
+      "evidence_ok": null,
+      "required": true
+    },
+    "network": {
+      "status": "not_configured",
+      "required": false,
+      "wifi_scan_started": false
+    },
+    "telemetry": {
+      "status": "disabled",
+      "required": false,
+      "opt_in": false
+    },
+    "ui": {
+      "mode": "react",
+      "status": "ready",
+      "shows_systemd_failures": false
+    },
+    "rs001": {
+      "status": "yellow",
+      "reason": "hardware retest pending",
+      "ready_for_operator_retest": false
+    }
+  },
+  "spool": {
+    "schema_version": 1,
+    "base": "/run/setuphelfer",
+    "paths": [
+      "setuphelfer/evidence/boot",
+      "setuphelfer/evidence/medium-check",
+      "setuphelfer/evidence/network",
+      "setuphelfer/evidence/telemetry",
+      "setuphelfer/evidence/ui",
+      "setuphelfer/evidence/hardware",
+      "setuphelfer/logs/boot",
+      "setuphelfer/logs/journal",
+      "setuphelfer/state/rescue-state.json",
+      "setuphelfer/profiles/machines"
+    ],
+    "fallback": "/run/setuphelfer/evidence",
+    "secrets_exposed": false
+  },
+  "machine_profile": {
+    "schema_version": 1,
+    "machine_id": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc",
+    "vendor": "",
+    "model": "",
+    "boot_mode": "uefi",
+    "secure_boot": "unknown",
+    "graphics_mode": "unknown",
+    "last_known_good_menu": "",
+    "network": {
+      "last_status": "not_configured",
+      "wifi_scan_supported": null,
+      "ethernet_detected": null
+    },
+    "rescue": {
+      "last_boot_status": "yellow",
+      "last_medium_check": "",
+      "last_ui_mode": ""
+    },
+    "updated_at": "2026-07-12T00:23:04.763254+00:00",
+    "secrets_exposed": false
+  },
+  "offline_first": {
+    "network_blocks_boot": false,
+    "telemetry_blocks_boot": false
+  },
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-07-12T00:22:49Z",
+  "boot_id": "e4c1ac97-9583-409d-92fe-2b600c278d87",
+  "task_available": false,
+  "secrets_exposed": false
+}
+

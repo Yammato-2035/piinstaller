@@ -28,62 +28,49 @@ Ausgangscommit: `6388e839653bf6cdd6152663985c9fe8a68e9b86`
 
 ## Sprint-Status
 
-**`operator_action_required`**
+**`partial_fail`** — MSI-Boot mit **1.10.0.13** durchgeführt (Session `20260712_002439`); TUI durch PCIe-AER-Flut nahezu unbrauchbar; GUI-Start fehlgeschlagen.
 
-Der physische Boot-Retest am MSI mit Payload **1.10.0.13** wurde in diesem Sprint **nicht** durchgeführt. Cursor/Agent kann Hardware-Boot nicht simulieren. Stick-Bereitschaft, Preflight und Operator-Runbook sind dokumentiert.
-
-## USB Payload 1.10.0.13 — Dev-System-Verifikation
-
-Read-only Mount von SETUPHELFER (2026-07-12):
-
-- `setuphelfer/rescue/version.json` → `project_version=1.10.0.13`
-- `live/filesystem.squashfs` SHA256 match
-- `payload_updated_at`: 2026-07-11T21:59:29Z via `fat32_esp_payload_update_pi_rs_usb_telemetry_001`
-
-Evidence: `docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/stick-readiness-preflight.txt`
-
-## Boot-Ergebnis (MSI — ausstehend)
+## Boot-Ergebnis (MSI — 2026-07-12)
 
 | Check | Ergebnis |
 |-------|----------|
-| Boot erfolgreich | *ausstehend — Operator* |
-| Schwarzer Bildschirm | *ausstehend* |
-| TUI sichtbar | *ausstehend* |
-| Fehlermeldung | *ausstehend* |
-
-**Historischer Referenz-Boot (Payload 1.10.0.12, 2026-07-01):** SETUP_LOGS enthält erfolgreichen Boot auf GE63 (`boot-summary.json`, `api-endpoint-status.json`). Kein Boot-Nachweis für **1.10.0.13** auf SETUP_LOGS (0 Treffer für `1.10.0.13` / `msi-1.10.0.13-write-test.txt`).
+| Boot erfolgreich | **ja** |
+| Schwarzer Bildschirm | **nein** |
+| TUI sichtbar | **ja, nahezu unbrauchbar** (PCIe-AER-Flut) |
+| Fehlermeldung | GUI: `startx_not_started`; openvt VT2-Fehler |
+| GRUB-Eintrag | Default Textmodus **ohne** `pci=noaer` |
 
 ## Versionserkennung
 
 | Kontext | Version |
 |---------|---------|
-| Stick SETUPHELFER (read-only, Dev) | **1.10.0.13** ✓ |
-| SETUP_LOGS api-version.json (letzter MSI-Lauf) | 1.10.0.12 (historisch) |
-| Erwartung nach MSI-Boot | 1.10.0.13 |
+| Stick SETUPHELFER | **1.10.0.13** ✓ |
+| Boot-Session SETUP_LOGS | `20260712_002439` auf GE63 |
 
 ## TUI / GUI / API
 
 | Check | Ergebnis |
 |-------|----------|
-| TUI startet | *ausstehend* |
-| GUI getestet | *ausstehend* |
-| Backend/API HTTP 200 | *ausstehend* (Referenz 1.10.0.12: rescue-health, disk-inventory, storage-discovery → 200) |
+| TUI startet | **ja** (Textmodus) |
+| GUI getestet | **ja — fehlgeschlagen** |
+| Backend/API HTTP 200 | *nicht verifiziert* (disk-discovery TypeError) |
 
 ## SETUP_LOGS Schreibbarkeit
 
 | Check | Ergebnis |
 |-------|----------|
-| SETUP_LOGS gemountet | *ausstehend am MSI* |
-| Schreibtest `msi-1.10.0.13-write-test.txt` | *ausstehend* |
+| SETUP_LOGS gemountet | **ja** |
+| Diagnostics persistiert | **ja** (`20260712_002439_boot`) |
+| Schreibtest `msi-1.10.0.13-write-test.txt` | **nein** (nicht angelegt) |
 
 ## Hardware-Erkennung
 
 | Check | Ergebnis |
 |-------|----------|
-| Laufwerke erkannt | *ausstehend* (Referenz: `lsblk.json` aus RS-011B) |
-| WLAN/LAN erkannt | *ausstehend* |
-| PCIe/AER Hinweise | *ausstehend* |
-| Kritische Fehler | *ausstehend* |
+| Laufwerke erkannt | *teilweise* (disk-discovery Exception TypeError) |
+| WLAN/LAN erkannt | **ja** (iwlwifi, Killer E2500/alx) |
+| PCIe/AER Hinweise | **ja — ~428 Zeilen**, Killer E2500 @ 05:00.0 |
+| Kritische Fehler | **nein** (nur Corrected AER) |
 
 Nur Diagnose/Read-only — kein Backup, Restore oder Wipe.
 
@@ -150,16 +137,16 @@ Import-Pfad: `docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported
 
 ## Offene Risiken
 
-1. **Kein Boot-Smoke mit 1.10.0.13** — SquashFS-Inhalt (Telemetry-Scripts) noch nicht auf GE63-Hardware verifiziert.
-2. **TLS auf Cloud-Endpoint** — `telemetrie.setuphelfer.de` weiterhin TLS-Probleme (TEL-CLOUD-FIX-001); Lab-Ingest über Server-Health OK.
-3. **Token nicht im Payload** — Telemetry Preview am Stick erwartet `blocked_missing_auth` bis Operator Token bereitstellt.
+1. **Default-GRUB ohne MSI-Compat** — PCIe-AER-Flut zerstört TUI-Konsole; separater Menüpunkt existiert, ist aber nicht Default.
+2. **GUI-Start scheitert** — `startx_not_started`, openvt kann VT2 nicht freigeben (evtl. PCIe/Konsolen-Konflikt).
+3. **disk-discovery TypeError** auf 1.10.0.13 — Backend-Diagnose eingeschränkt.
+4. **TLS auf Cloud-Endpoint** — weiterhin problematisch (TEL-CLOUD-FIX-001).
 
 ## Nächster Schritt
 
-1. Operator: MSI booten gemäß `docs/test-plans/PI_RS_MSI_RETEST_002_OPERATOR_BOOT_RUNBOOK.md` (aktualisiert auf **1.10.0.13**).
-2. SETUP_LOGS importieren → `imported-setup-logs/` aktualisieren.
-3. Telemetry Preview am gebooteten Stick; optional ein Lab Send wenn Gates grün.
-4. Ergebnis in `docs/test-results/PI_RS_MSI_RETEST_002_GE63_RESULT.md` abschließen.
+1. **Erneut booten** mit GRUB-Menüpunkt **„Setuphelfer MSI/NVIDIA Kompatibilitätsmodus (Text)“** (enthält `pci=noaer`).
+2. TUI-Bedienbarkeit prüfen; GUI optional erneut testen.
+3. GRUB-Default auf Stick anpassen (Fix-Sprint, kein USB-Write ohne Freigabe).
 
 ## Evidence
 

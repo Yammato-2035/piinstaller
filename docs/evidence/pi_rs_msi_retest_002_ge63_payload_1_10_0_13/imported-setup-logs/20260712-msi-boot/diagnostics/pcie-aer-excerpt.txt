@@ -1,0 +1,80 @@
+107:[    0.281226] acpi PNP0A08:00: _OSC: OS now controls [AER PCIeCapability LTR]
+190:[    0.296790] pci 0000:05:00.0: [1969:e0b1] type 00 class 0x020000
+191:[    0.296923] pci 0000:05:00.0: BAR 0 [mem 0xa4200000-0xa423ffff 64bit]
+192:[    0.296978] pci 0000:05:00.0: BAR 2 [io  0x3000-0x307f]
+193:[    0.297263] pci 0000:05:00.0: [Firmware Bug]: disabling VPD access (can't determine size of non-standard VPD format)
+194:[    0.297580] pci 0000:05:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+343:[    0.404374] pci 0000:05:00.0: Adding to iommu group 14
+359:[    0.753901] pcieport 0000:00:1b.4: AER: enabled with IRQ 124
+362:[    0.754646] pcieport 0000:00:1d.6: AER: enabled with IRQ 126
+366:[    0.755494] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+367:[    0.755518] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+368:[    0.755524] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+369:[    0.755530] pci 0000:05:00.0:    [ 7] BadDLLP               
+370:[    0.756935] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+371:[    0.756955] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+372:[    0.756960] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+373:[    0.756965] pci 0000:05:00.0:    [ 7] BadDLLP               
+374:[    0.757923] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+375:[    0.757951] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+376:[    0.757957] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+377:[    0.757963] pci 0000:05:00.0:    [ 7] BadDLLP               
+381:[    0.758994] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:05:00.0
+382:[    0.759035] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+383:[    0.759041] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00001080/00002000
+384:[    0.759047] pci 0000:05:00.0:    [ 7] BadDLLP               
+385:[    0.759052] pci 0000:05:00.0:    [12] Timeout               
+386:[    0.759095] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+389:[    0.763514] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+390:[    0.763541] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+391:[    0.763547] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+392:[    0.763553] pci 0000:05:00.0:    [ 7] BadDLLP               
+394:[    0.767326] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:05:00.0
+395:[    0.767358] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+396:[    0.767364] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00001080/00002000
+397:[    0.767370] pci 0000:05:00.0:    [ 7] BadDLLP               
+398:[    0.767375] pci 0000:05:00.0:    [12] Timeout               
+400:[    0.771539] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:05:00.0
+401:[    0.771573] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+402:[    0.771579] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00001080/00002000
+403:[    0.771585] pci 0000:05:00.0:    [ 7] BadDLLP               
+404:[    0.771589] pci 0000:05:00.0:    [12] Timeout               
+410:[    0.773729] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+411:[    0.773771] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+412:[    0.773777] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+413:[    0.773783] pci 0000:05:00.0:    [ 7] BadDLLP               
+414:[    0.773911] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:00:1d.6
+415:[    0.773974] pcieport 0000:00:1d.6: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+417:[    0.773984] pcieport 0000:00:1d.6:    [ 6] BadTLP                
+429:[    0.776124] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:05:00.0
+430:[    0.776145] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+431:[    0.776147] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00001080/00002000
+432:[    0.776148] pci 0000:05:00.0:    [ 7] BadDLLP               
+433:[    0.776150] pci 0000:05:00.0:    [12] Timeout               
+434:[    0.776195] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+435:[    0.776532] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+436:[    0.776549] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+437:[    0.776551] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+438:[    0.776553] pci 0000:05:00.0:    [ 7] BadDLLP               
+439:[    0.776604] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:00:1d.6
+440:[    0.776613] pcieport 0000:00:1d.6: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+445:[    0.779392] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:05:00.0
+446:[    0.779432] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+447:[    0.779447] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00001080/00002000
+448:[    0.779461] pci 0000:05:00.0:    [ 7] BadDLLP               
+449:[    0.779471] pci 0000:05:00.0:    [12] Timeout               
+450:[    0.780545] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+451:[    0.780578] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+452:[    0.780591] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+453:[    0.780603] pci 0000:05:00.0:    [ 7] BadDLLP               
+455:[    0.786130] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+456:[    0.786161] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
+457:[    0.786177] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00000080/00002000
+458:[    0.786188] pci 0000:05:00.0:    [ 7] BadDLLP               
+459:[    0.787106] pcieport 0000:00:1d.6: AER: Multiple Corrected error message received from 0000:05:00.0
+460:[    0.787136] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Transmitter ID)
+461:[    0.787149] pci 0000:05:00.0:   device [1969:e0b1] error status/mask=00001080/00002000
+462:[    0.787159] pci 0000:05:00.0:    [ 7] BadDLLP               
+463:[    0.787168] pci 0000:05:00.0:    [12] Timeout               
+464:[    0.787549] pcieport 0000:00:1d.6: AER: Corrected error message received from 0000:05:00.0
+465:[    0.787577] pci 0000:05:00.0: PCIe Bus Error: severity=Corrected, type=Data Link Layer, (Receiver ID)
