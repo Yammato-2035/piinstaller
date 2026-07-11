@@ -9,6 +9,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
+- **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.
 - **PI-RS-PAYLOAD-TELEMETRY-001:** Rescue-Stick Payload Repack **1.10.0.13** mit Lab-Telemetry-Send-Code; Content/Secret-Checks, Evidence; kein USB-Write.
 - **PI-RS-TEL-SEND-001:** Erster kontrollierter Rescue-Stick Lab Send gegen Cloud-Ingest (`rs.telemetry.lab.v1`, Bearer, Gates); `lab_send_accepted` (`req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca`); Preview/Send-Scripts + Tests + Evidence.
 - **TEL-CLOUD-FIX-001:** IONOS/Plesk TLS diagnosis — DNS split (`telemetrie` → 217.160.0.254 broken TLS; Plesk 85.215.118.240 needs subdomain/cert/proxy); operator runbook; `tls_error_persists`.
@@ -20,7 +21,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Changed
 
-- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-PAYLOAD-TELEMETRY-001 payload 1.10.0.13 repack
+- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-USB-TELEMETRY-001 USB write complete, boot smoke pending
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-SEND-001 rescue stick cloud lab send accepted
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-004 cloud endpoint + beta.v2 payload gate
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-WT-004 + PI-RS-BUILD-001 + PI-RS-MSI-RETEST-001A/002 Status

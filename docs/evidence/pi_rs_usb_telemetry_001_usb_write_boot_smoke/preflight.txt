@@ -1,0 +1,9 @@
+== git ==
+58de17823c37aa5dbc9fed353d42d1a65ab0ff4a
+?? docs/evidence/pi_rs_usb_telemetry_001_usb_write_boot_smoke/
+stash@{0}: On master: cursor-agent: stash before master-phase branch
+stash@{1}: On master: foreign WIP
+
+== payload artifact ==
+-rw-r--r-- 1 volker workspace 1,2G Jul 11 23:44 build/rescue/filesystem.squashfs.repacked-1.10.0.13
+3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c  build/rescue/filesystem.squashfs.repacked-1.10.0.13

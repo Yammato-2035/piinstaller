@@ -1,0 +1,19 @@
+PI-RS-USB-TELEMETRY-001 — Boot Smoke
+
+Status: operator_action_required
+
+USB payload write completed successfully.
+Physical boot smoke from the stick was NOT performed in this sprint (requires operator on target hardware).
+
+Operator checklist after boot from stick:
+1. Boot menu appears
+2. Version 1.10.0.13 visible (setuphelfer/rescue/version.json or /opt/setuphelfer-rescue/VERSION)
+3. TUI starts
+4. curl http://127.0.0.1:8000/api/version returns 1.10.0.13 context
+5. SETUP_LOGS partition writable
+6. Lab preview: /opt/setuphelfer-rescue/scripts/lab-rs-tel-send001-preview.sh
+   - Expect blocked_missing_auth unless /etc/setuphelfer/rescue/telemetry-lab-token is provisioned on live system
+7. No backup/restore/wipe executed
+
+Evidence to capture on stick after boot:
+- SETUP_LOGS/pi_rs_usb_telemetry_001_boot_smoke/

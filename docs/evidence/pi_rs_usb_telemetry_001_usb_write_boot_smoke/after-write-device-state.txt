@@ -1,0 +1,5 @@
+== after write lsblk ==
+NAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE MOUNTPOINTS FSTYPE LABEL       UUID
+sda    /dev/sda   59G Ultra Line 24111412110686 usb  disk                                
+├─sda1 /dev/sda1   4G                                part             vfat   SETUPHELFER 9BB9-A4A6
+└─sda2 /dev/sda2  55G                                part             vfat   SETUP_LOGS  9BC7-3950
