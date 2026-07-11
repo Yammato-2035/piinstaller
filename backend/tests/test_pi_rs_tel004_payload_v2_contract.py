@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import unittest
 
+from core.rescue_payload_version import rescue_payload_version
 from core.rescue_telemetry_client_contract_v2 import CONTRACT_SCHEMA_VERSION
 from core.rescue_telemetry_payload_v2 import (
     PREVIEW_SOURCE_KIND,
@@ -30,7 +31,7 @@ class Tel004PayloadV2ContractTests(unittest.TestCase):
         payload = build_rescue_telemetry_preview_payload_v2(workspace_version="1.9.19.5")
         assessment = payload["system_assessment"]
         self.assertEqual(assessment["build"]["workspace_version"], "1.9.19.5")
-        self.assertEqual(assessment["build"]["stick_payload_version"], "1.10.0.12")
+        self.assertEqual(assessment["build"]["stick_payload_version"], rescue_payload_version())
         self.assertIn("diagnostics_aggregates", assessment)
         self.assertIn("plesk", assessment["diagnostics_aggregates"])
 

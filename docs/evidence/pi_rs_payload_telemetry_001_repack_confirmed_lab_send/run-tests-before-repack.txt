@@ -1,0 +1,25 @@
+.......................F                                                 [100%]
+=================================== FAILURES ===================================
+______ PayloadTelemetry001ScriptsTests.test_workspace_scripts_executable _______
+
+self = <backend.tests.test_pi_rs_payload_telemetry001_scripts.PayloadTelemetry001ScriptsTests testMethod=test_workspace_scripts_executable>
+
+    def test_workspace_scripts_executable(self) -> None:
+        root = Path(__file__).resolve().parents[2]
+        for name in ("lab-rs-tel-send001-preview.sh", "lab-rs-tel-send001-send.sh"):
+            path = root / "scripts" / name
+            self.assertTrue(path.is_file(), name)
+>           self.assertTrue(os.access(path, os.X_OK), name)
+E           AssertionError: False is not true : lab-rs-tel-send001-preview.sh
+
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py:19: AssertionError
+=============================== warnings summary ===============================
+../.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434
+  /home/volker/.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED backend/tests/test_pi_rs_payload_telemetry001_scripts.py::PayloadTelemetry001ScriptsTests::test_workspace_scripts_executable
+1 failed, 23 passed, 1 warning in 0.39s

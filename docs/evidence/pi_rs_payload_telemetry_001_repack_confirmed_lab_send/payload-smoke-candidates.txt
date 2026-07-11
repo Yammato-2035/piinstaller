@@ -1,0 +1,16 @@
+scripts/check-rescue-payload-no-secrets.sh
+scripts/check-rescue-payload-telemetry-content.sh
+scripts/check-rescue-ui-smoke-gate.sh
+scripts/rescue-live/image/setuphelfer-rescue-telemetry-build-payload.py
+scripts/rescue-live/parse-qemu-serial-smoke-result.py
+scripts/rescue-live/qemu-guest-agent-smoke-operator.sh
+scripts/rescue-live/rescue-agent-ingest-stub-smoke-operator.sh
+scripts/rescue-live/run-qemu-developer-iso-smoke.sh
+scripts/rescue-live/run-rs001-qemu-menu-smoke.sh
+scripts/rescue-live/test_fleet_session_shell_payloads_v1.sh
+scripts/rescue-live/update-fat32-esp-live-payload.sh
+scripts/rescue-live/verify-fat32-esp-rescue-usb.sh
+scripts/rescue-live/verify-rescue-grub-theme.sh
+scripts/smoke-pi-rs-tel003-cross-repo-telemetry-diagnostics-preview.sh
+scripts/smoke-pi-rs-tel004-cloud-payload-v2-endpoint-auth-gate.sh
+scripts/verify-setuphelfer-install.sh

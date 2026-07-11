@@ -6,6 +6,7 @@ import json
 import os
 from pathlib import Path
 
+from core.rescue_payload_version import rescue_payload_version
 from core.rescue_stick_cloud_lab_models import (
     DEFAULT_CLOUD_INGEST_URL,
     RescueStickLabSendConfig,
@@ -13,6 +14,9 @@ from core.rescue_stick_cloud_lab_models import (
 
 
 def _read_stick_version() -> str:
+    payload_version = rescue_payload_version()
+    if payload_version:
+        return payload_version
     version_json = Path(__file__).resolve().parents[2] / "config" / "version.json"
     if version_json.is_file():
         try:

@@ -1,0 +1,61 @@
+== git ==
+bdc0f38d4d3efc8f6d974bddad5f224c844f828f
+ M backend/core/rescue_telemetry_payload_v2.py
+ M backend/tests/test_pi_rs_tel004_payload_v2_contract.py
+ M scripts/rescue-live/repack-rescue-squashfs-react-shell.sh
+?? backend/core/rescue_payload_telemetry_content.py
+?? backend/core/rescue_payload_version.py
+?? backend/tests/test_pi_rs_payload_telemetry001_content.py
+?? backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py
+?? backend/tests/test_pi_rs_payload_telemetry001_scripts.py
+?? backend/tests/test_pi_rs_payload_telemetry001_version.py
+?? config/rescue_payload_version.json
+?? docs/evidence/pi_rs_payload_telemetry_001_repack_confirmed_lab_send/
+?? scripts/check-rescue-payload-no-secrets.sh
+?? scripts/check-rescue-payload-telemetry-content.sh
+stash@{0}: On master: cursor-agent: stash before master-phase branch
+stash@{1}: On master: foreign WIP
+
+== current version refs ==
+config/rescue_payload_version.json:3:  "rescue_payload_version": "1.10.0.13",
+config/rescue_payload_version.json:4:  "previous_rescue_payload_version": "1.10.0.12",
+docs/test-plans/PI_RS_MSI_RETEST_001_OPERATOR_RUNBOOK.md:7:1. Stick-Version bestätigt: **1.10.0.12** (`SETUPHELFER/setuphelfer/rescue/version.json`)
+docs/test-plans/PI_RS_MSI_RETEST_001_GE63_RAIDER.md:21:| `SETUPHELFER/setuphelfer/rescue/version.json` | **1.10.0.12** | `squashfs_sha256` = Baseline |
+docs/test-plans/PI_RS_MSI_RETEST_001_GE63_RAIDER.md:22:| `SETUP_LOGS/.../api-version.json` | **1.10.0.12** | Letzter MSI-Lauf |
+docs/test-plans/PI_RS_MSI_RETEST_002_OPERATOR_BOOT_RUNBOOK.md:4:Sprint: Operator Boot Retest mit Payload **1.10.0.12**
+docs/test-plans/PI_RS_MSI_RETEST_002_OPERATOR_BOOT_RUNBOOK.md:12:| Stick/Payload-Version | **1.10.0.12** |
+docs/test-plans/PI_RS_MSI_RETEST_001_IMPORT_AND_REVIEW.md:42:- `project_version` / `rescue_version` = erwartete Stick-Version (**1.10.0.12** für aktuellen Plan)
+docs/faq/PI_RS_TEL_004_FAQ.de.md:50:Erst nach **PI-RS-REPACK-001** (SquashFS-Repack). Physischer Payload bleibt **1.10.0.12** bis dahin.
+docs/faq/PI_RS_TEL_004_FAQ.en.md:50:After **PI-RS-REPACK-001** (squashfs repack). Physical payload stays **1.10.0.12** until then.
+docs/test-results/PI_RS_MSI_RETEST_002_GE63_RESULT.md:17:| Stick/Payload version | 1.10.0.12 |
+docs/roadmap/STATUS_MATRIX.md:24:| PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` / `branch_ready` / `retest_not_run` — Stick **1.10.0.12**, kein USB-Write |
+docs/roadmap/STATUS_MATRIX.md:25:| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | `operator_action_required` — Preflight + Runbook bereit, Payload **1.10.0.12**, physischer Boot ausstehend |
+docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/build-artifacts-sha256.txt:2:1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6  build/rescue/filesystem.squashfs.repacked-1.10.0.12
+docs/evidence/pi_rs_build_001_payload_build_decision_msi_retest/build-artifacts-sha256.txt:3:-rw-r--r-- 1 volker workspace 1,2G Jun 30 23:59 build/rescue/filesystem.squashfs.repacked-1.10.0.12
+docs/telemetry/PI_RS_TEL_004_CLOUD_ENDPOINT_PAYLOAD_V2.md:4:**Physical stick payload (unchanged):** 1.10.0.12
+docs/telemetry/PI_RS_TEL_SEND_001_RESCUE_STICK_LAB_SEND.md:112:- Physischer Stick noch **1.10.0.12** — Lab Send aus Workspace, nicht vom Stick-Boot
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/stick-payload-version-detection.txt:3:  "project_version": "1.10.0.12",
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/stick-payload-version-detection.txt:16:project_version 1.10.0.12
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/payload-baseline.txt:2:-rw-r--r-- 1 volker workspace 1,2G Jun 30 23:59 build/rescue/filesystem.squashfs.repacked-1.10.0.12
+docs/evidence/pi_rs_msi_retest_001_payload_decision_and_readiness/payload-baseline.txt:3:1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6  build/rescue/filesystem.squashfs.repacked-1.10.0.12
+docs/evidence/pi_rs_tel_004_cloud_payload_v2_endpoint_auth_gate/PI_RS_TEL_004_SUMMARY.md:6:**Physical stick payload (unchanged):** 1.10.0.12
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/msi-retest-doc-review.txt:39:| `SETUPHELFER/setuphelfer/rescue/version.json` | **1.10.0.12** | `squashfs_sha256` = Baseline |
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/msi-retest-doc-review.txt:40:| `SETUP_LOGS/.../api-version.json` | **1.10.0.12** | Letzter MSI-Lauf |
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/msi-retest-doc-review.txt:130:- `project_version` / `rescue_version` = erwartete Stick-Version (**1.10.0.12** für aktuellen Plan)
+docs/evidence/pi_rs_msi_retest_001a_wip_reconciliation_branch_takeover/msi-retest-doc-review.txt:160:1. Stick-Version bestätigt: **1.10.0.12** (`SETUPHELFER/setuphelfer/rescue/version.json`)
+backend/core/rescue_payload_version.py:12:_PREVIOUS_DEFAULT = "1.10.0.12"
+backend/core/rescue_payload_version.py:13:_CURRENT_DEFAULT = "1.10.0.13"
+docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/version-payload-confirmation.txt:18:-rw-r--r-- 1 volker workspace 1,2G Jun 30 23:59 build/rescue/filesystem.squashfs.repacked-1.10.0.12
+docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/version-payload-confirmation.txt:19:1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6  build/rescue/filesystem.squashfs.repacked-1.10.0.12
+docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/version-payload-confirmation.txt:23:Retest payload version: 1.10.0.12
+docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/operator-action-required.txt:10:- Stick SETUPHELFER: ro gemountet, version 1.10.0.12, SHA256 bestätigt
+docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/setuphelfer-partition-readonly-before-boot.txt:8:  "project_version": "1.10.0.12",
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py:24:        payload = build_rescue_stick_lab_payload(stick_version="1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py:34:            stick_version="1.10.0.13",
+backend/tests/test_pi_rs_payload_telemetry001_version.py:18:        self.assertEqual(rescue_payload_version(), "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:21:        self.assertEqual(previous_rescue_payload_version(), "1.10.0.12")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:27:        self.assertEqual(data["rescue_payload_version"], "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:33:        self.assertEqual(cfg["rescue_payload_version"], "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py:20:        squashfs = root / "build" / "rescue" / "filesystem.squashfs.repacked-1.10.0.13"
+backend/tests/test_pi_rs_payload_telemetry001_content.py:23:        self.assertEqual(result["version_in_payload"], "1.10.0.13")
+backend/tests/test_pi_rs_payload_telemetry001_content.py:27:        expected = Path("build/rescue/filesystem.squashfs.repacked-1.10.0.13")

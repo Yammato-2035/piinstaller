@@ -26,9 +26,11 @@ FORBIDDEN_PAYLOAD_TOKENS = re.compile(
     r"(?i)(api[_-]?key|authorization|bearer\s+|secret|password|private[_-]?key|BEGIN\s+(RSA\s+)?PRIVATE)"
 )
 
-PHYSICAL_STICK_PAYLOAD_VERSION_DEFAULT = "1.10.0.12"
+from core.rescue_payload_version import rescue_payload_version
+
+PHYSICAL_STICK_PAYLOAD_VERSION_DEFAULT = rescue_payload_version()
 PHYSICAL_STICK_PAYLOAD_SHA256_DEFAULT = (
-    "1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6"
+    "3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c"
 )
 
 
