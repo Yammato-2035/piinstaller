@@ -1,0 +1,5 @@
+== payload artifact ==
+-rw-r--r-- 1 volker workspace 1,2G Jul 12 01:17 build/rescue/filesystem.squashfs.repacked-1.10.0.14
+
+== sha256 ==
+665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7  build/rescue/filesystem.squashfs.repacked-1.10.0.14

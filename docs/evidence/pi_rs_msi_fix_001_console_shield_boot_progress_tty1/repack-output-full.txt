@@ -1,0 +1,42 @@
+check-rescue-ui-smoke-gate: running static UI contract tests…
+......................................                                   [100%]
+=============================== warnings summary ===============================
+backend/venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1434
+  /home/volker/piinstaller/backend/venv/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+38 passed, 1 warning in 0.23s
+check-rescue-ui-smoke-gate: OK
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 69 modules transformed.
+rendering chunks...
+computing gzip size...
+../build/rescue/ui/rescue.html                   0.39 kB │ gzip:  0.28 kB
+../build/rescue/ui/assets/rescue-Yee_AEsZ.css   18.02 kB │ gzip:  3.81 kB
+../build/rescue/ui/assets/rescue-ueplqd05.js   305.83 kB │ gzip: 88.56 kB
+✓ built in 715ms
+{"build_status": "success", "output_dir": "/home/volker/piinstaller/build/rescue/ui", "version": "1.9.19.5"}
+OK: Rescue React UI built -> /home/volker/piinstaller/build/rescue/ui
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/console, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/full, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/null, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/ptmx, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/random, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/tty, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/urandom, because you're not superuser!
+
+create_inode: could not create character device /tmp/tmp.ya8MLbcqhH/root/dev/zero, because you're not superuser!

@@ -61,11 +61,15 @@ EOF
 
 _fail() {
   local code="$1"
+  local classified
+  classified="$(setuphelfer_rescue_gui_failure_code "$code")"
   setuphelfer_rescue_capture_x11_forensics
-  _write_ui_status_failed "$code"
-  write_state "$code" false true
-  setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_RETURN" "RESULT=1 code=${code}"
+  _write_ui_status_failed "$classified"
+  setuphelfer_rescue_write_gui_fallback_status "$classified" "$classified"
+  write_state "$classified" false true
+  setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_RETURN" "RESULT=1 code=${classified}"
   setuphelfer_rescue_mirror_gui_forensic_logs
+  chvt 1 2>/dev/null || true
   return 1
 }
 
@@ -95,7 +99,9 @@ if [[ ! -c /dev/tty1 ]]; then
   setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=missing"
   return $(_fail "tty_unavailable")
 fi
-setuphelfer_rescue_blank_fb_tty 1
+if setuphelfer_rescue_tty1_clear_allowed 2>/dev/null; then
+  setuphelfer_rescue_blank_fb_tty 1
+fi
 chvt "$SETUPHELFER_RESCUE_KIOSK_VT" 2>/dev/null || true
 setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=blanked kiosk_vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
 

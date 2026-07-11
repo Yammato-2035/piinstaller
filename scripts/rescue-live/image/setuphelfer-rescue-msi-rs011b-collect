@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# One-click MSI RS-011B evidence — direct collect only (same as RUN-MSI-EVIDENCE).
+set -euo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+for cand in \
+  "${SCRIPT_DIR}/collect-msi-rs011b-evidence.sh" \
+  "${SCRIPT_DIR}/setuphelfer/scripts/rescue/collect-msi-rs011b-evidence.sh" \
+  "/opt/setuphelfer-rescue/scripts/rescue/collect-msi-rs011b-evidence.sh" \
+  "/run/setuphelfer/esp-rw/setuphelfer/scripts/rescue/collect-msi-rs011b-evidence.sh"; do
+  if [[ -f "$cand" ]]; then
+    exec bash "$cand" "$@"
+  fi
+done
+echo "ERROR: collect-msi-rs011b-evidence.sh nicht gefunden" >&2
+exit 1

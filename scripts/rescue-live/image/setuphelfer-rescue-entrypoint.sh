@@ -9,6 +9,7 @@ MODE_ARG="${1:---boot-trigger}"
 CMDLINE="$(tr '\0' ' ' </proc/cmdline 2>/dev/null || true)"
 
 setuphelfer_rescue_ensure_state_dir
+setuphelfer_rescue_shield_console_early "entrypoint_start" || true
 setuphelfer_rescue_write_boot_state "entrypoint_start"
 
 if ! setuphelfer_rescue_cmdline_has_start_assistant && [[ "$MODE_ARG" == "--boot-trigger" ]]; then

@@ -149,6 +149,8 @@ _tui_main_menu() {
 }
 
 setuphelfer_rescue_ensure_state_dir
+setuphelfer_rescue_shield_console_early "tui_start" || true
+setuphelfer_rescue_tui_mark_active
 setuphelfer_rescue_write_boot_state "tui_start"
 
 if ! command -v whiptail >/dev/null 2>&1; then

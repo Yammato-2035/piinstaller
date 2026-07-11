@@ -1,0 +1,48 @@
+#!/bin/bash
+# RS-011M: Auto MSI RS-011B evidence once per boot (MSI compat profile, after backend ready).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+
+if ! setuphelfer_rescue_should_auto_msi_evidence; then
+  exit 0
+fi
+
+_marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done"
+if [[ -f "$_marker" ]]; then
+  exit 0
+fi
+
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.log"
+{
+  echo "=== auto-msi-evidence $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  echo "cmdline=$(tr '\0' ' ' </proc/cmdline 2>/dev/null || true)"
+} >>"$_log"
+
+_i=0
+while [[ "$_i" -lt 45 ]]; do
+  if curl -sf http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
+    break
+  fi
+  _i=$((_i + 1))
+  sleep 2
+done
+
+if ! curl -sf http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
+  echo "WARN: backend not ready — auto MSI evidence skipped" >>"$_log"
+  setuphelfer_rescue_write_boot_state "auto_msi_evidence_skipped_backend"
+  exit 0
+fi
+
+if setuphelfer_rescue_run_msi_rs011b_collect >>"$_log" 2>&1; then
+  touch "$_marker" 2>/dev/null || true
+  setuphelfer_rescue_write_boot_state "auto_msi_evidence_collected"
+  exit 0
+fi
+
+echo "WARN: auto MSI evidence collect failed" >>"$_log"
+setuphelfer_rescue_write_boot_state "auto_msi_evidence_failed"
+exit 0
