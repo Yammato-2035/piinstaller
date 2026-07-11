@@ -1,0 +1,6 @@
+== telemetry health ==
+{"status":"ok","service":"telemetry-server","version":"0.2.0-beta","port":8101,"lab_ingest":"cse_bearer_enabled","production_ready":false}
+== lab status ==
+{"enabled":true,"production_ready":false,"lab_only":true,"recent_events_count":1,"last_event":{"request_id":"req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca","source":"rescue_stick","event_type":"rescue_stick.health_probe","accepted":true,"status":"accepted","created_at":"2026-07-11T21:24:31.554446Z","payload_hash":"sha256:827cdc637268597ff48c3ae0b1c7fbc47f80b25d09ecafe36f445c94a0f8d323","client_id":"rescue_stick_lab","raw_payload_visible":false}}
+== recent lab events ==
+{"events":[{"request_id":"req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca","source":"rescue_stick","event_type":"rescue_stick.health_probe","accepted":true,"status":"accepted","created_at":"2026-07-11T21:24:31.554446Z","payload_hash":"sha256:827cdc637268597ff48c3ae0b1c7fbc47f80b25d09ecafe36f445c94a0f8d323","client_id":"rescue_stick_lab","raw_payload_visible":false}]}

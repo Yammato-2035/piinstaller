@@ -1,7 +1,7 @@
 # PI-RS-MSI-RETEST-002 Operator Boot Runbook
 
-Stand: 2026-07-10
-Sprint: Operator Boot Retest mit Payload **1.10.0.12**
+Stand: 2026-07-12
+Sprint: Operator Boot Retest mit Payload **1.10.0.13**
 
 ## Entscheidung
 
@@ -9,9 +9,10 @@ Der Retest erfolgt mit dem vorhandenen physischen Stick/Payload:
 
 | Feld | Wert |
 |------|------|
-| Stick/Payload-Version | **1.10.0.12** |
-| Payload-SHA256 | `1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6` |
-| Workspace-Version | **1.9.19.4** |
+| Stick/Payload-Version | **1.10.0.13** |
+| Payload-SHA256 | `3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c` |
+| USB verify | success (PI-RS-USB-TELEMETRY-001) |
+| Workspace-Version | **1.9.19.5** |
 | Versionsdrift akzeptiert | **ja** (Operator-Entscheidung) |
 
 ## Nicht erlaubt
@@ -65,20 +66,32 @@ Der Retest erfolgt mit dem vorhandenen physischen Stick/Payload:
     - Killer E2500 Warnung?
 12. Keine Reparatur starten.
 13. Keine produktive Telemetry aktivieren.
-14. Test beenden.
-15. MSI herunterfahren.
-16. Stick zurück an Entwicklungsrechner.
-17. SETUP_LOGS sichern/importieren gemäß `PI_RS_MSI_RETEST_001_IMPORT_AND_REVIEW.md`.
+14. **Telemetry Preview** (Shell, read-only):
+    ```bash
+    export SETUPHELFER_RS_TELEMETRY_ENDPOINT=https://telemetrie.setuphelfer.de/v1/telemetry/ingest
+    export SETUPHELFER_RS_TELEMETRY_LAB_SEND_ENABLED=1
+    export SETUPHELFER_RS_TELEMETRY_OPERATOR_APPROVAL=explicit
+    export SETUPHELFER_RS_TELEMETRY_CONSENT_STATUS=granted_lab
+    export SETUPHELFER_RS_TELEMETRY_LAB_TOKEN_FILE=/etc/setuphelfer/rescue/telemetry-lab-token
+    /opt/setuphelfer-rescue/scripts/lab-rs-tel-send001-preview.sh
+    ```
+    Ohne Token: `blocked_missing_auth` dokumentieren. Mit Token: `dry_run_ready` erwarten.
+15. **Optional ein Lab Send** nur wenn Preview `dry_run_ready`/`lab_send_ready`:
+    `/opt/setuphelfer-rescue/scripts/lab-rs-tel-send001-send.sh`
+16. Test beenden.
+17. MSI herunterfahren.
+18. Stick zurück an Entwicklungsrechner.
+19. SETUP_LOGS sichern/importieren.
 
 ## Nach Rückkehr (Entwicklungsrechner)
 
 1. `SETUP_LOGS` mounten
-2. Phase 8 Import ausführen (`docs/evidence/rescue/imports/pi-rs-msi-retest-002-ge63-*`)
+2. Import nach `docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/`
 3. `docs/test-results/PI_RS_MSI_RETEST_002_GE63_RESULT.md` aktualisieren
 4. Commit nur redacted/sichere Evidence
 
 ## Referenzen
 
+- `docs/rescue-stick/PI_RS_MSI_RETEST_002_GE63_PAYLOAD_1_10_0_13.md` — Sprint-Doku
 - `docs/test-plans/PI_RS_MSI_RETEST_001_GE63_RAIDER.md` — Checkliste
-- `docs/test-plans/PI_RS_MSI_RETEST_001_OPERATOR_RUNBOOK.md` — Vorbereitung
-- `docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/` — Preflight-Evidence
+- `docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/` — Evidence

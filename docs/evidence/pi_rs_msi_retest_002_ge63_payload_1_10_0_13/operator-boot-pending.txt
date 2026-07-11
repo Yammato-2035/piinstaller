@@ -1,0 +1,25 @@
+PI-RS-MSI-RETEST-002 — Operator Boot Pending
+
+Status: operator_action_required
+Date: 2026-07-12
+
+Stick ready:
+- Payload 1.10.0.13 on SETUPHELFER partition
+- SHA256 3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c
+- USB verify success (PI-RS-USB-TELEMETRY-001)
+
+Not found on SETUP_LOGS:
+- msi-1.10.0.13-write-test.txt
+- Any file referencing 1.10.0.13
+- Boot diagnostics newer than 2026-07-10 (pre USB payload update)
+
+Operator checklist (MSI GE63):
+1. Boot from USB stick
+2. Confirm version 1.10.0.13 (TUI or shell)
+3. Confirm TUI + API health
+4. Write test to SETUP_LOGS
+5. Run hardware discovery (read-only)
+6. Run lab-rs-tel-send001-preview.sh (expect blocked_missing_auth without token)
+7. Optional single lab send only if preview ready + token present
+
+Runbook: docs/test-plans/PI_RS_MSI_RETEST_002_OPERATOR_BOOT_RUNBOOK.md

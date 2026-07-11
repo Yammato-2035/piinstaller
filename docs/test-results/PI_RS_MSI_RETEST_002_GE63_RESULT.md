@@ -1,22 +1,23 @@
 # PI-RS-MSI-RETEST-002 GE63 Result
 
-Stand: 2026-07-10
+Stand: 2026-07-12
 
 ## Status
 
 **`operator_action_required`**
 
-Der physische Boot-Retest am MSI GE63 Raider wurde in diesem Sprint **nicht** durchgeführt.
-Cursor/Agent kann den Hardware-Boot nicht simulieren. Preflight, Stick-Inventur und Runbook sind bereit.
+Der physische Boot-Retest am MSI GE63 Raider mit Payload **1.10.0.13** wurde in diesem Sprint **nicht** durchgeführt.
+Stick-Bereitschaft verifiziert (SETUPHELFER read-only); SETUP_LOGS enthält keinen Post-Update-Boot-Nachweis.
 
 ## Payload
 
 | Feld | Wert |
 |------|------|
-| Workspace version | 1.9.19.4 |
-| Stick/Payload version | 1.10.0.12 |
-| Payload SHA256 | `1a72046a40a504e62771a8fc8cd4b6360951c3ac0a4e352a8248fc68f14487e6` |
-| Drift akzeptiert | ja |
+| Workspace version | 1.9.19.5 |
+| Stick/Payload version | **1.10.0.13** |
+| Payload SHA256 | `3abb861a9dfe8e6681912c5d19168f68607dc71bcf2de5b74ca589bd71e43b4c` |
+| USB verify | success (PI-RS-USB-TELEMETRY-001) |
+| Drift akzeptiert | ja (Workspace vs Payload-Track) |
 
 ## Boot
 
@@ -25,7 +26,7 @@ Cursor/Agent kann den Hardware-Boot nicht simulieren. Preflight, Stick-Inventur 
 | Boot menu visible | *nicht geprüft — Operator erforderlich* |
 | TUI visible | *nicht geprüft* |
 | GUI result | *nicht geprüft* |
-| Backend/API result | *nicht geprüft* |
+| Backend/API result | *nicht geprüft* (Referenz 1.10.0.12: HTTP 200) |
 | Shutdown result | *nicht geprüft* |
 
 ## Hardware
@@ -38,34 +39,40 @@ Cursor/Agent kann den Hardware-Boot nicht simulieren. Preflight, Stick-Inventur 
 | Killer E2500 | *nicht geprüft* |
 | PCIe/AER warnings | *nicht geprüft* |
 
+## Telemetry
+
+| Check | Ergebnis |
+|-------|----------|
+| Preview vom gebooteten Stick | **nein** |
+| Lab Send vom gebooteten Stick | **nein** |
+| Erwartung ohne Token | `blocked_missing_auth` |
+
 ## Evidence
 
 | Feld | Wert |
 |------|------|
-| Import dir | *kein Post-Retest-Import (Retest nicht durchgeführt)* |
-| api-version.json | *ausstehend* |
-| storage-discovery | *ausstehend* |
-| disk-inventory | *ausstehend* |
-| operator-steps | *ausstehend* |
-| screenshots/photos | *ausstehend* |
-
-Preflight-Evidence: `docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest/`
+| Sprint doc | `docs/rescue-stick/PI_RS_MSI_RETEST_002_GE63_PAYLOAD_1_10_0_13.md` |
+| Evidence dir | `docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/` |
+| Import dir | historische Baseline (5 Dateien, Payload 1.10.0.12) |
+| Stick preflight | `stick-readiness-preflight.txt` |
 
 ## Safety
 
 | Check | Ergebnis |
 |-------|----------|
 | productive telemetry send | **nein** |
+| lab send from stick | **nein** |
 | remote commands | **nein** |
 | auto-remediation | **nein** |
 | repair action | **nein** |
 | USB write | **nein** |
+| backup/restore/wipe | **nein** |
 
 ## Decision
 
 | Feld | Wert |
 |------|------|
-| Retest accepted | *ausstehend — Operator Boot erforderlich* |
-| Repack needed | *unbekannt bis Retest* |
-| USB update needed | **nein** (für diesen Retest-Plan) |
-| Follow-up | Operator führt Boot durch → Import → Ergebnis aktualisieren |
+| Retest accepted | *ausstehend — Operator Boot mit 1.10.0.13 erforderlich* |
+| Repack needed | **nein** |
+| USB update needed | **nein** |
+| Follow-up | Operator MSI-Boot → SETUP_LOGS import → Ergebnis aktualisieren |
