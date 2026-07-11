@@ -1,0 +1,5 @@
+== mounted after unmount ==
+NAME   PATH      MOUNTPOINTS             FSTYPE LABEL
+sda    /dev/sda                                 
+├─sda1 /dev/sda1 /media/root/SETUPHELFER vfat   SETUPHELFER
+└─sda2 /dev/sda2                         vfat   SETUP_LOGS

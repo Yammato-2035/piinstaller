@@ -1,0 +1,4 @@
+payload=build/rescue/filesystem.squashfs.repacked-1.10.0.14
+expected_sha=665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7
+actual_sha=665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7
+sha_ok=true

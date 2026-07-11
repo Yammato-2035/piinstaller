@@ -1,0 +1,26 @@
+== git ==
+e37169d03f11d6d932a5a39f51584e974245d16d
+ M docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+?? docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1/git-status-before-commit.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-retry/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-session3/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-retry-summary.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-session3-root-cause.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/operator-feedback-20260712-retry.txt
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/
+stash@{0}: On master: cursor-agent: stash before master-phase branch
+stash@{1}: On master: foreign WIP
+
+== open files before hygiene ==
+ M docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+?? docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1/git-status-before-commit.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-retry/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-session3/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-retry-summary.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-session3-root-cause.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/operator-feedback-20260712-retry.txt
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/
+
+== payload artifact ==
+-rw-r--r-- 1 volker workspace 1,2G Jul 12 01:17 build/rescue/filesystem.squashfs.repacked-1.10.0.14
+665e44e40dfa5c384b85f4526d1a9dea6389a4ac60c9b1356e8530676a4c3ac7  build/rescue/filesystem.squashfs.repacked-1.10.0.14

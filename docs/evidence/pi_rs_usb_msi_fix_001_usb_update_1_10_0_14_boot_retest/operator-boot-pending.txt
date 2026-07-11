@@ -1,0 +1,18 @@
+PI-RS-USB-MSI-FIX-001 — MSI Boot Retest Operator Action Required
+
+Status: operator_action_required
+Reason: USB update complete on dev system; physical GE63 boot not performed in this sprint.
+
+Operator steps:
+1. Safely remove stick from dev system (already unmounted).
+2. Boot MSI GE63 with MSI-Compat GRUB entry.
+3. Verify TUI stability, console-shield, boot-progress behavior.
+4. Export SETUP_LOGS session for import.
+
+Expected pass criteria:
+- TUI remains visible (no tty1 clear / no "GUI übernimmt" overlay)
+- console-shield.json present with tty1_clear_allowed=false
+- PCIe-AER quiet under MSI-Compat
+- GUI may fail with startx_not_started; tui_preserved=true required
+
+After boot: re-run Phase 13 import in workspace and update this sprint evidence.

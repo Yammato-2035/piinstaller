@@ -9,6 +9,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
+- **PI-RS-USB-MSI-FIX-001:** Rescue-Stick USB Payload-Update **1.10.0.13 → 1.10.0.14**; Verify OK; GE63 MSI-Compat Boot-Retest operator pending.
 - **PI-RS-MSI-FIX-001:** Payload **1.10.0.14** — Console-Shield (`setuphelfer_rescue_shield_console_early`), MSI-Evidence-Helper, boot-progress tty1-Race-Fix, GUI/openvt-Fallback; Repack + Content/Secret-Checks; kein USB-Write.
 - **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.
 - **PI-RS-PAYLOAD-TELEMETRY-001:** Rescue-Stick Payload Repack **1.10.0.13** mit Lab-Telemetry-Send-Code; Content/Secret-Checks, Evidence; kein USB-Write.
@@ -24,6 +25,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Changed
 
+- `docs/roadmap/STATUS_MATRIX.md` — PI-RS-USB-MSI-FIX-001 Stick 1.10.0.14 geschrieben, GE63 boot pending
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-MSI-FIX-001 Payload 1.10.0.14 repacked, USB update pending
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-USB-TELEMETRY-001 USB write complete, boot smoke pending
 - `docs/roadmap/STATUS_MATRIX.md` — PI-RS-TEL-SEND-001 rescue stick cloud lab send accepted
