@@ -1,0 +1,96 @@
+== telemetry files ==
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/core.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/__init__.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/pre_processors.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/symbols.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/tests/test_core.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/tests/test_pre_processors.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/tests/test_tokenizer_cases.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/gtts/tokenizer/tokenizer_cases.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/pip/_vendor/pygments/token.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/pip/_vendor/urllib3/util/queue.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/pip/_vendor/webencodings/labels.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/pip/_vendor/webencodings/mklabels.py
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/bindings/QtQml/qqmlabstracturlinterceptor.sip
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/bindings/QtWebChannel/qwebchannelabstracttransport.sip
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/bindings/QtWidgets/qlabel.sip
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/Qt6/qml/QtQuick/Controls/designer/images/label-icon16.png
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/Qt6/qml/QtQuick/Controls/designer/images/label-icon@2x.png
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/Qt6/qml/QtQuick/Controls/designer/images/label-icon.png
+./apps/dsi_radio/.venv/lib/python3.12/site-packages/PyQt6/Qt6/qml/QtQuick/Pdf/PdfScrollablePageView.qml
+./backend/api/routes/__pycache__/rescue_lab_telemetry.cpython-312.pyc
+./backend/api/routes/__pycache__/rescue_operator_telemetry.cpython-312.pyc
+./backend/api/routes/rescue_lab_telemetry.py
+./backend/core/backup_telemetry.py
+./backend/core/__pycache__/backup_telemetry.cpython-311.pyc
+./backend/core/__pycache__/backup_telemetry.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_client.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_config.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_cross_repo_preview.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_evidence.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_evidence_tel002.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_model.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_offline_queue_preview.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_reachability.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_send_preview_gate.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_signing.cpython-312.pyc
+./backend/core/__pycache__/rescue_lab_telemetry_status.cpython-312.pyc
+./backend/core/__pycache__/rescue_local_telemetry_queue.cpython-312.pyc
+./backend/core/__pycache__/rescue_network_telemetry_gate.cpython-311.pyc
+./backend/core/__pycache__/rescue_network_telemetry_gate.cpython-312.pyc
+./backend/core/__pycache__/rescue_stick_cloud_lab_config.cpython-312.pyc
+./backend/core/__pycache__/rescue_stick_cloud_lab_models.cpython-312.pyc
+./backend/core/__pycache__/rescue_stick_cloud_lab_payload.cpython-312.pyc
+./backend/core/__pycache__/rescue_stick_cloud_lab_send.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_auth_gate.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_client_contract_v2.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_client.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_cloud_reachability.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_connectivity_v1.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_contract.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_endpoints.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_ingest.cpython-311.pyc
+./backend/core/__pycache__/rescue_telemetry_ingest.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_lan_proxy.cpython-311.pyc
+./backend/core/__pycache__/rescue_telemetry_lan_proxy.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_opt_in.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_payload_redaction_v2.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_payload_v2.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_queue_v1.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_redaction.cpython-312.pyc
+./backend/core/__pycache__/rescue_telemetry_signing_v1.cpython-312.pyc
+
+== telemetry code refs ==
+scripts/lab-rs-tel-send001-preview.sh:10:from core.rescue_stick_cloud_lab_send import preview_rescue_stick_lab_send, redact_secret_material
+scripts/lab-rs-tel-send001-send.sh:11:from core.rescue_stick_cloud_lab_config import rescue_stick_lab_send_config_from_env
+scripts/lab-rs-tel-send001-send.sh:12:from core.rescue_stick_cloud_lab_models import RescueStickLabSendStatus
+scripts/lab-rs-tel-send001-send.sh:13:from core.rescue_stick_cloud_lab_send import (
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:41:./backend/core/__pycache__/rescue_stick_cloud_lab_config.cpython-312.pyc
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:42:./backend/core/__pycache__/rescue_stick_cloud_lab_models.cpython-312.pyc
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:43:./backend/core/__pycache__/rescue_stick_cloud_lab_payload.cpython-312.pyc
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:44:./backend/core/__pycache__/rescue_stick_cloud_lab_send.cpython-312.pyc
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:64:scripts/lab-rs-tel-send001-preview.sh:10:from core.rescue_stick_cloud_lab_send import preview_rescue_stick_lab_send, redact_secret_material
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:65:scripts/lab-rs-tel-send001-send.sh:11:from core.rescue_stick_cloud_lab_config import rescue_stick_lab_send_config_from_env
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:66:scripts/lab-rs-tel-send001-send.sh:12:from core.rescue_stick_cloud_lab_models import RescueStickLabSendStatus
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/telemetry-inventory.txt:67:scripts/lab-rs-tel-send001-send.sh:13:from core.rescue_stick_cloud_lab_send import (
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/preflight.txt:3:?? backend/core/rescue_stick_cloud_lab_config.py
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/preflight.txt:4:?? backend/core/rescue_stick_cloud_lab_models.py
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/preflight.txt:5:?? backend/core/rescue_stick_cloud_lab_payload.py
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/preflight.txt:6:?? backend/core/rescue_stick_cloud_lab_send.py
+docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/preflight.txt:54:scripts/lab-rs-tel-send001-preview.sh:10:from core.rescue_stick_cloud_lab_send import preview_rescue_stick_lab_send, redact_secret_material
+backend/core/rescue_stick_cloud_lab_payload.py:11:from core.rescue_stick_cloud_lab_models import (
+backend/core/rescue_stick_cloud_lab_config.py:9:from core.rescue_stick_cloud_lab_models import (
+backend/core/rescue_stick_cloud_lab_send.py:13:from core.rescue_stick_cloud_lab_config import rescue_stick_lab_send_config_from_env
+backend/core/rescue_stick_cloud_lab_send.py:14:from core.rescue_stick_cloud_lab_models import (
+backend/core/rescue_stick_cloud_lab_send.py:24:from core.rescue_stick_cloud_lab_payload import (
+backend/core/rescue_stick_cloud_lab_models.py:10:LAB_PAYLOAD_SCHEMA_VERSION = "rs.telemetry.lab.v1"
+backend/tests/test_pi_rs_tel_send001_secret_redaction.py:7:from core.rescue_stick_cloud_lab_send import redact_secret_material
+backend/tests/test_pi_rs_tel_send001_preconditions.py:9:from core.rescue_stick_cloud_lab_models import (
+backend/tests/test_pi_rs_tel_send001_preconditions.py:15:from core.rescue_stick_cloud_lab_send import evaluate_rescue_stick_lab_preconditions
+backend/tests/test_pi_rs_tel_send001_payload_redaction.py:7:from core.rescue_stick_cloud_lab_payload import (
+backend/tests/test_pi_rs_tel_send001_preview.py:9:from core.rescue_stick_cloud_lab_models import (
+backend/tests/test_pi_rs_tel_send001_preview.py:15:from core.rescue_stick_cloud_lab_send import preview_rescue_stick_lab_send
+backend/tests/test_pi_rs_tel_send001_contract.py:7:from core.rescue_stick_cloud_lab_models import (
+backend/tests/test_pi_rs_tel_send001_contract.py:14:from core.rescue_stick_cloud_lab_payload import build_rescue_stick_lab_payload
+backend/tests/test_pi_rs_tel_send001_send_mock.py:10:from core.rescue_stick_cloud_lab_models import (
+backend/tests/test_pi_rs_tel_send001_send_mock.py:16:from core.rescue_stick_cloud_lab_send import execute_rescue_stick_lab_send

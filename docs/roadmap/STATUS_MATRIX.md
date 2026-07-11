@@ -11,6 +11,7 @@
 | PI-RS-TEL-002 Reachability + Queue Preview | GRÜN | Network gate + offline preview + profile-aware runtime gate |
 | PI-RS-TEL-003 Cross-Repo Preview Verification | GRÜN | Rescue → Diagnostics validate/findings preview (localhost lab) |
 | PI-RS-TEL-004 Cloud Endpoint + beta.v2 Payload Gate | GRÜN | Cloud default `telemetrie.setuphelfer.de`, preview payload v2, auth/reachability gates; send gated; repack deferred |
+| PI-RS-TEL-SEND-001 Rescue Stick Cloud Lab Send | GRÜN | `rs.telemetry.lab.v1` Bearer send accepted (`req-fd36496e-…`); gates + Evidence; repack/USB deferred |
 | TEL-CLOUD-HEALTH-001 IONOS Telemetry Healthcheck | ROT | DNS ok; **TLS error** (`internal error`, no cert); health not reachable; ingest not tested |
 | TEL-CLOUD-FIX-001 IONOS/Plesk TLS + Proxy | GELB | DNS split diagnosed; Plesk vhost/cert/proxy pending — **operator_action_required** |
 | Beta Registration (public contract) | GRÜN | Architecture + SQL skeleton |

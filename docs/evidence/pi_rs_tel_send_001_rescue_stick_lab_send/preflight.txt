@@ -1,0 +1,99 @@
+== git ==
+a85786c8e510858a7513b1a1c5f1ced79bc6ef3e
+?? backend/core/rescue_stick_cloud_lab_config.py
+?? backend/core/rescue_stick_cloud_lab_models.py
+?? backend/core/rescue_stick_cloud_lab_payload.py
+?? backend/core/rescue_stick_cloud_lab_send.py
+?? backend/tests/test_pi_rs_tel_send001_contract.py
+?? backend/tests/test_pi_rs_tel_send001_payload_redaction.py
+?? backend/tests/test_pi_rs_tel_send001_preconditions.py
+?? backend/tests/test_pi_rs_tel_send001_preview.py
+?? backend/tests/test_pi_rs_tel_send001_secret_redaction.py
+?? backend/tests/test_pi_rs_tel_send001_send_mock.py
+?? docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/
+?? scripts/lab-rs-tel-send001-preview.sh
+?? scripts/lab-rs-tel-send001-send.sh
+stash@{0}: On master: cursor-agent: stash before master-phase branch
+stash@{1}: On master: foreign WIP
+
+== telemetry refs ==
+frontend/package-lock.json:59:        "js-tokens": "^4.0.0",
+frontend/package-lock.json:2791:    "node_modules/js-tokens": {
+frontend/package-lock.json:2793:      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-4.0.0.tgz",
+frontend/package-lock.json:2854:        "js-tokens": "^3.0.0 || ^4.0.0"
+frontend/package-lock.json:3351:    "node_modules/queue-microtask": {
+frontend/package-lock.json:3353:      "resolved": "https://registry.npmjs.org/queue-microtask/-/queue-microtask-1.2.3.tgz",
+frontend/package-lock.json:3675:        "queue-microtask": "^1.2.2"
+frontend/package-lock.json:3757:        "js-tokens": "^9.0.1"
+frontend/package-lock.json:3763:    "node_modules/strip-literal/node_modules/js-tokens": {
+frontend/package-lock.json:3765:      "resolved": "https://registry.npmjs.org/js-tokens/-/js-tokens-9.0.1.tgz",
+backend/safety/write_guard.py:232:    """Aggregiert alle Top-Level-Disks; nur lesend."""
+frontend/scripts/capture-documentation-screenshots.mjs:146:    const cloudTab = page.getByRole('button', { name: /Cloud-Backup/i })
+frontend/scripts/capture-documentation-screenshots.mjs:147:    if (await cloudTab.count()) {
+frontend/scripts/capture-documentation-screenshots.mjs:148:      await cloudTab.first().click()
+frontend/scripts/capture-documentation-screenshots.mjs:155:    await page.screenshot({ path: join(OUT_DIR, 'doc-settings-cloud.png'), fullPage: false })
+frontend/scripts/capture-documentation-screenshots.mjs:157:    console.log('OK doc-settings-cloud.png')
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_NL.md:69:**Neet** used: `/api/Partities/queue/apply` and other write endpoints.
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_NL.md:79:- Nee Herstel execute, Nee queue apply
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_NL.md:85:- Queue apply only with token and roodding context
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_FR.md:69:**Nont** used: `/api/Partitions/queue/apply` and other write endpoints.
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_FR.md:79:- Non Restauration execute, Non queue apply
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_FR.md:85:- Queue apply only with token and Secours context
+frontend/scripts/generate-doc-screenshot-placeholders.py:32:    ("doc-settings-cloud.png", "Einstellungen – Cloud-Backup"),
+docs/rescue-stick/RESCUE_OFFLINE_BACKUP_ORCHESTRATOR_2026-05-20.md:4:**Modul:** `backend/rescue/backup_orchestrator.py` → `build_rescue_offline_backup_plan()`
+docs/rescue-stick/RESCUE_OFFLINE_BACKUP_ORCHESTRATOR_2026-05-20.md:16:- `backup_profile_id` (Default: `offline-full`)
+docs/rescue-stick/RESCUE_OFFLINE_BACKUP_ORCHESTRATOR_2026-05-20.md:36:`POST /api/deploy/rescue/offline-backup-plan`  
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_EN.md:67:**Not** used: `/api/partitions/queue/apply` and other write endpoints.
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_EN.md:77:- No restore execute, no queue apply
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_EN.md:83:- Queue apply only with token and rescue context
+docs/rescue-stick/RESCUE_LIVE_FIRMWARE_POLICY.md:49:- Do not call `dmidecode` output to telemetry (redacted summaries only).  
+frontend/scripts/ensure-tauri-standalone-dev.sh:11:echo "Tauri Dev (Standalone): Backend optional — Cockpit nutzt Workspace-Fallback wenn API offline."
+docs/partitions/PARTITION_MANAGER_PHASE2_UI_DE.md:67:**Nicht** verwendet: `/api/partitions/queue/apply` und andere Schreib-Endpunkte.
+docs/INTERNETRADIO_STREAM_URLS.md:23:| **URL** | `http://rbb-radioeins-live.cast.addradio.de/rbb/radioeins/live/mp3/128/stream.mp3` | Einträge mit **dispatcher.rndfnk.com**; `url_resolved` sind **rndfnk.com**-Streams **mit Token** (cid, sid, token) in der Query. |
+docs/INTERNETRADIO_STREAM_URLS.md:24:| **Problem** | addradio-URL könnte veraltet sein oder anders weitergeleitet werden; die API nutzt **dispatcher.rndfnk.com** als Einstieg, der auf tokenisierte rndfnk.com-Streams umleitet. |
+scripts/lab-rs-tel-send001-preview.sh:10:from core.rescue_stick_cloud_lab_send import preview_rescue_stick_lab_send, redact_secret_material
+scripts/lab-rs-tel-send001-preview.sh:12:result = preview_rescue_stick_lab_send()
+docs/rescue-stick/RESCUE_BOOT_MENU_I18N.md:17:status.medium / status.network / status.telemetry / status.optional / status.off
+docs/rescue-stick/RESCUE_BOOT_MENU_I18N.md:31:| `cloudserver_manage` | Cloudserver verwalten | Manage cloud server |
+docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md:16:| Backup Profile offline-full | `core/backup_profiles.get_backup_profile("offline-full")` | **Implementiert** (Phase C.3); siehe `RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md` |
+docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md:21:| Restore Preview Profil | `core/restore_profiles.py` | `offline-full-restore-preview` |
+docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md:72:  Safe->>Run: offline-full profile, SOURCE_ROOT mounted
+docs/rescue-stick/RESCUE_STICK_CORE_DEPENDENCIES_2026-05-20.md:82:5. Offline backup via **ein** Runner + Profil `offline-full`.  
+scripts/install-gpu-drivers.sh:2:# Installiert die für die erkannte Hardware passenden NVIDIA- und AMD-Treiber.
+docs/recovery/RECOVERY_MINIMAL_EXECUTE_PHASE_2B_FR.md:10:- token requirouge
+docs/recovery/RECOVERY_MINIMAL_EXECUTE_PHASE_2B_NL.md:10:- token requirood
+backend/deploy/real_write_prototype.py:344:    prototype_write_id = secrets.token_hex(16)
+backend/deploy/real_write_prototype.py:355:    confirmation_token = str(request.get("confirmation_token") or "").strip()
+backend/deploy/real_write_prototype.py:388:            "confirmation_token": confirmation_token,
+backend/deploy/real_write_prototype.py:456:                "confirmation_token": confirmation_token,
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_EN.md:5:This phase executes tightly scoped activation steps for the first time, but only from a valid activation session with token, TTL, and plan binding.
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_EN.md:25:  "confirmation_token": "...",
+backend/deploy/runner_rescue_stick_component_inventory.py:74:        _row("Offline-UI im Live-System", status="missing", risk="medium", required_for_mvp=True, notes=["local browser/kiosk optional"], component_id="offline_ui"),
+backend/deploy/write_execute.py:67:        "confirmation_token": None,
+backend/deploy/write_execute.py:112:    sid = secrets.token_hex(8)
+backend/deploy/write_execute.py:113:    token = secrets.token_urlsafe(24)
+backend/deploy/write_execute.py:118:        "confirmation_token": token,
+backend/deploy/write_execute.py:130:    out["confirmation_token"] = token
+backend/deploy/write_execute.py:161:    token = str(request.get("confirmation_token") or "")
+backend/deploy/write_execute.py:183:    if token != str(sess.get("confirmation_token") or ""):
+docs/rescue-stick/RESCUE_BOOT_MENU_INTEGRATION_RESULT.md:51:- High-Risk-Aktionen (`backup_create`, `restore`, `cloudserver_manage`) sind `enabled: false`
+docs/recovery/RECOVERY_MINIMAL_EXECUTE_PREP_EN.md:12:- session + token + plan-hash binding
+scripts/smoke-pi-rs-tel003-cross-repo-telemetry-diagnostics-preview.sh:8:if [ -x ./scripts/check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh ]; then
+scripts/smoke-pi-rs-tel003-cross-repo-telemetry-diagnostics-preview.sh:9:  ./scripts/check-pi-rs-tel-001-rescue-lab-telemetry-safety.sh
+scripts/smoke-pi-rs-tel003-cross-repo-telemetry-diagnostics-preview.sh:12:if [ -x ./scripts/check-pi-rs-tel-002-network-gated-telemetry-safety.sh ]; then
+scripts/smoke-pi-rs-tel003-cross-repo-telemetry-diagnostics-preview.sh:13:  ./scripts/check-pi-rs-tel-002-network-gated-telemetry-safety.sh
+scripts/smoke-pi-rs-tel003-cross-repo-telemetry-diagnostics-preview.sh:21:  backend/tests/test_pi_rs_tel003_offline_queue_compatibility.py \
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_FR.md:7:This phase executes tightly scoped activation steps for the first time, but only from a valid activation session with token, TTL, and plan binding.
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_FR.md:27:  "confirmation_token": "...",
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_DE.md:25:  "confirmation_token": "...",
+docs/rescue-stick/RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md:4:**Modul:** `backend/core/backup_profiles.py` → `get_backup_profile("offline-full")`
+docs/rescue-stick/RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md:10:`offline-full` — BR-001-OFFLINE / Rettungsstick, **nicht** identisch mit Live-`full-root-stable`.
+docs/rescue-stick/RESCUE_OFFLINE_FULL_BACKUP_PROFILE_2026-05-20.md:12:| Eigenschaft | offline-full | full-root-stable (Live) |
+docs/recovery/RECOVERY_MINIMAL_EXECUTE_PHASE_2B_EN.md:8:- token required
+docs/rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md:22:`offline-full-restore-preview` in `core/restore_profiles.py` — `execution_allowed: false`.
+docs/recovery/RECOVERY_MINIMAL_EXECUTE_PREP_NL.md:14:- session + token + plan-hash binding
+backend/deploy/preview.py:59:    token = str(request.get("confirmation_token") or "")
+backend/deploy/preview.py:83:    if token != str(sess.get("confirmation_token") or ""):
+backend/deploy/preview.py:127:    out["preview_id"] = secrets.token_hex(8)
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_NL.md:7:This phase executes tightly scoped activation steps for the first time, but only from a valid activation session with token, TTL, and plan binding.
+docs/recovery/RECOVERY_ACTIVATION_CONTROLLED_EXECUTE_NL.md:27:  "confirmation_token": "...",

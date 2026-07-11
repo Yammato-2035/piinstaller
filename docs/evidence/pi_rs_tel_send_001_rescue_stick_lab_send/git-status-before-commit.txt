@@ -1,0 +1,16 @@
+ M CHANGELOG.md
+ M docs/roadmap/STATUS_MATRIX.md
+?? backend/core/rescue_stick_cloud_lab_config.py
+?? backend/core/rescue_stick_cloud_lab_models.py
+?? backend/core/rescue_stick_cloud_lab_payload.py
+?? backend/core/rescue_stick_cloud_lab_send.py
+?? backend/tests/test_pi_rs_tel_send001_contract.py
+?? backend/tests/test_pi_rs_tel_send001_payload_redaction.py
+?? backend/tests/test_pi_rs_tel_send001_preconditions.py
+?? backend/tests/test_pi_rs_tel_send001_preview.py
+?? backend/tests/test_pi_rs_tel_send001_secret_redaction.py
+?? backend/tests/test_pi_rs_tel_send001_send_mock.py
+?? docs/evidence/pi_rs_tel_send_001_rescue_stick_lab_send/
+?? docs/telemetry/PI_RS_TEL_SEND_001_RESCUE_STICK_LAB_SEND.md
+?? scripts/lab-rs-tel-send001-preview.sh
+?? scripts/lab-rs-tel-send001-send.sh
