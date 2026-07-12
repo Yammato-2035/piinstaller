@@ -1,11 +1,13 @@
 #!/bin/bash
-# RS-002 + RS-005 + RS-008 + RS-011H + PI-RS-MSI-FIX-001: Boot status TTY + boot-timeline.
+# RS-002 + RS-005 + RS-008 + RS-011H + PI-RS-MSI-FIX-001 + PI-RS-MSI-GUI-003
+# MSI compat: tui_mode_selected replaces x11_starting when gui_progress_allowed=false.
 set -uo pipefail
 
 RESCUE_ROOT="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}"
 STATE="/run/setuphelfer-rescue/boot-progress.json"
 LOG="/run/setuphelfer-rescue/boot-timeline-writer.log"
 TTY_LOG="/run/setuphelfer-rescue/boot-progress-tty.log"
+AUDIT_LOG="/run/setuphelfer-rescue/boot-progress-tty-audit.log"
 TTY="${SETUPHELFER_BOOT_TTY:-/dev/tty1}"
 INTERVAL="${SETUPHELFER_BOOT_STATUS_INTERVAL:-4}"
 TIMELINE_PY="${SETUPHELFER_BOOT_TIMELINE_PY:-${RESCUE_ROOT}/backend/core/rescue_boot_timeline.py}"
@@ -16,6 +18,8 @@ COMMON="/usr/local/sbin/setuphelfer-rescue-common.sh"
 if [[ -f "$COMMON" ]]; then
   # shellcheck source=/dev/null
   source "$COMMON"
+  setuphelfer_rescue_init_boot_session || true
+  setuphelfer_rescue_console_owner_transition "boot_progress" || true
   setuphelfer_rescue_shield_console_early "early_boot_progress" || true
 fi
 
@@ -30,12 +34,18 @@ if [[ "$SAFE_TTY" -eq 1 ]]; then
 fi
 
 _record_timeline() {
-  local phase="$1" status="$2" msg_de="$3" msg_en="${4:-$3}"
+  local phase="$1" status="$2" msg_de="$3" msg_en="${4:-$3}" extra="${5:-}"
   mkdir -p "$(dirname "$LOG")" /run/setuphelfer/evidence/boot 2>/dev/null || true
   if [[ -f "$TIMELINE_PY" ]]; then
+    local args=(record --phase "$phase" --status "$status" --message-de "$msg_de" --message-en "$msg_en")
+    if [[ "$extra" == *gui_skipped* ]]; then
+      args+=(--gui-skipped)
+    fi
+    if [[ "$extra" == *reason_code=* ]]; then
+      args+=(--reason-code "${extra#*reason_code=}")
+    fi
     PYTHONPATH="${RESCUE_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}" \
-      "$PY" "$TIMELINE_PY" record --phase "$phase" --status "$status" \
-      --message-de "$msg_de" --message-en "$msg_en" >>"$LOG" 2>&1 || true
+      "$PY" "$TIMELINE_PY" "${args[@]}" >>"$LOG" 2>&1 || true
   else
     echo "missing timeline module: $TIMELINE_PY" >>"$LOG"
   fi
@@ -47,28 +57,6 @@ _finalize_timeline() {
       "$PY" "$TIMELINE_PY" summary >>"$LOG" 2>&1 || true
   fi
 }
-
-steps=(
-  "Setuphelfer Rettungssystem wird geladen …"
-  "Hardware wird erkannt …"
-  "Laufwerke werden geprüft …"
-  "Protokollspeicher wird vorbereitet …"
-  "Bitte warten Sie. Bitte nicht ausschalten."
-  "Netzwerk wird geprüft …"
-  "Grafische Oberfläche wird gestartet …"
-  "Backend wird geprüft …"
-)
-
-phase_map=(
-  "rescue_boot_status_visible"
-  "hardware_probe_started"
-  "disk_probe_started"
-  "setup_logs_probe_started"
-  "rescue_boot_status_visible"
-  "network_probe_started"
-  "x11_starting"
-  "backend_starting"
-)
 
 write_state() {
   local idx="$1"
@@ -90,16 +78,26 @@ PY
 
 show_tty() {
   local body="$1"
-  local force="${2:-0}"
+  local render="${2:-0}"
   printf '%s\n' "$body" >>"$TTY_LOG" 2>/dev/null || true
-  if [[ "$SAFE_TTY" -eq 1 ]]; then
-    force=0
-  fi
   if command -v setuphelfer_rescue_tty1_clear_allowed >/dev/null 2>&1 \
      && ! setuphelfer_rescue_tty1_clear_allowed; then
     return 0
   fi
-  if [[ "$force" -ne 1 ]]; then
+  if [[ "$render" != "1" && "$render" != "true" ]]; then
+    return 0
+  fi
+  if command -v setuphelfer_rescue_boot_progress_tty_write_allowed >/dev/null 2>&1 \
+     && ! setuphelfer_rescue_boot_progress_tty_write_allowed; then
+    printf '%s phase=%s\n' "RESCUE_CONSOLE_WRITE_BLOCKED_TUI_OWNED" "$body" >>"$AUDIT_LOG" 2>/dev/null || true
+    return 0
+  fi
+  if [[ "$SAFE_TTY" -eq 1 ]]; then
+    return 0
+  fi
+  if command -v setuphelfer_rescue_tty1_write_allowed >/dev/null 2>&1 \
+     && ! setuphelfer_rescue_tty1_write_allowed; then
+    printf '%s phase=%s\n' "RESCUE_CONSOLE_WRITE_BLOCKED_TUI_OWNED" "$body" >>"$AUDIT_LOG" 2>/dev/null || true
     return 0
   fi
   if [[ -c "$TTY" ]]; then
@@ -111,19 +109,88 @@ show_tty() {
   fi
 }
 
+_load_plan() {
+  if [[ ! -f "$TIMELINE_PY" ]]; then
+    return 1
+  fi
+  PYTHONPATH="${RESCUE_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}" \
+    "$PY" "$TIMELINE_PY" plan 2>>"$LOG"
+}
+
 mkdir -p /run/setuphelfer/evidence/boot 2>/dev/null || true
 _record_timeline "systemd_started" "ok" "Systemd gestartet" "Systemd started"
 _record_timeline "rescue_boot_status_visible" "started" "Startstatus sichtbar" "Boot status visible"
 
-idx=0
-while [[ $idx -lt ${#steps[@]} ]]; do
-  msg="${steps[$idx]}"
-  _record_timeline "${phase_map[$idx]:-rescue_boot_status_visible}" "started" "$msg" "$msg"
-  write_state "$idx" "$msg"
-  show_tty "$msg" 0
-  idx=$((idx + 1))
-  sleep "$INTERVAL"
-done
+plan_json="$(_load_plan || true)"
+if [[ -n "$plan_json" ]]; then
+  idx=0
+  while IFS=$'\t' read -r phase msg render audit extra; do
+    [[ -n "$phase" ]] || continue
+    _record_timeline "$phase" "started" "$msg" "$msg" "$extra"
+    write_state "$idx" "$msg"
+    if [[ "$audit" != "1" ]]; then
+      show_tty "$msg" "$render"
+    fi
+    idx=$((idx + 1))
+    sleep "$INTERVAL"
+    if command -v setuphelfer_rescue_boot_progress_tty_write_allowed >/dev/null 2>&1 \
+       && ! setuphelfer_rescue_boot_progress_tty_write_allowed; then
+      break
+    fi
+  done < <(printf '%s' "$plan_json" | PYTHONPATH="${RESCUE_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}" \
+    "$PY" - <<'PY'
+import json, sys
+data = json.load(sys.stdin)
+for step in data.get("steps") or []:
+    extra = ""
+    if step.get("reason_code"):
+        extra = f"reason_code={step['reason_code']}"
+    if step.get("gui_skipped"):
+        extra = (extra + " gui_skipped").strip()
+    print(
+        "\t".join(
+            [
+                str(step.get("phase") or ""),
+                str(step.get("message_de") or ""),
+                "1" if step.get("render_tty") else "0",
+                "1" if step.get("audit_only") else "0",
+                extra,
+            ]
+        )
+    )
+PY
+)
+else
+  steps=(
+    "Setuphelfer Rettungssystem wird geladen …"
+    "Hardware wird erkannt …"
+    "Laufwerke werden geprüft …"
+    "Protokollspeicher wird vorbereitet …"
+    "Bitte warten Sie. Bitte nicht ausschalten."
+    "Netzwerk wird geprüft …"
+    "Grafische Oberfläche wird gestartet …"
+    "Backend wird geprüft …"
+  )
+  phase_map=(
+    "rescue_boot_status_visible"
+    "hardware_probe_started"
+    "disk_probe_started"
+    "setup_logs_probe_started"
+    "rescue_boot_status_visible"
+    "network_probe_started"
+    "x11_starting"
+    "backend_starting"
+  )
+  idx=0
+  while [[ $idx -lt ${#steps[@]} ]]; do
+    msg="${steps[$idx]}"
+    _record_timeline "${phase_map[$idx]:-rescue_boot_status_visible}" "started" "$msg" "$msg"
+    write_state "$idx" "$msg"
+    show_tty "$msg" 0
+    idx=$((idx + 1))
+    sleep "$INTERVAL"
+  done
+fi
 
 if [[ "$SAFE_TTY" -eq 1 ]]; then
   final_msg="Bootvorbereitung abgeschlossen — Textmenü bereit."

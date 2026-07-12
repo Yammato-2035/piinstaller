@@ -14,23 +14,23 @@ from core.rescue_payload_version import (
 
 
 class PayloadTelemetry001VersionTests(unittest.TestCase):
-    def test_rescue_payload_version_is_1_10_0_15(self) -> None:
-        self.assertEqual(rescue_payload_version(), "1.10.0.15")
+    def test_rescue_payload_version_is_1_10_0_16(self) -> None:
+        self.assertEqual(rescue_payload_version(), "1.10.0.16")
 
     def test_previous_version_documented(self) -> None:
-        self.assertEqual(previous_rescue_payload_version(), "1.10.0.14")
+        self.assertEqual(previous_rescue_payload_version(), "1.10.0.15")
 
     def test_config_file_present(self) -> None:
         path = Path(__file__).resolve().parents[2] / "config" / "rescue_payload_version.json"
         self.assertTrue(path.is_file())
         data = json.loads(path.read_text(encoding="utf-8"))
-        self.assertEqual(data["rescue_payload_version"], "1.10.0.15")
+        self.assertEqual(data["rescue_payload_version"], "1.10.0.16")
         self.assertTrue(data.get("includes_lab_telemetry_send"))
 
     def test_load_config_cached(self) -> None:
         load_rescue_payload_version_config.cache_clear()
         cfg = load_rescue_payload_version_config()
-        self.assertEqual(cfg["rescue_payload_version"], "1.10.0.15")
+        self.assertEqual(cfg["rescue_payload_version"], "1.10.0.16")
 
 
 if __name__ == "__main__":
