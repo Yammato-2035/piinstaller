@@ -1,0 +1,64 @@
+{
+  "test_device": {
+    "vendor": "MSI",
+    "model": "GE63 Raider RGB 8RF",
+    "model_code": "MS-16P5"
+  },
+  "payload": {
+    "version": "1.10.0.15",
+    "expected_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+    "actual_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+    "hash_verified": true,
+    "hash_verified_where": "dev_machine_pre_boot_SETUPHELFER"
+  },
+  "boot": {
+    "completed": false,
+    "msi_compat_detected": null,
+    "kernel_parameters": [],
+    "shutdown_completed": null
+  },
+  "tui": {
+    "started": null,
+    "stable": null,
+    "visual_corruption": null,
+    "keyboard_navigation_ok": null,
+    "rerender_after_gui_block": null
+  },
+  "gui": {
+    "available": null,
+    "blocked_under_msi_compat": null,
+    "operator_message_visible": null,
+    "operator_message_understandable": null,
+    "openvt_executed": null,
+    "chvt_executed": null,
+    "startx_executed": null,
+    "xorg_started": null,
+    "chromium_gui_started": null
+  },
+  "safety": {
+    "internal_drive_touched": false,
+    "dangerous_operation_executed": false,
+    "backup_started": false,
+    "restore_started": false,
+    "partition_write_started": false,
+    "wipe_started": false
+  },
+  "evidence": {
+    "new_session_detected": false,
+    "old_session_mixed": false,
+    "latest_session_before_boot": "20260712_015835",
+    "sessions_after_1_10_0_15_update": 0,
+    "paths": [
+      "docs/evidence/pi_rs_msi_retest_002/stick_payload_verify.json",
+      "docs/evidence/pi_rs_msi_retest_002/setup_logs_before_inventory.txt",
+      "docs/evidence/pi_rs_msi_retest_002/OPERATOR_OBSERVATION.md"
+    ]
+  },
+  "status": "blocked",
+  "status_reason": "Physical MSI GE63 boot retest not executed in this agent run; stick and payload pre-verified; operator boot required",
+  "warnings": [
+    "Session 20260712_015835 predates payload 1.10.0.15 USB update and must not be used as acceptance evidence",
+    "Automated agent cannot perform physical UEFI boot on MSI hardware"
+  ],
+  "errors": []
+}

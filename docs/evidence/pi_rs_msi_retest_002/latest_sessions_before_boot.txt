@@ -1,0 +1,5 @@
+2026-07-12 01:00:16.0000000000 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_010011_boot
+2026-07-12 01:01:04.0000000000 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_010101_boot
+2026-07-12 01:58:32.0000000000 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_015832_early
+2026-07-12 01:58:34.0000000000 /media/volker/SETUP_LOGS/setuphelfer/diagnostics
+2026-07-12 01:58:40.0000000000 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_015835_boot

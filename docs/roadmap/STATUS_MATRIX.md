@@ -25,7 +25,7 @@
 | Stick Payload Build | GRÜN | Workspace **1.10.0.15** repacked; USB auf **1.10.0.15** geschrieben |
 | PI-RS-USB-MSI-GUI-002 USB Update 1.10.0.15 + GE63 Retest | GELB | USB-Update **ok**; MSI-Boot-Retest **pending operator** (`review_required`) |
 | PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` — physischer Stick **1.10.0.14** Payload |
-| PI-RS-MSI-RETEST-002 Operator Boot Retest | GELB | Boot **1.10.0.13** auf GE63 — `partial_fail`; Fix in 1.10.0.14 deployed |
+| PI-RS-MSI-RETEST-002 Physical Boot Retest (1.10.0.15) | GELB | Stick/Payload **pre-verified**; GE63-Boot **`blocked`** — Operator erforderlich |
 | PI-RS-MSI-FIX-001 Console Shield + boot-progress tty1 | GRÜN | SquashFS **1.10.0.14** repacked; Helper + Race-Fix; Content/Secret-Check ok |
 | PI-RS-USB-MSI-FIX-001 USB Update + GE63 Boot Retest | GELB | USB **1.10.0.14** geschrieben; Session 20260712_015835 — GUI/openvt defekt |
 | PI-RS-MSI-GUI-002 Disable GUI under MSI Compat | GRÜN | SquashFS **1.10.0.15** repacked; GUI gesperrt unter MSI-Compat |

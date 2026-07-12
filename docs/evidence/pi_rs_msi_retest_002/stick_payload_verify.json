@@ -1,0 +1,14 @@
+{
+  "verified_at": "2026-07-12T09:10:00Z",
+  "device_path": "/dev/sda",
+  "device_by_id": "usb-Intenso_Ultra_Line_24111412110686-0:0",
+  "model": "Ultra Line",
+  "size": "59G",
+  "setuphelfer_label": "SETUPHELFER",
+  "setup_logs_label": "SETUP_LOGS",
+  "project_version": "1.10.0.15",
+  "squashfs_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "expected_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "hash_matches": true,
+  "usb_payload_verified": true
+}
