@@ -1,0 +1,43 @@
+{
+  "feature": "PI-RS-MSI-RETEST-003B",
+  "parent_feature": "PI-RS-MSI-RETEST-003",
+  "payload_version": "1.10.0.16",
+  "session_id": "20260712_225944_boot",
+  "boot_id": "d0a49973-8b2a-497a-a43a-bb85d7898a68",
+  "capture_after_120s": false,
+  "capture_uptime_s": 10.5,
+  "tui_stable_120s": true,
+  "tui_stable_120s_source": "operator_confirmation",
+  "console_owner_tui": false,
+  "boot_progress_write_blocked": false,
+  "boot_progress_clear_blocked": false,
+  "gui_transition_blocked": false,
+  "x11_starting_absent": true,
+  "gui_processes_absent": true,
+  "tui_mode_selected_in_timeline": false,
+  "manual_late_evidence_captured": false,
+  "session_isolation_valid": true,
+  "excluded_sessions": [
+    "20260712_225043_boot"
+  ],
+  "internal_drive_written": false,
+  "dangerous_operation_executed": false,
+  "status": "failed",
+  "status_reason": "Late evidence objective not met: automatic capture at ~10.5s, no manual late-evidence file, console_owner still boot_progress",
+  "warnings": [
+    "Operator reports stable TUI but mechanical late-evidence contract unfulfilled",
+    "RS_011B auto-collector timing conflicts with late-evidence requirement"
+  ],
+  "errors": [
+    "capture_uptime_below_120s",
+    "console_owner_not_tui",
+    "manual_late_evidence_missing"
+  ],
+  "evidence_paths": [
+    "docs/evidence/pi_rs_msi_retest_003b/late_evidence_analysis.json",
+    "docs/evidence/pi_rs_msi_retest_003b/msi_session/",
+    "docs/evidence/pi_rs_msi_retest_003b/payload_preboot_verify.json",
+    "docs/test-plans/PI_RS_MSI_RETEST_003B_LATE_EVIDENCE_RUNBOOK.md"
+  ],
+  "retest_003_combined_status": "review_required"
+}

@@ -1,0 +1,142 @@
+--- /tmp/pi_rs_msi_retest_003b_before.txt	2026-07-12 22:58:01.453900621 +0200
++++ /tmp/pi_rs_msi_retest_003b_after.txt	2026-07-12 23:04:02.820610489 +0200
+@@ -268,7 +268,6 @@
+ 2026-06-29 20:53:34.0000000000 3760 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260629_205330_boot/54-service-status.txt
+ 2026-06-29 20:53:34.0000000000 673 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260629_205330_boot/61-rescue-run-state.txt
+ 2026-06-29 20:53:34.0000000000 76052 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260629_205330_boot/92-dmesg-full.txt
+-2026-06-29 20:55:26.0000000000 0 /media/volker/SETUP_LOGS/setuphelfer/evidence/backup/backup-plan-dry-run.json
+ 2026-06-29 20:55:44.0000000000 101 /media/volker/SETUP_LOGS/setuphelfer/logs/x11/20260629_205544_x11/x11-unix-ls.txt
+ 2026-06-29 20:55:44.0000000000 114 /media/volker/SETUP_LOGS/setuphelfer/logs/x11/20260629_205544_x11/journal-xorg.txt
+ 2026-06-29 21:06:58.0000000000 531 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260629_210658_early/00-meta.txt
+@@ -922,11 +921,9 @@
+ 2026-07-12 11:12:26.0000000000 480 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/boot-summary.json
+ 2026-07-12 22:50:40.0000000000 531 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225040_early/00-meta.txt
+ 2026-07-12 22:50:40.0000000000 5517 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225040_early/03-early-fast.txt
+-2026-07-12 22:50:40.0000000000 5517 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/03-early-fast.txt
+ 2026-07-12 22:50:42.0000000000 4189 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/01-dmidecode.txt
+ 2026-07-12 22:50:42.0000000000 532 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/00-meta.txt
+ 2026-07-12 22:50:44.0000000000 1049 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/13-loaded-modules-net-gpu.txt
+-2026-07-12 22:50:44.0000000000 1173 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/boot-timeline.jsonl
+ 2026-07-12 22:50:44.0000000000 1387 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/02-cpu-mem.txt
+ 2026-07-12 22:50:44.0000000000 2001 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/30-dmesg-gpu.txt
+ 2026-07-12 22:50:44.0000000000 25 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/31-drm-status.txt
+@@ -943,49 +940,79 @@
+ 2026-07-12 22:50:46.0000000000 58 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/51-systemd-failed.txt
+ 2026-07-12 22:50:46.0000000000 644 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/50-systemd-jobs.txt
+ 2026-07-12 22:50:46.0000000000 737 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/41-wifi.txt
+-2026-07-12 22:50:48.0000000000 1049 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/13-loaded-modules-net-gpu.txt
+ 2026-07-12 22:50:48.0000000000 108211 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/91-journal-kernel.txt
+-2026-07-12 22:50:48.0000000000 1387 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/02-cpu-mem.txt
+ 2026-07-12 22:50:48.0000000000 153804 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/90-journal-boot.txt
+ 2026-07-12 22:50:48.0000000000 18841 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/60-ps.txt
+ 2026-07-12 22:50:48.0000000000 1938 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/61-rescue-run-state.txt
+-2026-07-12 22:50:48.0000000000 4189 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/01-dmidecode.txt
+ 2026-07-12 22:50:48.0000000000 4888 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/54-service-status.txt
+-2026-07-12 22:50:48.0000000000 532 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/00-meta.txt
+-2026-07-12 22:50:48.0000000000 5406 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/10-lspci.txt
+-2026-07-12 22:50:48.0000000000 733 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/11-lsusb.txt
+ 2026-07-12 22:50:48.0000000000 76482 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225043_boot/92-dmesg-full.txt
+-2026-07-12 22:50:48.0000000000 7860 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/12-lsmod.txt
+-2026-07-12 22:50:50.0000000000 10047 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/42-nm-journal.txt
+-2026-07-12 22:50:50.0000000000 1022 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/40-net-links.txt
+-2026-07-12 22:50:50.0000000000 120 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/32-xorg-log.txt
+-2026-07-12 22:50:50.0000000000 2001 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/30-dmesg-gpu.txt
+-2026-07-12 22:50:50.0000000000 219 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/52-systemd-blame.txt
+-2026-07-12 22:50:50.0000000000 25 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/31-drm-status.txt
+-2026-07-12 22:50:50.0000000000 3193 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/20-dmesg-firmware.txt
+-2026-07-12 22:50:50.0000000000 4386 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/21-firmware-present.txt
+-2026-07-12 22:50:50.0000000000 58 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/51-systemd-failed.txt
+-2026-07-12 22:50:50.0000000000 644 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/50-systemd-jobs.txt
+-2026-07-12 22:50:50.0000000000 737 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/41-wifi.txt
+-2026-07-12 22:50:52.0000000000 108211 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/91-journal-kernel.txt
+-2026-07-12 22:50:52.0000000000 153804 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/90-journal-boot.txt
+-2026-07-12 22:50:52.0000000000 18841 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/60-ps.txt
+-2026-07-12 22:50:52.0000000000 1938 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/61-rescue-run-state.txt
+-2026-07-12 22:50:52.0000000000 194 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/collector-version-check.json
+-2026-07-12 22:50:52.0000000000 228 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/53-systemd-critical-chain.txt
+-2026-07-12 22:50:52.0000000000 4632 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/api-version.json
+-2026-07-12 22:50:52.0000000000 4888 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/54-service-status.txt
+-2026-07-12 22:50:52.0000000000 56 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/INDEX.txt
+-2026-07-12 22:50:52.0000000000 76482 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/92-dmesg-full.txt
+-2026-07-12 22:50:54.0000000000 317 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/disk-inventory.json
+-2026-07-12 22:50:54.0000000000 317 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/rescue-health.json
+-2026-07-12 22:50:54.0000000000 691 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/api-endpoint-status.json
+-2026-07-12 22:50:56.0000000000 10264 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/storage-discovery.json
+-2026-07-12 22:50:56.0000000000 1762 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/beta-operator-behavior.jsonl
+-2026-07-12 22:50:56.0000000000 223 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/disk-discovery-summary.md
+-2026-07-12 22:50:56.0000000000 39360 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/lsblk.json
+-2026-07-12 22:50:56.0000000000 631 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/rs011d-supplement.log
+-2026-07-12 22:50:58.0000000000 15521 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/operator-steps.jsonl
+-2026-07-12 22:51:00.0000000000 262 /media/volker/SETUP_LOGS/setuphelfer/evidence/boot/gui-availability.json
+-2026-07-12 22:51:00.0000000000 349 /media/volker/SETUP_LOGS/setuphelfer/evidence/boot/gui-fallback.json
+-2026-07-12 22:51:16.0000000000 601 /media/volker/SETUP_LOGS/setuphelfer/evidence/boot/boot_state_redacted.json
++2026-07-12 22:59:40.0000000000 531 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225940_early/00-meta.txt
++2026-07-12 22:59:40.0000000000 5516 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225940_early/03-early-fast.txt
++2026-07-12 22:59:40.0000000000 5516 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/03-early-fast.txt
++2026-07-12 22:59:44.0000000000 1049 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/13-loaded-modules-net-gpu.txt
++2026-07-12 22:59:44.0000000000 1387 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/02-cpu-mem.txt
++2026-07-12 22:59:44.0000000000 3193 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/20-dmesg-firmware.txt
++2026-07-12 22:59:44.0000000000 4189 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/01-dmidecode.txt
++2026-07-12 22:59:44.0000000000 532 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/00-meta.txt
++2026-07-12 22:59:44.0000000000 5406 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/10-lspci.txt
++2026-07-12 22:59:44.0000000000 733 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/11-lsusb.txt
++2026-07-12 22:59:44.0000000000 7860 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/12-lsmod.txt
++2026-07-12 22:59:46.0000000000 10047 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/42-nm-journal.txt
++2026-07-12 22:59:46.0000000000 1026 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/40-net-links.txt
++2026-07-12 22:59:46.0000000000 1173 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/boot-timeline.jsonl
++2026-07-12 22:59:46.0000000000 120 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/32-xorg-log.txt
++2026-07-12 22:59:46.0000000000 2001 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/30-dmesg-gpu.txt
++2026-07-12 22:59:46.0000000000 25 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/31-drm-status.txt
++2026-07-12 22:59:46.0000000000 4386 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/21-firmware-present.txt
++2026-07-12 22:59:46.0000000000 58 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/51-systemd-failed.txt
++2026-07-12 22:59:46.0000000000 644 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/50-systemd-jobs.txt
++2026-07-12 22:59:46.0000000000 737 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/41-wifi.txt
++2026-07-12 22:59:48.0000000000 107465 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/91-journal-kernel.txt
++2026-07-12 22:59:48.0000000000 1387 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/02-cpu-mem.txt
++2026-07-12 22:59:48.0000000000 153687 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/90-journal-boot.txt
++2026-07-12 22:59:48.0000000000 18453 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/60-ps.txt
++2026-07-12 22:59:48.0000000000 1938 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/61-rescue-run-state.txt
++2026-07-12 22:59:48.0000000000 219 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/52-systemd-blame.txt
++2026-07-12 22:59:48.0000000000 228 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/53-systemd-critical-chain.txt
++2026-07-12 22:59:48.0000000000 4189 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/01-dmidecode.txt
++2026-07-12 22:59:48.0000000000 4920 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/54-service-status.txt
++2026-07-12 22:59:48.0000000000 532 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/00-meta.txt
++2026-07-12 22:59:48.0000000000 75868 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/20260712_225944_boot/92-dmesg-full.txt
++2026-07-12 22:59:50.0000000000 10047 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/42-nm-journal.txt
++2026-07-12 22:59:50.0000000000 1026 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/40-net-links.txt
++2026-07-12 22:59:50.0000000000 1049 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/13-loaded-modules-net-gpu.txt
++2026-07-12 22:59:50.0000000000 120 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/32-xorg-log.txt
++2026-07-12 22:59:50.0000000000 2001 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/30-dmesg-gpu.txt
++2026-07-12 22:59:50.0000000000 25 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/31-drm-status.txt
++2026-07-12 22:59:50.0000000000 3193 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/20-dmesg-firmware.txt
++2026-07-12 22:59:50.0000000000 4386 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/21-firmware-present.txt
++2026-07-12 22:59:50.0000000000 5406 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/10-lspci.txt
++2026-07-12 22:59:50.0000000000 733 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/11-lsusb.txt
++2026-07-12 22:59:50.0000000000 737 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/41-wifi.txt
++2026-07-12 22:59:50.0000000000 7860 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/12-lsmod.txt
++2026-07-12 22:59:52.0000000000 107465 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/91-journal-kernel.txt
++2026-07-12 22:59:52.0000000000 153687 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/90-journal-boot.txt
++2026-07-12 22:59:52.0000000000 18453 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/60-ps.txt
++2026-07-12 22:59:52.0000000000 1938 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/61-rescue-run-state.txt
++2026-07-12 22:59:52.0000000000 219 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/52-systemd-blame.txt
++2026-07-12 22:59:52.0000000000 228 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/53-systemd-critical-chain.txt
++2026-07-12 22:59:52.0000000000 4632 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/api-version.json
++2026-07-12 22:59:52.0000000000 4920 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/54-service-status.txt
++2026-07-12 22:59:52.0000000000 58 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/51-systemd-failed.txt
++2026-07-12 22:59:52.0000000000 644 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/50-systemd-jobs.txt
++2026-07-12 22:59:54.0000000000 194 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/collector-version-check.json
++2026-07-12 22:59:54.0000000000 56 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/INDEX.txt
++2026-07-12 22:59:54.0000000000 75868 /media/volker/SETUP_LOGS/setuphelfer/diagnostics/latest/92-dmesg-full.txt
++2026-07-12 22:59:56.0000000000 10264 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/storage-discovery.json
++2026-07-12 22:59:56.0000000000 223 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/disk-discovery-summary.md
++2026-07-12 22:59:56.0000000000 317 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/disk-inventory.json
++2026-07-12 22:59:56.0000000000 317 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/rescue-health.json
++2026-07-12 22:59:56.0000000000 39360 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/lsblk.json
++2026-07-12 22:59:56.0000000000 691 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/api-endpoint-status.json
++2026-07-12 22:59:58.0000000000 16641 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/operator-steps.jsonl
++2026-07-12 22:59:58.0000000000 1859 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/beta-operator-behavior.jsonl
++2026-07-12 22:59:58.0000000000 631 /media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b/rs011d-supplement.log
++2026-07-12 23:00:02.0000000000 262 /media/volker/SETUP_LOGS/setuphelfer/evidence/boot/gui-availability.json
++2026-07-12 23:00:02.0000000000 349 /media/volker/SETUP_LOGS/setuphelfer/evidence/boot/gui-fallback.json
++2026-07-12 23:01:04.0000000000 601 /media/volker/SETUP_LOGS/setuphelfer/evidence/boot/boot_state_redacted.json
++2026-07-12 23:01:16.0000000000 0 /media/volker/SETUP_LOGS/setuphelfer/evidence/backup/backup-plan-dry-run.json

@@ -1,0 +1,11 @@
+{
+  "captured_at": "2026-07-12T21:10:00Z",
+  "device_model": "Intenso Ultra Line",
+  "setuphelfer_uuid": "9BB9-A4A6",
+  "setup_logs_uuid": "9BC7-3950",
+  "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+  "content_gate": "passed",
+  "secret_gate": "passed",
+  "excluded_session": "20260712_225043_boot",
+  "ready_for_physical_boot": true
+}

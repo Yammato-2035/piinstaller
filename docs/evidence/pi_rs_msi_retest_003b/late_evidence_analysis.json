@@ -1,0 +1,35 @@
+{
+  "session_id": "20260712_225944_boot",
+  "boot_id": "d0a49973-8b2a-497a-a43a-bb85d7898a68",
+  "payload_version": "1.10.0.16",
+  "capture_uptime_s": 10.5,
+  "capture_after_120s": false,
+  "console_owner": "boot_progress",
+  "tui_owned": false,
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_transition_allowed": true,
+  "tui_mode_selected_in_timeline": false,
+  "x11_starting_present": false,
+  "openvt_executed": false,
+  "chvt_executed": false,
+  "startx_executed": false,
+  "xorg_started": false,
+  "chromium_gui_started": false,
+  "manual_late_evidence_file_present": false,
+  "stale_evidence_mirrored_as_current": false,
+  "tui_operator_stable_120s": true,
+  "tui_operator_stable_120s_source": "operator_prior_confirmation",
+  "evidence_complete": false,
+  "warnings": [
+    "Automatic RS_011B collector ran at ~10.5s uptime before TUI handoff",
+    "Operator late-evidence script (late-evidence-003b-*.txt) not found on SETUP_LOGS",
+    "console-ownership.json shows owner=boot_progress at capture time"
+  ],
+  "errors": [
+    "capture_uptime_below_120s",
+    "console_owner_not_tui",
+    "tui_mode_selected_missing",
+    "manual_late_evidence_missing"
+  ]
+}

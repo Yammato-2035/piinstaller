@@ -32,4 +32,5 @@
 | PI-RS-MSI-GUI-003 TUI Console Isolation (1.10.0.16) | GELB | Retest-003 **review_required** — Operator TUI ok; Timeline-Lücke |
 | PI-RS-USB-MSI-GUI-002 USB Update 1.10.0.15 + GE63 Retest | GELB | USB **1.10.0.15** ok; GE63-Boot Session `20260712_111206` — TUI **failed** |
 | PI-RS-USB-UPDATER-001 Atomic Payload + Version Sync (1.10.0.16) | GRÜN | Updater gehärtet; Stick **1.10.0.16** atomar; keine manuelle Metadatenkorrektur |
-| PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | GELB | Session `20260712_225043_boot` — kein x11_starting; `tui_mode_selected` fehlt in Logs |
+| PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | GELB | review_required — Operator TUI ok; Timeline ohne tui_mode_selected |
+| PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | ROT | Session `20260712_225944_boot` — Capture ~10,5 s; kein console_owner=tui |
