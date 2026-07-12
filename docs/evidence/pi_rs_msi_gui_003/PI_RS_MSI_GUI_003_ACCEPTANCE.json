@@ -1,0 +1,35 @@
+{
+  "feature": "PI-RS-MSI-GUI-003",
+  "payload_version": "1.10.0.16",
+  "root_cause_confirmed": true,
+  "msi_tui_only_mode": true,
+  "x11_starting_suppressed_under_msi_compat": true,
+  "gui_progress_suppressed_under_msi_compat": true,
+  "tty1_owner_model_present": true,
+  "boot_progress_blocked_after_tui_handoff": true,
+  "session_isolation_present": true,
+  "stale_evidence_rejected": true,
+  "version_carriers_consistent": true,
+  "tests_passed": true,
+  "payload_built": true,
+  "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+  "payload_content_ok": true,
+  "secret_check_passed": true,
+  "usb_updated": false,
+  "physical_msi_boot_tested": false,
+  "production_ready": false,
+  "status": "implemented_pending_physical_retest",
+  "warnings": [
+    "runtime_gate_blocked_static_and_payload_tests_only",
+    "physical_boot_verified=false"
+  ],
+  "errors": [],
+  "evidence_paths": [
+    "docs/evidence/pi_rs_msi_gui_003/MSI_GUI_003_ROOT_CAUSE_ANALYSIS.md",
+    "docs/evidence/pi_rs_msi_gui_003/MSI_GUI_003_CODE_PATH_MAP.md",
+    "docs/evidence/pi_rs_msi_gui_003/PI_RS_MSI_GUI_003_IMPLEMENTATION.md",
+    "docs/evidence/pi_rs_msi_gui_003/PI_RS_MSI_GUI_003_TEST_RESULTS.md",
+    "docs/evidence/pi_rs_msi_gui_003/payload_content_verify.json",
+    "docs/evidence/pi_rs_msi_gui_003/msi_compat_simulated_boot_result.json"
+  ]
+}

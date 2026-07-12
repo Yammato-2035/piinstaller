@@ -348,8 +348,131 @@ setuphelfer_rescue_shield_console_early() {
     clear_allowed=false
   fi
   setuphelfer_rescue_write_console_shield_status "$reason" true "$clear_allowed" true
+  if command -v setuphelfer_rescue_sync_console_shield_from_ownership >/dev/null 2>&1; then
+    setuphelfer_rescue_sync_console_shield_from_ownership "$reason" || true
+  fi
   touch /run/setuphelfer/console-shield-active 2>/dev/null || true
   return 0
+}
+
+# PI-RS-MSI-GUI-003: boot session + tty1 ownership helpers.
+setuphelfer_rescue_backend_pythonpath() {
+  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  if [[ -d "$py_backend" ]]; then
+    printf '%s' "${py_backend}${PYTHONPATH:+:$PYTHONPATH}"
+    return 0
+  fi
+  printf '%s' "${PYTHONPATH:-}"
+}
+
+setuphelfer_rescue_read_boot_id() {
+  awk '{print $1}' /proc/sys/kernel/random/boot_id 2>/dev/null || echo unknown
+}
+
+setuphelfer_rescue_init_boot_session() {
+  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  [[ -d "$py_backend" ]] || return 0
+  local boot_id session_id payload_version
+  boot_id="$(setuphelfer_rescue_read_boot_id)"
+  session_id="$(date -u +%Y%m%d_%H%M%S)_boot"
+  payload_version="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo unknown
+from core.rescue_payload_version import rescue_payload_version
+print(rescue_payload_version())
+PY
+)"
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || return 0
+from core.rescue_session_evidence import init_boot_session
+init_boot_session(
+    session_id=${session_id@Q},
+    boot_id=${boot_id@Q},
+    payload_version=${payload_version@Q},
+)
+PY
+  return 0
+}
+
+setuphelfer_rescue_console_owner_transition() {
+  local lifecycle="${1:-boot_progress}"
+  local reason="${2:-$lifecycle}"
+  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  [[ -d "$py_backend" ]] || return 0
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || return 0
+from core.rescue_console_ownership import transition_console_owner
+from core.rescue_session_evidence import load_current_session_meta
+meta = load_current_session_meta() or {}
+transition_console_owner(
+    ${lifecycle@Q},
+    session_id=str(meta.get("session_id") or ""),
+    boot_id=str(meta.get("boot_id") or ""),
+    shield_reason=${reason@Q},
+)
+PY
+  return 0
+}
+
+setuphelfer_rescue_sync_console_shield_from_ownership() {
+  local reason="${1:-boot_progress}"
+  setuphelfer_rescue_console_owner_transition "boot_progress" "$reason" || true
+}
+
+setuphelfer_rescue_boot_progress_tty_write_allowed() {
+  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  if [[ -d "$py_backend" ]]; then
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null | grep -qx true
+from core.rescue_console_ownership import boot_progress_tty_write_allowed
+print("true" if boot_progress_tty_write_allowed() else "false")
+PY
+    return $?
+  fi
+  setuphelfer_rescue_tty1_write_allowed
+}
+
+setuphelfer_rescue_tty1_write_allowed() {
+  if setuphelfer_rescue_tui_is_active 2>/dev/null; then
+    return 1
+  fi
+  if pgrep -x whiptail >/dev/null 2>&1; then
+    return 1
+  fi
+  local shield
+  shield="$(setuphelfer_rescue_console_shield_path)"
+  if [[ -f "$shield" ]] && command -v python3 >/dev/null 2>&1; then
+    python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("false" if d.get("tty1_write_allowed") is False else "true")' "$shield" 2>/dev/null | grep -qx false && return 1
+    python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); print("false" if d.get("boot_progress_write_allowed") is False else "true")' "$shield" 2>/dev/null | grep -qx false && return 1
+  fi
+  if setuphelfer_rescue_safe_ui_active; then
+    return 1
+  fi
+  return 0
+}
+
+setuphelfer_rescue_should_mirror_evidence_file() {
+  local src="$1"
+  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  [[ -f "$src" ]] || return 1
+  [[ -d "$py_backend" ]] || return 0
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - "$src" <<'PY' 2>/dev/null | grep -qx allow
+import json, sys
+from pathlib import Path
+from core.rescue_session_evidence import evaluate_evidence_freshness, load_current_session_meta
+
+src = Path(sys.argv[1])
+meta = load_current_session_meta()
+if not meta:
+    print("allow")
+    raise SystemExit(0)
+try:
+    if src.suffix == ".json":
+        evidence = json.loads(src.read_text(encoding="utf-8"))
+    else:
+        print("allow")
+        raise SystemExit(0)
+except Exception:
+    print("allow")
+    raise SystemExit(0)
+fresh = evaluate_evidence_freshness(evidence, current_session=meta)
+print("allow" if fresh.get("current_session_evidence") else "stale")
+PY
 }
 
 setuphelfer_rescue_should_auto_msi_evidence() {
@@ -594,6 +717,10 @@ setuphelfer_rescue_fat_esp_mount() {
 setuphelfer_rescue_mirror_evidence_file() {
   local src="$1" rel="$2" base dst_dir dst
   [[ -f "$src" ]] || return 0
+  if command -v setuphelfer_rescue_should_mirror_evidence_file >/dev/null 2>&1 \
+     && ! setuphelfer_rescue_should_mirror_evidence_file "$src"; then
+    return 0
+  fi
   base="$(setuphelfer_rescue_evidence_writable_base)" || return 0
   dst_dir="$(dirname "${base}/${rel}")"
   mkdir -p "$dst_dir" 2>/dev/null || return 0
@@ -1036,10 +1163,15 @@ setuphelfer_rescue_mirror_gui_forensic_logs() {
 setuphelfer_rescue_gui_chain_log_init() {
   local log="$SETUPHELFER_GUI_START_LOG"
   local boot_id session_id ts
-  boot_id="$(awk '{print $1}' /proc/sys/kernel/random/boot_id 2>/dev/null || echo unknown)"
+  boot_id="$(setuphelfer_rescue_read_boot_id)"
   session_id="$(date -u +%Y%m%d_%H%M%S)_gui"
+  if [[ -f /run/setuphelfer/current-session.json ]] && command -v python3 >/dev/null 2>&1; then
+    session_id="$(python3 -c 'import json; print(json.load(open("/run/setuphelfer/current-session.json")).get("session_id") or "")' 2>/dev/null || echo "$session_id")"
+    boot_id="$(python3 -c 'import json; print(json.load(open("/run/setuphelfer/current-session.json")).get("boot_id") or "")' 2>/dev/null || echo "$boot_id")"
+  fi
   ts="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date -u)"
   mkdir -p "$(dirname "$log")" /run/setuphelfer 2>/dev/null || true
+  : >"$SETUPHELFER_GUI_START_LOG" 2>/dev/null || true
   : >"$SETUPHELFER_X11_LAUNCH_LOG" 2>/dev/null || true
   : >"$SETUPHELFER_CHROMIUM_LAUNCH_LOG" 2>/dev/null || true
   {

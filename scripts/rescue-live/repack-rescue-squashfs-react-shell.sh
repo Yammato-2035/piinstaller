@@ -119,6 +119,26 @@ done
 for cfg in rescue_payload_version.json rescue_telemetry_endpoints.json; do
   [[ -f "${REPO_ROOT}/config/${cfg}" ]] && install -m 0644 "${REPO_ROOT}/config/${cfg}" "${ROOT}/opt/setuphelfer-rescue/config/${cfg}"
 done
+export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
+python3 - <<PY
+import json
+from pathlib import Path
+from core.rescue_payload_version_carriers import (
+    build_rescue_payload_version_json,
+    build_rescue_runtime_version_json,
+)
+root = Path(${ROOT@Q})
+cfg_dir = root / "opt/setuphelfer-rescue/config"
+cfg_dir.mkdir(parents=True, exist_ok=True)
+(cfg_dir / "version.json").write_text(
+    json.dumps(build_rescue_runtime_version_json(${PROJECT_VERSION@Q}), indent=2, ensure_ascii=False) + "\\n",
+    encoding="utf-8",
+)
+(cfg_dir / "rescue_payload_version.json").write_text(
+    json.dumps(build_rescue_payload_version_json(${PROJECT_VERSION@Q}), indent=2, ensure_ascii=False) + "\\n",
+    encoding="utf-8",
+)
+PY
 
 SYSTEMD="${ROOT}/etc/systemd/system"
 WANTS="${SYSTEMD}/multi-user.target.wants"

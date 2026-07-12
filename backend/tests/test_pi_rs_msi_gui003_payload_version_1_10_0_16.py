@@ -1,15 +1,15 @@
-"""PI-RS-MSI-GUI-002 payload version 1.10.0.15 tests."""
+"""PI-RS-MSI-GUI-003 payload version 1.10.0.16 tests."""
 
 from __future__ import annotations
 
 import unittest
 
 from core.rescue_payload_msi_fix_content import default_repacked_squashfs_path
-from core.rescue_payload_msi_gui002_content import verify_rescue_payload_msi_gui002_content
+from core.rescue_payload_msi_gui003_content import verify_rescue_payload_msi_gui003_content
 from core.rescue_payload_version import previous_rescue_payload_version, rescue_payload_version
 
 
-class MsiGui002PayloadVersionTests(unittest.TestCase):
+class MsiGui003PayloadVersionTests(unittest.TestCase):
     def test_version_bumped(self) -> None:
         self.assertEqual(rescue_payload_version(), "1.10.0.16")
         self.assertEqual(previous_rescue_payload_version(), "1.10.0.15")
@@ -21,8 +21,8 @@ class MsiGui002PayloadVersionTests(unittest.TestCase):
         squashfs = default_repacked_squashfs_path()
         if not squashfs.is_file():
             self.skipTest(f"squashfs not built yet: {squashfs}")
-        result = verify_rescue_payload_msi_gui002_content(squashfs)
-        self.assertTrue(result["version_match"], result)
+        result = verify_rescue_payload_msi_gui003_content(squashfs)
+        self.assertTrue(result["all_version_carriers_match"], result)
         self.assertTrue(result["content_ok"], result)
 
 
