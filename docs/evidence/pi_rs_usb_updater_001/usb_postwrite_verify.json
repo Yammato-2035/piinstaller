@@ -1,0 +1,37 @@
+{
+  "verified_at": "2026-07-12T20:25:01Z",
+  "replug_after_power_off": false,
+  "in_run_verify_passed": true,
+  "partition_table_unchanged": true,
+  "uuids_unchanged": {
+    "SETUPHELFER": "9BB9-A4A6",
+    "SETUP_LOGS": "9BC7-3950"
+  },
+  "active_payload_version": "1.10.0.16",
+  "active_payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+  "internal_payload_carriers": {
+    "VERSION": "1.10.0.16",
+    "rescue_payload_version.json": "1.10.0.16",
+    "version.json": "1.10.0.16"
+  },
+  "internal_carriers_consistent": true,
+  "esp_metadata": {
+    "project_version": "1.10.0.16",
+    "rescue_payload_version": "1.10.0.16",
+    "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "content_verified": true,
+    "update_method": "atomic_fat32_esp_payload_replace"
+  },
+  "prev_files_after_update": [
+    "filesystem.squashfs.prev-1.10.0.15"
+  ],
+  "setup_logs_modified": false,
+  "content_gate_on_device": "passed_via_in_run_verify_and_source_gate",
+  "secret_gate_on_device": "passed_on_identical_source_pre_write",
+  "manual_metadata_fix_required": false,
+  "ready_for_msi_retest_003": true,
+  "warnings": [
+    "Post-replug independent gate run pending after udisksctl power-off; in-run verify-fat32-esp confirmed SHA256 match to gated source artifact"
+  ],
+  "runtime_evidence_dir": "docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260712_202320"
+}

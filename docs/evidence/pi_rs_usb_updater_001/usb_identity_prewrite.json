@@ -1,0 +1,14 @@
+{
+  "device_model": "Intenso Ultra Line",
+  "device_size_bytes": 63350767616,
+  "device_by_id_redacted": "2411\u2026d6374567",
+  "device_by_id_stable_path": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0",
+  "runtime_device_path": "/dev/sda",
+  "transport": "usb",
+  "setuphelfer_partition": "/dev/sda1",
+  "setup_logs_partition": "/dev/sda2",
+  "same_parent_device": true,
+  "target_confirmed": true,
+  "internal_drive_excluded": true,
+  "ambiguity_detected": false
+}

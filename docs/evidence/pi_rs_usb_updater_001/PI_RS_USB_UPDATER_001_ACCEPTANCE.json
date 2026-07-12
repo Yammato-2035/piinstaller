@@ -1,0 +1,40 @@
+{
+  "feature": "PI-RS-USB-UPDATER-001",
+  "updater_root_cause_confirmed": true,
+  "source_payload_version": "1.10.0.16",
+  "source_payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+  "source_internal_versions_consistent": true,
+  "updater_tests_passed": true,
+  "simulated_update_passed": true,
+  "physical_usb_identified": true,
+  "operator_confirmed": true,
+  "atomic_payload_replace": true,
+  "atomic_metadata_replace": true,
+  "rollback_tested": true,
+  "final_payload_hash_verified": true,
+  "final_internal_versions_consistent": true,
+  "final_esp_metadata_consistent": true,
+  "manual_metadata_fix_required": false,
+  "partition_table_modified": false,
+  "setup_logs_modified": false,
+  "internal_drive_touched": false,
+  "ready_for_msi_retest_003": true,
+  "status": "passed",
+  "warnings": [
+    "First update attempt failed on 4G ESP due to cp-based prev backup exhausting space; recovered with mv-based backup and prev policy cleanup",
+    "Historical .prev-1.10.0.4 removed before retry per max-one-prev policy (documented)",
+    "Post-replug device gate re-run recommended when stick is reconnected"
+  ],
+  "errors": [],
+  "evidence_paths": [
+    "docs/evidence/pi_rs_usb_updater_001/USB_UPDATER_ROOT_CAUSE_ANALYSIS.md",
+    "docs/evidence/pi_rs_usb_updater_001/USB_UPDATER_CODE_PATH_MAP.md",
+    "docs/evidence/pi_rs_usb_updater_001/usb_identity_prewrite.json",
+    "docs/evidence/pi_rs_usb_updater_001/usb_preupdate_state.json",
+    "docs/evidence/pi_rs_usb_updater_001/usb_update_result.json",
+    "docs/evidence/pi_rs_usb_updater_001/usb_postwrite_verify.json",
+    "docs/evidence/pi_rs_usb_updater_001/updater_simulated_result.json",
+    "docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260712_202320",
+    "docs/architecture/RESCUE_USB_PAYLOAD_UPDATE_CONTRACT.md"
+  ]
+}
