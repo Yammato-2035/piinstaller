@@ -1,0 +1,104 @@
+{
+  "feature": "PI-RS-MSI-RETEST-003",
+  "workspace": "/home/volker/piinstaller",
+  "repository_head": "60440cdd",
+  "test_device": {
+    "vendor": "MSI",
+    "model": "GE63 Raider RGB 8RF",
+    "model_code": "MS-16P5"
+  },
+  "payload": {
+    "version": "1.10.0.16",
+    "expected_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "actual_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "hash_verified": true,
+    "version_carriers_consistent": true
+  },
+  "boot": {
+    "completed": true,
+    "session_id": "20260712_225043_boot",
+    "boot_id": "40d8b1a9-c7ee-4026-b48a-3d38bd635d4d",
+    "msi_compat_detected": true,
+    "kernel_parameters": [
+      "setuphelfer_msi_compat=1",
+      "nomodeset",
+      "nouveau.modeset=0",
+      "pci=noaer",
+      "setuphelfer_mode=text"
+    ],
+    "tui_mode_selected": false,
+    "tui_mode_selected_note": "missing from boot-timeline.jsonl; operator confirms TUI visible ≥120s",
+    "x11_starting_present": false,
+    "shutdown_completed": true
+  },
+  "tui": {
+    "started": true,
+    "stable_120s": true,
+    "stable_120s_source": "operator_confirmation",
+    "visual_corruption": false,
+    "boot_progress_overlay_visible": false,
+    "keyboard_navigation_ok": true,
+    "menu_navigation_ok": true,
+    "rerender_after_gui_block": true
+  },
+  "console": {
+    "tui_owned": null,
+    "tui_owned_note": "capture at 11s uptime still shows boot_progress owner",
+    "boot_progress_write_after_tui_handoff": null,
+    "boot_progress_clear_after_tui_handoff": null,
+    "unexpected_tty_switch": false,
+    "blocked_write_audit_present": null
+  },
+  "gui": {
+    "available": false,
+    "blocked_under_msi_compat": true,
+    "operator_message_visible": true,
+    "operator_message_understandable": true,
+    "openvt_executed": false,
+    "gui_chvt_executed": false,
+    "startx_executed": false,
+    "xorg_started": false,
+    "chromium_gui_started": false
+  },
+  "session_isolation": {
+    "new_session_detected": true,
+    "session_id_present": true,
+    "boot_id_present": true,
+    "payload_version_current": true,
+    "stale_evidence_detected": true,
+    "stale_evidence_mirrored_as_current": false,
+    "old_session_mixed": false,
+    "stale_on_stick_not_imported": [
+      "evidence/boot/rescue-ui-status.json"
+    ]
+  },
+  "safety": {
+    "internal_drive_written": false,
+    "internal_partition_rw_mounted": false,
+    "backup_started": false,
+    "restore_started": false,
+    "partition_write_started": false,
+    "wipe_started": false,
+    "dangerous_operation_executed": false
+  },
+  "status": "review_required",
+  "status_reason": "Operator confirms stable TUI ≥120s and no x11_starting; automated session timeline incomplete (no tui_mode_selected, early collector at ~11s uptime)",
+  "warnings": [
+    "boot-timeline.jsonl for session 20260712_225043_boot contains only 3 early phases",
+    "console-ownership snapshot shows boot_progress at automated capture time",
+    "rescue-ui-status.json on stick remains stale from 20260712_015909 — not used as current evidence",
+    "Operator photos not in repository"
+  ],
+  "errors": [],
+  "evidence_paths": [
+    "docs/evidence/pi_rs_msi_retest_003/usb_preboot_identity.json",
+    "docs/evidence/pi_rs_msi_retest_003/payload_preboot_verify.json",
+    "docs/evidence/pi_rs_msi_retest_003/setup_logs_preboot_inventory.txt",
+    "docs/evidence/pi_rs_msi_retest_003/setup_logs_postboot_inventory.txt",
+    "docs/evidence/pi_rs_msi_retest_003/setup_logs_diff.txt",
+    "docs/evidence/pi_rs_msi_retest_003/session_inventory.json",
+    "docs/evidence/pi_rs_msi_retest_003/msi_session/",
+    "docs/evidence/pi_rs_msi_retest_003/OPERATOR_OBSERVATION.md",
+    "docs/test-plans/PI_RS_MSI_RETEST_003_OPERATOR_BOOT_RUNBOOK.md"
+  ]
+}

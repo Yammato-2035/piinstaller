@@ -1,0 +1,75 @@
+===== setuphelfer-backend =====
+● setuphelfer-backend.service - Setuphelfer Rescue Backend
+     Loaded: loaded (/etc/systemd/system/setuphelfer-backend.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-07-12 22:50:45 UTC; 2s ago
+   Main PID: 1795 (python3)
+      Tasks: 2 (limit: 18794)
+     Memory: 69.6M
+        CPU: 1.488s
+     CGroup: /system.slice/setuphelfer-backend.service
+             └─1795 /opt/setuphelfer-rescue/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1
+
+Jul 12 22:50:45 setuphelfer-rescue systemd[1]: Started setuphelfer-backend.service - Setuphelfer Rescue Backend.
+Jul 12 22:50:45 setuphelfer-rescue start-backend-localonly.sh[1795]: Rescue temp runtime: backend http://127.0.0.1:8000/ (local-only)
+
+===== setuphelfer =====
+● setuphelfer.service - Setuphelfer Rescue Web UI
+     Loaded: loaded (/etc/systemd/system/setuphelfer.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-07-12 22:50:45 UTC; 2s ago
+   Main PID: 1801 (python3)
+      Tasks: 1 (limit: 18794)
+     Memory: 11.8M
+        CPU: 272ms
+     CGroup: /system.slice/setuphelfer.service
+             └─1801 python3 /opt/setuphelfer-rescue/scripts/serve-frontend-production.py --root /opt/setuphelfer-rescue/frontend/dist --host 127.0.0.1 --port 3001
+
+Jul 12 22:50:45 setuphelfer-rescue systemd[1]: Started setuphelfer.service - Setuphelfer Rescue Web UI.
+Jul 12 22:50:45 setuphelfer-rescue start-ui-localonly.sh[1801]: Rescue temp runtime: UI http://127.0.0.1:3001/ (local-only)
+Jul 12 22:50:46 setuphelfer-rescue start-ui-localonly.sh[1801]: Serving SPA from /opt/setuphelfer-rescue/frontend/dist at http://127.0.0.1:3001/
+
+===== setuphelfer-rescue-media-check =====
+● setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-media-check.service; enabled; preset: enabled)
+     Active: activating (start) since Sun 2026-07-12 22:50:43 UTC; 4s ago
+   Main PID: 1639 (python3)
+      Tasks: 1 (limit: 18794)
+     Memory: 355.0M
+        CPU: 453ms
+     CGroup: /system.slice/setuphelfer-rescue-media-check.service
+             └─1639 python3 /usr/local/sbin/setuphelfer-rescue-live-medium-check.py
+
+Jul 12 22:50:43 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check...
+
+===== setuphelfer-rescue-start-assistant =====
+○ setuphelfer-rescue-start-assistant.service - Setuphelfer Rescue Start Assistant
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-start-assistant.service; enabled; preset: enabled)
+     Active: inactive (dead)
+
+===== setuphelfer-rescue-ui =====
+○ setuphelfer-rescue-ui.service - Setuphelfer Rescue React Shell (offline-first)
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-ui.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+===== NetworkManager =====
+● NetworkManager.service - Network Manager
+     Loaded: loaded (/lib/systemd/system/NetworkManager.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2026-07-12 22:50:44 UTC; 3s ago
+       Docs: man:NetworkManager(8)
+   Main PID: 1678 (NetworkManager)
+      Tasks: 4 (limit: 18794)
+     Memory: 10.1M
+        CPU: 305ms
+     CGroup: /system.slice/NetworkManager.service
+             └─1678 /usr/sbin/NetworkManager --no-daemon
+
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.8971] device (lo): Activation: successful, device activated.
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.8979] device (enp5s0): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'assume')
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.8981] device (enp5s0): state change: secondaries -> activated (reason 'none', sys-iface-state: 'assume')
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.8985] manager: NetworkManager state is now CONNECTED_SITE
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.8988] device (enp5s0): Activation: successful, device activated.
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.8993] manager: NetworkManager state is now CONNECTED_GLOBAL
+Jul 12 22:50:44 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896644.9002] manager: startup complete
+Jul 12 22:50:45 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896645.0176] dhcp6 (enp5s0): activation: beginning transaction (timeout in 45 seconds)
+Jul 12 22:50:45 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896645.0180] policy: set 'Kabelgebundene Verbindung 1' (enp5s0) as default for IPv6 routing and DNS
+Jul 12 22:50:45 setuphelfer-rescue NetworkManager[1678]: <info>  [1783896645.0851] dhcp6 (enp5s0): state changed new lease
+

@@ -1,0 +1,25 @@
+{
+  "verified_at": "2026-07-12T20:47:00Z",
+  "payload_path": "/mnt/setuphelfer-preboot/live/filesystem.squashfs",
+  "expected_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+  "actual_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+  "hash_verified": true,
+  "content_gate_msi_gui003": "passed",
+  "secret_gate": "passed",
+  "internal_version_carriers": {
+    "VERSION": "1.10.0.16",
+    "rescue_payload_version.json": "1.10.0.16",
+    "version.json": "1.10.0.16"
+  },
+  "all_version_carriers_match": true,
+  "stale_runtime_version_hits": [],
+  "esp_metadata": {
+    "project_version": "1.10.0.16",
+    "rescue_payload_version": "1.10.0.16",
+    "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "content_verified": true,
+    "update_method": "atomic_fat32_esp_payload_replace"
+  },
+  "prev_payload_on_stick": "filesystem.squashfs.prev-1.10.0.15",
+  "ready_for_physical_boot": true
+}

@@ -1,0 +1,70 @@
+== /run/setuphelfer/console-ownership.json ==
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "boot_progress",
+  "lifecycle_state": "boot_progress",
+  "write_allowed_for": [
+    "boot_progress"
+  ],
+  "clear_allowed_for": [
+    "boot_progress"
+  ],
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": true,
+  "reason": "boot_progress",
+  "session_id": "20260712_225043_boot",
+  "boot_id": "40d8b1a9-c7ee-4026-b48a-3d38bd635d4d",
+  "updated_at": "2026-07-12T22:50:44Z"
+}
+
+== /run/setuphelfer/console-shield.json ==
+{
+  "schema_version": 2,
+  "enabled": true,
+  "reason": "early_boot_progress",
+  "tty": "tty1",
+  "owner": "boot_progress",
+  "lifecycle_state": "boot_progress",
+  "tty1_write_allowed": true,
+  "tty1_clear_allowed": true,
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": true,
+  "write_allowed_for": [
+    "boot_progress"
+  ],
+  "clear_allowed_for": [
+    "boot_progress"
+  ],
+  "owner_since": "2026-07-12T22:50:44Z",
+  "session_id": "20260712_225043_boot",
+  "journal_to_console_blocked": true,
+  "production_ready": false
+}
+
+== /run/setuphelfer/current-session.json ==
+{
+  "schema_version": 1,
+  "session_id": "20260712_225043_boot",
+  "boot_id": "40d8b1a9-c7ee-4026-b48a-3d38bd635d4d",
+  "payload_version": "1.10.0.16",
+  "session_started_at": "2026-07-12T22:50:44Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 0, "message": "Bootvorbereitung abgeschlossen \u2014 Textmen\u00fc bereit.", "updated_at": "2026-07-12T22:50:45Z"}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-07-12T22:50:44Z",
+  "boot_id": "40d8b1a9-c7ee-4026-b48a-3d38bd635d4d",
+  "task_available": false,
+  "secrets_exposed": false
+}
+

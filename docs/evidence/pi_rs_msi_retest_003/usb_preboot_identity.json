@@ -1,0 +1,16 @@
+{
+  "captured_at": "2026-07-12T20:45:00Z",
+  "device_model": "Intenso Ultra Line",
+  "device_size_bytes": 63350767616,
+  "device_by_id_redacted": "2411…a3b8c2d1",
+  "device_by_id_stable_path": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0",
+  "runtime_device_path": "/dev/sda",
+  "transport": "usb",
+  "setuphelfer_partition": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0-part1",
+  "setuphelfer_uuid": "9BB9-A4A6",
+  "setup_logs_partition": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0-part2",
+  "setup_logs_uuid": "9BC7-3950",
+  "same_parent_device": true,
+  "target_confirmed": true,
+  "ambiguity_detected": false
+}

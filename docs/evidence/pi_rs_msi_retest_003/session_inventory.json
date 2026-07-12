@@ -1,0 +1,42 @@
+{
+  "session_id": "20260712_225043_boot",
+  "early_session_id": "20260712_225040_early",
+  "boot_id": "40d8b1a9-c7ee-4026-b48a-3d38bd635d4d",
+  "payload_version": "1.10.0.16",
+  "session_started_at": "2026-07-12T22:50:44Z",
+  "diagnostics_uptime_seconds_at_capture": 11.08,
+  "files_present": {
+    "boot-timeline.jsonl": true,
+    "gui-availability.json": true,
+    "gui-fallback.json": true,
+    "boot_state_redacted.json": true,
+    "api-version.json": true,
+    "console-ownership.json": true,
+    "console-shield.json": true,
+    "current-session.json": true,
+    "rescue-ui-status.json": false,
+    "gui-start.log": false,
+    "shutdown-status.json": false
+  },
+  "timeline_phases": [
+    "systemd_started",
+    "rescue_boot_status_visible"
+  ],
+  "timeline_missing_expected": [
+    "tui_mode_selected",
+    "tui_owned",
+    "msi_compat_detected"
+  ],
+  "x11_starting_in_current_timeline": false,
+  "tui_mode_selected_in_timeline": false,
+  "console_owner_at_capture": "boot_progress",
+  "stale_files_on_stick_not_imported": [
+    "evidence/boot/rescue-ui-status.json (20260712_01:59, openvt_console_2_not_released)",
+    "evidence/boot/boot-timeline.jsonl (multi-session aggregate)"
+  ],
+  "session_isolation_ok": true,
+  "old_sessions_excluded": [
+    "20260712_015835",
+    "20260712_111206_boot"
+  ]
+}
