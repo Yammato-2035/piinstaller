@@ -1,0 +1,8 @@
+19 passed, 1 warning in 3.00s
+
+backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py
+backend/tests/test_pi_rs_msi_gui002_disable_gui_under_msi_compat.py
+backend/tests/test_pi_rs_msi_gui002_no_chvt_openvt_when_blocked.py
+backend/tests/test_pi_rs_msi_gui002_tui_menu_guard.py
+backend/tests/test_pi_rs_msi_gui002_tui_rerender_after_gui_failure.py
+backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py

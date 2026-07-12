@@ -1,0 +1,13 @@
+{
+  "update_method": "fat32_esp_live_payload_update",
+  "source_payload": "build/rescue/filesystem.squashfs.repacked-1.10.0.15",
+  "source_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "target_partition": "/dev/sda1",
+  "target_payload_path": "live/filesystem.squashfs",
+  "setup_logs_preserved": true,
+  "partition_table_preserved": true,
+  "whole_device_write": false,
+  "approved": true,
+  "script": "scripts/rescue-live/update-fat32-esp-live-payload.sh",
+  "operator_confirm_phrase": "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD"
+}

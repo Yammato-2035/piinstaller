@@ -1,0 +1,14 @@
+{
+  "ready_for_msi_boot": true,
+  "setuphelfer_present": true,
+  "setup_logs_present": true,
+  "partition_assignment_unchanged": true,
+  "payload_path": "/media/volker/SETUPHELFER/live/filesystem.squashfs",
+  "payload_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "payload_version_metadata": "1.10.0.15",
+  "payload_version_in_squashfs": "1.10.0.15",
+  "msi_gui002_content_gate": "passed",
+  "no_secrets_gate": "passed",
+  "unexpected_staging_files": false,
+  "setup_logs_evidence_intact": true
+}

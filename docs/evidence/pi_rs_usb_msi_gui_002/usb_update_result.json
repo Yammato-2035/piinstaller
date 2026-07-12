@@ -1,0 +1,22 @@
+{
+  "status": "success",
+  "old_version": "1.10.0.13",
+  "old_version_note": "Stick metadata before update; user brief stated 1.10.0.14",
+  "new_version": "1.10.0.15",
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "target_payload_path": "live/filesystem.squashfs",
+  "bytes_written": 1285292032,
+  "expected_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "actual_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "hash_matches": true,
+  "setup_logs_preserved": true,
+  "partition_table_modified": false,
+  "internal_drive_touched": false,
+  "metadata_version_json_synced": true,
+  "runtime_evidence_dir": "docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260712_085506",
+  "errors": [],
+  "warnings": [
+    "Updater script initially preserved stale project_version in version.json; corrected to 1.10.0.15 post-copy"
+  ]
+}

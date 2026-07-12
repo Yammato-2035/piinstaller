@@ -1,0 +1,14 @@
+{
+  "expected_device": "Intenso Ultra Line Rettungsstick",
+  "device_path": "/dev/sda",
+  "device_by_id": "usb-Intenso_Ultra_Line_24111412110686-0:0",
+  "model": "Ultra Line",
+  "serial_redacted": "24111412…0686",
+  "size_bytes": 63350784000,
+  "transport": "usb",
+  "setuphelfer_partition": "/dev/sda1",
+  "setup_logs_partition": "/dev/sda2",
+  "internal_devices": ["/dev/nvme0n1", "/dev/nvme1n1"],
+  "target_confirmed": true,
+  "ambiguity_detected": false
+}

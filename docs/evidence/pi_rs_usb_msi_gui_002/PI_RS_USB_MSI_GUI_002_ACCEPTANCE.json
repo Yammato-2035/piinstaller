@@ -1,0 +1,35 @@
+{
+  "payload_version": "1.10.0.15",
+  "payload_hash_verified": true,
+  "usb_update_verified": true,
+  "msi_boot_completed": false,
+  "msi_compat_detected": null,
+  "tui_started": null,
+  "tui_stable": null,
+  "tui_visual_corruption": null,
+  "gui_available": null,
+  "gui_blocked_under_msi_compat": null,
+  "operator_message_visible": null,
+  "gui_openvt_executed": null,
+  "gui_chvt_executed": null,
+  "gui_startx_executed": null,
+  "xorg_started": null,
+  "tui_rerender_successful": null,
+  "internal_drive_touched": false,
+  "dangerous_operation_executed": false,
+  "status": "review_required",
+  "status_reason": "USB payload update and gates passed; physical MSI GE63 boot retest pending operator",
+  "warnings": [
+    "Latest SETUP_LOGS boot session predates 1.10.0.15 update (20260712_015835 vs update 20260712_085506Z)",
+    "Stick metadata version.json required manual sync after updater preserved stale project_version"
+  ],
+  "errors": [],
+  "evidence_paths": [
+    "docs/evidence/pi_rs_usb_msi_gui_002/usb_identity_prewrite.json",
+    "docs/evidence/pi_rs_usb_msi_gui_002/usb_update_plan.json",
+    "docs/evidence/pi_rs_usb_msi_gui_002/usb_update_result.json",
+    "docs/evidence/pi_rs_usb_msi_gui_002/usb_postwrite_verify.json",
+    "docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260712_085506",
+    "docs/evidence/pi_rs_usb_msi_gui_002/MSI_GE63_BOOT_RETEST_RUNBOOK.md"
+  ]
+}
