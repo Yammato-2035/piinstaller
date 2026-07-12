@@ -1,48 +1,53 @@
-# PI-RS-MSI-RETEST-002 — Ergebnis
+# PI-RS-MSI-RETEST-002 — Ergebnis (nach physischem Boot)
 
 Stand: 2026-07-12  
-HEAD: `dfcc583d` (vor Commit)
+Session: **`20260712_111206_boot`**  
+Gesamtstatus: **`failed`**
 
-## Gesamtstatus
+## Zusammenfassung
 
-**`blocked`** — Physischer GE63-Boot-Retest in diesem Lauf **nicht ausgeführt**.
+Der physische Boot-Retest auf dem MSI GE63 mit Payload **1.10.0.15** (SHA256 verifiziert) ist **fehlgeschlagen**. Der Operator berichtet: **Text-GUI (TUI) wurde wieder zerstört**.
 
-## Abgeschlossen (Entwicklungsrechner)
+## Was funktionierte
 
-| Phase | Ergebnis |
-|-------|----------|
-| Repository-Gate | `main` @ `dfcc583d`; bekannte Workspace-Drift klassifiziert, nicht gestaged |
-| Stick-Identifikation | Intenso Ultra Line 59G, `/dev/sda`, SETUPHELFER + SETUP_LOGS |
-| Payload 1.10.0.15 | **verifiziert** auf SETUPHELFER |
-| SHA256 | `307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318` |
-| SETUP_LOGS vor Boot | 936 Dateien inventarisiert |
-| Neueste Session | `20260712_015835` — **historisch**, vor USB-Update auf 1.10.0.15 |
+| Prüfung | Ergebnis |
+|---------|----------|
+| GE63 bootet | ja |
+| MSI-Compat in cmdline | ja (`setuphelfer_msi_compat=1`) |
+| `gui-availability.json` | `gui_available=false`, Grund `msi_compat_nomodeset` |
+| `gui-fallback.json` | `openvt_attempted=false`, `startx_attempted=false` |
+| Xorg-Log | nicht vorhanden (kein Xorg-Start) |
+| Interne Platte beschrieben | nein |
 
-## Nicht durchgeführt (Operator erforderlich)
+## Was fehlschlug
 
-- MSI GE63 physischer Boot (Phasen 2–7)
-- TUI/GUI-Abnahme auf Hardware
-- Import neuer SETUP_LOGS-Session nach Boot
+| Problem | Evidence |
+|---------|----------|
+| **TUI visuell zerstört** | Operator-Meldung |
+| **Boot-Progress startet GUI-Pfad** | `boot-timeline.jsonl` 11:12:22: Phase `x11_starting` — „Grafische Oberfläche wird gestartet …“ |
+| **Runtime-Version-Drift** | ESP-Metadaten `1.10.0.15`, aber `/api/version` und `opt/setuphelfer-rescue/config/version.json` im SquashFS = **1.10.0.12** |
+| **Stale GUI-Logs** | `gui-start.log` / `rescue-ui-status.json` noch von Session `20260712_015909` (openvt-Fehler) |
 
-## Korrekte Zielaussage (nach bestandenem Operator-Test)
+## Root-Cause-Hypothese (kein Fix in diesem Sprint)
 
-Unter dem MSI-Kompatibilitätsprofil wird die grafische Oberfläche kontrolliert deaktiviert. Die Textoberfläche bleibt auf dem MSI GE63 Raider RGB 8RF stabil und bedienbar.
+1. **Boot-Progress** (`setuphelfer-rescue-boot-progress`) zeigt unter MSI-Compat weiterhin die Phase `x11_starting` auf tty1 — das kann die TUI optisch zerstören, obwohl der GUI-Watchdog blockiert ist.
+2. **Console-Shield** (`tty1_clear_allowed=false` während `early_boot_progress`) verhindert tty1-Bereinigung während Boot-Meldungen.
+3. **Versions-Sync** im Repack/Updater unvollständig — Runtime meldet noch 1.10.0.12.
+
+## Korrekte Aussage
+
+Die GUI-Sperre unter MSI-Compat ist in den Metadaten (`gui-availability.json`) vorhanden, aber die **Textoberfläche bleibt nicht stabil** — der Retest ist **nicht bestanden**.
 
 **Nicht** schreiben: „Die GUI funktioniert auf dem MSI.“
 
-Der physische Boot-Retest prüfte ausschließlich den stabilen TUI-Betrieb und die GUI-Sperre. Backup, Restore, Partitionierung, Wipe und produktiver Telemetrieversand wurden nicht ausgeführt.
+## Nächster empfohlener Schritt
 
-## Nächster Schritt
+**PI-RS-MSI-GUI-003** — Boot-Progress und tty1-Shield unter MSI-Compat: keine `x11_starting`-Phase, keine tty1-Überlagerung während TUI-Start.
 
-1. **Operator:** GE63-Boot gemäß `docs/evidence/pi_rs_usb_msi_gui_002/MSI_GE63_BOOT_RETEST_RUNBOOK.md`
-2. Evidence importieren → `docs/evidence/pi_rs_msi_retest_002/msi_session/`
-3. Acceptance/Result aktualisieren und erneut committen
+Parallel:
 
-Bei **`passed`:**
+- **PI-RS-USB-UPDATER-001** — Runtime-`project_version` im SquashFS atomar synchronisieren
 
-- **PI-RS-TEL-LIVE-001** — kontrollierter Lab-Send
-- **CSE-INCOMING-TEL-001** — Telemetrie im Cloudserver-Dashboard
+## Evidence
 
-Technischer Folgeauftrag:
-
-- **PI-RS-USB-UPDATER-001** — atomare Versionssynchronisation im Payload-Updater
+`docs/evidence/pi_rs_msi_retest_002/msi_session/` (Session `20260712_111206_boot`)

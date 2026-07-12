@@ -1,0 +1,5 @@
+{"ts":"2026-07-12T11:12:32Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T11:12:32Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T11:12:33Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T11:12:34Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-12T11:12:34Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}

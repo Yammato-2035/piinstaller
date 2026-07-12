@@ -1,43 +1,55 @@
 # PI-RS-MSI-RETEST-002 — Operator-Beobachtung
 
-**Status:** Physischer Boot-Retest **noch nicht durchgeführt** (Agent-Lauf, 2026-07-12).
+**Datum:** 2026-07-12, ca. 11:12 Uhr (Session `20260712_111206_boot`)  
+**Testgerät:** MSI GE63 Raider RGB 8RF / MS-16P5  
+**Operator-Meldung:** Text-GUI (TUI) wurde **wieder zerstört**
 
-## Vorprüfung am Entwicklungsrechner (abgeschlossen)
-
-| Prüfung | Ergebnis |
-|---------|----------|
-| Git HEAD | `dfcc583d` |
-| Stick identifiziert | Intenso Ultra Line, `/dev/sda` |
-| Payload-Version | **1.10.0.15** |
-| Payload-SHA256 | `307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318` |
-| SETUP_LOGS vor Boot | 936 Dateien inventarisiert |
-| Neueste Session vor Boot | `20260712_015835` (vor 1.10.0.15-Update) |
-
-## Operator — nach physischem GE63-Boot ausfüllen
+## Boot
 
 | Feld | Wert |
 |------|------|
-| Datum/Uhrzeit | _ausfüllen_ |
-| Testgerät | MSI GE63 Raider RGB 8RF / MS-16P5 |
-| Payload-Version (sichtbar/API) | _1.10.0.15 erwartet_ |
-| Bootprofil | `setuphelfer_msi_compat=1 nomodeset nouveau.modeset=0 pci=noaer` |
-| TUI gestartet | ja / nein |
-| TUI stabil (≥2 min) | ja / nein |
-| Visuelle Auffälligkeiten | _beschreiben_ |
-| GUI-Menüstatus | deaktiviert / blockiert / Meldung |
-| Genaue GUI-Meldung | _wörtlich notieren_ |
-| Verhalten nach GUI-Wunsch | TUI neu gerendert? ja/nein |
-| `openvt`/`chvt`/`startx` beobachtet | ja/nein |
-| Shutdown über Menü | ja/nein |
-| Gefährliche Aktionen | nein (erwartet) |
+| Session | `20260712_111203_early` + `20260712_111206_boot` |
+| Kernelparameter | `setuphelfer_msi_compat=1 nomodeset nouveau.modeset=0 pci=noaer` |
+| Modus | `setuphelfer_mode=text`, `setuphelfer_kiosk=0` |
+| Produkt | GE63 Raider RGB 8RF / MS-16P5 |
 
-## Runbook
+## TUI
 
-`docs/evidence/pi_rs_usb_msi_gui_002/MSI_GE63_BOOT_RETEST_RUNBOOK.md`
+| Feld | Wert |
+|------|------|
+| TUI gestartet | ja (laut Boot, dann zerstört) |
+| TUI stabil | **nein** — Operator: visuelle Zerstörung |
+| Visuelle Auffälligkeiten | Whiptail/Textoberfläche unbrauchbar |
 
-## Nach dem Boot
+## GUI / MSI-Compat
 
-1. Stick am Entwicklungsrechner einstecken
-2. Neue SETUP_LOGS-Session importieren nach `docs/evidence/pi_rs_msi_retest_002/msi_session/`
-3. `PI_RS_MSI_RETEST_002_ACCEPTANCE.json` und `PI_RS_MSI_RETEST_002_RESULT.md` aktualisieren
-4. Commit: `Document MSI payload 1.10.0.15 physical boot retest`
+| Feld | Evidence |
+|------|----------|
+| `gui-availability.json` | `gui_available=false`, `reason=msi_compat_nomodeset` |
+| `gui-fallback.json` | `openvt_attempted=false`, `startx_attempted=false` |
+| `boot-timeline.jsonl` 11:12:22 | Phase **`x11_starting`** — „Grafische Oberfläche wird gestartet …“ |
+| `rescue-ui-status.json` | Stale: `openvt_console_2_not_released` (Session 01:59) |
+| `gui-start.log` | Kein neuer Eintrag für 11:12 — letzter OPENVT von 01:59 |
+
+## Versionen
+
+| Quelle | Version |
+|--------|---------|
+| SETUPHELFER `version.json` (ESP) | **1.10.0.15** |
+| SquashFS SHA256 | `307ae9a3…` (korrekt) |
+| Runtime `/api/version` + `config/version.json` im SquashFS | **1.10.0.12** (Drift!) |
+
+## Sicherheit
+
+- Keine Backup/Restore/Wipe-Aktionen
+- Interne Platten nicht beschrieben (nur Lesen)
+
+## Bewertung
+
+**`failed`** — TUI erneut optisch zerstört trotz PI-RS-MSI-GUI-002 Payload.
+
+Verdacht:
+
+1. Boot-Progress zeigt weiterhin `x11_starting` unter MSI-Compat (tty1-Konflikt).
+2. `console-shield` blockiert `tty1_clear_allowed` während `early_boot_progress`.
+3. Runtime-Version im SquashFS noch **1.10.0.12** — Repack/Updater-Sync unvollständig.

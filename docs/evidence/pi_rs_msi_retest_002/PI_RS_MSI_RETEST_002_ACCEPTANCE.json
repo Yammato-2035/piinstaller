@@ -6,34 +6,45 @@
   },
   "payload": {
     "version": "1.10.0.15",
+    "version_esp_metadata": "1.10.0.15",
+    "version_runtime_api": "1.10.0.12",
+    "version_runtime_squashfs_config": "1.10.0.12",
     "expected_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
     "actual_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
-    "hash_verified": true,
-    "hash_verified_where": "dev_machine_pre_boot_SETUPHELFER"
+    "hash_verified": true
   },
   "boot": {
-    "completed": false,
-    "msi_compat_detected": null,
-    "kernel_parameters": [],
+    "completed": true,
+    "session_id": "20260712_111206_boot",
+    "msi_compat_detected": true,
+    "kernel_parameters": [
+      "setuphelfer_msi_compat=1",
+      "nomodeset",
+      "nouveau.modeset=0",
+      "pci=noaer",
+      "setuphelfer_mode=text"
+    ],
     "shutdown_completed": null
   },
   "tui": {
-    "started": null,
-    "stable": null,
-    "visual_corruption": null,
-    "keyboard_navigation_ok": null,
+    "started": true,
+    "stable": false,
+    "visual_corruption": true,
+    "keyboard_navigation_ok": false,
     "rerender_after_gui_block": null
   },
   "gui": {
-    "available": null,
-    "blocked_under_msi_compat": null,
+    "available": false,
+    "blocked_under_msi_compat": true,
     "operator_message_visible": null,
     "operator_message_understandable": null,
-    "openvt_executed": null,
-    "chvt_executed": null,
-    "startx_executed": null,
-    "xorg_started": null,
-    "chromium_gui_started": null
+    "openvt_executed": false,
+    "openvt_executed_note": "gui-fallback.json reports false for 11:12 session; stale gui-start.log from 01:59 has OPENVT",
+    "chvt_executed": false,
+    "startx_executed": false,
+    "xorg_started": false,
+    "chromium_gui_started": false,
+    "boot_progress_x11_starting_phase": true
   },
   "safety": {
     "internal_drive_touched": false,
@@ -44,21 +55,23 @@
     "wipe_started": false
   },
   "evidence": {
-    "new_session_detected": false,
+    "new_session_detected": true,
+    "new_session_id": "20260712_111206_boot",
     "old_session_mixed": false,
-    "latest_session_before_boot": "20260712_015835",
-    "sessions_after_1_10_0_15_update": 0,
     "paths": [
-      "docs/evidence/pi_rs_msi_retest_002/stick_payload_verify.json",
-      "docs/evidence/pi_rs_msi_retest_002/setup_logs_before_inventory.txt",
+      "docs/evidence/pi_rs_msi_retest_002/msi_session/",
       "docs/evidence/pi_rs_msi_retest_002/OPERATOR_OBSERVATION.md"
     ]
   },
-  "status": "blocked",
-  "status_reason": "Physical MSI GE63 boot retest not executed in this agent run; stick and payload pre-verified; operator boot required",
+  "status": "failed",
+  "status_reason": "Operator reports TUI visually destroyed again; boot-timeline still shows x11_starting under MSI compat; runtime version drift 1.10.0.12 inside squashfs",
   "warnings": [
-    "Session 20260712_015835 predates payload 1.10.0.15 USB update and must not be used as acceptance evidence",
-    "Automated agent cannot perform physical UEFI boot on MSI hardware"
+    "rescue-ui-status.json and gui-start.log appear stale from session 20260712_015909",
+    "Runtime project_version 1.10.0.12 does not match ESP metadata 1.10.0.15"
   ],
-  "errors": []
+  "errors": [
+    "tui_visual_corruption",
+    "boot_progress_x11_starting_under_msi_compat"
+  ],
+  "recommended_followup": "PI-RS-MSI-GUI-003 — suppress boot-progress x11_starting and tty1 interference under MSI compat"
 }
