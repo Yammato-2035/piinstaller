@@ -67,6 +67,15 @@ class Fat32EspWriterExecutionModeTests(unittest.TestCase):
         self.assertEqual(fat32.partition_path_for_target("/dev/sdb", 1), "/dev/sdb1")
         self.assertEqual(fat32.partition_path_for_target("/dev/nvme0n1", 1), "/dev/nvme0n1p1")
         self.assertEqual(fat32.partition_path_for_target("/dev/mmcblk0", 1), "/dev/mmcblk0p1")
+        by_id = "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0"
+        self.assertEqual(
+            fat32.partition_path_for_target(by_id, 1),
+            f"{by_id}-part1",
+        )
+        self.assertEqual(
+            fat32.partition_path_for_target(by_id, 2),
+            f"{by_id}-part2",
+        )
 
     def test_without_execute_write_flag_blocked(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

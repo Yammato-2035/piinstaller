@@ -22,7 +22,7 @@
 | WordPress Beta Bridge | GELB | Plugin skeleton |
 | PI-RS-WT-004 Working Tree Cleanup + Full Gate | GRÜN | `docs/maintenance/PI_RS_WT_004_WORKING_TREE_CLEANUP_FULL_GATE.md` |
 | PI-RS-BUILD-001 Payload Build Decision (MSI Retest) | GRÜN | `build_deferred` — Entscheidung dokumentiert, kein Build in diesem Sprint |
-| Stick Payload Build | GRÜN | Workspace **1.10.0.16** repacked; USB noch **1.10.0.15** |
+| Stick Payload Build | GRÜN | Workspace + physischer Stick **1.10.0.16** |
 | PI-RS-USB-MSI-GUI-002 USB Update 1.10.0.15 + GE63 Retest | GELB | USB-Update **ok**; GE63-Boot Session `20260712_111206` — TUI **failed** |
 | PI-RS-MSI-RETEST-001A WIP Reconciliation + Readiness | GRÜN | `wip_reconciled` — physischer Stick **1.10.0.14** Payload |
 | PI-RS-MSI-RETEST-002 Physical Boot Retest (1.10.0.15) | ROT | Session `20260712_111206_boot` — **`failed`**: TUI zerstört; `x11_starting` trotz MSI-Compat |
@@ -31,3 +31,5 @@
 | PI-RS-MSI-GUI-002 Disable GUI under MSI Compat | GRÜN | SquashFS **1.10.0.15** repacked; GUI gesperrt unter MSI-Compat |
 | PI-RS-MSI-GUI-003 TUI Console Isolation (1.10.0.16) | GELB | **`implemented_pending_physical_retest`** — Payload gebaut, kein USB/MSI-Boot |
 | PI-RS-USB-MSI-GUI-002 USB Update 1.10.0.15 + GE63 Retest | GELB | USB **1.10.0.15** ok; GE63-Boot Session `20260712_111206` — TUI **failed** |
+| PI-RS-USB-UPDATER-001 Atomic Payload + Version Sync (1.10.0.16) | GRÜN | Updater gehärtet; Stick **1.10.0.16** atomar; keine manuelle Metadatenkorrektur |
+| PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | PENDING | Nach PI-RS-USB-UPDATER-001 |

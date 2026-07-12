@@ -1,0 +1,53 @@
+{
+  "status": "success",
+  "source": {
+    "path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.16",
+    "expected_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "actual_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "filename_version": "1.10.0.16",
+    "internal_versions": {
+      "VERSION": "1.10.0.16",
+      "rescue_payload_version.json": "1.10.0.16",
+      "version.json": "1.10.0.16"
+    },
+    "version_consistent": true
+  },
+  "before": {
+    "payload_version": "1.10.0.15",
+    "payload_sha256": "cba06b5736faf67e54b07b561eae94395e774c517a7d910a54369e1263ccfbd4",
+    "metadata": {
+      "project_version": "1.10.0.15"
+    }
+  },
+  "after": {
+    "payload_version": "1.10.0.16",
+    "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+    "metadata": {
+      "project_version": "1.10.0.16",
+      "generated_at": "2026-07-12T20:11:00Z",
+      "release_stage": "internal_testing",
+      "schema_version": 1,
+      "version_source_of_truth": false,
+      "version_track": "rescue_payload_sync",
+      "rescue_payload_version": "1.10.0.16",
+      "payload_filename": "live/filesystem.squashfs",
+      "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
+      "updated_at": "2026-07-12T20:11:00.243939+00:00",
+      "update_method": "atomic_fat32_esp_payload_replace",
+      "content_verified": true,
+      "payload_updated_at": "2026-07-12T20:11:00.243939+00:00"
+    }
+  },
+  "atomic_replace": true,
+  "rollback_required": false,
+  "rollback_successful": null,
+  "partition_table_modified": false,
+  "setup_logs_modified": false,
+  "internal_drive_touched": false,
+  "physical_usb_tested": false,
+  "simulated_esp_tested": true,
+  "production_hardware_verified": false,
+  "warnings": [],
+  "errors": [],
+  "mount_root": "/tmp/tmpc1qycj3o/SETUPHELFER"
+}

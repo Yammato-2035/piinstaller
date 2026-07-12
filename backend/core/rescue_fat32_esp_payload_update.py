@@ -15,6 +15,7 @@ from core.rescue_fat32_esp_usb_writer import (
     partition_path_for_target,
     sha256_file,
 )
+from core.rescue_usb_payload_atomic_update import build_atomic_esp_evidence_json
 
 CONFIRM_PHRASE_PAYLOAD_UPDATE = "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD"
 
@@ -175,30 +176,12 @@ def build_updated_stick_evidence(
     project_version: str,
 ) -> dict[str, Any]:
     """Refresh setuphelfer/rescue/evidence.json after squashfs swap."""
-    out = dict(medium_evidence)
-    files = list(out.get("files") or [])
-    new_sha = sha256_file(new_squashfs)
-    new_size = new_squashfs.stat().st_size
-    replaced = False
-    for entry in files:
-        if entry.get("staging_path") == "live/filesystem.squashfs":
-            entry["sha256"] = new_sha
-            entry["size_bytes"] = new_size
-            replaced = True
-    if not replaced:
-        files.append(
-            {
-                "iso_path": "/live/filesystem.squashfs",
-                "staging_path": "live/filesystem.squashfs",
-                "size_bytes": new_size,
-                "sha256": new_sha,
-            }
-        )
-    out["files"] = files
-    out["payload_updated_at"] = _now_iso()
-    out["writer_mode"] = "fat32_esp"
-    out["project_version"] = project_version
-    return out
+    return build_atomic_esp_evidence_json(
+        payload_version=project_version,
+        payload_sha256=sha256_file(new_squashfs),
+        payload_size_bytes=new_squashfs.stat().st_size,
+        existing=medium_evidence,
+    )
 
 
 def evaluate_stick_squashfs_hash(

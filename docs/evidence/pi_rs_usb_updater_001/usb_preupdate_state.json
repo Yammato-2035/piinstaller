@@ -1,0 +1,36 @@
+{
+  "captured_at": "2026-07-12T20:11:00Z",
+  "device": "/dev/sda",
+  "device_by_id": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0",
+  "setuphelfer_mount": "/media/volker/SETUPHELFER",
+  "setup_logs_mount": "/media/volker/SETUP_LOGS",
+  "active_payload_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "esp_metadata_project_version": "1.10.0.15",
+  "internal_payload_carriers": {
+    "VERSION": "1.10.0.15",
+    "rescue_payload_version.json": "1.10.0.15",
+    "version.json": "1.10.0.12"
+  },
+  "internal_carriers_consistent": false,
+  "unexpected_old_version": false,
+  "expected_old_version": "1.10.0.15",
+  "prev_files": [
+    "filesystem.squashfs.prev-1.10.0.4"
+  ],
+  "setup_logs_file_count": 964,
+  "setup_logs_top_level": [
+    "RUN-MSI-EVIDENCE",
+    "START-MSI-EVIDENCE.desktop",
+    "START-MSI-EVIDENCE.txt",
+    "System Volume Information",
+    "setuphelfer"
+  ],
+  "partition_uuids": {
+    "SETUPHELFER": "9BB9-A4A6",
+    "SETUP_LOGS": "9BC7-3950"
+  },
+  "notes": [
+    "ESP metadata reports 1.10.0.15 as expected",
+    "Internal config/version.json inside active squashfs still 1.10.0.12 — pre-existing payload drift"
+  ]
+}

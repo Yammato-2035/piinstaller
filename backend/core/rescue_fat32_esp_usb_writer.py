@@ -492,12 +492,14 @@ def generate_grub_cfg(params: LiveBootParams) -> str:
 
 
 def partition_path_for_target(target_device: str, part_number: int = 1) -> str:
-    """Map parent block device to partition path (sdX→sdX1, nvme→p1, mmcblk→p1)."""
+    """Map parent block device to partition path (sdX→sdX1, nvme→p1, by-id→-partN)."""
     dev = (target_device or "").rstrip("/")
     if not dev.startswith("/dev/"):
         raise ValueError(f"not a block device path: {target_device!r}")
     if part_number < 1:
         raise ValueError(f"invalid partition number: {part_number}")
+    if "/disk/by-id/" in dev:
+        return f"{dev}-part{part_number}"
     if re.search(r"mmcblk\d+$", dev):
         return f"{dev}p{part_number}"
     if re.search(r"nvme\d+n\d+$", dev):
