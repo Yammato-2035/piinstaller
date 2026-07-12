@@ -1,11 +1,11 @@
 # Central Next Steps
 
-Stand: 2026-07-12 (PI-RS-USB-MSI-FIX-001 Payload 1.10.0.14)
+Stand: 2026-07-12 (PI-RS-MSI-GUI-002 Payload 1.10.0.15)
 
 ## Empfohlene Reihenfolge
 
-1. **PI-RS-USB-MSI-FIX-001 Operator Boot** — GE63 mit Stick **1.10.0.14** + **MSI-Compat** GRUB booten (`docs/rescue-stick/PI_RS_USB_MSI_FIX_001_USB_UPDATE_1_10_0_14_BOOT_RETEST.md`)
-2. SETUP_LOGS importieren → TUI-Stabilität + Console-Shield prüfen
+1. **PI-RS-USB-MSI-GUI-002** — USB-Update auf Payload **1.10.0.15** + GE63 MSI-Compat Boot-Retest (`docs/rescue-stick/PI_RS_MSI_GUI_002_DISABLE_GUI_UNDER_MSI_COMPAT.md`)
+2. SETUP_LOGS importieren → TUI stabil, GUI-Menü gesperrt, keine openvt/chvt-Zerstörung
 3. Optional: Telemetry Preview vom gebooteten Stick (kein Send ohne Token)
 4. **CSE-OPS-MAINT-001** — Server Updates + kontrollierter Reboot
 

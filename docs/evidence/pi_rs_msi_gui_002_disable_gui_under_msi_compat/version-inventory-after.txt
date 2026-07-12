@@ -1,0 +1,18 @@
+config/rescue_payload_version.json:3:  "rescue_payload_version": "1.10.0.15",
+config/rescue_payload_version.json:4:  "previous_rescue_payload_version": "1.10.0.14",
+backend/tests/test_pi_rs_payload_telemetry001_content.py:23:        self.assertEqual(result["version_in_payload"], "1.10.0.15")
+backend/tests/test_pi_rs_payload_telemetry001_content.py:27:        expected = Path("build/rescue/filesystem.squashfs.repacked-1.10.0.15")
+backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py:1:"""PI-RS-MSI-GUI-002 payload version 1.10.0.15 tests."""
+backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py:14:        self.assertEqual(rescue_payload_version(), "1.10.0.15")
+backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py:15:        self.assertEqual(previous_rescue_payload_version(), "1.10.0.14")
+backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py:18:        self.assertEqual(default_repacked_squashfs_path().name, "filesystem.squashfs.repacked-1.10.0.15")
+backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py:13:        self.assertEqual(rescue_payload_version(), "1.10.0.15")
+backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py:14:        self.assertEqual(previous_rescue_payload_version(), "1.10.0.14")
+backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py:17:        self.assertEqual(default_repacked_squashfs_path().name, "filesystem.squashfs.repacked-1.10.0.15")
+backend/core/rescue_payload_version.py:12:_PREVIOUS_DEFAULT = "1.10.0.14"
+backend/core/rescue_payload_version.py:13:_CURRENT_DEFAULT = "1.10.0.15"
+backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py:20:        squashfs = root / "build" / "rescue" / "filesystem.squashfs.repacked-1.10.0.15"
+backend/tests/test_pi_rs_payload_telemetry001_version.py:18:        self.assertEqual(rescue_payload_version(), "1.10.0.15")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:21:        self.assertEqual(previous_rescue_payload_version(), "1.10.0.14")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:27:        self.assertEqual(data["rescue_payload_version"], "1.10.0.15")
+backend/tests/test_pi_rs_payload_telemetry001_version.py:33:        self.assertEqual(cfg["rescue_payload_version"], "1.10.0.15")

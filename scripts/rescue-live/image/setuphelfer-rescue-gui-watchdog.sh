@@ -20,6 +20,24 @@ export SETUPHELFER_RESCUE_UI_GRAPHICAL_ONLY=1
 mkdir -p /run/setuphelfer "$(dirname "$LOG")" 2>/dev/null || true
 setuphelfer_rescue_gui_chain_log_init
 
+if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
+  setuphelfer_rescue_write_gui_blocked_msi_status false
+  setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_BLOCKED" "reason=msi_compat_nomodeset openvt=false chvt=false startx=false"
+  setuphelfer_rescue_write_json "$STATE" <<EOF
+{
+  "schema_version": 1,
+  "gui_started": false,
+  "gui_failed": true,
+  "gui_error_code": "disabled_msi_compat_nomodeset",
+  "fallback_to_tui": true,
+  "execute_allowed": false,
+  "secrets_exposed": false
+}
+EOF
+  setuphelfer_rescue_mirror_evidence_file "$STATE" "setuphelfer/evidence/boot/gui-watchdog.json" 2>/dev/null || true
+  return 1
+fi
+
 setuphelfer_rescue_gui_chain_log "START_GUI_CHAIN" "component=gui-watchdog timeout_sec=${TIMEOUT_SEC} stable_sec=${STABLE_SEC}"
 setuphelfer_rescue_gui_chain_log_display_ctx
 
@@ -69,7 +87,9 @@ _fail() {
   write_state "$classified" false true
   setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_RETURN" "RESULT=1 code=${classified}"
   setuphelfer_rescue_mirror_gui_forensic_logs
-  chvt 1 2>/dev/null || true
+  if ! setuphelfer_rescue_should_disable_gui_for_msi_compat; then
+    chvt 1 2>/dev/null || true
+  fi
   return 1
 }
 

@@ -1,0 +1,27 @@
+PI-RS-USB-MSI-FIX-001 Session 4 (20260712_015835 / GUI 015909) — Root Cause
+
+Boot: MSI-Compat (pci=noaer, setuphelfer_msi_compat=1, nomodeset)
+Payload: SquashFS 1.10.0.14 on stick (665e44e4… verified before USB write)
+
+PARTIAL SUCCESS — Console-Shield / boot-progress (PI-RS-MSI-FIX-001):
+- setuphelfer_rescue_shield_console_early: ran (no "Kommando nicht gefunden")
+- /run/setuphelfer/console-shield.json: enabled=true, tty1_clear_allowed=false
+- boot-progress SAFE_TTY=1 under MSI-Compat → no ESC[2J on tty1
+- No "GUI übernimmt" in journal/evidence
+- boot_state: text_mode_started=true, selected_mode=text
+
+REMAINING FAIL — GUI (unchanged from 1.10.0.13):
+- Operator selected "Grafische Oberfläche starten" from TUI at 01:59:09
+- gui-watchdog → openvt on VT2 → "Konsole 2 konnte nicht freigegeben werden"
+- No Xorg.0.log, /tmp/.X11-unix empty
+- gui-fallback.json: openvt_console_2_not_released, tui_preserved=true
+- nomodeset + MSI hybrid GPU (GTX1070 + iGPU): X cannot acquire VT2 / no modesetting
+
+Operator report: "same error picture" — GUI does not start; GUI from TUI fails.
+Likely cause of perceived "same": openvt/GUI path still broken; chvt 2 during GUI attempt may corrupt whiptail display even when tty1 not cleared.
+
+Next fix (not in 1.10.0.14): PI-RS-MSI-GUI-002
+- Block or relabel GUI menu item under setuphelfer_msi_compat=1
+- Do not chvt/openvt while TUI/whiptail active on MSI-Compat
+- Optional: mask getty@tty2 before GUI attempt OR use dedicated VT without getty
+- After failed GUI: re-exec TUI menu instead of assuming whiptail survives chvt

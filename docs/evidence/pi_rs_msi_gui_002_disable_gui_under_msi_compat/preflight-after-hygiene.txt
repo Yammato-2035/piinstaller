@@ -1,0 +1,10 @@
+?? docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1/git-status-before-commit.txt
+?? docs/evidence/pi_rs_msi_gui_002_disable_gui_under_msi_compat/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-retry/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-session3/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-retry-summary.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-session3-root-cause.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/operator-feedback-20260712-retry.txt
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/git-status-before-commit.txt
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/imported-setup-logs/
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/msi-boot-20260712-session4-root-cause.txt
