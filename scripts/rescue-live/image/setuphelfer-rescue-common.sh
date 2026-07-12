@@ -358,6 +358,108 @@ setuphelfer_rescue_should_auto_msi_evidence() {
   return 0
 }
 
+# PI-RS-MSI-GUI-002: block GUI under MSI-Compat + nomodeset (text mode primary).
+SETUPHELFER_GUI_AVAILABILITY_JSON="${SETUPHELFER_GUI_AVAILABILITY_JSON:-/run/setuphelfer/gui-availability.json}"
+
+setuphelfer_rescue_cmdline_has_nomodeset() {
+  setuphelfer_rescue_cmdline_has_flag "nomodeset" \
+    || setuphelfer_rescue_cmdline_has_flag "nouveau.modeset=0"
+}
+
+setuphelfer_rescue_dmi_suggests_msi_ge63() {
+  local product vendor board combined
+  product="$(cat /sys/class/dmi/id/product_name 2>/dev/null || true)"
+  vendor="$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || true)"
+  board="$(cat /sys/class/dmi/id/board_name 2>/dev/null || true)"
+  combined="${vendor} ${product} ${board}"
+  echo "$combined" | grep -Eiq 'msi|ge63|ms-16p5'
+}
+
+setuphelfer_rescue_should_disable_gui_for_msi_compat() {
+  setuphelfer_rescue_msi_compat_active || return 1
+  if setuphelfer_rescue_cmdline_has_nomodeset; then
+    return 0
+  fi
+  if setuphelfer_rescue_dmi_suggests_msi_ge63; then
+    return 0
+  fi
+  return 1
+}
+
+setuphelfer_rescue_gui_disabled_message() {
+  cat <<'EOF'
+Grafische Oberfläche auf diesem Gerät im MSI-Kompatibilitätsmodus nicht verfügbar.
+
+Grund:
+nomodeset / VT-Übernahme ist auf diesem Gerät nicht stabil.
+
+Bitte Textmodus nutzen.
+EOF
+}
+
+setuphelfer_rescue_write_gui_availability_status() {
+  local gui_available="${1:-false}"
+  local reason="${2:-msi_compat_nomodeset}"
+  local openvt_allowed="${3:-false}"
+  local chvt_allowed="${4:-false}"
+  local startx_allowed="${5:-false}"
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  setuphelfer_rescue_write_json "$SETUPHELFER_GUI_AVAILABILITY_JSON" <<EOF
+{
+  "schema_version": 1,
+  "gui_available": ${gui_available},
+  "reason": "${reason}",
+  "tui_primary": true,
+  "openvt_allowed": ${openvt_allowed},
+  "chvt_allowed": ${chvt_allowed},
+  "startx_allowed": ${startx_allowed},
+  "operator_next_action": "use_text_mode",
+  "production_ready": false
+}
+EOF
+  setuphelfer_rescue_mirror_evidence_file "$SETUPHELFER_GUI_AVAILABILITY_JSON" "setuphelfer/evidence/boot/gui-availability.json" 2>/dev/null || true
+}
+
+setuphelfer_rescue_write_gui_blocked_msi_status() {
+  local tui_rerendered="${1:-true}"
+  setuphelfer_rescue_write_gui_availability_status false "msi_compat_nomodeset" false false false
+  setuphelfer_rescue_write_json "${SETUPHELFER_RESCUE_STATE_DIR}/gui-fallback.json" <<EOF
+{
+  "schema_version": 1,
+  "gui_status": "disabled_msi_compat_nomodeset",
+  "gui_reason": "msi_compat_nomodeset",
+  "openvt_attempted": false,
+  "chvt_attempted": false,
+  "startx_attempted": false,
+  "chvt_target": "none",
+  "tui_preserved": true,
+  "tui_rerendered": ${tui_rerendered},
+  "operator_next_action": "use_text_mode",
+  "production_ready": false
+}
+EOF
+  setuphelfer_rescue_mirror_evidence_file "${SETUPHELFER_RESCUE_STATE_DIR}/gui-fallback.json" "setuphelfer/evidence/boot/gui-fallback.json" 2>/dev/null || true
+}
+
+setuphelfer_rescue_mark_tui_rerender_after_gui_failure() {
+  local dest="${SETUPHELFER_RESCUE_STATE_DIR}/gui-fallback.json"
+  if [[ -f "$dest" ]] && command -v python3 >/dev/null 2>&1; then
+    python3 -c "
+import json
+from pathlib import Path
+p = Path('${dest}')
+data = json.loads(p.read_text(encoding='utf-8'))
+data['tui_preserved'] = True
+data['tui_rerendered_after_gui_failure'] = True
+data['operator_next_action'] = 'use_text_mode'
+p.write_text(json.dumps(data, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+" 2>/dev/null || true
+    setuphelfer_rescue_mirror_evidence_file "$dest" "setuphelfer/evidence/boot/gui-fallback.json" 2>/dev/null || true
+    return 0
+  fi
+  setuphelfer_rescue_write_gui_fallback_status "gui_start_failed" "gui_start_failed"
+}
+
 setuphelfer_rescue_run_msi_rs011b_collect() {
   local root="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}"
   local script_dir="${SETUPHELFER_RESCUE_SCRIPT_DIR:-/usr/local/sbin}"
@@ -860,6 +962,10 @@ setuphelfer_rescue_boot_state_path() {
 }
 
 setuphelfer_rescue_should_start_gui() {
+  if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
+    setuphelfer_rescue_write_gui_blocked_msi_status false
+    return 1
+  fi
   if grep -Eq '(^| )setuphelfer_mode=gui( |$)' /proc/cmdline 2>/dev/null; then
     return 0
   fi
@@ -1143,6 +1249,11 @@ setuphelfer_rescue_gui_health_ok() {
 
 setuphelfer_rescue_run_on_kiosk_vt() {
   local vt="$SETUPHELFER_RESCUE_KIOSK_VT" _rc=0
+  if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
+    setuphelfer_rescue_gui_chain_log "GUI_VT_BLOCKED" "reason=msi_compat_nomodeset openvt=false chvt=false"
+    setuphelfer_rescue_x11_log "GUI_VT_BLOCKED" "reason=msi_compat_nomodeset"
+    return 1
+  fi
   if command -v openvt >/dev/null 2>&1; then
     setuphelfer_rescue_gui_chain_log "OPENVT_START" "vt=${vt} cmd=$*"
     setuphelfer_rescue_x11_log "OPENVT_START" "vt=${vt} cmd=$*"

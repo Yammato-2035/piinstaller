@@ -24,6 +24,13 @@ if ! setuphelfer_rescue_should_start_gui; then
   exit 0
 fi
 
+if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
+  setuphelfer_rescue_write_gui_blocked_msi_status false
+  setuphelfer_rescue_gui_chain_log "X11_EARLY_SKIP" "reason=msi_compat_gui_disabled"
+  _write_status "skipped" "msi_compat_gui_disabled"
+  exit 0
+fi
+
 if setuphelfer_rescue_x11_ready; then
   setuphelfer_rescue_gui_chain_log "X11_EARLY_SKIP" "reason=display_already_ready"
   _write_status "running" "already_ready"

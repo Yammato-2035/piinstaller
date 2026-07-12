@@ -1,0 +1,33 @@
+ M CHANGELOG.md
+ M backend/core/rescue_payload_version.py
+ M backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py
+ M backend/tests/test_pi_rs_payload_telemetry001_content.py
+ M backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py
+ M backend/tests/test_pi_rs_payload_telemetry001_version.py
+ M config/rescue_payload_version.json
+ M docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json
+ M docs/roadmap/CENTRAL_NEXT_STEPS.md
+ M docs/roadmap/STATUS_MATRIX.md
+ M scripts/rescue-live/image/setuphelfer-rescue-common.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-tui.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-x11-early.sh
+?? backend/core/rescue_payload_msi_gui002_content.py
+?? backend/tests/test_pi_rs_msi_gui002_disable_gui_under_msi_compat.py
+?? backend/tests/test_pi_rs_msi_gui002_no_chvt_openvt_when_blocked.py
+?? backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py
+?? backend/tests/test_pi_rs_msi_gui002_tui_menu_guard.py
+?? backend/tests/test_pi_rs_msi_gui002_tui_rerender_after_gui_failure.py
+?? docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1/git-status-before-commit.txt
+?? docs/evidence/pi_rs_msi_gui_002_disable_gui_under_msi_compat/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-retry/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/imported-setup-logs/20260712-msi-boot-session3/
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-retry-summary.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/msi-boot-20260712-session3-root-cause.txt
+?? docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13/operator-feedback-20260712-retry.txt
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/git-status-before-commit.txt
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/imported-setup-logs/
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/msi-boot-20260712-session4-root-cause.txt
+?? docs/rescue-stick/PI_RS_MSI_GUI_002_DISABLE_GUI_UNDER_MSI_COMPAT.md
+?? scripts/check-rescue-payload-msi-gui002-content.sh
+?? scripts/smoke-pi-rs-msi-gui002-disable-gui-under-msi-compat.sh

@@ -1,0 +1,8 @@
+PI-RS-MSI-GUI-002
+
+USB write: not performed
+Block devices touched: no
+Payload repack only: yes
+
+Next sprint:
+PI-RS-USB-MSI-GUI-002 — USB update to payload 1.10.0.15 and GE63 boot retest.

@@ -9,7 +9,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
-- **PI-RS-USB-MSI-FIX-001:** Rescue-Stick USB Payload-Update **1.10.0.13 → 1.10.0.14**; Verify OK; GE63 MSI-Compat Boot-Retest operator pending.
+- **PI-RS-MSI-GUI-002:** Payload **1.10.0.15** — GUI unter MSI-Compat/nomodeset gesperrt; kein openvt/chvt/startx; TUI primär; Operator-Meldung; Repack + Content-Check; kein USB-Write.
 - **PI-RS-MSI-FIX-001:** Payload **1.10.0.14** — Console-Shield (`setuphelfer_rescue_shield_console_early`), MSI-Evidence-Helper, boot-progress tty1-Race-Fix, GUI/openvt-Fallback; Repack + Content/Secret-Checks; kein USB-Write.
 - **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.
 - **PI-RS-PAYLOAD-TELEMETRY-001:** Rescue-Stick Payload Repack **1.10.0.13** mit Lab-Telemetry-Send-Code; Content/Secret-Checks, Evidence; kein USB-Write.

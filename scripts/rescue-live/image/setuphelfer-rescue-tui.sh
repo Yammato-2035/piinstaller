@@ -105,15 +105,21 @@ _tui_collect_evidence() {
 }
 
 _tui_start_gui() {
+  if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
+    setuphelfer_rescue_write_gui_blocked_msi_status true
+    _tui_msg "$(setuphelfer_rescue_gui_disabled_message)"
+    return 0
+  fi
   if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-gui-watchdog" ]]; then
     if "${SCRIPT_DIR}/setuphelfer-rescue-gui-watchdog"; then
       return 0
     fi
+    setuphelfer_rescue_mark_tui_rerender_after_gui_failure
     _tui_msg "Grafische Oberfläche konnte nicht gestartet werden.\nFallback: Textmenü."
-    return 1
+    return 0
   fi
   _tui_msg "GUI-Watchdog nicht verfügbar."
-  return 1
+  return 0
 }
 
 _tui_shell() {
