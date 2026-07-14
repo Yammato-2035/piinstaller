@@ -1,0 +1,34 @@
+{
+  "feature": "SETUPHELFER-E2E-LIVE-001D",
+  "automation_at": "2026-07-14T15:50:19Z",
+  "setup_logs_mounted": true,
+  "setup_logs_base": "/media/volker/SETUP_LOGS",
+  "production_ready": false,
+  "import": {
+    "schema_version": 1,
+    "feature": "SETUPHELFER-E2E-LIVE-001D",
+    "imported_at": "2026-07-14T15:50:19Z",
+    "physical_e2e_run_id": "e2e-rescue-physical-20260714-153401-d35375d0",
+    "source_run_dir": "/media/volker/SETUP_LOGS/setuphelfer/evidence/e2e/e2e-rescue-physical-20260714-153401-d35375d0",
+    "setup_logs_base": "/media/volker/SETUP_LOGS",
+    "files_copied": [
+      "operator-decisions.jsonl",
+      "e2e-result.json",
+      "receipts.json",
+      "event-journal.jsonl",
+      "manifest-comparison.json",
+      "source-summary.json",
+      "send-status.json",
+      "restored-summary.json",
+      "diagnostics-status.json",
+      "backup-summary.json",
+      "restore-result.json",
+      "backup-result.json",
+      "verify-result.json"
+    ],
+    "missing_required": [],
+    "import_ok": true,
+    "destination": "/home/volker/piinstaller/docs/evidence/e2e_live_001d/physical_run/e2e-rescue-physical-20260714-153401-d35375d0"
+  },
+  "status": "dev_automation_passed"
+}

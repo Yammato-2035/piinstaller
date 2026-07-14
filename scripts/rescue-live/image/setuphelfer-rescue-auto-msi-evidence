@@ -1,5 +1,6 @@
 #!/bin/bash
-# RS-011M: Auto MSI RS-011B evidence once per boot (MSI compat profile, after backend ready).
+# RS-011M / PI-RS-MSI-AUTO-EVIDENCE-001: Auto MSI RS-011B evidence once per boot.
+# Waits for TUI handoff + late gate before collect; optional auto-shutdown for lab runs.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
@@ -17,32 +18,93 @@ if [[ -f "$_marker" ]]; then
 fi
 
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.log"
+_late_sec="$(setuphelfer_rescue_msi_lab_late_sec)"
+_lab_auto=0
+if setuphelfer_rescue_msi_lab_auto_active; then
+  _lab_auto=1
+fi
+
 {
   echo "=== auto-msi-evidence $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
   echo "cmdline=$(tr '\0' ' ' </proc/cmdline 2>/dev/null || true)"
+  echo "lab_auto=${_lab_auto} late_sec=${_late_sec}"
 } >>"$_log"
 
 _i=0
 while [[ "$_i" -lt 45 ]]; do
-  if curl -sf http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
+  if curl -sf --connect-timeout 3 --max-time 8 http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
     break
   fi
   _i=$((_i + 1))
   sleep 2
 done
 
-if ! curl -sf http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
+if ! curl -sf --connect-timeout 3 --max-time 8 http://127.0.0.1:8000/api/version >/dev/null 2>&1; then
   echo "WARN: backend not ready — auto MSI evidence skipped" >>"$_log"
   setuphelfer_rescue_write_boot_state "auto_msi_evidence_skipped_backend"
+  if [[ "$_lab_auto" -eq 1 ]]; then
+    setuphelfer_rescue_auto_shutdown_if_requested "backend_not_ready" || true
+  fi
   exit 0
 fi
 
+if [[ "$_lab_auto" -eq 1 ]]; then
+  echo "Lab auto: skipping blocking start-assistant (media-check/TUI not required for unattended collect)" >>"$_log"
+else
+  if ! systemctl is-active --quiet setuphelfer-rescue-start-assistant.service 2>/dev/null \
+     && ! systemctl is-failed --quiet setuphelfer-rescue-start-assistant.service 2>/dev/null; then
+    echo "Starting start-assistant (non-lab boot)..." >>"$_log"
+    systemctl start --no-block setuphelfer-rescue-start-assistant.service >>"$_log" 2>&1 || true
+  fi
+  echo "Waiting for TUI ownership (max 180s)..." >>"$_log"
+  if ! setuphelfer_rescue_wait_for_tui_owned 180 >>"$_log" 2>&1; then
+    echo "WARN: TUI ownership not reached — continuing with uptime late gate" >>"$_log"
+  fi
+fi
+
+_min_uptime=$((_late_sec + 30))
+echo "Late gate: waiting for uptime >= ${_min_uptime}s ..." >>"$_log"
+while true; do
+  _up="$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)"
+  if [[ "$_up" -ge "$_min_uptime" ]]; then
+    echo "Late gate reached at uptime=${_up}s" >>"$_log"
+    break
+  fi
+  sleep 5
+done
+
+_late_out=""
+if _late_out="$(setuphelfer_rescue_write_late_msi_evidence 2>>"$_log")"; then
+  echo "Late evidence: ${_late_out}" >>"$_log"
+else
+  echo "WARN: late evidence write failed" >>"$_log"
+fi
+
+_collect_ok=0
 if setuphelfer_rescue_run_msi_rs011b_collect >>"$_log" 2>&1; then
+  _collect_ok=1
+else
+  echo "WARN: auto MSI evidence collect failed" >>"$_log"
+fi
+
+_ev_base="$(setuphelfer_rescue_evidence_writable_base 2>/dev/null || echo /run/setuphelfer/esp-rw)"
+_eval_out=""
+if _eval_out="$(setuphelfer_rescue_evaluate_msi_lab_evidence "${_ev_base}/setuphelfer/evidence/msi-rs011b" "$_lab_auto" 2>>"$_log")"; then
+  echo "Lab evaluation: ${_eval_out}" >>"$_log"
+  setuphelfer_rescue_mirror_evidence_file \
+    "${_ev_base}/setuphelfer/evidence/msi-rs011b/lab-auto-result.json" \
+    "setuphelfer/evidence/msi-rs011b/lab-auto-result.json" 2>/dev/null || true
+fi
+
+if [[ "$_collect_ok" -eq 1 ]]; then
   touch "$_marker" 2>/dev/null || true
   setuphelfer_rescue_write_boot_state "auto_msi_evidence_collected"
-  exit 0
+else
+  setuphelfer_rescue_write_boot_state "auto_msi_evidence_failed"
 fi
 
-echo "WARN: auto MSI evidence collect failed" >>"$_log"
-setuphelfer_rescue_write_boot_state "auto_msi_evidence_failed"
+sync 2>/dev/null || true
+if [[ "$_lab_auto" -eq 1 ]] && ! setuphelfer_rescue_msi_e2e_auto_active; then
+  setuphelfer_rescue_auto_shutdown_if_requested "evidence_complete" || true
+fi
 exit 0

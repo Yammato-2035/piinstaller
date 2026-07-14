@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "restore_job_id": "1907428e23bb49b0",
+  "started_at": "2026-07-14T15:34:09Z",
+  "completed_at": "2026-07-14T15:34:10Z",
+  "target_separate": true,
+  "target_initially_empty": true,
+  "file_count": 131,
+  "total_bytes": 68080375,
+  "manifest_sha256": "7465f06907a9163a15a06edcf29cab212951d731373aae5f7e40fb31ca0261b8",
+  "restore_dir": "/tmp/setuphelfer-e2e-lab-work/restore/data",
+  "real_operation": true
+}

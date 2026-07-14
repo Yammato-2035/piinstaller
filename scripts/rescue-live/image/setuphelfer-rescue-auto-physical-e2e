@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# SETUPHELFER-E2E-LIVE-001D — Unattended MSI physical E2E (lab auto / cmdline flag).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+
+if ! setuphelfer_rescue_msi_e2e_auto_active; then
+  exit 0
+fi
+
+_marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done"
+if [[ -f "$_marker" ]]; then
+  exit 0
+fi
+
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.log"
+{
+  echo "=== auto-physical-e2e $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  echo "cmdline=$(tr '\0' ' ' </proc/cmdline 2>/dev/null || true)"
+} >>"$_log"
+
+_ev_base="$(setuphelfer_rescue_evidence_writable_base 2>/dev/null || echo /run/setuphelfer/esp-rw)"
+_e2e_ok=0
+if setuphelfer_rescue_run_msi_physical_e2e_auto "$_ev_base" >>"$_log" 2>&1; then
+  _e2e_ok=1
+  echo "E2E auto: passed" >>"$_log"
+else
+  echo "WARN: auto physical E2E failed" >>"$_log"
+fi
+
+_result="${_ev_base}/setuphelfer/evidence/e2e/msi-e2e-auto-result.json"
+if [[ -f "$_result" ]]; then
+  setuphelfer_rescue_mirror_evidence_file "$_result" "setuphelfer/evidence/e2e/msi-e2e-auto-result.json" 2>/dev/null || true
+fi
+
+if [[ "$_e2e_ok" -eq 1 ]]; then
+  touch "$_marker" 2>/dev/null || true
+  setuphelfer_rescue_write_boot_state "auto_physical_e2e_passed"
+else
+  setuphelfer_rescue_write_boot_state "auto_physical_e2e_failed"
+fi
+
+sync 2>/dev/null || true
+if setuphelfer_rescue_auto_shutdown_requested; then
+  setuphelfer_rescue_auto_shutdown_if_requested "physical_e2e_complete" || true
+fi
+exit 0

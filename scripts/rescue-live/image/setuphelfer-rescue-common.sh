@@ -481,6 +481,152 @@ setuphelfer_rescue_should_auto_msi_evidence() {
   return 0
 }
 
+setuphelfer_rescue_msi_lab_auto_active() {
+  setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_lab_auto=1"
+}
+
+setuphelfer_rescue_msi_e2e_auto_active() {
+  setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_e2e_auto=1" \
+    || setuphelfer_rescue_msi_lab_auto_active
+}
+
+setuphelfer_rescue_run_msi_physical_e2e_auto() {
+  local ev_base="${1:-}"
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY
+import json
+import sys
+from pathlib import Path
+
+from core.rescue_msi_e2e_auto import run_msi_physical_e2e_auto, write_msi_e2e_auto_result
+
+ev_base = Path(${ev_base@Q}) if ${ev_base@Q} else None
+logs = None
+for pattern in ("/media/*/SETUP_LOGS", "/run/media/*/SETUP_LOGS"):
+    for candidate in Path("/").glob(pattern.lstrip("/")):
+        if candidate.is_dir():
+            logs = candidate
+            break
+    if logs:
+        break
+if logs is None and ev_base is not None:
+    logs = ev_base
+
+result = run_msi_physical_e2e_auto(
+    repo_root=Path("/opt/setuphelfer-rescue"),
+    setup_logs_base=logs,
+)
+if logs is not None:
+    write_msi_e2e_auto_result(result, evidence_dir=logs / "setuphelfer" / "evidence" / "e2e")
+elif ev_base is not None:
+    write_msi_e2e_auto_result(result, evidence_dir=Path(ev_base) / "setuphelfer" / "evidence" / "e2e")
+
+print(json.dumps({
+    "status": result.get("status"),
+    "layout_mode": result.get("layout_mode"),
+    "e2e_run_id": (result.get("workflow") or {}).get("e2e_run_id"),
+}, ensure_ascii=False))
+sys.exit(0 if result.get("status") == "msi_e2e_auto_passed" else 1)
+PY
+}
+
+setuphelfer_rescue_auto_shutdown_requested() {
+  setuphelfer_rescue_cmdline_has_flag "setuphelfer_auto_shutdown=1" \
+    || setuphelfer_rescue_msi_lab_auto_active
+}
+
+setuphelfer_rescue_msi_lab_late_sec() {
+  local raw="${1:-120}"
+  if setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_lab_late_sec="; then
+    raw="$(tr ' ' '\n' </proc/cmdline 2>/dev/null | sed -n 's/.*setuphelfer_msi_lab_late_sec=\([0-9][0-9]*\).*/\1/p' | head -1)"
+  fi
+  [[ "$raw" =~ ^[0-9]+$ ]] || raw=120
+  printf '%s' "$raw"
+}
+
+setuphelfer_rescue_console_owner_is_tui() {
+  local path="${SETUPHELFER_CONSOLE_OWNERSHIP_JSON:-/run/setuphelfer/console-ownership.json}"
+  [[ -f "$path" ]] || return 1
+  python3 - "$path" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+owner = str(data.get("owner") or "")
+lifecycle = str(data.get("lifecycle_state") or "")
+print("yes" if owner == "tui" or lifecycle in {"tui_initializing", "tui_owned"} else "no")
+PY
+}
+
+setuphelfer_rescue_wait_for_tui_owned() {
+  local max_wait="${1:-300}" elapsed=0
+  while [[ "$elapsed" -lt "$max_wait" ]]; do
+    if [[ "$(setuphelfer_rescue_console_owner_is_tui 2>/dev/null || echo no)" == "yes" ]]; then
+      return 0
+    fi
+    sleep 2
+    elapsed=$((elapsed + 2))
+  done
+  return 1
+}
+
+setuphelfer_rescue_write_late_msi_evidence() {
+  local base rel out
+  base="$(setuphelfer_rescue_evidence_writable_base)" || base="/run/setuphelfer/esp-rw"
+  rel="setuphelfer/evidence/msi-rs011b"
+  mkdir -p "${base}/${rel}" 2>/dev/null || return 1
+  out="${base}/${rel}/late-evidence-auto-$(date -u +%Y%m%d_%H%M%S).txt"
+  {
+    echo "=== LATE EVIDENCE PI-RS-MSI-AUTO-EVIDENCE-001 ==="
+    date --iso-8601=seconds
+    echo "--- uptime ---"
+    cat /proc/uptime 2>/dev/null || true
+    echo "--- cmdline ---"
+    tr '\0' ' ' </proc/cmdline 2>/dev/null || true
+    echo "--- console-ownership.json ---"
+    cat /run/setuphelfer/console-ownership.json 2>/dev/null || echo "MISSING"
+    echo "--- current-session.json ---"
+    cat /run/setuphelfer/current-session.json 2>/dev/null || echo "MISSING"
+    echo "--- boot-timeline tail ---"
+    tail -30 /run/setuphelfer-rescue/boot-timeline.jsonl 2>/dev/null \
+      || tail -30 /var/log/setuphelfer/boot-timeline.jsonl 2>/dev/null || echo "MISSING"
+    echo "--- processes ---"
+    ps -ef 2>/dev/null | grep -E 'openvt|chvt|startx|Xorg|Xorg.bin|chromium|whiptail' | grep -v grep || true
+  } >"$out"
+  setuphelfer_rescue_mirror_evidence_file "$out" "$rel/$(basename "$out")" || true
+  printf '%s' "$out"
+}
+
+setuphelfer_rescue_evaluate_msi_lab_evidence() {
+  local out_dir="${1:-/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b}"
+  local lab_auto="${2:-0}"
+  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  [[ -d "$py_backend" ]] || return 1
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY
+import json
+from pathlib import Path
+from core.rescue_msi_lab_evidence_eval import evaluate_msi_lab_evidence
+
+out_dir = Path(${out_dir@Q})
+lab_auto = ${lab_auto@Q} in ("1", 1, "true", "True", "yes")
+result = evaluate_msi_lab_evidence(
+    evidence_dir=out_dir,
+    check_processes=True,
+    lab_auto_unattended=lab_auto,
+)
+path = out_dir / "lab-auto-result.json"
+path.parent.mkdir(parents=True, exist_ok=True)
+path.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8")
+print(json.dumps({"path": str(path), "result_status": result.get("result_status")}))
+PY
+}
+
+setuphelfer_rescue_auto_shutdown_if_requested() {
+  local reason="${1:-msi_lab_evidence_complete}"
+  setuphelfer_rescue_auto_shutdown_requested || return 0
+  setuphelfer_rescue_write_boot_state "auto_shutdown_${reason}" || true
+  sync 2>/dev/null || true
+  systemctl poweroff 2>/dev/null || /sbin/poweroff 2>/dev/null || true
+}
+
 # PI-RS-MSI-GUI-002: block GUI under MSI-Compat + nomodeset (text mode primary).
 SETUPHELFER_GUI_AVAILABILITY_JSON="${SETUPHELFER_GUI_AVAILABILITY_JSON:-/run/setuphelfer/gui-availability.json}"
 

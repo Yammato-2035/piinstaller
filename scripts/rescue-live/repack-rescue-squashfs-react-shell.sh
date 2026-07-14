@@ -94,6 +94,7 @@ for script in \
   setuphelfer-rescue-boot-evidence-init \
   setuphelfer-rescue-boot-progress \
   setuphelfer-rescue-auto-msi-evidence \
+  setuphelfer-rescue-auto-physical-e2e \
   setuphelfer-rescue-lab-auto-shutdown-failsafe \
   setuphelfer-rescue-msi-rs011b-collect \
   setuphelfer-rescue-physical-e2e; do
@@ -152,7 +153,8 @@ WANTS="${SYSTEMD}/multi-user.target.wants"
 TIMERS="${SYSTEMD}/timers.target.wants"
 mkdir -p "$WANTS" "$TIMERS"
 for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service \
-  setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service; do
+  setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service \
+  setuphelfer-rescue-auto-physical-e2e.service; do
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done

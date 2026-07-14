@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "backup_job_id": "853c3e87dc5d4853",
+  "source_type": "synthetic_test_data",
+  "target_type": "external_file_archive",
+  "started_at": "2026-07-14T15:34:04Z",
+  "completed_at": "2026-07-14T15:34:05Z",
+  "duration_seconds": null,
+  "file_count": 131,
+  "total_bytes": 68080375,
+  "manifest_sha256": "7465f06907a9163a15a06edcf29cab212951d731373aae5f7e40fb31ca0261b8",
+  "backup_format": "tar.gz+manifest",
+  "archive_path": "/tmp/setuphelfer-e2e-lab-work/backup/e2e-backup.tar.gz",
+  "manifest_entries": 0,
+  "real_operation": true
+}

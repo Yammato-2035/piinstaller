@@ -1,0 +1,33 @@
+{
+  "feature": "SETUPHELFER-E2E-LIVE-001D",
+  "e2e_run_id": "e2e-rescue-physical-20260714-153401-d35375d0",
+  "status": "physical_rescue_backup_restore_e2e_passed",
+  "production_ready": false,
+  "integrity": {
+    "file_count_match": true,
+    "total_bytes_match": true,
+    "manifest_match": true,
+    "restore_integrity_status": "passed",
+    "source_file_count": 131,
+    "restored_file_count": 131,
+    "source_total_bytes": 68080375,
+    "restored_total_bytes": 68080375,
+    "source_manifest_sha256": "7465f06907a9163a15a06edcf29cab212951d731373aae5f7e40fb31ca0261b8",
+    "restored_manifest_sha256": "7465f06907a9163a15a06edcf29cab212951d731373aae5f7e40fb31ca0261b8"
+  },
+  "telemetry": {
+    "events_expected": 8,
+    "events_recorded": 8,
+    "receipts_stored": 8,
+    "consent": {
+      "shown": true,
+      "granted": true,
+      "local_only": false,
+      "aborted": false,
+      "telemetry_status": "consent_granted",
+      "signature_required": true
+    }
+  },
+  "ionos_backup_target_verified": false,
+  "physical_backup_restore_passed": true
+}
