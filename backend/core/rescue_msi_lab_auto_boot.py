@@ -39,24 +39,40 @@ def _extract_menuentry_block(text: str, title: str) -> tuple[str, str, str]:
     return text[:start], text[start:end], text[end:]
 
 
+def _ensure_msi_lab_cmdline_flags(msi_block: str) -> str:
+    out = msi_block
+    if "setuphelfer_msi_lab_auto=1" not in out:
+        out = re.sub(
+            r"(setuphelfer_msi_compat=1\s+pci=noaer nouveau\.modeset=0 nomodeset)",
+            rf"\1 {MSI_LAB_CMDLINE_FLAGS}",
+            out,
+            count=1,
+        )
+    for flag in MSI_LAB_CMDLINE_FLAGS.split():
+        if flag not in out:
+            out = re.sub(
+                r"(setuphelfer_msi_lab_auto=1)",
+                rf"\1 {flag}",
+                out,
+                count=1,
+            )
+    return out
+
+
 def patch_grub_cfg_for_msi_lab_auto_boot(grub_text: str) -> str:
     """Set MSI compat as first menu entry with short countdown and lab cmdline flags."""
     first_menu = _first_menuentry_index(grub_text)
     if first_menu < 0:
         raise ValueError("GRUB_MENU_ENTRIES_NOT_FOUND")
 
-    _, msi_block, _ = _extract_menuentry_block(grub_text, MSI_COMPAT_MENU_TITLE)
-    if MSI_LAB_CMDLINE_FLAGS.split()[0] not in msi_block:
-        msi_block = re.sub(
-            r"(setuphelfer_msi_compat=1\s+pci=noaer nouveau\.modeset=0 nomodeset)",
-            rf"\1 {MSI_LAB_CMDLINE_FLAGS}",
-            msi_block,
-            count=1,
-        )
-
-    without_msi = grub_text.replace(msi_block, "", 1)
-    preamble = without_msi[: _first_menuentry_index(without_msi)]
-    other_entries = without_msi[_first_menuentry_index(without_msi) :].lstrip("\n")
+    before_msi, original_msi_block, after_msi = _extract_menuentry_block(grub_text, MSI_COMPAT_MENU_TITLE)
+    msi_block = _ensure_msi_lab_cmdline_flags(original_msi_block)
+    without_msi = before_msi + after_msi
+    first_menu = _first_menuentry_index(without_msi)
+    if first_menu < 0:
+        raise ValueError("GRUB_MENU_ENTRIES_NOT_FOUND")
+    preamble = without_msi[:first_menu]
+    other_entries = without_msi[first_menu:].lstrip("\n")
 
     lines: list[str] = []
     for line in preamble.splitlines():

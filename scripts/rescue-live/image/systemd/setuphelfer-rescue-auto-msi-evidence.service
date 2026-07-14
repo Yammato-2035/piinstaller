@@ -1,13 +1,13 @@
 [Unit]
-Description=Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot)
+Description=Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot, late gate)
 After=setuphelfer-backend.service network-online.target
-Wants=setuphelfer-backend.service
+Wants=setuphelfer-backend.service setuphelfer-rescue-start-assistant.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence
 ConditionPathExists=!/run/setuphelfer-rescue/auto-msi-evidence.done
 
 [Service]
 Type=oneshot
-TimeoutStartSec=180
+TimeoutStartSec=900
 ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence
 StandardOutput=journal
 StandardError=journal

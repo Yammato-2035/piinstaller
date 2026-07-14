@@ -1,0 +1,14 @@
+[Unit]
+Description=Setuphelfer Rescue MSI lab auto-shutdown failsafe
+ConditionKernelCommandLine=setuphelfer_msi_lab_auto=1
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-lab-auto-shutdown-failsafe
+ConditionPathExists=!/run/setuphelfer-rescue/auto-msi-evidence.done
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/setuphelfer-rescue-lab-auto-shutdown-failsafe
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=timers.target

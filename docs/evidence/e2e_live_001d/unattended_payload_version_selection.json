@@ -1,0 +1,10 @@
+{
+  "previous_version": "1.10.0.21",
+  "highest_existing_version": "1.10.0.21",
+  "selected_version": "1.10.0.22",
+  "selection_reason": "Next free patch after stick baseline 1.10.0.21; adds unattended MSI physical E2E service. 1.10.0.22 not built, deployed, reserved, or documented in active evidence.",
+  "version_collision_detected": false,
+  "stick_baseline_version": "1.10.0.21",
+  "feature_branch_head": "3c75394115f021bf35a5ec24cb436132bca12032",
+  "selected_at_utc": "2026-07-14T20:30:00Z"
+}

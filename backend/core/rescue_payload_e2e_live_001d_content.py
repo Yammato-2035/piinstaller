@@ -20,8 +20,11 @@ _E2E_MODULE_MARKERS = (
 
 _E2E_SCRIPT_MARKERS = (
     "setuphelfer-rescue-physical-e2e",
+    "setuphelfer-rescue-auto-physical-e2e",
     "create-e2e-backup-test-data.sh",
 )
+
+_UNATTENDED_UNIT = "setuphelfer-rescue-auto-physical-e2e.service"
 
 _SECRET_MARKERS = (
     "telemetry-lab-token",
@@ -72,6 +75,9 @@ def verify_rescue_payload_e2e_live_001d_content(squashfs_path: Path) -> dict[str
     verify_engine = "backup_verify.py" in listing
     restore_engine = "restore_engine.py" in listing
     ca_certs = "ca-certificates" in listing or "ca-certificates.crt" in listing
+    unattended_service = "setuphelfer-rescue-auto-physical-e2e" in listing
+    unattended_unit = _UNATTENDED_UNIT in listing
+    unit_wanted = f"multi-user.target.wants/{_UNATTENDED_UNIT}" in listing
 
     content_ok = (
         base.get("content_ok") is True
@@ -83,6 +89,9 @@ def verify_rescue_payload_e2e_live_001d_content(squashfs_path: Path) -> dict[str
         and verify_engine
         and restore_engine
         and ca_certs
+        and unattended_service
+        and unattended_unit
+        and unit_wanted
         and not secret_hits
     )
 
@@ -98,6 +107,9 @@ def verify_rescue_payload_e2e_live_001d_content(squashfs_path: Path) -> dict[str
         "verify_engine_present": verify_engine,
         "restore_engine_present": restore_engine,
         "ca_certificates_present": ca_certs,
+        "unattended_service_present": unattended_service,
+        "unattended_service_unit_present": unattended_unit,
+        "unattended_service_unit_enabled": unit_wanted,
         "secret_markers_in_listing": secret_hits,
         "secrets_absent": not secret_hits,
         "unsquashfs_ok": ok,

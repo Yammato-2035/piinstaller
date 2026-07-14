@@ -1,0 +1,17 @@
+{
+  "verified_at_utc": "2026-07-14T20:33:10Z",
+  "grub_cfg_path": "/media/volker/SETUPHELFER/boot/grub/grub.cfg",
+  "patch_script": "scripts/rescue/configure-stick-msi-lab-auto-grub.sh",
+  "patch_result": "no_changes_required",
+  "required_parameters": {
+    "setuphelfer_msi_lab_auto=1": true,
+    "setuphelfer_msi_e2e_auto=1": true,
+    "setuphelfer_auto_shutdown=1": true,
+    "setuphelfer_msi_lab_late_sec=120": true,
+    "timeout=3": true
+  },
+  "msi_compat_first_entry": true,
+  "tui_only_profile_preserved": true,
+  "gui_autostart_absent_from_default_boot": true,
+  "grub_gate": "passed"
+}

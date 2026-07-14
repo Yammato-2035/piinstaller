@@ -1,0 +1,21 @@
+#!/bin/bash
+# Lab failsafe — poweroff if auto-msi-evidence did not finish (MSI lab boots only).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_msi_lab_auto_active || exit 0
+[[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]] && exit 0
+
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/lab-auto-shutdown-failsafe.log"
+{
+  echo "=== lab-auto-shutdown-failsafe $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  echo "reason=timeout_failsafe"
+  cat /proc/uptime 2>/dev/null || true
+} >>"$_log"
+
+setuphelfer_rescue_write_boot_state "lab_auto_shutdown_failsafe" || true
+sync 2>/dev/null || true
+setuphelfer_rescue_auto_shutdown_if_requested "failsafe_timeout" || true
+exit 0

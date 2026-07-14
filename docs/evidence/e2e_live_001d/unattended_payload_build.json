@@ -1,0 +1,34 @@
+{
+  "payload_version": "1.10.0.22",
+  "previous_payload_version": "1.10.0.21",
+  "squashfs_path": "build/rescue/filesystem.squashfs.repacked-1.10.0.22",
+  "squashfs_sha256": "9190460c3aa785252eaa4aef51569b9ab103fca24997e0bc941f59b7835bac4e",
+  "squashfs_size_bytes": 1285689344,
+  "build_mode": "payload_repack",
+  "built_at_utc": "2026-07-14T20:30:48Z",
+  "source_commit": "3c75394115f021bf35a5ec24cb436132bca12032",
+  "build_branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+  "feature": "SETUPHELFER-E2E-LIVE-001D3A",
+  "unattended_service": "setuphelfer-rescue-auto-physical-e2e",
+  "content_verification": {
+    "payload_content_gate": "passed",
+    "version_gate": "passed",
+    "secret_gate": "passed",
+    "unattended_service_gate": "passed",
+    "unattended_service_present": true,
+    "unattended_service_unit_present": true,
+    "unattended_service_unit_enabled": true,
+    "content_ok": true,
+    "secrets_absent": true,
+    "version_carriers": {
+      "VERSION": "1.10.0.22",
+      "rescue_payload_version.json": "1.10.0.22",
+      "version.json": "1.10.0.22"
+    }
+  },
+  "prebuild_tests": {
+    "failed_total": 0,
+    "passed": 66,
+    "skipped": 1
+  }
+}

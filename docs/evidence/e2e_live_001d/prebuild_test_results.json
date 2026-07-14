@@ -1,35 +1,26 @@
 {
-  "captured_at_utc": "2026-07-14T14:32:00Z",
+  "captured_at_utc": "2026-07-14T20:29:36Z",
+  "feature": "SETUPHELFER-E2E-LIVE-001D3A",
   "tests": [
-    {
-      "name": "test_rescue_physical_e2e_v1.py",
-      "passed": 14,
-      "failed": 0,
-      "skipped": 0
-    },
-    {
-      "name": "test_pi_rs_e2e_live_001d_payload_version_1_10_0_21.py",
-      "passed": 5,
-      "failed": 0,
-      "skipped": 0
-    },
-    {
-      "name": "test_rescue_payload_msi_gui003_tui_console_isolation.py",
-      "passed": 24,
-      "failed": 0,
-      "skipped": 1
-    },
-    {
-      "name": "check-rescue-ui-smoke-gate.sh",
-      "passed": true
-    },
-    {
-      "name": "check-rescue-payload-no-secrets.sh",
-      "passed": true
-    }
+    {"name": "test_rescue_physical_e2e_v1.py", "passed": 14, "failed": 0, "skipped": 0},
+    {"name": "test_rescue_msi_e2e_auto.py", "passed": 3, "failed": 0, "skipped": 0},
+    {"name": "test_rescue_physical_e2e_dev_automation.py", "passed": 3, "failed": 0, "skipped": 0},
+    {"name": "test_rescue_msi_lab_auto_evidence_v1.py", "passed": 6, "failed": 0, "skipped": 0},
+    {"name": "test_pi_rs_e2e_live_001d_payload_version_1_10_0_22.py", "passed": 4, "failed": 0, "skipped": 1},
+    {"name": "test_rescue_payload_msi_gui003_tui_console_isolation.py", "passed": 24, "failed": 0, "skipped": 1},
+    {"name": "test_pi_rs_payload_telemetry001_no_secrets.py", "passed": 2, "failed": 0, "skipped": 0},
+    {"name": "test_pi_rs_tel_send001_secret_redaction.py", "passed": 2, "failed": 0, "skipped": 0},
+    {"name": "test_redaction_contract_v1.py", "passed": 1, "failed": 0, "skipped": 0},
+    {"name": "check-rescue-payload-no-secrets.sh", "passed": true},
+    {"name": "check-rescue-ui-smoke-gate.sh", "passed": true}
   ],
   "failed_total": 0,
-  "relevant_skipped_total": 0,
+  "relevant_skipped_total": 1,
+  "synthetic_fallback_classification": {
+    "layout_mode": "msi_lab_synthetic",
+    "production_ready": false,
+    "note": "Synthetic /run fallback does not claim full physical E2E success; external USB target pending for production path"
+  },
   "lab_token_in_payload": false,
   "private_key_in_payload": false,
   "local_env_in_payload": false

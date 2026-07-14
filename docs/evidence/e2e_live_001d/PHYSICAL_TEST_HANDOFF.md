@@ -1,86 +1,42 @@
-# Physical MSI Test Handoff — SETUPHELFER-E2E-LIVE-001D
-
-## Build
+# SETUPHELFER-E2E-LIVE-001D3A — Physical Test Handoff
 
 | Feld | Wert |
 |------|------|
-| Payload-Version | `1.10.0.21` |
-| Payload-SHA256 | `55610ae4926a5a9f126a695e77c399125bdeabbcb52bd8e130587ca9db615bd7` |
-| Vorherige Version (Stick) | `1.10.0.20` |
-| Buildmodus | `payload_repack` |
-| USB-Update | `2026-07-14T14:31:52Z` (atomar, erfolgreich) |
+| Feature | `SETUPHELFER-E2E-LIVE-001D3A` |
+| Payload-Version | `1.10.0.22` |
+| Payload-SHA256 | `9190460c3aa785252eaa4aef51569b9ab103fca24997e0bc941f59b7835bac4e` |
+| Stick | Intenso Ultra Line `/dev/sda` |
+| SETUPHELFER UUID | `9BB9-A4A6` |
+| SETUP_LOGS UUID | `9BC7-3950` (unverändert) |
+| Unattended Service | `setuphelfer-rescue-auto-physical-e2e` |
+| GRUB MSI-Lab-Auto | aktiv (`setuphelfer_msi_lab_auto=1`) |
+| GRUB MSI-E2E-Auto | aktiv (`setuphelfer_msi_e2e_auto=1`) |
+| Auto-Shutdown | nach E2E (`setuphelfer_auto_shutdown=1`) |
+| production_ready | `false` |
+| Status | `implemented_pending_unattended_msi_run` |
 
-## Git
+## Boot-Reihenfolge (systemd)
 
-| Feld | Wert |
-|------|------|
-| Branch | `pi-rs-e2e-live-001d-physical-backup-restore` |
-| Feature-HEAD (Build) | `21fa7b5b` + Versions-/Build-Evidence-Commits |
-| Stick-Gerät | Intenso Ultra Line `/dev/sda` |
+1. `setuphelfer-rescue-auto-msi-evidence.service` — MSI RS-011B Evidence (Late Gate 120s)
+2. `setuphelfer-rescue-auto-physical-e2e.service` — Unattended Physical E2E
+3. Evidence-Spool-Sync (via Service-Kette)
+4. Shutdown nach E2E-Abschluss (GRUB `setuphelfer_auto_shutdown=1`)
 
-## TUI-Ablauf am MSI
+## Operator-Schritte (MSI GE63)
 
-1. Vom Stick booten (Payload `1.10.0.21` prüfen)
-2. Stabile TUI abwarten (MSI-Compat, kein GUI-Autostart)
-3. Menü: **„E2E Backup-/Restore-Test“**
-4. Telemetrie-Consent: **Zustimmen und senden** (für Live-Nachweis)
-5. Operator-Gate im Assistenten lesen und bestätigen
+1. Vom Stick booten — MSI/NVIDIA-Kompatibilitätsmodus ist erster GRUB-Eintrag (timeout 3s)
+2. Payload-Version `1.10.0.22` auf TTY1/Backend prüfen
+3. Lab-Token **nicht** in Payload — zur Laufzeit unter `SETUP_LOGS/setuphelfer/lab/telemetry-lab-token` bereitstellen (optional für Telemetry-Send)
+4. Unbeaufsichtigter Lauf: Evidence → E2E → Sync → Shutdown
+5. Nach Reboot: Evidence importieren mit `scripts/rescue/import-e2e-live-001d-evidence.sh`
 
-## Externes Testmedium
+## Bekannte Vorläufe (nicht überschreiben)
 
-- Dediziertes externes USB-/HDD-Testziel mit ausreichend freiem Speicher (≥ 512 MiB)
-- Restore-Ziel: **separates, zunächst leeres** Verzeichnis auf demselben oder einem zweiten externen Medium
-- **Nicht** erlaubt: interne NVMe/SATA, SETUPHELFER, SETUP_LOGS, Systempartitionen
+- Dev-Lab-Lauf `e2e-rescue-physical-20260714-153401-d35375d0` bleibt auf SETUP_LOGS erhalten
 
-## Laufzeit-Konfiguration (nicht im Image)
+## Evidence-Artefakte
 
-```text
-SETUPHELFER_RS_TELEMETRY_LAB_TOKEN_FILE=<Pfad zur Laufzeit-Token-Datei>
-SETUPHELFER_RS_TELEMETRY_ENDPOINT=https://telemetrie.setuphelfer.de/v1/telemetry/ingest
-```
-
-Der Lab-Token wird **nicht** im Payload, Build oder dieser Doku gespeichert.
-
-## Telemetrie-Endpunkt
-
-```text
-https://telemetrie.setuphelfer.de/v1/telemetry/ingest
-```
-
-## Evidence-Pfade (SETUP_LOGS)
-
-```text
-setuphelfer/evidence/e2e/<PHYSICAL_E2E_RUN_ID>/
-  event-journal.jsonl
-  receipts.json
-  diagnostics-status.json
-  backup-result.json
-  verify-result.json
-  restore-result.json
-  source-summary.json
-  restored-summary.json
-  manifest-comparison.json
-  e2e-result.json
-```
-
-Import nach Entwicklungsrechner:
-
-```text
-docs/evidence/e2e_live_001d/physical_run/<PHYSICAL_E2E_RUN_ID>/
-```
-
-## Abbruchbedingungen
-
-```text
-STOP — physical_test_storage_not_confirmed
-STOP — unsafe_restore_target
-STOP — operator_gate_blocked
-STOP — consent_not_granted (nur für Live-Telemetrie-Nachweis)
-```
-
-## Status
-
-```text
-implemented_pending_physical_msi_test
-production_ready=false
-```
+- `docs/evidence/e2e_live_001d/unattended_payload_version_selection.json`
+- `docs/evidence/e2e_live_001d/unattended_payload_build.json`
+- `docs/evidence/e2e_live_001d/unattended_usb_update.json`
+- `docs/evidence/e2e_live_001d/grub_msi_auto_e2e_verification.json`

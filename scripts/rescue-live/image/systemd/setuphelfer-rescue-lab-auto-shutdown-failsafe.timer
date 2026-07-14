@@ -1,0 +1,11 @@
+[Unit]
+Description=Setuphelfer Rescue MSI lab auto-shutdown failsafe timer
+ConditionKernelCommandLine=setuphelfer_msi_lab_auto=1
+
+[Timer]
+OnBootSec=420s
+Persistent=false
+Unit=setuphelfer-rescue-lab-auto-shutdown-failsafe.service
+
+[Install]
+WantedBy=timers.target
