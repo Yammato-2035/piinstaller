@@ -1,0 +1,15 @@
+{
+  "previous_version": "1.10.0.20",
+  "selected_version": "1.10.0.21",
+  "sync_targets": {
+    "config/rescue_payload_version.json": "1.10.0.21",
+    "backend/core/rescue_payload_version.py": "1.10.0.21",
+    "squashfs_VERSION": "1.10.0.21",
+    "squashfs_rescue_payload_version.json": "1.10.0.21",
+    "squashfs_version.json": "1.10.0.21",
+    "usb_esp_metadata": "1.10.0.21"
+  },
+  "all_carriers_match": true,
+  "feature_flag": "pi_rs_e2e_live_001d",
+  "synchronized_at_utc": "2026-07-14T14:32:00Z"
+}

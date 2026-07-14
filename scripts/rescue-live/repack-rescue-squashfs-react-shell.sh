@@ -94,7 +94,9 @@ for script in \
   setuphelfer-rescue-boot-evidence-init \
   setuphelfer-rescue-boot-progress \
   setuphelfer-rescue-auto-msi-evidence \
-  setuphelfer-rescue-msi-rs011b-collect; do
+  setuphelfer-rescue-lab-auto-shutdown-failsafe \
+  setuphelfer-rescue-msi-rs011b-collect \
+  setuphelfer-rescue-physical-e2e; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script}"
 done
 for script in setuphelfer-rescue-gui-watchdog.sh setuphelfer-rescue-entrypoint.sh setuphelfer-rescue-tui.sh; do
@@ -116,6 +118,11 @@ mkdir -p "${ROOT}/opt/setuphelfer-rescue/scripts" "${ROOT}/opt/setuphelfer-rescu
 for script in lab-rs-tel-send001-preview.sh lab-rs-tel-send001-send.sh; do
   install -m 0755 "${REPO_ROOT}/scripts/${script}" "${ROOT}/opt/setuphelfer-rescue/scripts/${script}"
 done
+mkdir -p "${ROOT}/opt/setuphelfer-rescue/scripts/rescue"
+install -m 0755 "${REPO_ROOT}/scripts/rescue/collect-msi-rs011b-evidence.sh" \
+  "${ROOT}/opt/setuphelfer-rescue/scripts/rescue/collect-msi-rs011b-evidence.sh"
+install -m 0755 "${REPO_ROOT}/scripts/create-e2e-backup-test-data.sh" \
+  "${ROOT}/opt/setuphelfer-rescue/scripts/create-e2e-backup-test-data.sh"
 for cfg in rescue_payload_version.json rescue_telemetry_endpoints.json; do
   [[ -f "${REPO_ROOT}/config/${cfg}" ]] && install -m 0644 "${REPO_ROOT}/config/${cfg}" "${ROOT}/opt/setuphelfer-rescue/config/${cfg}"
 done
@@ -149,6 +156,15 @@ for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.s
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done
+# Failsafe: only the timer is enabled (OnBootSec=420s). The oneshot service must not
+# be linked into multi-user.target — that would poweroff ~12s into boot before evidence runs.
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.service" \
+  "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer" \
+  "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer"
+ln -sf "../setuphelfer-rescue-lab-auto-shutdown-failsafe.timer" \
+  "${TIMERS}/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer"
+rm -f "${WANTS}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
 # GUI autostart is opt-in via GRUB/TUI; entrypoint orchestrates text default + gui watchdog.
 rm -f "${WANTS}/setuphelfer-rescue-ui.service"

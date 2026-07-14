@@ -1,0 +1,9 @@
+{
+  "previous_version": "1.10.0.20",
+  "highest_existing_version": "1.10.0.20",
+  "selected_version": "1.10.0.21",
+  "selection_reason": "Next free patch after physical stick baseline 1.10.0.20; 1.10.0.21 not built or reserved.",
+  "version_collision_detected": false,
+  "stick_baseline_version": "1.10.0.20",
+  "feature_branch_head": "21fa7b5b"
+}

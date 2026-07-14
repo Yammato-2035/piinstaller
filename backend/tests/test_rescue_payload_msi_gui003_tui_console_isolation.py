@@ -199,8 +199,8 @@ class MsiGui003ShellGuardTests(unittest.TestCase):
 
 
 class MsiGui003VersionTests(unittest.TestCase):
-    def test_payload_version_is_1_10_0_16(self) -> None:
-        self.assertEqual(rescue_payload_version(), "1.10.0.16")
+    def test_payload_version_is_1_10_0_21(self) -> None:
+        self.assertEqual(rescue_payload_version(), "1.10.0.21")
 
 
 class MsiGui003SimulatedBootTests(unittest.TestCase):

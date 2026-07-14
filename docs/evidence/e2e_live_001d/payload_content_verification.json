@@ -1,0 +1,39 @@
+{
+  "squashfs_path": "build/rescue/filesystem.squashfs.repacked-1.10.0.21",
+  "expected_version": "1.10.0.21",
+  "base_msi_gui003_ok": true,
+  "version_carriers": {
+    "payload_version_expected": "1.10.0.21",
+    "payload_version_carriers": {
+      "VERSION": "1.10.0.21",
+      "rescue_payload_version.json": "1.10.0.21",
+      "version.json": "1.10.0.21"
+    },
+    "all_version_carriers_match": true,
+    "mismatches": {},
+    "stale_runtime_version_hits": []
+  },
+  "e2e_modules": {
+    "rescue_physical_e2e_orchestrator.py": true,
+    "rescue_physical_e2e_event_emitter.py": true,
+    "rescue_physical_e2e_send.py": true,
+    "rescue_physical_e2e_storage_safety.py": true,
+    "rescue_physical_e2e_journal.py": true
+  },
+  "e2e_scripts": {
+    "setuphelfer-rescue-physical-e2e": true,
+    "create-e2e-backup-test-data.sh": true
+  },
+  "e2e_tui_menu_present": true,
+  "backup_engine_present": true,
+  "verify_engine_present": true,
+  "restore_engine_present": true,
+  "ca_certificates_present": true,
+  "secret_markers_in_listing": [],
+  "secrets_absent": true,
+  "unsquashfs_ok": true,
+  "content_ok": true,
+  "lab_token_in_payload": false,
+  "private_key_in_payload": false,
+  "local_env_in_payload": true
+}

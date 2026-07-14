@@ -1,0 +1,36 @@
+{
+  "captured_at_utc": "2026-07-14T14:32:00Z",
+  "tests": [
+    {
+      "name": "test_rescue_physical_e2e_v1.py",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_pi_rs_e2e_live_001d_payload_version_1_10_0_21.py",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "name": "test_rescue_payload_msi_gui003_tui_console_isolation.py",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 1
+    },
+    {
+      "name": "check-rescue-ui-smoke-gate.sh",
+      "passed": true
+    },
+    {
+      "name": "check-rescue-payload-no-secrets.sh",
+      "passed": true
+    }
+  ],
+  "failed_total": 0,
+  "relevant_skipped_total": 0,
+  "lab_token_in_payload": false,
+  "private_key_in_payload": false,
+  "local_env_in_payload": false
+}

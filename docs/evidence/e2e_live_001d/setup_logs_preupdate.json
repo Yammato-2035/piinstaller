@@ -1,0 +1,16 @@
+{
+  "captured_at_utc": "2026-07-14T14:29:52Z",
+  "setup_logs_mount": "/media/volker/SETUP_LOGS",
+  "label": "SETUP_LOGS",
+  "uuid": "9BC7-3950",
+  "filesystem": "vfat",
+  "used_bytes_estimate": 53510144,
+  "evidence_file_count": 69,
+  "evidence_sample_hash": "b169bd2eaf4a1362",
+  "latest_evidence_dirs": [
+    "updates",
+    "msi-rs011b",
+    "boot"
+  ],
+  "setup_logs_preservation_required": true
+}

@@ -1,0 +1,12 @@
+{
+  "decision": "payload_repack",
+  "reason": "Source squashfs 1.10.0.20 contains chromium, backup/verify/restore engines, Python runtime, CA certs, and MSI-GUI-003 TUI profile. E2E modules and scripts are injected via repack rsync/install.",
+  "source_squashfs": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.20",
+  "required_modules_injected_by_repack": [
+    "rescue_physical_e2e_*",
+    "setuphelfer-rescue-physical-e2e",
+    "create-e2e-backup-test-data.sh",
+    "setuphelfer-rescue-tui.sh E2E menu"
+  ],
+  "controlled_live_build_required": false
+}
