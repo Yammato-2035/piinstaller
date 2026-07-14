@@ -1,0 +1,21 @@
+{
+  "feature": "SETUPHELFER-E2E-LIVE-001D",
+  "workspace": "/home/volker/piinstaller",
+  "repository": "piinstaller",
+  "branch_at_audit": "main",
+  "head_at_audit": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5",
+  "origin_main_at_audit": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5",
+  "rescue_payload_version": "1.10.0.20",
+  "previous_rescue_payload_version": "1.10.0.19",
+  "live_pipeline_status": "live_pipeline_ready_for_physical_rescue_test",
+  "live_monorepo_head": "e101058",
+  "working_tree": "bekannte_drift",
+  "drift_summary": [
+    "MSI GUI 003 / auto evidence 001 in progress",
+    "payload version 1.10.0.20 local bumps",
+    "untracked MSI retest and FAQ artifacts"
+  ],
+  "arbeitsfreigabe": true,
+  "production_ready": false,
+  "audited_at_utc": "2026-07-14T14:10:00Z"
+}

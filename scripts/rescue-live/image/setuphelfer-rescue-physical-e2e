@@ -1,0 +1,81 @@
+#!/usr/bin/env python3
+"""CLI entry for physical rescue E2E on booted rescue stick."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+BACKEND = Path(__file__).resolve().parents[2] / "backend"
+if str(BACKEND) not in sys.path:
+    sys.path.insert(0, str(BACKEND))
+
+from core.rescue_physical_e2e_consent import CONSENT_DIALOG_TEXT_DE, CONSENT_OPTIONS
+from core.rescue_physical_e2e_orchestrator import build_operator_gate_summary, run_physical_e2e_workflow
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Physical rescue E2E backup/verify/restore")
+    parser.add_argument("--source-dir", required=True)
+    parser.add_argument("--backup-archive", required=True)
+    parser.add_argument("--restore-dir", required=True)
+    parser.add_argument("--consent", choices=["granted", "local_only", "aborted"], default="aborted")
+    parser.add_argument("--operator-approved", action="store_true")
+    parser.add_argument("--show-consent", action="store_true")
+    parser.add_argument("--show-gate", action="store_true")
+    parser.add_argument("--dry-run-gate", action="store_true")
+    parser.add_argument("--setup-logs-base", default="")
+    parser.add_argument("--token-file", default="")
+    parser.add_argument("--ingest-url", default="")
+    args = parser.parse_args()
+
+    if args.show_consent:
+        print(CONSENT_DIALOG_TEXT_DE)
+        for key, label in CONSENT_OPTIONS:
+            print(f"  [{key}] {label}")
+        return 0
+
+    source = Path(args.source_dir)
+    backup = Path(args.backup_archive)
+    restore = Path(args.restore_dir)
+    allowed_source = (source.parent.resolve(), source.resolve())
+    allowed_output = (backup.parent.resolve(),)
+    allowed_restore = (restore.parent.resolve(), restore.resolve())
+    setup_logs = Path(args.setup_logs_base) if args.setup_logs_base else None
+
+    if args.show_gate or args.dry_run_gate:
+        from core.rescue_physical_e2e_orchestrator import init_physical_e2e_session
+
+        session, _ = init_physical_e2e_session(consent=args.consent, setup_logs_base=setup_logs)
+        print(
+            build_operator_gate_summary(
+                session,
+                source_path=str(source),
+                backup_target_path=str(backup.parent),
+                restore_target_path=str(restore),
+            )
+        )
+        return 0
+
+    result = run_physical_e2e_workflow(
+        source_dir=source,
+        backup_archive=backup,
+        restore_dir=restore,
+        consent=args.consent,
+        operator_approved=args.operator_approved,
+        allowed_source_prefixes=allowed_source,
+        allowed_output_prefixes=allowed_output,
+        allowed_restore_prefixes=allowed_restore,
+        setup_logs_base=setup_logs,
+        token_file=args.token_file or None,
+        ingest_url=args.ingest_url or None,
+        skip_diagnostics_poll=not args.operator_approved,
+    )
+    print(json.dumps(result, indent=2, ensure_ascii=False))
+    return 0 if result.get("success") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

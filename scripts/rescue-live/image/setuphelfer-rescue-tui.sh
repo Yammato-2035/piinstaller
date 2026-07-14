@@ -93,6 +93,60 @@ PY
   _tui_msg "Backup-Plan (dry-run, keine Ausführung)\n\n${msg}\n\nGespeichert: ${plan_out}"
 }
 
+_tui_run_physical_e2e() {
+  local py="/opt/setuphelfer-rescue/backend"
+  local cli="${SCRIPT_DIR}/setuphelfer-rescue-physical-e2e"
+  if [[ ! -x "$cli" ]] && [[ -f "${SCRIPT_DIR}/setuphelfer-rescue-physical-e2e" ]]; then
+    chmod +x "${SCRIPT_DIR}/setuphelfer-rescue-physical-e2e" 2>/dev/null || true
+  fi
+  if [[ ! -f "$cli" ]]; then
+    _tui_msg "E2E-Test: CLI setuphelfer-rescue-physical-e2e fehlt."
+    return
+  fi
+  local consent
+  consent="$(whiptail --title "Telemetrie-Einwilligung" --menu \
+    "Technische Laufinfo senden?" 20 74 3 \
+    "granted" "Zustimmen und senden" \
+    "local_only" "Nur lokal protokollieren" \
+    "aborted" "Abbrechen" \
+    3>&1 1>"$_wt" 2>&3)" || return 0
+  if [[ "$consent" == "aborted" ]]; then
+    _tui_msg "E2E-Test abgebrochen."
+    return
+  fi
+  local base="${SETUPHELFER_RESCUE_STATE_DIR}/e2e-test"
+  mkdir -p "${base}/source" "${base}/backup" "${base}/restore"
+  if [[ -x "${SCRIPT_DIR}/../../create-e2e-backup-test-data.sh" ]]; then
+    "${SCRIPT_DIR}/../../create-e2e-backup-test-data.sh" "${base}/source" >/dev/null 2>&1 || true
+  elif [[ -x /opt/setuphelfer-rescue/scripts/create-e2e-backup-test-data.sh ]]; then
+    /opt/setuphelfer-rescue/scripts/create-e2e-backup-test-data.sh "${base}/source" >/dev/null 2>&1 || true
+  fi
+  PYTHONPATH="${py}" "$cli" --show-gate \
+    --source-dir "${base}/source" \
+    --backup-archive "${base}/backup/e2e-backup.tar.gz" \
+    --restore-dir "${base}/restore/data" \
+    --consent "$consent" >"${base}/operator-gate.txt" 2>/dev/null || true
+  if ! whiptail --title "Operator-Freigabe" --yesno "$(cat "${base}/operator-gate.txt" 2>/dev/null || echo 'E2E Gate')" 24 78; then
+    _tui_msg "E2E-Test nicht freigegeben."
+    return
+  fi
+  whiptail --title "E2E-Test" --infobox "Backup → Verify → Restore läuft…" 8 60 3>&1 1>"$_wt" 2>&3 || true
+  local result_out="${base}/e2e-result.json"
+  if PYTHONPATH="${py}" "$cli" \
+    --source-dir "${base}/source" \
+    --backup-archive "${base}/backup/e2e-backup.tar.gz" \
+    --restore-dir "${base}/restore/data" \
+    --consent "$consent" \
+    --operator-approved >"$result_out" 2>/dev/null; then
+    local status
+    status="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("status","?"))' "$result_out" 2>/dev/null || echo unknown)"
+    setuphelfer_rescue_mirror_evidence_file "$result_out" "setuphelfer/evidence/e2e/latest-run-result.json" 2>/dev/null || true
+    _tui_msg "E2E-Test abgeschlossen.\nStatus: ${status}\nDetails: ${result_out}"
+  else
+    _tui_msg "E2E-Test fehlgeschlagen.\nSiehe ${result_out}"
+  fi
+}
+
 _tui_collect_evidence() {
   whiptail --title "Setuphelfer" --infobox "Evidence wird gesammelt…" 8 50 3>&1 1>"$_wt" 2>&3 || true
   if [[ -x "${SCRIPT_DIR}/collect-rescue-runtime-diagnostics" ]]; then
@@ -135,6 +189,7 @@ _tui_main_menu() {
       "detect" "System erkennen" \
       "wifi" "Hardware/WLAN prüfen" \
       "plan" "Backup-Plan erstellen (dry-run)" \
+      "e2e" "E2E Backup-/Restore-Test" \
       "evidence" "Evidence auf Stick speichern" \
       "gui" "Grafische Oberfläche starten" \
       "shell" "Shell öffnen (tty2)" \
@@ -145,6 +200,7 @@ _tui_main_menu() {
       detect) _tui_run_system_detect ;;
       wifi) _tui_run_wifi_diag ;;
       plan) _tui_run_backup_plan ;;
+      e2e) _tui_run_physical_e2e ;;
       evidence) _tui_collect_evidence ;;
       gui) _tui_start_gui ;;
       shell) _tui_shell ;;
