@@ -1,4 +1,4 @@
-"""Unattended MSI physical E2E automation (SETUPHELFER-E2E-LIVE-001D)."""
+"""Unattended MSI physical E2E automation (SETUPHELFER-E2E-LIVE-001D / 001D4)."""
 
 from __future__ import annotations
 
@@ -11,6 +11,7 @@ from core.backup_target_auto_prepare import discover_external_backup_candidates,
 from core.rescue_backup_target_policy import RESCUE_STICK_LABELS
 from core.rescue_physical_e2e_dev_automation import create_test_data, resolve_token_file
 from core.rescue_physical_e2e_orchestrator import run_physical_e2e_workflow
+from core.rescue_physical_e2e_unattended import run_unattended_msi_physical_e2e
 from core.rescue_payload_version import rescue_payload_version
 
 FEATURE_ID = "SETUPHELFER-E2E-LIVE-001D"
@@ -131,7 +132,17 @@ def run_msi_physical_e2e_auto(
     create_data_script: Path | None = None,
     state_root: Path | None = None,
     target_bytes: int = 64 * 1024 * 1024,
+    use_legacy_path: bool = False,
 ) -> dict[str, Any]:
+    """Run unattended MSI E2E. Default: 001D4 run-control + registered target path."""
+    if not use_legacy_path:
+        return run_unattended_msi_physical_e2e(
+            repo_root=repo_root,
+            setup_logs_base=setup_logs_base,
+            create_data_script=create_data_script,
+            target_bytes=target_bytes,
+        )
+
     started = _utc_now()
     token = resolve_msi_e2e_token_file()
     consent = "granted" if token else "local_only"
@@ -156,7 +167,7 @@ def run_msi_physical_e2e_auto(
 
     try:
         create_test_data(paths["source"], repo_root=repo, target_bytes=target_bytes)
-    except Exception as exc:  # noqa: BLE001 — surface operator-facing failure code
+    except Exception as exc:  # noqa: BLE001
         return {
             "feature": FEATURE_ID,
             "started_at": started,
@@ -183,7 +194,7 @@ def run_msi_physical_e2e_auto(
         skip_diagnostics_poll=not bool(token),
     )
 
-    auto_result = {
+    return {
         "feature": FEATURE_ID,
         "schema_version": 1,
         "started_at": started,
@@ -197,7 +208,6 @@ def run_msi_physical_e2e_auto(
         "workflow": result,
         "status": "msi_e2e_auto_passed" if result.get("success") else "msi_e2e_auto_failed",
     }
-    return auto_result
 
 
 def write_msi_e2e_auto_result(result: dict[str, Any], *, evidence_dir: Path) -> Path:

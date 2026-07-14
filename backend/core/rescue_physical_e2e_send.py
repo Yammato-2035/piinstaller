@@ -17,7 +17,7 @@ from core.rescue_stick_cloud_lab_send import redact_secret_material
 
 HttpTransportFn = Callable[[str, bytes, dict[str, str], int], tuple[int, str, dict[str, str]]]
 
-MAX_RETRIES = 3
+MAX_RETRIES = 8
 DEFAULT_TIMEOUT_SECONDS = 30
 
 

@@ -13,6 +13,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 EXECUTE=false
 IMPORT_ONLY=false
 RUN_ONLY=false
+PHYSICAL_MSI_IMPORT=false
 TARGET_BYTES="${TARGET_BYTES:-67108864}"
 
 while [[ $# -gt 0 ]]; do
@@ -20,6 +21,7 @@ while [[ $# -gt 0 ]]; do
     --execute) EXECUTE=true; shift ;;
     --import-only) IMPORT_ONLY=true; shift ;;
     --run-only) RUN_ONLY=true; shift ;;
+    --physical-msi-import) PHYSICAL_MSI_IMPORT=true; shift ;;
     --target-bytes) TARGET_BYTES="$2"; shift 2 ;;
     -h|--help)
       sed -n '1,12p' "$0"
@@ -69,13 +71,15 @@ export SETUP_LOGS
 
 RUN_LAB=true
 IMPORT=true
-if [[ "$IMPORT_ONLY" == true ]]; then RUN_LAB=false; fi
+if [[ "$IMPORT_ONLY" == true ]]; then RUN_LAB=false; IMPORT=true; PHYSICAL_MSI_IMPORT=true; fi
 if [[ "$RUN_ONLY" == true ]]; then IMPORT=false; fi
 
 PY_RUN_LAB=False
 PY_IMPORT=False
+PY_PHYSICAL_MSI=False
 [[ "$RUN_LAB" == true ]] && PY_RUN_LAB=True
 [[ "$IMPORT" == true ]] && PY_IMPORT=True
+[[ "$PHYSICAL_MSI_IMPORT" == true ]] && PY_PHYSICAL_MSI=True
 
 RESULT_JSON="${REPO_ROOT}/docs/evidence/e2e_live_001d/dev_automation_latest.json"
 mkdir -p "$(dirname "$RESULT_JSON")"
@@ -94,6 +98,7 @@ result = run_full_dev_automation(
     import_evidence=${PY_IMPORT},
     run_lab=${PY_RUN_LAB},
     setup_logs_base=Path(logs) if logs else None,
+    physical_msi_import_only=${PY_PHYSICAL_MSI},
 )
 out = Path(${RESULT_JSON@Q})
 out.write_text(json.dumps(result, indent=2, ensure_ascii=False) + "\\n", encoding="utf-8")

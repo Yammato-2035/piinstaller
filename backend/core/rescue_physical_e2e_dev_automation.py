@@ -17,6 +17,7 @@ from core.rescue_physical_e2e_evidence_import import (
     list_e2e_run_dirs,
 )
 from core.rescue_physical_e2e_orchestrator import run_physical_e2e_workflow
+from core.rescue_physical_e2e_physical_import import import_physical_msi_evidence
 from core.rescue_payload_version import rescue_payload_version
 
 DEFAULT_TOKEN_CANDIDATES = (
@@ -133,6 +134,7 @@ def run_full_dev_automation(
     run_lab: bool = True,
     setup_logs_base: Path | None = None,
     token_file: str | None = None,
+    physical_msi_import_only: bool = False,
 ) -> dict[str, Any]:
     logs = setup_logs_base or find_setup_logs_mount()
     out: dict[str, Any] = {
@@ -153,6 +155,8 @@ def run_full_dev_automation(
     if import_evidence:
         if logs is None:
             out["import"] = {"import_ok": False, "error": "setup_logs_not_mounted"}
+        elif physical_msi_import_only:
+            out["import"] = import_physical_msi_evidence(repo_root=repo_root, setup_logs_base=logs)
         else:
             runs = list_e2e_run_dirs(logs)
             if not runs and out.get("lab_run", {}).get("workflow", {}).get("journal_dir"):
@@ -169,6 +173,12 @@ def run_full_dev_automation(
     success = bool(workflow.get("success")) if run_lab else bool(import_ok)
     if run_lab and import_evidence:
         success = bool(workflow.get("success")) and bool(import_ok)
+    if physical_msi_import_only and import_evidence:
+        success = bool(import_ok)
+        out["status"] = "dev_automation_passed" if success else "dev_automation_failed"
+        if not success and out["import"].get("code") == "new_physical_msi_run_missing":
+            out["status"] = "new_physical_msi_run_missing"
+        return out
 
     out["status"] = "dev_automation_passed" if success else "dev_automation_failed"
     return out

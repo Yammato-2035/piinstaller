@@ -108,6 +108,7 @@ def run_physical_e2e_workflow(
     allowed_output_prefixes: tuple[Path, ...],
     allowed_restore_prefixes: tuple[Path, ...],
     setup_logs_base: Path | None = None,
+    e2e_run_id: str | None = None,
     source_device: dict[str, Any] | None = None,
     backup_device: dict[str, Any] | None = None,
     restore_device: dict[str, Any] | None = None,
@@ -121,6 +122,7 @@ def run_physical_e2e_workflow(
         return {"success": False, "code": "operator_gate_blocked", "message": "Operator-Freigabe fehlt."}
 
     session, journal = init_physical_e2e_session(
+        e2e_run_id=e2e_run_id,
         consent=consent,
         operator_approved=operator_approved,
         setup_logs_base=setup_logs_base,
@@ -290,6 +292,8 @@ def run_physical_e2e_workflow(
     if integrity_passed:
         if receipts >= len(OPERATION_EVENTS):
             final_status = "physical_rescue_backup_restore_e2e_passed"
+        elif receipts > 0:
+            final_status = "physical_rescue_passed_server_verification_pending"
         else:
             final_status = "review_required"
 
@@ -314,6 +318,7 @@ def run_physical_e2e_workflow(
         "success": integrity_passed,
         "status": final_status,
         "e2e_run_id": session.e2e_run_id,
+        "rescue_session_id": session.rescue_session_id,
         "backup": backup_result,
         "verify": verify_result,
         "restore": restore_result,

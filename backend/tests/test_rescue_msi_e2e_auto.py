@@ -46,6 +46,7 @@ class TestMsiE2EAuto(unittest.TestCase):
                 setup_logs_base=Path(tmp) / "logs",
                 create_data_script=script,
                 state_root=Path(tmp) / "state",
+                use_legacy_path=True,
             )
             self.assertEqual(result["status"], "msi_e2e_auto_passed")
             self.assertEqual(result["consent_effective"], "local_only")

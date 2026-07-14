@@ -1,0 +1,19 @@
+{
+  "schema": "setuphelfer.rescue.pre-physical-preflight.v1",
+  "telemetry_public": {
+    "base_url": "https://telemetrie.setuphelfer.de",
+    "reachable": true,
+    "classification": "ok",
+    "http_status": 200,
+    "legacy_mock": false
+  },
+  "ionos_ssh": {
+    "configured": true,
+    "reachable": true,
+    "telemetry_service_active": false,
+    "diagnostics_service_active": false
+  },
+  "live_pipeline_ready_for_physical_rescue_test": true,
+  "blockers": [],
+  "production_ready": false
+}
