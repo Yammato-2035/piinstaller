@@ -114,8 +114,34 @@ class TuiAutoLockTests(unittest.TestCase):
     def test_tui_script_has_auto_lock_mode(self):
         tui = Path("scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
         self.assertIn("auto_physical_e2e_locked", tui)
-        self.assertIn('"cancel" "Abbrechen"', tui)
-        self.assertIn('"poweroff" "Herunterfahren"', tui)
+        self.assertIn("--timeout 3", tui)
+        self.assertIn("refresh_auto_e2e_phase_from_runtime", tui)
+
+
+class RuntimeRefreshTests(unittest.TestCase):
+    def test_refresh_advances_late_gate_phase(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            state_dir = Path(tmp) / "auto-e2e"
+            rescue_dir = Path(tmp) / "rescue"
+            state_dir.mkdir()
+            rescue_dir.mkdir()
+            with patch.dict(
+                "os.environ",
+                {
+                    "SETUPHELFER_AUTO_E2E_STATE_DIR": str(state_dir),
+                    "SETUPHELFER_RESCUE_STATE_DIR": str(rescue_dir),
+                },
+            ):
+                from core.rescue_physical_e2e_auto_e2e_state import (
+                    init_auto_e2e_state,
+                    refresh_auto_e2e_phase_from_runtime,
+                )
+
+                init_auto_e2e_state(mode="auto_physical_e2e_locked")
+                with patch("core.rescue_physical_e2e_auto_e2e_state._read_uptime_sec", return_value=60):
+                    state = refresh_auto_e2e_phase_from_runtime()
+                self.assertEqual(state["phase"], "evidence_collection")
+                self.assertIn("Late-Evidence-Gate", state["last_progress"])
 
 
 class MsiEvidenceGateTests(unittest.TestCase):

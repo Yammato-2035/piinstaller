@@ -67,6 +67,14 @@ _min_uptime=$((_late_sec + 30))
 echo "Late gate: waiting for uptime >= ${_min_uptime}s ..." >>"$_log"
 while true; do
   _up="$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)"
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || true
+from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state
+update_auto_e2e_state(
+    phase="evidence_collection",
+    status="running",
+    last_progress=f"Late-Evidence-Gate: ${_up}/${_min_uptime} s",
+)
+PY
   if [[ "$_up" -ge "$_min_uptime" ]]; then
     echo "Late gate reached at uptime=${_up}s" >>"$_log"
     break
@@ -82,6 +90,10 @@ else
 fi
 
 _collect_ok=0
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state
+update_auto_e2e_state(phase="evidence_collection", status="running", last_progress="Evidence wird gesammelt…")
+PY
 if setuphelfer_rescue_run_msi_rs011b_collect >>"$_log" 2>&1; then
   _collect_ok=1
 else

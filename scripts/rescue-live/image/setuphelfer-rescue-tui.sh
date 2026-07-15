@@ -186,11 +186,13 @@ _tui_auto_e2e_active() {
 }
 
 _tui_auto_read_state() {
-  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo "{}"
-import json
-from core.rescue_physical_e2e_auto_e2e_state import PHASE_LABELS_DE, read_auto_e2e_state
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo "Automatischer Setuphelfer-Test\n\n(Fortschritt wird geladen…)"
+from core.rescue_physical_e2e_auto_e2e_state import (
+    PHASE_LABELS_DE,
+    refresh_auto_e2e_phase_from_runtime,
+)
 
-state = read_auto_e2e_state() or {}
+state = refresh_auto_e2e_phase_from_runtime()
 phase = state.get("phase") or "msi_hardware_check"
 lines = [
     "Automatischer Setuphelfer-Test",
@@ -233,36 +235,47 @@ print("\n".join(lines))
 PY
 }
 
-_tui_auto_e2e_menu() {
+_tui_auto_e2e_show_actions() {
   local choice
-  while true; do
-    local body
-    body="$(_tui_auto_read_state)"
-    choice="$(whiptail --title "Setuphelfer — Automatischer Test" --menu \
-      "${body}" 26 78 2 \
-      "cancel" "Abbrechen" \
-      "poweroff" "Herunterfahren" \
-      3>&1 1>"$_wt" 2>&3)" || choice=""
-    case "$choice" in
-      cancel)
-        PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+  choice="$(whiptail --title "Setuphelfer — Aktionen" --menu \
+    "Kontrollierte Aktion wählen:" 14 74 2 \
+    "cancel" "Abbrechen (sicher)" \
+    "poweroff" "Herunterfahren (sicher)" \
+    3>&1 1>"$_wt" 2>&3)" || return 0
+  case "$choice" in
+    cancel)
+      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
 from core.rescue_physical_e2e_auto_e2e_state import request_cancel
 request_cancel()
 PY
-        _tui_msg "Abbruch angefordert.\nDer Orchestrator beendet sicher nach der aktuellen Phase."
-        ;;
-      poweroff)
-        PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+      _tui_msg "Abbruch angefordert.\nDer Orchestrator beendet sicher nach der aktuellen Phase."
+      ;;
+    poweroff)
+      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
 from core.rescue_physical_e2e_auto_e2e_state import request_shutdown
 request_shutdown()
 PY
-        _tui_msg "Herunterfahren vorgemerkt.\nShutdown erfolgt nach Evidence-Sync."
-        ;;
-      "")
-        sleep 3
-        ;;
-    esac
-    local terminal
+      _tui_msg "Herunterfahren vorgemerkt.\nShutdown erfolgt nach Evidence-Sync."
+      ;;
+  esac
+}
+
+_tui_auto_e2e_menu() {
+  while true; do
+    local body rc terminal
+    body="$(_tui_auto_read_state)"
+    whiptail --title "Setuphelfer — Automatischer Test" --yesno \
+      "${body}
+
+────────────────────────────────────────
+Anzeige aktualisiert sich alle 3 Sekunden.
+
+Enter / Tab = Abbrechen oder Herunterfahren wählen" \
+      28 78 --timeout 3 --defaultno 3>&1 1>"$_wt" 2>&3
+    rc=$?
+    if [[ "$rc" -eq 0 ]]; then
+      _tui_auto_e2e_show_actions
+    fi
     terminal="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo ""
 from core.rescue_physical_e2e_auto_e2e_state import read_auto_e2e_state
 state = read_auto_e2e_state() or {}
@@ -271,7 +284,8 @@ PY
 )"
     case "$terminal" in
       passed|failed|blocked|cancelled)
-        _tui_msg "Automatischer Test beendet.\nStatus: ${terminal}"
+        body="$(_tui_auto_read_state)"
+        _tui_msg "Automatischer Test beendet.\n\n${body}"
         return 0
         ;;
     esac

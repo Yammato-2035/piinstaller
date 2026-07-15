@@ -236,3 +236,100 @@ def mirror_state_to_setup_logs(setup_logs_base: Path) -> None:
     dest = setup_logs_base / "setuphelfer/evidence/e2e/auto-e2e-state.json"
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(json.dumps(state, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+
+def _read_uptime_sec() -> int:
+    try:
+        return int(float(Path("/proc/uptime").read_text(encoding="utf-8").split()[0]))
+    except (OSError, ValueError, IndexError):
+        return 0
+
+
+def _late_gate_min_uptime_sec() -> int:
+    late = 120
+    try:
+        cmdline = Path("/proc/cmdline").read_text(encoding="utf-8")
+        for token in cmdline.split():
+            if token.startswith("setuphelfer_msi_lab_late_sec="):
+                late = int(token.split("=", 1)[1])
+                break
+    except (OSError, ValueError):
+        pass
+    return late + 30
+
+
+def _rescue_state_dir() -> Path:
+    return Path(os.environ.get("SETUPHELFER_RESCUE_STATE_DIR", "/run/setuphelfer-rescue"))
+
+
+def _find_setup_logs_mount() -> Path | None:
+    for pattern in ("/media/*/SETUP_LOGS", "/run/media/*/SETUP_LOGS"):
+        for candidate in Path("/").glob(pattern.lstrip("/")):
+            if candidate.is_dir():
+                return candidate
+    return None
+
+
+def _heartbeat_phase() -> str:
+    path = _heartbeat_file()
+    if not path.is_file():
+        return ""
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return ""
+    return str(data.get("phase") or "")
+
+
+def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
+    """Derive visible TUI phase from boot markers when orchestrator has not updated yet."""
+    existing = read_auto_e2e_state() or init_auto_e2e_state(mode="auto_physical_e2e_locked")
+    terminal = str(existing.get("status") or "")
+    if terminal in {"passed", "failed", "blocked", "cancelled"}:
+        return existing
+
+    uptime = _read_uptime_sec()
+    late_min = _late_gate_min_uptime_sec()
+    rescue = _rescue_state_dir()
+    evidence_done = (rescue / "auto-msi-evidence.done").is_file()
+    physical_done = (rescue / "auto-physical-e2e.done").is_file()
+    logs = _find_setup_logs_mount()
+    msi_complete = bool(
+        logs and (logs / "setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json").is_file()
+    )
+
+    phase = "msi_hardware_check"
+    status = "running"
+    progress = "System startet…"
+
+    if uptime >= 10:
+        progress = "MSI-Hardware wird geprüft (TUI aktiv)"
+    if uptime >= 20:
+        phase = "evidence_collection"
+        if uptime < late_min:
+            progress = f"Late-Evidence-Gate: {uptime}/{late_min} s — bitte warten"
+        else:
+            progress = "Late-Gate erreicht, Evidence wird gesammelt…"
+    if evidence_done or msi_complete:
+        phase = "test_disk_prepare"
+        progress = "MSI-Evidence abgeschlossen — physischer E2E startet"
+    if physical_done:
+        phase = "shutdown"
+        status = "passed"
+        progress = "Automatischer Test abgeschlossen"
+
+    hb_phase = _heartbeat_phase()
+    if hb_phase in AUTO_E2E_PHASES:
+        hb_idx = AUTO_E2E_PHASES.index(hb_phase)
+        cur_idx = AUTO_E2E_PHASES.index(phase)
+        if hb_idx >= cur_idx:
+            phase = hb_phase
+            progress = PHASE_LABELS_DE.get(phase, phase)
+
+    cur_idx = int(existing.get("phase_index") or 0)
+    new_idx = AUTO_E2E_PHASES.index(phase) if phase in AUTO_E2E_PHASES else 0
+    if cur_idx > new_idx and existing.get("phase") in AUTO_E2E_PHASES:
+        phase = str(existing.get("phase"))
+        progress = str(existing.get("last_progress") or progress)
+
+    return update_auto_e2e_state(phase=phase, status=status, last_progress=progress)
