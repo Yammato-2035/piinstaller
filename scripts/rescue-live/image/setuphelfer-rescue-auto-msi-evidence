@@ -13,9 +13,12 @@ if ! setuphelfer_rescue_should_auto_msi_evidence; then
 fi
 
 _marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done"
+_running="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.running"
 if [[ -f "$_marker" ]]; then
   exit 0
 fi
+touch "$_running" 2>/dev/null || true
+trap 'rm -f "$_running" 2>/dev/null || true' EXIT
 
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.log"
 _late_sec="$(setuphelfer_rescue_msi_lab_late_sec)"
@@ -68,12 +71,13 @@ echo "Late gate: waiting for uptime >= ${_min_uptime}s ..." >>"$_log"
 while true; do
   _up="$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)"
   PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || true
-from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state
+from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state, write_heartbeat
 update_auto_e2e_state(
     phase="evidence_collection",
     status="running",
     last_progress=f"Late-Evidence-Gate: ${_up}/${_min_uptime} s",
 )
+write_heartbeat(run_id="auto-msi-evidence", phase="evidence_collection")
 PY
   if [[ "$_up" -ge "$_min_uptime" ]]; then
     echo "Late gate reached at uptime=${_up}s" >>"$_log"
@@ -109,18 +113,17 @@ if _eval_out="$(setuphelfer_rescue_evaluate_msi_lab_evidence "${_ev_base}/setuph
     "setuphelfer/evidence/msi-rs011b/lab-auto-result.json" 2>/dev/null || true
 fi
 
-if [[ "$_collect_ok" -eq 1 ]]; then
-  touch "$_marker" 2>/dev/null || true
-  setuphelfer_rescue_write_boot_state "auto_msi_evidence_collected"
-  _logs_mount=""
-  for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS; do
-    for _c in $_pat; do
-      [[ -d "$_c" ]] && _logs_mount="$_c" && break 2
-    done
+_logs_mount=""
+for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS /run/setuphelfer/esp-rw; do
+  for _c in $_pat; do
+    [[ -d "$_c" ]] && _logs_mount="$_c" && break 2
   done
-  if [[ -n "$_logs_mount" ]]; then
-    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY >>"$_log" 2>&1 || true
+done
+
+if [[ -n "$_logs_mount" ]]; then
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY >>"$_log" 2>&1 || true
 from pathlib import Path
+import json
 from core.rescue_msi_lab_evidence_eval import evaluate_msi_lab_evidence
 from core.rescue_physical_e2e_msi_evidence_complete import write_msi_evidence_complete
 from core.rescue_payload_version import rescue_payload_version
@@ -130,25 +133,35 @@ ev_dir = logs / "setuphelfer/evidence/msi-rs011b"
 session_id = ""
 session_path = Path("/run/setuphelfer/current-session.json")
 if session_path.is_file():
-    import json
     session_id = str(json.loads(session_path.read_text(encoding="utf-8")).get("session_id") or "")
 eval_result = evaluate_msi_lab_evidence(evidence_dir=ev_dir, lab_auto_unattended=True)
 passed = str(eval_result.get("result_status") or "") == "passed"
-try:
-    write_msi_evidence_complete(
-        logs,
-        status="passed" if passed else "failed",
-        session_id=session_id,
-        payload_version=rescue_payload_version(),
-        late_gate_completed=True,
-        tui_owned=bool(eval_result.get("tui_owned")),
-        evidence_synced=True,
-    )
-    print("msi-evidence-complete.json written", "passed" if passed else "failed")
-except OSError as exc:
-    print("msi-evidence-complete write failed:", exc)
+collect_ok = int(${_collect_ok})
+if passed or collect_ok:
+    try:
+        write_msi_evidence_complete(
+            logs,
+            status="passed" if passed else "failed",
+            session_id=session_id,
+            payload_version=rescue_payload_version(),
+            late_gate_completed=True,
+            tui_owned=bool(eval_result.get("tui_owned")),
+            evidence_synced=True,
+        )
+        print("msi-evidence-complete.json written", "passed" if passed else "failed")
+    except OSError as exc:
+        print("msi-evidence-complete write failed:", exc)
 PY
-  fi
+fi
+
+_eval_passed=0
+if echo "${_eval_out:-}" | grep -q '"result_status"[[:space:]]*:[[:space:]]*"passed"'; then
+  _eval_passed=1
+fi
+
+if [[ "$_collect_ok" -eq 1 || "$_eval_passed" -eq 1 ]]; then
+  touch "$_marker" 2>/dev/null || true
+  setuphelfer_rescue_write_boot_state "auto_msi_evidence_collected"
 else
   setuphelfer_rescue_write_boot_state "auto_msi_evidence_failed"
 fi

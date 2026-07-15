@@ -14,6 +14,7 @@ SETUP_LOGS_LABEL = "SETUP_LOGS"
 SETUP_LOGS_SUBDIR = "setuphelfer/evidence"
 _RUN_FALLBACK = Path("/run/setuphelfer/evidence")
 _LOCAL_FALLBACK = Path("/var/lib/setuphelfer-rescue/local/evidence")
+_FALLBACK_RUNTIME = Path("/run/setuphelfer-rescue/fallback-evidence")
 
 _SETUP_LOGS_MOUNT_RE = re.compile(r"^/media/[^/]+/SETUP_LOGS$", re.IGNORECASE)
 _SETUP_LOGS_RUN_RE = re.compile(r"^/run/media/[^/]+/SETUP_LOGS$", re.IGNORECASE)
@@ -95,3 +96,65 @@ def resolve_rescue_evidence_root(*, runner: Any = None) -> dict[str, Any]:
             "persistence_mode": stick.get("persistence_mode"),
         }
     return logs
+
+
+def ensure_setup_logs_rw(*, runner: Any = None) -> dict[str, Any]:
+    """Detect or mount SETUP_LOGS read-write; run write probe (001D7)."""
+    import os
+    import subprocess
+
+    subprocess.run(["udevadm", "settle"], capture_output=True, check=False, timeout=30)
+    detected = detect_setup_logs_mount(runner=runner)
+    mount_point = detected.get("mount_point")
+    status = "ready"
+    unclean = False
+    fallback = False
+    writable = bool(detected.get("persistent"))
+
+    if not mount_point:
+        for pattern in ("/dev/disk/by-label/SETUP_LOGS", "/dev/disk/by-partlabel/SETUP_LOGS"):
+            dev = Path(pattern)
+            if dev.exists():
+                mp = Path("/run/setuphelfer/esp-rw")
+                mp.mkdir(parents=True, exist_ok=True)
+                subprocess.run(
+                    ["mount", "-t", "vfat", "-o", "rw,flush", str(dev.resolve()), str(mp)],
+                    capture_output=True,
+                    check=False,
+                )
+                mount_point = str(mp)
+                break
+
+    if mount_point:
+        base = Path(str(mount_point))
+        probe = base / "setuphelfer" / ".setup-logs-write-test.tmp"
+        try:
+            base.mkdir(parents=True, exist_ok=True)
+            probe.write_text("ok\n", encoding="utf-8")
+            probe.unlink(missing_ok=True)
+            os.sync()
+            writable = True
+        except OSError:
+            writable = False
+            status = "review_required_unclean"
+            unclean = True
+            fallback = True
+    else:
+        status = "missing"
+        fallback = True
+        writable = False
+
+    evidence_root = str(_FALLBACK_RUNTIME) if fallback else str(Path(str(mount_point or "")) / SETUP_LOGS_SUBDIR)
+    if fallback:
+        Path(evidence_root).mkdir(parents=True, exist_ok=True)
+
+    return {
+        "detected": bool(mount_point),
+        "mount_point": mount_point,
+        "writable": writable,
+        "unclean_detected": unclean,
+        "status": status,
+        "fallback_used": fallback,
+        "evidence_root": evidence_root,
+        "persistence_mode": "setup_logs" if writable and not fallback else "fallback_runtime",
+    }

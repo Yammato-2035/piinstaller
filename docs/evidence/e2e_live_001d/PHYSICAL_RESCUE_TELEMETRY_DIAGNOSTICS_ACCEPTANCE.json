@@ -1,0 +1,69 @@
+{
+  "schema": "setuphelfer.e2e-live-001d.physical-rescue-telemetry-diagnostics-acceptance.v1",
+  "status": "failed_msi_evidence_completion",
+  "production_ready": false,
+  "payload_version": "1.10.0.24",
+  "payload_sha256": "1ad34cdee58a566510d4cceb97420d9064a4d43199463acf79fb112deb70466f",
+  "implementation_commit": "dc16055f",
+  "failed_run": {
+    "session_id": "20260715_113551_boot",
+    "payload_version": "1.10.0.24",
+    "failure": "operator_abort_misleading_tui_collect_delayed_32min",
+    "collect_uptime_sec": 1950,
+    "collect_duration_sec": 4,
+    "msi_evidence_complete_marker": false,
+    "physical_e2e_started": false
+  },
+  "previous_failed_run": {
+    "session_id": "20260715_104722_boot",
+    "payload_version": "1.10.0.23",
+    "failure": "auto_shutdown_failsafe_timeout"
+  },
+  "setup_logs": {
+    "fsck_precheck_completed": true,
+    "repair_required": true,
+    "repair_completed": true,
+    "postcheck_clean": true,
+    "evidence_preserved": true
+  },
+  "tui": {
+    "live_refresh": true,
+    "exclusive_tty_owner": false,
+    "auto_lock_mode": true,
+    "phase_changes_visible": false,
+    "misleading_phase_during_service_delay": true
+  },
+  "failsafe": {
+    "heartbeat_protected": true,
+    "legacy_420_second_timeout_disabled": true,
+    "shutdown_during_active_heartbeat": false,
+    "operator_manual_abort": true
+  },
+  "msi_evidence": {
+    "lab_auto_result_status": "passed",
+    "msi_evidence_complete_json": false,
+    "rs011d_supplement_import_error": "ensure_setup_logs_rw_missing",
+    "collector_api_404": [
+      "rescue-health",
+      "disk-inventory"
+    ]
+  },
+  "physical_run": {
+    "completed": false,
+    "run_id": null,
+    "import_status": "new_physical_msi_run_missing",
+    "sabrent_detected": false,
+    "telemetry_events": 0,
+    "telemetry_receipts": 0,
+    "diagnostic_case": false
+  },
+  "run_control": {
+    "consumed": false,
+    "enabled": true
+  },
+  "token": {
+    "removed_after_import": true,
+    "token_in_git": false
+  },
+  "updated_at": "2026-07-15T10:10:00Z"
+}

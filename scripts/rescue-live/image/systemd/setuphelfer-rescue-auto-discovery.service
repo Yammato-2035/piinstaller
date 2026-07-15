@@ -1,0 +1,19 @@
+[Unit]
+Description=Setuphelfer Rescue auto discovery (001D7 read-only)
+After=setuphelfer-backend.service network-online.target setuphelfer-rescue-tui.service
+Wants=setuphelfer-backend.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery
+ConditionPathExists=!/run/setuphelfer-rescue/auto-discovery.done
+ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1
+
+[Service]
+Type=oneshot
+TimeoutStartSec=2700
+ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-discovery
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+TTYPath=
+
+[Install]
+WantedBy=multi-user.target

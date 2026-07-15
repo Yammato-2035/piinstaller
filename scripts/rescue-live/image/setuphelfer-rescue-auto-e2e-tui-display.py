@@ -22,17 +22,37 @@ else:
         sys.path.insert(0, str(_repo))
 
 from core.rescue_physical_e2e_auto_e2e_state import (  # noqa: E402
-    PHASE_LABELS_DE,
     AUTO_E2E_PHASES,
+    PHASE_LABELS_DE,
     heartbeat_age_sec,
     read_auto_e2e_state,
     refresh_auto_e2e_phase_from_runtime,
     request_cancel,
     request_shutdown,
 )
+from core.rescue_session_state import (  # noqa: E402
+    PHASE_LABELS_DE as DISCOVERY_LABELS_DE,
+    read_session_state,
+)
+
+
+def _active_state() -> dict:
+    session = read_session_state()
+    if session and not session.get("terminal"):
+        return {
+            "phase": session.get("current_phase") or "boot_initializing",
+            "status": "running",
+            "elapsed_sec": 0,
+            "last_progress": session.get("current_warning") or session.get("last_completed_module") or "",
+            "labels": DISCOVERY_LABELS_DE,
+        }
+    e2e = refresh_auto_e2e_phase_from_runtime()
+    e2e["labels"] = PHASE_LABELS_DE
+    return e2e
 
 
 def _format_display(state: dict) -> str:
+    labels = state.get("labels") or PHASE_LABELS_DE
     phase = state.get("phase") or "msi_hardware_check"
     hb = heartbeat_age_sec()
     hb_txt = f"{hb:.0f}s" if hb is not None else "—"
@@ -44,8 +64,9 @@ def _format_display(state: dict) -> str:
         "Ablauf:",
     ]
     idx_cur = AUTO_E2E_PHASES.index(phase) if phase in AUTO_E2E_PHASES else 0
-    for idx, key in enumerate(AUTO_E2E_PHASES, start=1):
-        label = PHASE_LABELS_DE.get(key, key)
+    phase_keys = list(AUTO_E2E_PHASES) if phase in AUTO_E2E_PHASES else list(labels.keys())
+    for idx, key in enumerate(phase_keys if phase not in AUTO_E2E_PHASES else AUTO_E2E_PHASES, start=1):
+        label = labels.get(key, key)
         if idx - 1 < idx_cur:
             mark = "✓"
         elif idx - 1 == idx_cur:
@@ -56,7 +77,7 @@ def _format_display(state: dict) -> str:
     lines.extend(
         [
             "",
-            f"Aktuelle Phase:   {PHASE_LABELS_DE.get(phase, phase)}",
+            f"Aktuelle Phase:   {labels.get(phase, phase)}",
             f"Status:           {state.get('status', 'wartet')}",
             f"Verstrichene Zeit: {state.get('elapsed_sec', 0)} s",
             f"Heartbeat-Alter:   {hb_txt}",
@@ -83,7 +104,7 @@ def main() -> int:
     try:
         tty.setcbreak(fd)
         while True:
-            state = refresh_auto_e2e_phase_from_runtime()
+            state = _active_state()
             text = _format_display(state)
             sys.stdout.write("\033[2J\033[H" + text + "\n")
             sys.stdout.flush()

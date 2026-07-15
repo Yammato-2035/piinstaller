@@ -1,0 +1,14 @@
+{
+  "schema": "setuphelfer.rescue.discovery-control.v1",
+  "feature": "SETUPHELFER-E2E-LIVE-001D7",
+  "enabled": true,
+  "one_shot": true,
+  "consumed": false,
+  "run_mode": "auto_discovery_only",
+  "allow_destructive_storage_actions": false,
+  "telemetry_required": false,
+  "diagnostics_requested": true,
+  "auto_shutdown": true,
+  "expected_payload_version": "1.10.0.25",
+  "expected_machine_family": "GE63 Raider"
+}

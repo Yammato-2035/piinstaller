@@ -7,8 +7,10 @@ ConditionPathExists=!/run/setuphelfer-rescue/auto-msi-evidence.done
 [Service]
 Type=oneshot
 ExecStart=/usr/local/sbin/setuphelfer-rescue-lab-auto-shutdown-failsafe
+StandardInput=null
 StandardOutput=journal
 StandardError=journal
+TTYPath=
 
 [Install]
 WantedBy=timers.target

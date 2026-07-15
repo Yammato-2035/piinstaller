@@ -325,8 +325,13 @@ def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
         phase = "msi_evidence_waiting"
         progress = f"Late-Evidence-Gate: {uptime}/{late_min} s — bitte warten"
     elif uptime >= late_min and not evidence_done and not msi_complete:
-        phase = "msi_evidence_running"
-        progress = "MSI-Evidence wird gesammelt…"
+        running = (rescue / "auto-msi-evidence.running").is_file()
+        if running:
+            phase = "msi_evidence_running"
+            progress = "MSI-Evidence wird gesammelt…"
+        else:
+            phase = "msi_evidence_waiting"
+            progress = "Warte auf MSI-Evidence-Service…"
     if evidence_done or msi_complete:
         phase = "msi_evidence_complete"
         progress = "MSI-Evidence abgeschlossen — physischer E2E startet"

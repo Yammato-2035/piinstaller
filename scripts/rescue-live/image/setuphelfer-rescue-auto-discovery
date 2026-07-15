@@ -1,0 +1,34 @@
+#!/bin/bash
+# SETUPHELFER-E2E-LIVE-001D7 — Auto discovery orchestrator (read-only).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+if ! setuphelfer_rescue_msi_lab_auto_active && ! setuphelfer_rescue_cmdline_has_flag "setuphelfer_auto_discovery=1"; then
+  exit 0
+fi
+
+_marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.done"
+[[ -f "$_marker" ]] && exit 0
+
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.log"
+{
+  echo "=== auto-discovery $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+} >>"$_log"
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
+import json
+from core.rescue_auto_discovery_orchestrator import run_auto_discovery
+
+result = run_auto_discovery(allow_destructive=False)
+print(json.dumps(result, ensure_ascii=False, indent=2))
+PY
+
+touch "$_marker" 2>/dev/null || true
+setuphelfer_rescue_write_boot_state "auto_discovery_complete" || true
+if setuphelfer_rescue_msi_lab_auto_active; then
+  setuphelfer_rescue_auto_shutdown_if_requested "discovery_complete" || true
+fi
+exit 0
