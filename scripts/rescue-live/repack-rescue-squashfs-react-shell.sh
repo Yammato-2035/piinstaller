@@ -96,6 +96,8 @@ for script in \
   setuphelfer-rescue-auto-msi-evidence \
   setuphelfer-rescue-auto-physical-e2e \
   setuphelfer-rescue-auto-discovery \
+  setuphelfer-rescue-auto-discovery-start-gate \
+  setuphelfer-rescue-physical-e2e-start-gate \
   setuphelfer-rescue-lab-auto-shutdown-failsafe \
   setuphelfer-rescue-msi-rs011b-collect \
   setuphelfer-rescue-physical-e2e; do

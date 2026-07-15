@@ -1,14 +1,17 @@
 [Unit]
 Description=Setuphelfer Rescue TUI (exclusive console owner)
 After=setuphelfer-backend.service
-Before=setuphelfer-rescue-auto-msi-evidence.service setuphelfer-rescue-auto-physical-e2e.service
+Before=setuphelfer-rescue-auto-msi-evidence.service setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-auto-discovery.service
 Wants=setuphelfer-backend.service setuphelfer-rescue-start-assistant.service
-ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui.sh
-ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1 setuphelfer_msi_lab_auto=1
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-entrypoint
+ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1
+ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
+ConditionKernelCommandLine=|setuphelfer_auto_discovery=1
 
 [Service]
 Type=simple
-ExecStart=/usr/local/sbin/setuphelfer-rescue-entrypoint.sh --boot-trigger
+ExecStart=/usr/local/sbin/setuphelfer-rescue-entrypoint --boot-trigger
 StandardInput=tty
 StandardOutput=tty
 StandardError=journal

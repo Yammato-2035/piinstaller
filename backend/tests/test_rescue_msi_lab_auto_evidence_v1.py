@@ -27,10 +27,20 @@ class MsiLabAutoBootTests(unittest.TestCase):
         self.assertIn("set timeout=3", cfg)
         self.assertIn("set timeout_style=countdown", cfg)
         self.assertIn(MSI_LAB_CMDLINE_FLAGS.split()[0], cfg)
-        self.assertIn("setuphelfer_msi_e2e_auto=1", cfg)
+        self.assertIn("setuphelfer_auto_discovery=1", cfg)
+        self.assertIn("setuphelfer_msi_e2e_auto=0", cfg)
         first_menu = cfg.index('menuentry "Setuphelfer MSI/NVIDIA')
         first_text = cfg.index('menuentry "Setuphelfer starten - sicherer Textmodus')
         self.assertLess(first_menu, first_text)
+
+    def test_patch_existing_grub_adds_discovery_flag_when_lab_auto_present(self) -> None:
+        base = generate_fat32_esp_grub_cfg()
+        base = patch_grub_cfg_for_msi_lab_auto_boot(base)
+        self.assertIn("setuphelfer_auto_discovery=1", base)
+        self.assertIn("setuphelfer_msi_e2e_auto=0", base)
+        patched = patch_grub_cfg_for_msi_lab_auto_boot(base)
+        self.assertIn("setuphelfer_auto_discovery=1", patched)
+        self.assertNotIn("setuphelfer_msi_e2e_auto=1", patched)
 
     def test_patch_existing_grub_for_lab_auto(self) -> None:
         base = generate_fat32_esp_grub_cfg()

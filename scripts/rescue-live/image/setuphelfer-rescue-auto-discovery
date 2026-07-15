@@ -1,14 +1,11 @@
 #!/bin/bash
-# SETUPHELFER-E2E-LIVE-001D7 — Auto discovery orchestrator (read-only).
+# SETUPHELFER-E2E-LIVE-001D7B — Auto discovery orchestrator (read-only).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_ensure_state_dir
-if ! setuphelfer_rescue_msi_lab_auto_active && ! setuphelfer_rescue_cmdline_has_flag "setuphelfer_auto_discovery=1"; then
-  exit 0
-fi
 
 _marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.done"
 [[ -f "$_marker" ]] && exit 0
@@ -18,17 +15,42 @@ _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.log"
   echo "=== auto-discovery $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 } >>"$_log"
 
+_status=""
 PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
 import json
 from core.rescue_auto_discovery_orchestrator import run_auto_discovery
 
 result = run_auto_discovery(allow_destructive=False)
 print(json.dumps(result, ensure_ascii=False, indent=2))
+open("/run/setuphelfer-rescue/auto-discovery.last.json", "w", encoding="utf-8").write(
+    json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+)
 PY
 
 touch "$_marker" 2>/dev/null || true
 setuphelfer_rescue_write_boot_state "auto_discovery_complete" || true
-if setuphelfer_rescue_msi_lab_auto_active; then
+
+# Shutdown only when terminal discovery evidence is complete / safe.
+_shutdown_ok="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY'
+import json
+from pathlib import Path
+from core.rescue_session_state import read_session_state
+
+state = read_session_state() or {}
+path = Path("/run/setuphelfer-rescue/auto-discovery.last.json")
+result = {}
+if path.is_file():
+    try:
+        result = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        result = {}
+ok = bool(state.get("terminal") and state.get("evidence_complete") and state.get("shutdown_safe"))
+ok = ok or bool(result.get("terminal") and result.get("evidence_complete") and result.get("shutdown_safe"))
+print("yes" if ok else "no")
+PY
+)"
+
+if [[ "$_shutdown_ok" == "yes" ]] && setuphelfer_rescue_auto_shutdown_requested; then
   setuphelfer_rescue_auto_shutdown_if_requested "discovery_complete" || true
 fi
 exit 0

@@ -11,6 +11,19 @@ if ! setuphelfer_rescue_msi_e2e_auto_active; then
   exit 0
 fi
 
+# 001D7B: run-mode lock (also enforced via ExecCondition start-gate).
+_skip_mode="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo allow
+from core.rescue_physical_e2e_start_gate import evaluate_physical_e2e_start_gate
+r = evaluate_physical_e2e_start_gate()
+print("skip" if not r.get("physical_e2e_start_allowed") else "allow")
+PY
+)"
+if [[ "$_skip_mode" == "skip" ]]; then
+  touch "${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done" 2>/dev/null || true
+  setuphelfer_rescue_write_boot_state "auto_physical_e2e_skipped_by_run_mode" || true
+  exit 0
+fi
+
 _marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done"
 if [[ -f "$_marker" ]]; then
   exit 0
@@ -23,9 +36,14 @@ _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.log"
 } >>"$_log"
 
 _logs_mount=""
-for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS; do
+for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS /run/setuphelfer/esp-rw; do
   for _c in $_pat; do
-    [[ -d "$_c" ]] && _logs_mount="$_c" && break 2
+    if [[ -d "$_c" ]]; then
+      if [[ "$_c" == "/run/setuphelfer/esp-rw" ]] || [[ "$(basename "$_c")" == "SETUP_LOGS" ]]; then
+        _logs_mount="$_c"
+        break 2
+      fi
+    fi
   done
 done
 

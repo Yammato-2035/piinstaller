@@ -5,9 +5,11 @@ from __future__ import annotations
 import re
 
 MSI_COMPAT_MENU_TITLE = "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)"
+# 001D7B: auto-discovery explicit; physical E2E gated by run-mode / start-gate.
 MSI_LAB_CMDLINE_FLAGS = (
-    "setuphelfer_msi_lab_auto=1 setuphelfer_msi_e2e_auto=1 "
-    "setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120"
+    "setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 "
+    "setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=1 "
+    "setuphelfer_msi_lab_late_sec=120"
 )
 MSI_LAB_DEFAULT_TIMEOUT = 3
 
@@ -48,8 +50,13 @@ def _ensure_msi_lab_cmdline_flags(msi_block: str) -> str:
             out,
             count=1,
         )
+    # Discovery-first lab boot: never leave stale physical-E2E auto=1.
+    out = re.sub(r"\bsetuphelfer_msi_e2e_auto=1\b", "setuphelfer_msi_e2e_auto=0", out)
     for flag in MSI_LAB_CMDLINE_FLAGS.split():
-        if flag not in out:
+        key = flag.split("=", 1)[0]
+        if re.search(rf"\b{re.escape(key)}=", out):
+            out = re.sub(rf"\b{re.escape(key)}=\S+", flag, out, count=1)
+        else:
             out = re.sub(
                 r"(setuphelfer_msi_lab_auto=1)",
                 rf"\1 {flag}",

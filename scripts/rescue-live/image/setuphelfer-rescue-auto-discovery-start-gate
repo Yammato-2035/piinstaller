@@ -1,0 +1,9 @@
+#!/bin/bash
+# 001D7B — systemd ExecCondition gate for auto discovery.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" \
+  exec python3 -m core.rescue_auto_discovery_start_gate

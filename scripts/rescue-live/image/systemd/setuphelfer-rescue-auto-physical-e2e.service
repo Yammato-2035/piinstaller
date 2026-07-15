@@ -3,12 +3,13 @@ Description=Setuphelfer Rescue auto physical E2E (MSI lab / cmdline)
 After=setuphelfer-backend.service network-online.target setuphelfer-rescue-auto-msi-evidence.service
 Wants=setuphelfer-backend.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-physical-e2e
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-physical-e2e-start-gate
 ConditionPathExists=!/run/setuphelfer-rescue/auto-physical-e2e.done
-ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1 setuphelfer_msi_lab_auto=1
 
 [Service]
 Type=oneshot
 TimeoutStartSec=1200
+ExecCondition=/usr/local/sbin/setuphelfer-rescue-physical-e2e-start-gate
 ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-physical-e2e
 StandardInput=null
 StandardOutput=journal

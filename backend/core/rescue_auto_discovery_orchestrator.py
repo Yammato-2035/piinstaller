@@ -1,4 +1,4 @@
-"""Rescue auto-discovery orchestrator — read-only MSI exploration (001D7)."""
+"""Rescue auto-discovery orchestrator — read-only MSI exploration (001D7/001D7B)."""
 
 from __future__ import annotations
 
@@ -11,19 +11,33 @@ import urllib.request
 from pathlib import Path
 from typing import Any, Callable
 
+from core.rescue_discovery_run_control import consume_discovery_run_control, load_discovery_run_control
 from core.rescue_evidence_completeness import validate_session_evidence
 from core.rescue_network_connectivity_v2 import build_network_connectivity_v2
 from core.rescue_payload_version import rescue_payload_version
+from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
+from core.rescue_physical_e2e_msi_evidence_complete import (
+    msi_evidence_complete_ok,
+    read_msi_evidence_complete,
+)
 from core.rescue_privacy_redaction import build_privacy_summary
+from core.rescue_run_mode import resolve_run_mode
 from core.rescue_session_state import (
+    append_journal,
     heartbeat,
     init_session_state,
     mark_terminal,
     session_evidence_dir,
+    session_journal_path,
+    session_state_path,
     set_phase,
 )
 from core.rescue_setup_logs_persistence import ensure_setup_logs_rw
 from core.rescue_storage_discovery import discover_rescue_storage
+
+MSI_EVIDENCE_WAIT_SEC = 900
+def _state_dir() -> Path:
+    return Path(os.environ.get("SETUPHELFER_RESCUE_STATE_DIR", "/run/setuphelfer-rescue"))
 
 CollectorFn = Callable[[Path, dict[str, Any]], dict[str, Any]]
 
@@ -262,23 +276,123 @@ def _collect_payload(session_dir: Path, state: dict[str, Any]) -> dict[str, Any]
     return payload
 
 
+def _wait_msi_evidence_complete(setup_logs_base: Path | None, *, max_wait_sec: int = MSI_EVIDENCE_WAIT_SEC) -> bool:
+    set_phase("msi_evidence_waiting", warning="Warte auf MSI-Evidence-Marker…")
+    deadline = time.time() + max_wait_sec
+    while time.time() < deadline:
+        heartbeat(warning="MSI-Evidence-Marker-Warten")
+        if setup_logs_base and msi_evidence_complete_ok(setup_logs_base):
+            return True
+        if (_state_dir() / "auto-msi-evidence.done").is_file() and setup_logs_base:
+            data = read_msi_evidence_complete(setup_logs_base)
+            if data and data.get("status") == "passed" and data.get("late_gate_completed"):
+                return True
+        # Re-detect SETUP_LOGS if it appeared later.
+        if setup_logs_base is None:
+            detected = find_setup_logs_mount()
+            if detected and msi_evidence_complete_ok(detected):
+                return True
+        time.sleep(2)
+    return False
+
+
+def _persist_session_start(session_dir: Path, state: dict[str, Any], extra: dict[str, Any]) -> None:
+    session_dir.mkdir(parents=True, exist_ok=True)
+    _write_artifact(session_dir, "00-session.json", {**state, **extra})
+    _write_artifact(session_dir, "state.json", state)
+    # Guarantee journal exists beside session evidence (runtime journal already appended).
+    journal_src = session_journal_path()
+    journal_dst = session_dir / "journal.jsonl"
+    if journal_src.is_file():
+        journal_dst.write_text(journal_src.read_text(encoding="utf-8"), encoding="utf-8")
+    elif not journal_dst.is_file():
+        journal_dst.write_text(
+            json.dumps({"event": "session_created", "session_id": state.get("session_id")}, ensure_ascii=False)
+            + "\n",
+            encoding="utf-8",
+        )
+    append_journal({"event": "discovery_session_persisted", "session_dir": str(session_dir)})
+
+
 def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
+    if allow_destructive:
+        raise ValueError("auto_discovery_destructive_forbidden")
+
+    state_dir = _state_dir()
+    state_dir.mkdir(parents=True, exist_ok=True)
+    (state_dir / "auto-discovery.started").write_text("1\n", encoding="utf-8")
+
     payload_version = rescue_payload_version()
-    state = init_session_state(payload_version=payload_version, source="physical_msi")
+    mode_info = resolve_run_mode()
+    run_mode = str(mode_info.get("run_mode") or "auto_discovery_only")
+    if not mode_info.get("ok"):
+        state = init_session_state(
+            payload_version=payload_version,
+            source="physical_msi",
+            run_mode="blocked",
+        )
+        mark_terminal(result="blocked", evidence_complete=False, shutdown_safe=True)
+        return {
+            "status": "blocked_run_mode_conflict",
+            "session_id": state["session_id"],
+            "run_mode": None,
+        }
+
+    state = init_session_state(
+        payload_version=payload_version,
+        source="physical_msi",
+        run_mode=run_mode,
+    )
+    heartbeat(module="session_created")
+    set_phase("discovery_starting", warning="Automatische Systemerkundung startet")
     set_phase("setup_logs_waiting")
     logs = ensure_setup_logs_rw()
     setup_logs_base = Path(str(logs.get("mount_point") or "")) if logs.get("mount_point") else None
+    if not setup_logs_base:
+        setup_logs_base = find_setup_logs_mount()
+
+    review_setup_logs = False
     if logs.get("writable"):
         set_phase("setup_logs_ready")
     else:
-        set_phase("setup_logs_ready", warning=str(logs.get("status") or "fallback"))
+        review_setup_logs = True
+        set_phase("setup_logs_ready", warning="review_required_setup_logs_unavailable")
 
+    # Persist start proof immediately (runtime + SETUP_LOGS / fallback).
     session_dir = session_evidence_dir(setup_logs_base, str(state["session_id"]))
-    session_payload = {**state, "setup_logs": logs, "allow_destructive": allow_destructive}
-    _write_artifact(session_dir, "00-session.json", session_payload)
-    _write_artifact(session_dir, "state.json", state)
+    _persist_session_start(
+        session_dir,
+        state,
+        {
+            "setup_logs": logs,
+            "allow_destructive": False,
+            "run_mode": run_mode,
+            "runtime_state_path": str(session_state_path()),
+        },
+    )
+    heartbeat(module="00-session")
+
+    if not _wait_msi_evidence_complete(setup_logs_base):
+        mark_terminal(result="failed", evidence_complete=False, shutdown_safe=True)
+        if setup_logs_base:
+            consume_discovery_run_control(
+                setup_logs_base,
+                consumed_by_session_id=str(state["session_id"]),
+                terminal_status="failed_msi_evidence_marker_timeout",
+            )
+        return {
+            "status": "failed_msi_evidence_marker_timeout",
+            "session_id": state["session_id"],
+            "session_dir": str(session_dir),
+            "setup_logs": logs,
+        }
+
+    set_phase("discovery_starting", warning="MSI-Evidence abgeschlossen")
+    heartbeat(module="msi-evidence-complete")
 
     machine = _collect_machine(session_dir, state)
+    set_phase("firmware_collecting")
+    heartbeat(module="firmware")
     _collect_cpu_memory(session_dir, state)
     _collect_pci_usb(session_dir, state)
     _collect_storage(session_dir, state)
@@ -301,6 +415,7 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
     set_phase("evidence_validation")
     discovery_summary = _utc_meta(state)
     discovery_summary["modules_completed"] = REQUIRED_MODULE_NAMES
+    discovery_summary["run_mode"] = run_mode
     _write_artifact(session_dir, "16-discovery-summary.json", discovery_summary)
 
     gate = validate_session_evidence(
@@ -308,23 +423,45 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
         expected_session_id=str(state["session_id"]),
         expected_boot_id=str(state["boot_id"]),
     )
+    if review_setup_logs and gate.get("status") == "complete":
+        gate = {**gate, "status": "review_required", "code": "review_required_setup_logs_unavailable"}
     _write_artifact(session_dir, "16-discovery-summary.json", {**discovery_summary, "completeness_gate": gate})
+
+    set_phase("evidence_syncing")
+    heartbeat(module="evidence_sync")
 
     result = gate["status"]
     if result == "complete":
         mark_terminal(result="passed", evidence_complete=True, shutdown_safe=True)
         status = "rescue_auto_discovery_evidence_complete"
+        terminal_status = "passed"
     elif result == "review_required":
         mark_terminal(result="review_required", evidence_complete=True, shutdown_safe=True)
         status = "rescue_auto_discovery_review_required"
+        terminal_status = "review_required"
     else:
-        mark_terminal(result="failed", evidence_complete=False, shutdown_safe=False)
+        mark_terminal(result="failed", evidence_complete=False, shutdown_safe=True)
         status = "failed_rescue_auto_discovery"
+        terminal_status = "failed"
 
+    control_base = setup_logs_base or find_setup_logs_mount()
+    if control_base and load_discovery_run_control(control_base):
+        consume_discovery_run_control(
+            control_base,
+            consumed_by_session_id=str(state["session_id"]),
+            terminal_status=terminal_status,
+        )
+
+    set_phase("shutdown_pending")
+    heartbeat(module="shutdown_pending")
     return {
         "status": status,
         "session_id": state["session_id"],
         "session_dir": str(session_dir),
         "completeness_gate": gate,
         "setup_logs": logs,
+        "run_mode": run_mode,
+        "terminal": True,
+        "shutdown_safe": True,
+        "evidence_complete": result in {"complete", "review_required"},
     }

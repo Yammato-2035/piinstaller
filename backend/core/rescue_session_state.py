@@ -18,6 +18,9 @@ PHASES: tuple[str, ...] = (
     "session_created",
     "setup_logs_waiting",
     "setup_logs_ready",
+    "msi_evidence_waiting",
+    "msi_hardware_check",
+    "discovery_starting",
     "machine_identity_collecting",
     "firmware_collecting",
     "cpu_memory_collecting",
@@ -52,42 +55,67 @@ PHASES: tuple[str, ...] = (
 )
 
 PHASE_LABELS_DE: dict[str, str] = {
-    "boot_initializing": "System startet",
-    "session_created": "Session wird angelegt",
-    "setup_logs_waiting": "SETUP_LOGS wird gesucht",
-    "setup_logs_ready": "SETUP_LOGS bereit",
-    "machine_identity_collecting": "Rechneridentität wird erfasst",
+    "boot_initializing": "Session wird vorbereitet",
+    "session_created": "Session wird vorbereitet",
+    "setup_logs_waiting": "SETUP_LOGS wird geprüft",
+    "setup_logs_ready": "SETUP_LOGS wird geprüft",
+    "msi_evidence_waiting": "MSI-Evidence abgeschlossen",
+    "msi_hardware_check": "MSI-Hardware wird erkannt",
+    "machine_identity_collecting": "MSI-Hardware wird erkannt",
     "firmware_collecting": "Firmware wird erfasst",
-    "cpu_memory_collecting": "CPU und RAM werden erfasst",
-    "pci_collecting": "PCI-Hardware wird erfasst",
+    "cpu_memory_collecting": "CPU und Arbeitsspeicher werden erfasst",
+    "pci_collecting": "PCI-Geräte werden erfasst",
     "usb_collecting": "USB-Geräte werden erfasst",
-    "storage_waiting": "Datenträger werden gesucht",
-    "storage_collecting": "Storage Discovery läuft",
-    "partition_collecting": "Partitionen werden erfasst",
+    "storage_waiting": "Datenträger werden erkannt",
+    "storage_collecting": "Datenträger werden erkannt",
+    "partition_collecting": "Partitionen werden analysiert",
     "filesystem_collecting": "Dateisysteme werden bewertet",
-    "smart_collecting": "SMART-Status wird gelesen",
-    "kernel_collecting": "Kernel-Findings werden gesammelt",
-    "network_hardware_collecting": "Netzwerkhardware wird erfasst",
-    "lan_collecting": "LAN wird geprüft",
-    "wifi_collecting": "WLAN wird geprüft",
-    "internet_collecting": "Internet wird geprüft",
-    "backend_collecting": "Backend wird geprüft",
+    "smart_collecting": "SMART-Daten werden gelesen",
+    "kernel_collecting": "Kernelwarnungen werden ausgewertet",
+    "network_hardware_collecting": "Netzwerk wird geprüft",
+    "lan_collecting": "Netzwerk wird geprüft",
+    "wifi_collecting": "Netzwerk wird geprüft",
+    "internet_collecting": "Netzwerk wird geprüft",
+    "backend_collecting": "Dienste werden geprüft",
     "services_collecting": "Dienste werden geprüft",
-    "payload_collecting": "Payload-Version wird geprüft",
-    "privacy_redaction": "Datenschutz-Redaction",
+    "payload_collecting": "Payload wird geprüft",
+    "privacy_redaction": "Datenschutzprüfung läuft",
     "evidence_validation": "Evidence wird validiert",
-    "telemetry_preparing": "Telemetrie wird vorbereitet",
-    "telemetry_sending": "Telemetrie wird gesendet",
-    "diagnostics_waiting": "Diagnostik wird verarbeitet",
-    "evidence_syncing": "Evidence wird synchronisiert",
-    "shutdown_pending": "Herunterfahren vorgemerkt",
-    "passed": "Discovery abgeschlossen",
+    "telemetry_preparing": "Evidence wird gespeichert",
+    "telemetry_sending": "Evidence wird gespeichert",
+    "diagnostics_waiting": "Evidence wird gespeichert",
+    "evidence_syncing": "Evidence wird gespeichert",
+    "shutdown_pending": "System wird heruntergefahren",
+    "discovery_starting": "Automatische Systemerkundung startet",
+    "passed": "Evidence wird gespeichert",
     "review_required": "Review erforderlich",
     "failed": "Discovery fehlgeschlagen",
     "blocked": "Discovery blockiert",
     "cancelled": "Abgebrochen",
     "timeout": "Zeitüberschreitung",
 }
+
+DISCOVERY_UI_PHASES: tuple[str, ...] = (
+    "session_created",
+    "setup_logs_waiting",
+    "msi_hardware_check",
+    "firmware_collecting",
+    "cpu_memory_collecting",
+    "pci_collecting",
+    "usb_collecting",
+    "storage_collecting",
+    "partition_collecting",
+    "filesystem_collecting",
+    "smart_collecting",
+    "network_hardware_collecting",
+    "kernel_collecting",
+    "services_collecting",
+    "payload_collecting",
+    "privacy_redaction",
+    "evidence_validation",
+    "evidence_syncing",
+    "shutdown_pending",
+)
 
 
 def _utc_now() -> str:
@@ -150,6 +178,7 @@ def init_session_state(
     session_id: str | None = None,
     payload_version: str = "",
     source: str = "physical_msi",
+    run_mode: str = "",
 ) -> dict[str, Any]:
     sid = session_id or generate_session_id()
     now = _utc_now()
@@ -159,6 +188,7 @@ def init_session_state(
         "boot_id": _boot_id(),
         "payload_version": payload_version,
         "source": source,
+        "run_mode": run_mode or None,
         "started_at": now,
         "updated_at": now,
         "current_phase": "session_created",
@@ -174,7 +204,14 @@ def init_session_state(
         "current_warning": "",
     }
     _atomic_write_json(session_state_path(), state)
-    append_journal({"event": "session_created", "session_id": sid, "boot_id": state["boot_id"]})
+    append_journal(
+        {
+            "event": "session_created",
+            "session_id": sid,
+            "boot_id": state["boot_id"],
+            "run_mode": run_mode or None,
+        }
+    )
     return state
 
 

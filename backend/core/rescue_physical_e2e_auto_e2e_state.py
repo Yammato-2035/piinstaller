@@ -298,6 +298,16 @@ def _heartbeat_phase() -> str:
     return str(data.get("phase") or "")
 
 
+def _discovery_only_mode(logs: Path | None) -> bool:
+    try:
+        from core.rescue_run_mode import resolve_run_mode
+
+        resolved = resolve_run_mode(setup_logs_base=logs)
+        return bool(resolved.get("ok") and resolved.get("run_mode") == "auto_discovery_only")
+    except Exception:
+        return False
+
+
 def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
     """Derive visible TUI phase from boot markers when orchestrator has not updated yet."""
     existing = read_auto_e2e_state() or init_auto_e2e_state(mode="auto_physical_e2e_locked")
@@ -310,10 +320,13 @@ def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
     rescue = _rescue_state_dir()
     evidence_done = (rescue / "auto-msi-evidence.done").is_file()
     physical_done = (rescue / "auto-physical-e2e.done").is_file()
+    discovery_done = (rescue / "auto-discovery.done").is_file()
+    discovery_started = (rescue / "auto-discovery.started").is_file()
     logs = _find_setup_logs_mount()
     msi_complete = bool(
         logs and (logs / "setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json").is_file()
     )
+    discovery_only = _discovery_only_mode(logs)
 
     phase = "msi_hardware_check"
     status = "running"
@@ -334,8 +347,18 @@ def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
             progress = "Warte auf MSI-Evidence-Service…"
     if evidence_done or msi_complete:
         phase = "msi_evidence_complete"
-        progress = "MSI-Evidence abgeschlossen — physischer E2E startet"
-    if physical_done:
+        if discovery_only:
+            progress = "MSI-Evidence abgeschlossen — Automatische Systemerkundung startet"
+        else:
+            progress = "MSI-Evidence abgeschlossen — physischer E2E startet"
+    if discovery_only and (discovery_started or discovery_done):
+        phase = "msi_evidence_complete"
+        progress = "Automatische Systemerkundung läuft…"
+    if discovery_done and discovery_only:
+        phase = "shutdown"
+        status = "passed"
+        progress = "Automatische Systemerkundung abgeschlossen"
+    if physical_done and not discovery_only:
         phase = "shutdown"
         status = "passed"
         progress = "Automatischer Test abgeschlossen"

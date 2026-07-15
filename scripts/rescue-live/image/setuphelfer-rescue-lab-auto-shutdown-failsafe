@@ -30,10 +30,13 @@ fi
 
 PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1 || true
 import json
+from core.rescue_discovery_boot_completion import evaluate_discovery_boot_completion
 from core.rescue_physical_e2e_run_control import consume_run_control, load_run_control
 from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
 
 logs = find_setup_logs_mount()
+disc = evaluate_discovery_boot_completion(setup_logs_base=logs)
+print(json.dumps({"discovery_boot_completion": disc}, ensure_ascii=False))
 if logs:
     rc = load_run_control(logs)
     if rc and rc.get("enabled"):
