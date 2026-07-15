@@ -1,0 +1,115 @@
+#!/bin/bash
+# 001D7C — Discovery runner: persist start/exit, never silent failure.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+
+_marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.done"
+if [[ -f "$_marker" ]]; then
+  exit 0
+fi
+
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.log"
+{
+  echo "=== auto-discovery-runner $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+} >>"$_log"
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1 || true
+from core.rescue_discovery_observability import persist_service_start
+from core.rescue_payload_version import rescue_payload_version
+from core.rescue_component_heartbeat import write_component_heartbeat
+persist_service_start(payload_version=rescue_payload_version())
+write_component_heartbeat("discovery", state="runner_started")
+PY
+
+_rc=0
+set +e
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
+import json
+import sys
+from core.rescue_auto_discovery_orchestrator import main
+
+try:
+    result = main()
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    open("/run/setuphelfer-rescue/auto-discovery.last.json", "w", encoding="utf-8").write(
+        json.dumps(result, ensure_ascii=False, indent=2) + "\n"
+    )
+    sys.exit(0 if result.get("status") in {
+        "rescue_auto_discovery_evidence_complete",
+        "rescue_auto_discovery_review_required",
+    } else 1)
+except SystemExit as exc:
+    raise
+except BaseException:
+    sys.exit(1)
+PY
+_rc=$?
+set -euo pipefail
+
+{
+  echo "orchestrator_exit_code=${_rc}"
+} >>"$_log"
+
+# Ensure exit/result artifacts exist even on early crash before main() ran.
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY >>"$_log" 2>&1 || true
+from core.rescue_discovery_observability import persist_orchestrator_exit, persist_service_result, read_runtime_json
+from core.rescue_discovery_boot_completion import harvest_late_journal, evaluate_discovery_boot_completion
+from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
+
+rc = int("${_rc}")
+if not read_runtime_json("orchestrator-exit.json") and not read_runtime_json("02-orchestrator-exit.json"):
+    persist_orchestrator_exit({
+        "started": True,
+        "exit_code": rc,
+        "session_created": False,
+        "terminal_state_written": False,
+        "status": "failed_discovery_orchestrator_no_exit" if rc != 0 else "ok",
+    })
+if not read_runtime_json("service-result.json") and not read_runtime_json("03-service-result.json"):
+    persist_service_result({
+        "exit_code": rc,
+        "status": "failed_discovery_orchestrator_no_exit" if rc != 0 else "ok",
+        "run_control_consumed": False,
+        "failure_stage": "runner_exit",
+    })
+logs = find_setup_logs_mount()
+harvest_late_journal(setup_logs_base=logs)
+evaluate_discovery_boot_completion(setup_logs_base=logs, force_harvest=False)
+PY
+
+touch "$_marker" 2>/dev/null || true
+setuphelfer_rescue_write_boot_state "auto_discovery_complete" || true
+
+# Shutdown only when boot-finalizer says shutdown_safe.
+_shutdown_ok="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY'
+import json
+from pathlib import Path
+from core.rescue_discovery_observability import read_runtime_json
+from core.rescue_session_state import read_session_state
+
+final = read_runtime_json("boot-finalizer.json") or {}
+state = read_session_state() or {}
+path = Path("/run/setuphelfer-rescue/auto-discovery.last.json")
+result = {}
+if path.is_file():
+    try:
+        result = json.loads(path.read_text(encoding="utf-8"))
+    except Exception:
+        result = {}
+ok = bool(final.get("terminal") and final.get("shutdown_safe"))
+ok = ok or bool(state.get("terminal") and state.get("evidence_complete") and state.get("shutdown_safe"))
+ok = ok or bool(result.get("terminal") and result.get("evidence_complete") and result.get("shutdown_safe"))
+print("yes" if ok else "no")
+PY
+)"
+
+if [[ "$_shutdown_ok" == "yes" ]] && setuphelfer_rescue_auto_shutdown_requested; then
+  setuphelfer_rescue_auto_shutdown_if_requested "discovery_complete" || true
+fi
+
+# Propagate real exit code — never mask failures as success.
+exit "${_rc}"

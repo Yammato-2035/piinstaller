@@ -1,0 +1,18 @@
+[Unit]
+Description=Setuphelfer Rescue TUI tty1 guard (001D7C)
+After=setuphelfer-rescue-tui.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-guard
+ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
+ConditionKernelCommandLine=|setuphelfer_auto_discovery=1
+ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-guard
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+TTYPath=
+
+[Install]
+WantedBy=multi-user.target

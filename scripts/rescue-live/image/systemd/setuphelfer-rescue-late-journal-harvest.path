@@ -1,0 +1,10 @@
+[Unit]
+Description=Setuphelfer Rescue late journal harvest trigger (001D7C)
+After=setuphelfer-rescue-auto-msi-evidence.service
+
+[Path]
+PathExists=/run/setuphelfer-rescue/auto-msi-evidence.done
+Unit=setuphelfer-rescue-late-journal-harvest.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lab failsafe — shutdown only when heartbeat/state/orchestrator checks fail (001D6).
+# Lab failsafe — shutdown only after boot-finalizer / observability gate (001D7C).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
@@ -17,6 +17,7 @@ PY
 )"
 
 _allow="$(python3 -c 'import json,sys; print("yes" if json.loads(sys.argv[1]).get("allow_shutdown") else "no")' "$_eval" 2>/dev/null || echo no)"
+_class="$(python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get("shutdown_classification") or "")' "$_eval" 2>/dev/null || echo "")"
 
 {
   echo "=== lab-auto-shutdown-failsafe $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
@@ -24,27 +25,48 @@ _allow="$(python3 -c 'import json,sys; print("yes" if json.loads(sys.argv[1]).ge
 } >>"$_log"
 
 if [[ "$_allow" != "yes" ]]; then
-  echo "Failsafe: shutdown not allowed — heartbeat/state/orchestrator active" >>"$_log"
+  echo "Failsafe: shutdown not allowed — waiting boot-finalizer/heartbeat" >>"$_log"
   exit 0
 fi
 
+# Always run boot finalizer + late journal before poweroff.
 PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1 || true
 import json
-from core.rescue_discovery_boot_completion import evaluate_discovery_boot_completion
+from pathlib import Path
+from core.rescue_discovery_boot_completion import evaluate_discovery_boot_completion, harvest_late_journal
+from core.rescue_discovery_observability import persist_boot_finalizer, read_runtime_json
 from core.rescue_physical_e2e_run_control import consume_run_control, load_run_control
 from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
 
 logs = find_setup_logs_mount()
-disc = evaluate_discovery_boot_completion(setup_logs_base=logs)
+try:
+    harvest_late_journal(setup_logs_base=logs)
+except OSError as exc:
+    print(f"harvest_error={exc}")
+disc = evaluate_discovery_boot_completion(setup_logs_base=logs, force_harvest=False)
 print(json.dumps({"discovery_boot_completion": disc}, ensure_ascii=False))
+final = read_runtime_json("boot-finalizer.json") or {}
+if not final.get("terminal"):
+    persist_boot_finalizer(
+        {
+            "status": "failsafe_observability_timeout",
+            "observability_complete": False,
+            "run_control_consumed": bool((disc or {}).get("run_control_consumed")),
+            "shutdown_safe": True,
+            "missing": ["boot-finalizer-pre-failsafe"],
+            "notes": ["written_by_failsafe_before_shutdown"],
+        }
+    )
 if logs:
     rc = load_run_control(logs)
     if rc and rc.get("enabled"):
         consume_run_control(logs, terminal_status="timeout_failsafe")
         print(json.dumps({"run_control_consumed": True}))
+# Best-effort runtime copy already via persist_*; fsync SETUP_LOGS
+Path("/run/setuphelfer-rescue/shutdown.requested").write_text("failsafe\n", encoding="utf-8")
 PY
 
-setuphelfer_rescue_write_boot_state "lab_auto_shutdown_failsafe" || true
+setuphelfer_rescue_write_boot_state "lab_auto_shutdown_failsafe_${_class:-timeout}" || true
 sync 2>/dev/null || true
-setuphelfer_rescue_auto_shutdown_if_requested "failsafe_timeout" || true
+setuphelfer_rescue_auto_shutdown_if_requested "${_class:-failsafe_timeout}" || true
 exit 0

@@ -1,0 +1,78 @@
+#!/bin/bash
+# 001D7C — Static / interactive discovery hold screen on tty1 (no bare shell).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+MODE="${1:---hold}"
+_wt="$(setuphelfer_rescue_whiptail_tty 2>/dev/null || echo /dev/tty1)"
+
+_code="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo failed_discovery_unknown
+from core.rescue_discovery_observability import read_runtime_json
+final = read_runtime_json("boot-finalizer.json") or {}
+svc = read_runtime_json("service-result.json") or {}
+gate = read_runtime_json("start-gate.json") or {}
+print(final.get("status") or svc.get("status") or gate.get("decision_code") or "failed_discovery_unknown")
+PY
+)"
+
+_msg="Automatische Systemerkundung konnte nicht gestartet werden.
+
+Status:
+  ${_code}
+
+Evidence:
+  wurde gespeichert
+
+Verfügbare Aktionen:
+- Details anzeigen
+- Herunterfahren"
+
+if [[ "$MODE" == "--static-error" ]]; then
+  if command -v whiptail >/dev/null 2>&1; then
+    whiptail --title "Setuphelfer — Fehler" --msgbox "$_msg" 20 70 3>&1 1>"$_wt" 2>&3 || true
+  else
+    printf '%s\n' "$_msg" >"$_wt" 2>/dev/null || true
+  fi
+  # Stay on tty forever until shutdown signal.
+  while true; do
+    sleep 30
+    if [[ -f /run/setuphelfer-rescue/shutdown.requested ]]; then
+      break
+    fi
+  done
+  exit 0
+fi
+
+while true; do
+  choice="$(whiptail --title "Setuphelfer — Discovery-Fehler" --menu "$_msg" 22 74 3 \
+    "details" "Details anzeigen" \
+    "recheck" "Erneut prüfen (read-only)" \
+    "shutdown" "Herunterfahren" \
+    3>&1 1>"$_wt" 2>&3)" || choice="shutdown"
+  case "$choice" in
+    details)
+      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null | \
+        whiptail --title "Details" --scrolltext --textbox /dev/stdin 24 78 3>&1 1>"$_wt" 2>&3 || true
+from core.rescue_discovery_observability import read_runtime_json
+import json
+for name in ("start-gate.json", "service-result.json", "orchestrator-exit.json", "boot-finalizer.json"):
+    data = read_runtime_json(name) or {}
+    print(f"=== {name} ===")
+    print(json.dumps(data, indent=2, ensure_ascii=False))
+    print()
+PY
+      ;;
+    recheck)
+      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from core.rescue_discovery_boot_completion import evaluate_discovery_boot_completion
+evaluate_discovery_boot_completion(force_harvest=True)
+PY
+      ;;
+    shutdown|*)
+      setuphelfer_rescue_auto_shutdown_if_requested "operator_hold_shutdown" || systemctl poweroff || true
+      exit 0
+      ;;
+  esac
+done

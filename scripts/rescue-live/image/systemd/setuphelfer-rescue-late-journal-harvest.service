@@ -1,0 +1,19 @@
+[Unit]
+Description=Setuphelfer Rescue late journal harvest (001D7C)
+After=setuphelfer-rescue-auto-msi-evidence.service
+Wants=setuphelfer-backend.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-late-journal-harvest
+ConditionPathExists=!/run/setuphelfer-rescue/late-journal-harvest.done
+
+[Service]
+Type=oneshot
+TimeoutStartSec=180
+ExecStart=/usr/local/sbin/setuphelfer-rescue-late-journal-harvest
+ExecStartPost=/bin/touch /run/setuphelfer-rescue/late-journal-harvest.done
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+TTYPath=
+
+[Install]
+WantedBy=multi-user.target

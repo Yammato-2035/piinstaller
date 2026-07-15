@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from core.rescue_discovery_run_control import consume_discovery_run_control, load_discovery_run_control
+from core.rescue_component_heartbeat import write_component_heartbeat
 from core.rescue_evidence_completeness import validate_session_evidence
 from core.rescue_network_connectivity_v2 import build_network_connectivity_v2
 from core.rescue_payload_version import rescue_payload_version
@@ -321,6 +322,7 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
     state_dir = _state_dir()
     state_dir.mkdir(parents=True, exist_ok=True)
     (state_dir / "auto-discovery.started").write_text("1\n", encoding="utf-8")
+    write_component_heartbeat("discovery", state="starting")
 
     payload_version = rescue_payload_version()
     mode_info = resolve_run_mode()
@@ -454,6 +456,7 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
 
     set_phase("shutdown_pending")
     heartbeat(module="shutdown_pending")
+    write_component_heartbeat("discovery", state="terminal")
     return {
         "status": status,
         "session_id": state["session_id"],
@@ -464,4 +467,88 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
         "terminal": True,
         "shutdown_safe": True,
         "evidence_complete": result in {"complete", "review_required"},
+        "session_created": True,
     }
+
+
+def main() -> dict[str, Any]:
+    """Outer exception boundary for the runner (001D7C)."""
+    from core.rescue_discovery_observability import (
+        boot_id,
+        classify_exception,
+        exception_summary,
+        persist_orchestrator_exit,
+        persist_service_result,
+    )
+    from core.rescue_discovery_boot_completion import harvest_late_journal
+    from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount as _find_logs
+
+    started_at = __import__("datetime").datetime.now(__import__("datetime").timezone.utc).replace(
+        microsecond=0
+    ).isoformat().replace("+00:00", "Z")
+    try:
+        result = run_auto_discovery(allow_destructive=False)
+        persist_orchestrator_exit(
+            {
+                "started": True,
+                "started_at": started_at,
+                "exit_code": 0,
+                "session_created": bool(result.get("session_created") or result.get("session_id")),
+                "terminal_state_written": bool(result.get("terminal")),
+                "status": result.get("status") or "",
+            }
+        )
+        persist_service_result(
+            {
+                "exit_code": 0,
+                "status": result.get("status") or "",
+                "run_control_consumed": True,
+                "session_id": result.get("session_id"),
+            }
+        )
+        return result
+    except BaseException as exc:  # noqa: BLE001 — intentional outer boundary
+        status = classify_exception(exc)
+        summary = exception_summary(exc)
+        persist_orchestrator_exit(
+            {
+                "started": True,
+                "started_at": started_at,
+                "exit_code": 1,
+                "exception_type": type(exc).__name__,
+                "exception_summary": summary,
+                "session_created": False,
+                "terminal_state_written": False,
+                "status": status,
+            }
+        )
+        logs = _find_logs()
+        if logs:
+            try:
+                consume_discovery_run_control(
+                    logs,
+                    consumed_by_boot_id=boot_id(),
+                    terminal_status=status,
+                    failure_stage="orchestrator_exception",
+                )
+            except OSError:
+                pass
+        persist_service_result(
+            {
+                "exit_code": 1,
+                "status": status,
+                "run_control_consumed": bool(logs),
+                "failure_stage": "orchestrator_exception",
+            }
+        )
+        try:
+            harvest_late_journal(setup_logs_base=logs)
+        except OSError:
+            pass
+        write_component_heartbeat("discovery", state="failed")
+        raise
+
+
+if __name__ == "__main__":
+    main()
+

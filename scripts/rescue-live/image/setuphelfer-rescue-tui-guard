@@ -1,0 +1,40 @@
+#!/bin/bash
+# 001D7C — Keep tty1 owned if TUI exits unexpectedly (no bare root shell).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+
+# Do not interfere during shutdown / finalizer terminal.
+if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/boot-finalizer.done" ]]; then
+  _status="$(tr -d '\n' <"${SETUPHELFER_RESCUE_STATE_DIR}/boot-finalizer.done" 2>/dev/null || true)"
+  case "$_status" in
+    *shutdown*|*passed*|*failed*|*complete*|*timeout*) exit 0 ;;
+  esac
+fi
+
+if systemctl is-active --quiet setuphelfer-rescue-tui.service 2>/dev/null; then
+  exit 0
+fi
+
+# Count restarts
+_count_file="${SETUPHELFER_RESCUE_STATE_DIR}/tui-guard-restarts"
+_count=0
+[[ -f "$_count_file" ]] && _count="$(tr -d '\n' <"$_count_file" 2>/dev/null || echo 0)"
+[[ "$_count" =~ ^[0-9]+$ ]] || _count=0
+
+if [[ "$_count" -ge 3 ]]; then
+  # Static hold screen via hold helper (no getty).
+  if [[ -x /usr/local/sbin/setuphelfer-rescue-tui-hold ]]; then
+    /usr/local/sbin/setuphelfer-rescue-tui-hold --static-error || true
+  fi
+  exit 0
+fi
+
+_count=$((_count + 1))
+printf '%s\n' "$_count" >"$_count_file"
+systemctl reset-failed setuphelfer-rescue-tui.service 2>/dev/null || true
+systemctl start setuphelfer-rescue-tui.service 2>/dev/null || true
+exit 0

@@ -235,29 +235,102 @@ print("\n".join(lines))
 PY
 }
 
-_tui_auto_e2e_menu() {
-  local display="${SCRIPT_DIR}/setuphelfer-rescue-auto-e2e-tui-display.py"
-  if [[ -f "$display" ]]; then
-    chmod +x "$display" 2>/dev/null || true
-    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 "$display" <"$_wt" || true
-    return 0
-  fi
-  # Fallback: timed refresh loop
-  while true; do
-    local body terminal
-    body="$(_tui_auto_read_state)"
-    whiptail --title "Setuphelfer — Automatischer Test" --yesno \
-      "${body}
-
-Enter = Aktionen" 28 78 --timeout 2 --defaultno 3>&1 1>"$_wt" 2>&3 || true
-    terminal="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo ""
+_tui_shutdown_pending() {
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo no
+from core.rescue_discovery_observability import read_runtime_json
 from core.rescue_physical_e2e_auto_e2e_state import read_auto_e2e_state
-print((read_auto_e2e_state() or {}).get("status") or "")
+from core.rescue_session_state import read_session_state
+from pathlib import Path
+import os
+state_dir = Path(os.environ.get("SETUPHELFER_RESCUE_STATE_DIR", "/run/setuphelfer-rescue"))
+if (state_dir / "shutdown.requested").is_file():
+    print("yes"); raise SystemExit
+final = read_runtime_json("boot-finalizer.json") or {}
+session = read_session_state() or {}
+e2e = read_auto_e2e_state() or {}
+if session.get("current_phase") == "shutdown_pending" or session.get("shutdown_safe"):
+    print("yes"); raise SystemExit
+if final.get("shutdown_safe") and final.get("terminal"):
+    print("yes"); raise SystemExit
+if e2e.get("shutdown_requested") or e2e.get("phase") == "shutdown":
+    print("yes"); raise SystemExit
+print("no")
 PY
-)"
-    case "$terminal" in
-      passed|failed|blocked|cancelled) return 0 ;;
-    esac
+}
+
+_tui_discovery_hold_needed() {
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo no
+from core.rescue_discovery_observability import read_runtime_json
+from core.rescue_run_mode import resolve_run_mode
+mode = resolve_run_mode()
+if not (mode.get("ok") and mode.get("run_mode") == "auto_discovery_only"):
+    print("no"); raise SystemExit
+gate = read_runtime_json("start-gate.json") or {}
+svc = read_runtime_json("service-result.json") or {}
+orch = read_runtime_json("orchestrator-exit.json") or {}
+final = read_runtime_json("boot-finalizer.json") or {}
+if svc.get("exit_code") not in (None, 0):
+    print("yes"); raise SystemExit
+if orch.get("exit_code") not in (None, 0):
+    print("yes"); raise SystemExit
+if gate.get("called") and gate.get("start_allowed") is False:
+    print("yes"); raise SystemExit
+status = str(final.get("status") or svc.get("status") or "")
+if status.startswith("failed_") or status in {"discovery_start_gate_skipped"}:
+    print("yes"); raise SystemExit
+print("no")
+PY
+}
+
+_tui_auto_e2e_menu() {
+  # 001D7C: Keep ownership of tty1 until shutdown_pending / hold shutdown.
+  # Auto-display child exit must NOT leave a bare console.
+  local display="${SCRIPT_DIR}/setuphelfer-rescue-auto-e2e-tui-display.py"
+  local hold="${SCRIPT_DIR}/setuphelfer-rescue-tui-hold"
+  local child_rc=0
+  while true; do
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from core.rescue_component_heartbeat import write_component_heartbeat
+write_component_heartbeat("tui", state="auto_menu")
+PY
+    if [[ "$(_tui_shutdown_pending)" == "yes" ]]; then
+      return 0
+    fi
+    if [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
+      if [[ -x "$hold" || -f "$hold" ]]; then
+        chmod +x "$hold" 2>/dev/null || true
+        bash "$hold" --hold || true
+      fi
+      return 0
+    fi
+    if [[ -f "$display" ]]; then
+      chmod +x "$display" 2>/dev/null || true
+      set +e
+      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 "$display" <"$_wt"
+      child_rc=$?
+      set -uo pipefail
+      {
+        echo "auto_display_exit=${child_rc} $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      } >>"${SETUPHELFER_RESCUE_STATE_DIR}/tui-auto-display.log" 2>/dev/null || true
+    else
+      local body
+      body="$(_tui_auto_read_state)"
+      whiptail --title "Setuphelfer — Automatischer Test" --msgbox "${body}" 28 78 \
+        --timeout 2 3>&1 1>"$_wt" 2>&3 || true
+      child_rc=0
+    fi
+    if [[ "$(_tui_shutdown_pending)" == "yes" ]]; then
+      return 0
+    fi
+    if [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
+      if [[ -x "$hold" || -f "$hold" ]]; then
+        chmod +x "$hold" 2>/dev/null || true
+        bash "$hold" --hold || true
+      fi
+      return 0
+    fi
+    # Display ended without terminal shutdown — restart child (keep tty1 held).
+    sleep 1
   done
 }
 
@@ -313,9 +386,16 @@ if [[ "$MODE" == "--boot-trigger" ]] || [[ "$MODE" == "--interactive" ]]; then
   if _tui_auto_e2e_active; then
     PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
 from core.rescue_physical_e2e_auto_e2e_state import init_auto_e2e_state
-init_auto_e2e_state(mode="auto_physical_e2e_locked")
+from core.rescue_run_mode import resolve_run_mode
+mode = resolve_run_mode()
+locked = "auto_discovery_only" if mode.get("run_mode") == "auto_discovery_only" else "auto_physical_e2e_locked"
+init_auto_e2e_state(mode=locked)
 PY
     _tui_auto_e2e_menu
+    # Only leave tty1 after hold/menu decided shutdown is underway.
+    if [[ "$(_tui_shutdown_pending)" != "yes" ]] && [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
+      bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold || true
+    fi
     exit 0
   fi
   _tui_main_menu
@@ -324,6 +404,9 @@ fi
 
 if _tui_auto_e2e_active; then
   _tui_auto_e2e_menu
+  if [[ "$(_tui_shutdown_pending)" != "yes" ]] && [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
+    bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold || true
+  fi
   exit 0
 fi
 

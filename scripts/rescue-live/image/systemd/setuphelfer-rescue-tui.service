@@ -8,6 +8,8 @@ ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-entrypoint
 ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1
 ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
 ConditionKernelCommandLine=|setuphelfer_auto_discovery=1
+StartLimitBurst=3
+StartLimitIntervalSec=30
 
 [Service]
 Type=simple
@@ -19,7 +21,7 @@ TTYPath=/dev/tty1
 TTYReset=yes
 TTYVHangup=yes
 Restart=on-failure
-RestartSec=3
+RestartSec=1
 
 [Install]
 WantedBy=multi-user.target

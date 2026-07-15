@@ -1,16 +1,17 @@
 [Unit]
-Description=Setuphelfer Rescue auto discovery (001D7B read-only)
+Description=Setuphelfer Rescue auto discovery (001D7C observability runner)
 After=setuphelfer-backend.service network-online.target setuphelfer-rescue-tui.service setuphelfer-rescue-auto-msi-evidence.service
 Wants=setuphelfer-backend.service
-ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery-runner
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery-start-gate
 ConditionPathExists=!/run/setuphelfer-rescue/auto-discovery.done
 
 [Service]
 Type=oneshot
 TimeoutStartSec=2700
+Restart=no
 ExecCondition=/usr/local/sbin/setuphelfer-rescue-auto-discovery-start-gate
-ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-discovery
+ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-discovery-runner
 StandardInput=null
 StandardOutput=journal
 StandardError=journal

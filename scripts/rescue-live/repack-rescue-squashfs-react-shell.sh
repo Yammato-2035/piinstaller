@@ -97,6 +97,11 @@ for script in \
   setuphelfer-rescue-auto-physical-e2e \
   setuphelfer-rescue-auto-discovery \
   setuphelfer-rescue-auto-discovery-start-gate \
+  setuphelfer-rescue-auto-discovery-runner \
+  setuphelfer-rescue-late-journal-harvest \
+  setuphelfer-rescue-boot-finalizer \
+  setuphelfer-rescue-tui-guard \
+  setuphelfer-rescue-tui-hold \
   setuphelfer-rescue-physical-e2e-start-gate \
   setuphelfer-rescue-lab-auto-shutdown-failsafe \
   setuphelfer-rescue-msi-rs011b-collect \
@@ -160,10 +165,20 @@ mkdir -p "$WANTS" "$TIMERS"
 for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service \
   setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service \
   setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-auto-discovery.service \
+  setuphelfer-rescue-late-journal-harvest.service \
+  setuphelfer-rescue-tui-guard.service \
   setuphelfer-rescue-tui.service; do
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-late-journal-harvest.path" \
+  "${SYSTEMD}/setuphelfer-rescue-late-journal-harvest.path"
+ln -sf "../setuphelfer-rescue-late-journal-harvest.path" \
+  "${WANTS}/setuphelfer-rescue-late-journal-harvest.path"
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-tui-guard.timer" \
+  "${SYSTEMD}/setuphelfer-rescue-tui-guard.timer"
+ln -sf "../setuphelfer-rescue-tui-guard.timer" \
+  "${TIMERS}/setuphelfer-rescue-tui-guard.timer"
 # Failsafe: absolute-max timer (3600s) + inactivity watchdog (300s+60s interval).
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.service" \
   "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
@@ -178,6 +193,10 @@ install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-watchdog.
 ln -sf "../setuphelfer-rescue-lab-auto-shutdown-watchdog.timer" \
   "${TIMERS}/setuphelfer-rescue-lab-auto-shutdown-watchdog.timer"
 rm -f "${WANTS}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
+# Late-journal oneshot is path-triggered (MSI marker); avoid eager boot start without marker.
+rm -f "${WANTS}/setuphelfer-rescue-late-journal-harvest.service"
+# TUI-guard oneshot is timer-triggered.
+rm -f "${WANTS}/setuphelfer-rescue-tui-guard.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
 # GUI autostart is opt-in via GRUB/TUI; entrypoint orchestrates text default + gui watchdog.
 rm -f "${WANTS}/setuphelfer-rescue-ui.service"

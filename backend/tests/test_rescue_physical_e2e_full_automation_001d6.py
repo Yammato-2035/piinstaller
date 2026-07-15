@@ -69,7 +69,15 @@ class Failsafe001D6Tests(unittest.TestCase):
             with patch("core.rescue_physical_e2e_failsafe.heartbeat_age_sec", return_value=5.0):
                 with patch("core.rescue_physical_e2e_failsafe.read_auto_e2e_state", return_value={"phase": "msi_evidence_running", "updated_at": "2026-07-15T10:00:00Z", "status": "running"}):
                     with patch("core.rescue_physical_e2e_failsafe._marker", return_value=False):
-                        result = evaluate_lab_failsafe()
+                        with patch(
+                            "core.rescue_physical_e2e_failsafe.resolve_run_mode",
+                            return_value={"ok": True, "run_mode": "auto_physical_e2e"},
+                        ):
+                            with patch(
+                                "core.rescue_physical_e2e_failsafe._any_component_heartbeat_fresh",
+                                return_value=False,
+                            ):
+                                result = evaluate_lab_failsafe()
         self.assertTrue(result["legacy_420_disabled"])
         self.assertFalse(result["allow_shutdown"])
 
@@ -78,7 +86,15 @@ class Failsafe001D6Tests(unittest.TestCase):
             with patch("core.rescue_physical_e2e_failsafe.heartbeat_age_sec", return_value=10.0):
                 with patch("core.rescue_physical_e2e_failsafe.read_auto_e2e_state", return_value={"phase": "backup_create", "updated_at": "2026-07-15T10:00:00Z", "status": "running"}):
                     with patch("core.rescue_physical_e2e_failsafe._marker", side_effect=lambda n: n == "auto-msi-evidence.done"):
-                        result = evaluate_lab_failsafe()
+                        with patch(
+                            "core.rescue_physical_e2e_failsafe.resolve_run_mode",
+                            return_value={"ok": True, "run_mode": "auto_physical_e2e"},
+                        ):
+                            with patch(
+                                "core.rescue_physical_e2e_failsafe._any_component_heartbeat_fresh",
+                                return_value=False,
+                            ):
+                                result = evaluate_lab_failsafe()
         self.assertFalse(result["allow_shutdown"])
         self.assertIn("heartbeat_fresh", result["reasons_skip"])
 
@@ -88,7 +104,15 @@ class Failsafe001D6Tests(unittest.TestCase):
                 with patch("core.rescue_physical_e2e_failsafe._state_age_sec", return_value=600.0):
                     with patch("core.rescue_physical_e2e_failsafe.read_auto_e2e_state", return_value={"phase": "msi_evidence_running", "status": "running"}):
                         with patch("core.rescue_physical_e2e_failsafe._marker", return_value=False):
-                            result = evaluate_lab_failsafe()
+                            with patch(
+                                "core.rescue_physical_e2e_failsafe.resolve_run_mode",
+                                return_value={"ok": True, "run_mode": "auto_physical_e2e"},
+                            ):
+                                with patch(
+                                    "core.rescue_physical_e2e_failsafe._any_component_heartbeat_fresh",
+                                    return_value=False,
+                                ):
+                                    result = evaluate_lab_failsafe()
         self.assertTrue(result["allow_shutdown"])
 
     def test_failsafe_script_uses_evaluate_lab_failsafe(self):

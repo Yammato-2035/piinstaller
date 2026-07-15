@@ -1,0 +1,22 @@
+#!/bin/bash
+# 001D7C — Late journal harvest after MSI evidence / before shutdown.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/late-journal-harvest.log"
+{
+  echo "=== late-journal-harvest $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+} >>"$_log"
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
+import json
+from core.rescue_discovery_boot_completion import harvest_late_journal
+from core.rescue_component_heartbeat import write_component_heartbeat
+
+write_component_heartbeat("boot_finalizer", state="late_harvest")
+print(json.dumps(harvest_late_journal(), ensure_ascii=False, indent=2))
+PY
+exit 0

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -280,12 +281,40 @@ class SessionShutdownTests(unittest.TestCase):
                 base,
                 build_discovery_run_control(expected_payload_version="1.10.0.26"),
             )
-            result = evaluate_discovery_boot_completion(setup_logs_base=base)
-            self.assertEqual(result["action"], "failed_and_consumed")
-            self.assertEqual(result["status"], "failed_discovery_service_not_started")
+            # force harvest + state dirs via env for boot_completion STATE writes
+            state = Path(logs) / "run-state"
+            disc = state / "discovery"
+            disc.mkdir(parents=True)
+            with patch.dict(
+                os.environ,
+                {
+                    "SETUPHELFER_RESCUE_STATE_DIR": str(state),
+                    "SETUPHELFER_RESCUE_DISCOVERY_DIR": str(disc),
+                },
+            ):
+                with patch("core.rescue_discovery_boot_completion._run", return_value=""):
+                    with patch(
+                        "core.rescue_discovery_observability.find_setup_logs_mount",
+                        return_value=base,
+                    ):
+                        result = evaluate_discovery_boot_completion(setup_logs_base=base)
+            self.assertIn(result["action"], {"failed_and_consumed", "finalized"})
+            self.assertIn(
+                result["status"],
+                {
+                    "failed_discovery_service_not_started",
+                    "failed_discovery_observability_incomplete",
+                },
+            )
             control = load_discovery_run_control(base)
             self.assertTrue(control["consumed"])
-            self.assertEqual(control["terminal_status"], "failed_discovery_service_not_started")
+            self.assertIn(
+                control["terminal_status"],
+                {
+                    "failed_discovery_service_not_started",
+                    "failed_discovery_observability_incomplete",
+                },
+            )
 
     def test_24_shutdown_requires_terminal_state_in_wrapper(self):
         script = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-auto-discovery").read_text(

@@ -1,0 +1,19 @@
+#!/bin/bash
+# 001D7C — Boot finalizer before failsafe shutdown.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/boot-finalizer.log"
+{
+  echo "=== boot-finalizer $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+} >>"$_log"
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
+import json
+from core.rescue_discovery_boot_completion import evaluate_discovery_boot_completion
+print(json.dumps(evaluate_discovery_boot_completion(force_harvest=True), ensure_ascii=False, indent=2))
+PY
+exit 0

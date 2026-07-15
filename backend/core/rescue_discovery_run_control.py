@@ -112,17 +112,25 @@ def consume_discovery_run_control(
     setup_logs_base: Path,
     *,
     consumed_by_session_id: str = "",
+    consumed_by_boot_id: str = "",
     terminal_status: str = "",
+    failure_stage: str = "",
 ) -> dict[str, Any]:
     path = discovery_run_control_path(setup_logs_base)
     control = load_discovery_run_control(setup_logs_base) or {}
+    if control.get("consumed") and not control.get("enabled"):
+        return control
     control["enabled"] = False
     control["consumed"] = True
     control["consumed_at"] = _utc_now()
     if consumed_by_session_id:
         control["consumed_by_session_id"] = consumed_by_session_id
+    if consumed_by_boot_id:
+        control["consumed_by_boot_id"] = consumed_by_boot_id
     if terminal_status:
         control["terminal_status"] = terminal_status
+    if failure_stage:
+        control["failure_stage"] = failure_stage
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".json.tmp")
     tmp.write_text(json.dumps(control, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
