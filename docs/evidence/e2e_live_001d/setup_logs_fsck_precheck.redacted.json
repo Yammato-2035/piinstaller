@@ -1,0 +1,17 @@
+{
+  "schema": "setuphelfer.e2e-live-001d.setup-logs-fsck-precheck.v1",
+  "partition": "SETUP_LOGS",
+  "mode": "read_only",
+  "status": "repair_required",
+  "exit_code": 0,
+  "dirty_bit": true,
+  "boot_sector_backup_diff": true,
+  "cluster_errors": 0,
+  "directory_errors": 0,
+  "file_loss": false,
+  "recommended_repairs": [
+    "remove_dirty_bit"
+  ],
+  "personal_filenames_redacted": true,
+  "recorded_at": "2026-07-15T09:35:00Z"
+}

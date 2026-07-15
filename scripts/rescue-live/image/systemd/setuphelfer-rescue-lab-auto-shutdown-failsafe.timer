@@ -1,9 +1,9 @@
 [Unit]
-Description=Setuphelfer Rescue MSI lab auto-shutdown failsafe timer
+Description=Setuphelfer Rescue MSI lab absolute-max shutdown timer (001D6)
 ConditionKernelCommandLine=setuphelfer_msi_lab_auto=1
 
 [Timer]
-OnBootSec=420s
+OnBootSec=3600s
 Persistent=false
 Unit=setuphelfer-rescue-lab-auto-shutdown-failsafe.service
 

@@ -245,6 +245,38 @@ def select_destructive_lab_target(config: dict[str, Any]) -> tuple[LabDiskCandid
     return matched[0], {"ok": True, "code": "ok"}
 
 
+def wait_for_destructive_lab_target(
+    config: dict[str, Any],
+    *,
+    run_id: str = "",
+    max_wait_sec: int = 120,
+) -> tuple[LabDiskCandidate | None, dict[str, Any]]:
+    from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state
+
+    deadline = time.time() + max_wait_sec
+    last_gate: dict[str, Any] = {"ok": False, "code": "blocked_sabrent_not_detected"}
+    while time.time() < deadline:
+        abort = check_abort()
+        if abort and abort.get("immediate"):
+            return None, {"ok": False, "code": abort.get("reason")}
+        candidate, gate = select_destructive_lab_target(config)
+        last_gate = gate
+        if gate.get("ok") and candidate is not None:
+            update_auto_e2e_state(phase="sabrent_detected", status="running", last_progress="SABRENT-HDD erkannt")
+            write_heartbeat(run_id=run_id, phase="sabrent_detected")
+            return candidate, gate
+        elapsed = int(max_wait_sec - max(0, deadline - time.time()))
+        update_auto_e2e_state(
+            phase="sabrent_waiting",
+            status="running",
+            last_progress=f"SABRENT wird gesucht ({elapsed}/{max_wait_sec} s)",
+        )
+        write_heartbeat(run_id=run_id, phase="sabrent_waiting")
+        subprocess.run(["udevadm", "settle"], capture_output=True, check=False, timeout=30)
+        time.sleep(2)
+    return None, {"ok": False, "code": "blocked_sabrent_not_detected", "detail": last_gate}
+
+
 def _partition_path(disk_path: str, number: int) -> str:
     if "nvme" in disk_path:
         return f"{disk_path}p{number}"

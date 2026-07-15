@@ -1,0 +1,18 @@
+{
+  "schema": "setuphelfer.e2e-live-001d.setup-logs-fsck-result.v1",
+  "partition": "SETUP_LOGS",
+  "repair_mode": "fsck.fat -a",
+  "repair_exit_code": 1,
+  "postcheck_mode": "fsck.fat -n",
+  "postcheck_clean": true,
+  "postcheck_exit_code": 0,
+  "uuid_unchanged": true,
+  "label_unchanged": "SETUP_LOGS",
+  "writable": true,
+  "write_test_path": "setuphelfer/.setup-logs-write-test.tmp",
+  "write_test_passed": true,
+  "evidence_preserved": true,
+  "run_control_present": true,
+  "token_restored_from_backup": false,
+  "recorded_at": "2026-07-15T09:40:00Z"
+}

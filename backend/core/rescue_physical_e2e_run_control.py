@@ -49,7 +49,7 @@ def run_control_path(setup_logs_base: Path) -> Path:
 
 def build_run_control(
     *,
-    expected_payload_version: str = "1.10.0.23",
+    expected_payload_version: str = "1.10.0.24",
     vendor: str = "Micro-Star International Co., Ltd.",
     model_contains: str = "GE63 Raider",
     telemetry_required: bool = True,

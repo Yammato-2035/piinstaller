@@ -1,0 +1,17 @@
+{
+  "schema": "setuphelfer.e2e-live-001d.setup-logs-pre-fsck-backup.v1",
+  "backup_created": true,
+  "token_copied": false,
+  "file_count": 1267,
+  "backup_path": "build/e2e-live-001d/setup-logs-pre-fsck-backup",
+  "directories": [
+    "setuphelfer/evidence",
+    "setuphelfer/diagnostics",
+    "setuphelfer/lab-auto",
+    "setuphelfer/e2e-live-001d"
+  ],
+  "excluded": [
+    "setuphelfer/lab/telemetry-lab-token"
+  ],
+  "recorded_at": "2026-07-15T09:30:00Z"
+}

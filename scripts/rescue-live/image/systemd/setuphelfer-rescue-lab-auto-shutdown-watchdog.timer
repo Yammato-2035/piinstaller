@@ -1,0 +1,12 @@
+[Unit]
+Description=Setuphelfer Rescue MSI lab inactivity watchdog timer (001D6)
+ConditionKernelCommandLine=setuphelfer_msi_lab_auto=1
+
+[Timer]
+OnBootSec=300s
+OnUnitActiveSec=60s
+Persistent=false
+Unit=setuphelfer-rescue-lab-auto-shutdown-watchdog.service
+
+[Install]
+WantedBy=timers.target

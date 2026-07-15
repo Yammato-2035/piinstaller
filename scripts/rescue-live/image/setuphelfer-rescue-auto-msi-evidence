@@ -123,19 +123,30 @@ if [[ "$_collect_ok" -eq 1 ]]; then
 from pathlib import Path
 from core.rescue_msi_lab_evidence_eval import evaluate_msi_lab_evidence
 from core.rescue_physical_e2e_msi_evidence_complete import write_msi_evidence_complete
+from core.rescue_payload_version import rescue_payload_version
 
 logs = Path(${_logs_mount@Q})
 ev_dir = logs / "setuphelfer/evidence/msi-rs011b"
+session_id = ""
+session_path = Path("/run/setuphelfer/current-session.json")
+if session_path.is_file():
+    import json
+    session_id = str(json.loads(session_path.read_text(encoding="utf-8")).get("session_id") or "")
 eval_result = evaluate_msi_lab_evidence(evidence_dir=ev_dir, lab_auto_unattended=True)
 passed = str(eval_result.get("result_status") or "") == "passed"
-write_msi_evidence_complete(
-    logs,
-    status="passed" if passed else "failed",
-    late_gate_completed=True,
-    tui_owned=bool(eval_result.get("tui_owned")),
-    evidence_synced=True,
-)
-print("msi-evidence-complete.json written", "passed" if passed else "failed")
+try:
+    write_msi_evidence_complete(
+        logs,
+        status="passed" if passed else "failed",
+        session_id=session_id,
+        payload_version=rescue_payload_version(),
+        late_gate_completed=True,
+        tui_owned=bool(eval_result.get("tui_owned")),
+        evidence_synced=True,
+    )
+    print("msi-evidence-complete.json written", "passed" if passed else "failed")
+except OSError as exc:
+    print("msi-evidence-complete write failed:", exc)
 PY
   fi
 else

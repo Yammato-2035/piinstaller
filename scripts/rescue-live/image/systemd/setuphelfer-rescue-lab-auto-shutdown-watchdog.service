@@ -1,0 +1,12 @@
+[Unit]
+Description=Setuphelfer Rescue MSI lab inactivity watchdog (001D6)
+ConditionKernelCommandLine=setuphelfer_msi_lab_auto=1
+After=setuphelfer-backend.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/setuphelfer-rescue-lab-auto-shutdown-failsafe
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+TTYPath=

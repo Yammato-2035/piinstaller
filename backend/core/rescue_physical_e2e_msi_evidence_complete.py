@@ -24,18 +24,31 @@ def write_msi_evidence_complete(
     setup_logs_base: Path,
     *,
     status: str = "passed",
+    session_id: str = "",
+    payload_version: str = "",
     late_gate_completed: bool = True,
     tui_owned: bool = True,
     evidence_synced: bool = True,
 ) -> Path:
     path = msi_evidence_complete_path(setup_logs_base)
+    if not setup_logs_base.is_dir():
+        raise OSError("failed_setup_logs_not_writable")
+    test = setup_logs_base / ".setup-logs-write-test.tmp"
+    try:
+        test.write_text("ok\n", encoding="utf-8")
+        test.unlink(missing_ok=True)
+    except OSError as exc:
+        raise OSError("failed_setup_logs_not_writable") from exc
     path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "schema": MSI_EVIDENCE_COMPLETE_SCHEMA,
         "status": status,
+        "session_id": session_id,
+        "payload_version": payload_version,
         "late_gate_completed": late_gate_completed,
         "tui_owned": tui_owned,
         "evidence_synced": evidence_synced,
+        "completed_at": _utc_now(),
         "recorded_at": _utc_now(),
     }
     tmp = path.with_suffix(".json.tmp")
@@ -43,6 +56,12 @@ def write_msi_evidence_complete(
     with tmp.open("rb") as handle:
         os.fsync(handle.fileno())
     tmp.replace(path)
+    try:
+        fd = os.open(str(path.parent), os.O_DIRECTORY)
+        os.fsync(fd)
+        os.close(fd)
+    except OSError:
+        pass
     return path
 
 

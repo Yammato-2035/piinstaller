@@ -100,6 +100,8 @@ for script in \
   setuphelfer-rescue-physical-e2e; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script}"
 done
+install -m 0755 "${IMAGE}/setuphelfer-rescue-auto-e2e-tui-display.py" \
+  "${ROOT}/usr/local/sbin/setuphelfer-rescue-auto-e2e-tui-display.py"
 for script in setuphelfer-rescue-gui-watchdog.sh setuphelfer-rescue-entrypoint.sh setuphelfer-rescue-tui.sh; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script%.sh}"
 done
@@ -158,14 +160,19 @@ for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.s
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done
-# Failsafe: only the timer is enabled (OnBootSec=420s). The oneshot service must not
-# be linked into multi-user.target — that would poweroff ~12s into boot before evidence runs.
+# Failsafe: absolute-max timer (3600s) + inactivity watchdog (300s+60s interval).
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.service" \
   "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer" \
   "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer"
 ln -sf "../setuphelfer-rescue-lab-auto-shutdown-failsafe.timer" \
   "${TIMERS}/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer"
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-watchdog.service" \
+  "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-watchdog.service"
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-watchdog.timer" \
+  "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-watchdog.timer"
+ln -sf "../setuphelfer-rescue-lab-auto-shutdown-watchdog.timer" \
+  "${TIMERS}/setuphelfer-rescue-lab-auto-shutdown-watchdog.timer"
 rm -f "${WANTS}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
 # GUI autostart is opt-in via GRUB/TUI; entrypoint orchestrates text default + gui watchdog.

@@ -235,59 +235,28 @@ print("\n".join(lines))
 PY
 }
 
-_tui_auto_e2e_show_actions() {
-  local choice
-  choice="$(whiptail --title "Setuphelfer — Aktionen" --menu \
-    "Kontrollierte Aktion wählen:" 14 74 2 \
-    "cancel" "Abbrechen (sicher)" \
-    "poweroff" "Herunterfahren (sicher)" \
-    3>&1 1>"$_wt" 2>&3)" || return 0
-  case "$choice" in
-    cancel)
-      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
-from core.rescue_physical_e2e_auto_e2e_state import request_cancel
-request_cancel()
-PY
-      _tui_msg "Abbruch angefordert.\nDer Orchestrator beendet sicher nach der aktuellen Phase."
-      ;;
-    poweroff)
-      PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
-from core.rescue_physical_e2e_auto_e2e_state import request_shutdown
-request_shutdown()
-PY
-      _tui_msg "Herunterfahren vorgemerkt.\nShutdown erfolgt nach Evidence-Sync."
-      ;;
-  esac
-}
-
 _tui_auto_e2e_menu() {
+  local display="${SCRIPT_DIR}/setuphelfer-rescue-auto-e2e-tui-display.py"
+  if [[ -f "$display" ]]; then
+    chmod +x "$display" 2>/dev/null || true
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 "$display" <"$_wt" || true
+    return 0
+  fi
+  # Fallback: timed refresh loop
   while true; do
-    local body rc terminal
+    local body terminal
     body="$(_tui_auto_read_state)"
     whiptail --title "Setuphelfer — Automatischer Test" --yesno \
       "${body}
 
-────────────────────────────────────────
-Anzeige aktualisiert sich alle 3 Sekunden.
-
-Enter / Tab = Abbrechen oder Herunterfahren wählen" \
-      28 78 --timeout 3 --defaultno 3>&1 1>"$_wt" 2>&3
-    rc=$?
-    if [[ "$rc" -eq 0 ]]; then
-      _tui_auto_e2e_show_actions
-    fi
+Enter = Aktionen" 28 78 --timeout 2 --defaultno 3>&1 1>"$_wt" 2>&3 || true
     terminal="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo ""
 from core.rescue_physical_e2e_auto_e2e_state import read_auto_e2e_state
-state = read_auto_e2e_state() or {}
-print(state.get("status") or "")
+print((read_auto_e2e_state() or {}).get("status") or "")
 PY
 )"
     case "$terminal" in
-      passed|failed|blocked|cancelled)
-        body="$(_tui_auto_read_state)"
-        _tui_msg "Automatischer Test beendet.\n\n${body}"
-        return 0
-        ;;
+      passed|failed|blocked|cancelled) return 0 ;;
     esac
   done
 }

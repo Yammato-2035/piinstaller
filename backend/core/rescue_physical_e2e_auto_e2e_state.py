@@ -40,8 +40,14 @@ def _heartbeat_file() -> Path:
 
 AUTO_E2E_PHASES: tuple[str, ...] = (
     "msi_hardware_check",
-    "evidence_collection",
-    "test_disk_prepare",
+    "msi_evidence_waiting",
+    "msi_evidence_running",
+    "msi_evidence_complete",
+    "sabrent_waiting",
+    "sabrent_detected",
+    "sabrent_identity_verified",
+    "disk_partitioning",
+    "disk_formatting",
     "test_data_create",
     "backup_create",
     "backup_verify",
@@ -50,13 +56,20 @@ AUTO_E2E_PHASES: tuple[str, ...] = (
     "telemetry_send",
     "diagnostics_fetch",
     "evidence_save",
+    "shutdown_pending",
     "shutdown",
 )
 
 PHASE_LABELS_DE: dict[str, str] = {
     "msi_hardware_check": "MSI-Hardware prüfen",
-    "evidence_collection": "Evidence sammeln",
-    "test_disk_prepare": "Testfestplatte vorbereiten",
+    "msi_evidence_waiting": "MSI-Evidence wird vorbereitet",
+    "msi_evidence_running": "MSI-Evidence wird gesammelt",
+    "msi_evidence_complete": "MSI-Evidence abgeschlossen",
+    "sabrent_waiting": "SABRENT-HDD wird gesucht",
+    "sabrent_detected": "SABRENT-HDD erkannt",
+    "sabrent_identity_verified": "SABRENT-HDD wird geprüft",
+    "disk_partitioning": "Testfestplatte wird partitioniert",
+    "disk_formatting": "Testfestplatte wird formatiert",
     "test_data_create": "Testdaten erzeugen",
     "backup_create": "Backup erstellen",
     "backup_verify": "Backup prüfen",
@@ -65,7 +78,11 @@ PHASE_LABELS_DE: dict[str, str] = {
     "telemetry_send": "Telemetrie senden",
     "diagnostics_fetch": "Diagnose abrufen",
     "evidence_save": "Evidence speichern",
+    "shutdown_pending": "Herunterfahren vorgemerkt",
     "shutdown": "Herunterfahren",
+    # legacy aliases
+    "evidence_collection": "MSI-Evidence wird gesammelt",
+    "test_disk_prepare": "Testfestplatte vorbereiten",
 }
 
 STATUS_VALUES = frozenset({"waiting", "running", "passed", "failed", "blocked", "cancelled"})
@@ -304,14 +321,14 @@ def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
 
     if uptime >= 10:
         progress = "MSI-Hardware wird geprüft (TUI aktiv)"
-    if uptime >= 20:
-        phase = "evidence_collection"
-        if uptime < late_min:
-            progress = f"Late-Evidence-Gate: {uptime}/{late_min} s — bitte warten"
-        else:
-            progress = "Late-Gate erreicht, Evidence wird gesammelt…"
+    if uptime >= 20 and uptime < late_min:
+        phase = "msi_evidence_waiting"
+        progress = f"Late-Evidence-Gate: {uptime}/{late_min} s — bitte warten"
+    elif uptime >= late_min and not evidence_done and not msi_complete:
+        phase = "msi_evidence_running"
+        progress = "MSI-Evidence wird gesammelt…"
     if evidence_done or msi_complete:
-        phase = "test_disk_prepare"
+        phase = "msi_evidence_complete"
         progress = "MSI-Evidence abgeschlossen — physischer E2E startet"
     if physical_done:
         phase = "shutdown"

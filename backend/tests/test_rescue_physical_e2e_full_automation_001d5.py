@@ -114,7 +114,7 @@ class TuiAutoLockTests(unittest.TestCase):
     def test_tui_script_has_auto_lock_mode(self):
         tui = Path("scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
         self.assertIn("auto_physical_e2e_locked", tui)
-        self.assertIn("--timeout 3", tui)
+        self.assertIn("setuphelfer-rescue-auto-e2e-tui-display.py", tui)
         self.assertIn("refresh_auto_e2e_phase_from_runtime", tui)
 
 
@@ -140,7 +140,7 @@ class RuntimeRefreshTests(unittest.TestCase):
                 init_auto_e2e_state(mode="auto_physical_e2e_locked")
                 with patch("core.rescue_physical_e2e_auto_e2e_state._read_uptime_sec", return_value=60):
                     state = refresh_auto_e2e_phase_from_runtime()
-                self.assertEqual(state["phase"], "evidence_collection")
+                self.assertEqual(state["phase"], "msi_evidence_waiting")
                 self.assertIn("Late-Evidence-Gate", state["last_progress"])
 
 
@@ -283,7 +283,7 @@ class HeartbeatFailsafeTests(unittest.TestCase):
         script = Path("scripts/rescue-live/image/setuphelfer-rescue-lab-auto-shutdown-failsafe").read_text(
             encoding="utf-8"
         )
-        self.assertIn("heartbeat_fresh", script)
+        self.assertIn("evaluate_lab_failsafe", script)
 
 
 class UnattendedExitStatusTests(unittest.TestCase):
@@ -304,7 +304,7 @@ class UnattendedDestructiveSmokeTests(unittest.TestCase):
     @patch("core.rescue_physical_e2e_unattended.mount_e2e_partitions")
     @patch("core.rescue_physical_e2e_unattended.verify_layout_after_partition")
     @patch("core.rescue_physical_e2e_unattended.wipe_and_partition_disk")
-    @patch("core.rescue_physical_e2e_unattended.select_destructive_lab_target")
+    @patch("core.rescue_physical_e2e_unattended.wait_for_destructive_lab_target")
     @patch("core.rescue_physical_e2e_unattended.verify_payload_version_gate")
     @patch("core.rescue_physical_e2e_unattended.verify_machine_identity")
     @patch("core.rescue_physical_e2e_unattended.verify_boot_parameters")
@@ -313,7 +313,7 @@ class UnattendedDestructiveSmokeTests(unittest.TestCase):
         boot,
         machine,
         payload,
-        select_target,
+        wait_target,
         wipe,
         layout,
         mount,
@@ -325,7 +325,7 @@ class UnattendedDestructiveSmokeTests(unittest.TestCase):
         boot.return_value = {"ok": True}
         machine.return_value = {"ok": True, "identity": {}}
         payload.return_value = {"ok": True}
-        select_target.return_value = (_sabrent_candidate(), {"ok": True})
+        wait_target.return_value = (_sabrent_candidate(), {"ok": True})
         wipe.return_value = {"ok": True}
         layout.return_value = {"ok": True}
         with tempfile.TemporaryDirectory() as tmp:

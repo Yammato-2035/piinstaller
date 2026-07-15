@@ -67,6 +67,23 @@ def verify_rescue_payload_e2e_live_001d_content(squashfs_path: Path) -> dict[str
     ok, listing = _unsquashfs_listing(squashfs_path)
     carriers = verify_payload_version_carriers(squashfs_path, expected_version=expected)
     tui = _unsquashfs_cat(squashfs_path, "usr/local/sbin/setuphelfer-rescue-tui")
+    failsafe_script = _unsquashfs_cat(squashfs_path, "usr/local/sbin/setuphelfer-rescue-lab-auto-shutdown-failsafe")
+    failsafe_timer = _unsquashfs_cat(
+        squashfs_path,
+        "etc/systemd/system/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer",
+    )
+    tui_display = "setuphelfer-rescue-auto-e2e-tui-display.py" in listing
+    tui_refresh_gate = (
+        tui_display
+        and "setuphelfer-rescue-auto-e2e-tui-display.py" in tui
+        and "select.select" in _unsquashfs_cat(squashfs_path, "usr/local/sbin/setuphelfer-rescue-auto-e2e-tui-display.py")
+    )
+    failsafe_gate = (
+        "evaluate_lab_failsafe" in failsafe_script
+        and "OnBootSec=3600s" in failsafe_timer
+        and "OnBootSec=420s" not in failsafe_timer
+        and "setuphelfer-rescue-lab-auto-shutdown-watchdog.timer" in listing
+    )
     modules = {name: name in listing for name in _E2E_MODULE_MARKERS}
     scripts = {name: name in listing for name in _E2E_SCRIPT_MARKERS}
     secret_hits = [marker for marker in _SECRET_MARKERS if marker in listing]
@@ -92,6 +109,8 @@ def verify_rescue_payload_e2e_live_001d_content(squashfs_path: Path) -> dict[str
         and unattended_service
         and unattended_unit
         and unit_wanted
+        and tui_refresh_gate
+        and failsafe_gate
         and not secret_hits
     )
 
@@ -110,6 +129,8 @@ def verify_rescue_payload_e2e_live_001d_content(squashfs_path: Path) -> dict[str
         "unattended_service_present": unattended_service,
         "unattended_service_unit_present": unattended_unit,
         "unattended_service_unit_enabled": unit_wanted,
+        "tui_refresh_gate": tui_refresh_gate,
+        "failsafe_gate": failsafe_gate,
         "secret_markers_in_listing": secret_hits,
         "secrets_absent": not secret_hits,
         "unsquashfs_ok": ok,

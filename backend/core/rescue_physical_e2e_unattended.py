@@ -24,9 +24,9 @@ from core.rescue_physical_e2e_destructive_target import (
     load_destructive_lab_config,
     mount_e2e_partitions,
     prepare_destructive_run_paths,
-    select_destructive_lab_target,
     unmount_e2e_partitions,
     verify_layout_after_partition,
+    wait_for_destructive_lab_target,
     wipe_and_partition_disk,
 )
 from core.rescue_physical_e2e_dev_automation import create_test_data, resolve_token_file
@@ -192,7 +192,7 @@ def _run_destructive_lab_path(
         _finalize_terminal(logs=logs, run_control=run_control, e2e_run_id=e2e_run_id, final_status="cancelled_by_operator")
         return {"feature": FEATURE_ID_UNATTENDED, "status": "cancelled_by_operator", "e2e_run_id": e2e_run_id}
 
-    candidate, gate = select_destructive_lab_target(destructive_cfg)
+    candidate, gate = wait_for_destructive_lab_target(destructive_cfg, run_id=e2e_run_id, max_wait_sec=120)
     if not gate.get("ok") or candidate is None:
         sm.transition("blocked", detail=gate)
         result = {
@@ -208,6 +208,7 @@ def _run_destructive_lab_path(
         return result
 
     sm.transition("test_target_discovered", detail={"mode": "destructive_lab_hdd"})
+    update_auto_e2e_state(phase="sabrent_identity_verified", status="running", last_progress="SABRENT identifiziert")
     write_json(
         journal_dir / "storage-selection.json",
         {
@@ -219,6 +220,7 @@ def _run_destructive_lab_path(
     )
     sm.transition("test_target_verified")
 
+    update_auto_e2e_state(phase="disk_partitioning", status="running")
     partition_result = wipe_and_partition_disk(candidate.disk_path, config=destructive_cfg, run_id=e2e_run_id)
     if not partition_result.get("ok"):
         sm.transition("failed", detail=partition_result)

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Lab failsafe — poweroff only if orchestrator dead and no heartbeat (MSI lab boots only).
+# Lab failsafe — shutdown only when heartbeat/state/orchestrator checks fail (001D6).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
@@ -9,43 +9,27 @@ setuphelfer_rescue_msi_lab_auto_active || exit 0
 
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/lab-auto-shutdown-failsafe.log"
 
-if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done" ]]; then
-  echo "Failsafe: physical E2E already complete — skip" >>"$_log"
-  exit 0
-fi
-
-if PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null
-from core.rescue_physical_e2e_auto_e2e_state import heartbeat_fresh
-raise SystemExit(0 if heartbeat_fresh(max_age=180.0) else 1)
+_eval="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo '{"allow_shutdown":false}'
+import json
+from core.rescue_physical_e2e_failsafe import evaluate_lab_failsafe
+print(json.dumps(evaluate_lab_failsafe(), ensure_ascii=False))
 PY
-then
-  echo "Failsafe: orchestrator heartbeat fresh — skip shutdown" >>"$_log"
-  exit 0
-fi
+)"
 
-if systemctl is-active --quiet setuphelfer-rescue-auto-physical-e2e.service 2>/dev/null; then
-  echo "Failsafe: physical E2E service active — skip shutdown" >>"$_log"
-  exit 0
-fi
-
-if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]] \
-   && ! setuphelfer_rescue_msi_e2e_auto_active; then
-  :
-elif [[ ! -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]]; then
-  echo "Failsafe: MSI evidence not done — proceeding with timeout shutdown" >>"$_log"
-else
-  echo "Failsafe: E2E expected but no heartbeat — proceeding with failure shutdown" >>"$_log"
-fi
+_allow="$(python3 -c 'import json,sys; print("yes" if json.loads(sys.argv[1]).get("allow_shutdown") else "no")' "$_eval" 2>/dev/null || echo no)"
 
 {
   echo "=== lab-auto-shutdown-failsafe $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
-  echo "reason=timeout_failsafe"
-  cat /proc/uptime 2>/dev/null || true
+  echo "evaluation=${_eval}"
 } >>"$_log"
+
+if [[ "$_allow" != "yes" ]]; then
+  echo "Failsafe: shutdown not allowed — heartbeat/state/orchestrator active" >>"$_log"
+  exit 0
+fi
 
 PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1 || true
 import json
-from pathlib import Path
 from core.rescue_physical_e2e_run_control import consume_run_control, load_run_control
 from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
 
