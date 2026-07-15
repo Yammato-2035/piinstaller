@@ -1,19 +1,61 @@
 #!/bin/bash
-# Lab failsafe — poweroff if auto-msi-evidence did not finish (MSI lab boots only).
+# Lab failsafe — poweroff only if orchestrator dead and no heartbeat (MSI lab boots only).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_msi_lab_auto_active || exit 0
-[[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]] && exit 0
 
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/lab-auto-shutdown-failsafe.log"
+
+if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done" ]]; then
+  echo "Failsafe: physical E2E already complete — skip" >>"$_log"
+  exit 0
+fi
+
+if PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null
+from core.rescue_physical_e2e_auto_e2e_state import heartbeat_fresh
+raise SystemExit(0 if heartbeat_fresh(max_age=180.0) else 1)
+PY
+then
+  echo "Failsafe: orchestrator heartbeat fresh — skip shutdown" >>"$_log"
+  exit 0
+fi
+
+if systemctl is-active --quiet setuphelfer-rescue-auto-physical-e2e.service 2>/dev/null; then
+  echo "Failsafe: physical E2E service active — skip shutdown" >>"$_log"
+  exit 0
+fi
+
+if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]] \
+   && ! setuphelfer_rescue_msi_e2e_auto_active; then
+  :
+elif [[ ! -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]]; then
+  echo "Failsafe: MSI evidence not done — proceeding with timeout shutdown" >>"$_log"
+else
+  echo "Failsafe: E2E expected but no heartbeat — proceeding with failure shutdown" >>"$_log"
+fi
+
 {
   echo "=== lab-auto-shutdown-failsafe $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
   echo "reason=timeout_failsafe"
   cat /proc/uptime 2>/dev/null || true
 } >>"$_log"
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1 || true
+import json
+from pathlib import Path
+from core.rescue_physical_e2e_run_control import consume_run_control, load_run_control
+from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
+
+logs = find_setup_logs_mount()
+if logs:
+    rc = load_run_control(logs)
+    if rc and rc.get("enabled"):
+        consume_run_control(logs, terminal_status="timeout_failsafe")
+        print(json.dumps({"run_control_consumed": True}))
+PY
 
 setuphelfer_rescue_write_boot_state "lab_auto_shutdown_failsafe" || true
 sync 2>/dev/null || true

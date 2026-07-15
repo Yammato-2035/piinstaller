@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SETUPHELFER-E2E-LIVE-001D — Unattended MSI physical E2E (lab auto / cmdline flag).
+# SETUPHELFER-E2E-LIVE-001D5 — Unattended MSI physical E2E (lab auto / cmdline flag).
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
@@ -21,6 +21,37 @@ _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.log"
   echo "=== auto-physical-e2e $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
   echo "cmdline=$(tr '\0' ' ' </proc/cmdline 2>/dev/null || true)"
 } >>"$_log"
+
+_logs_mount=""
+for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS; do
+  for _c in $_pat; do
+    [[ -d "$_c" ]] && _logs_mount="$_c" && break 2
+  done
+done
+
+_wait_i=0
+_wait_max=900
+echo "Waiting for msi-evidence-complete.json (max ${_wait_max}s)..." >>"$_log"
+while [[ "$_wait_i" -lt "$_wait_max" ]]; do
+  if [[ -n "$_logs_mount" && -f "${_logs_mount}/setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json" ]]; then
+    echo "MSI evidence complete marker found at uptime=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)s" >>"$_log"
+    break
+  fi
+  if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]]; then
+    sleep 5
+    if [[ -n "$_logs_mount" && -f "${_logs_mount}/setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json" ]]; then
+      break
+    fi
+  fi
+  _wait_i=$((_wait_i + 5))
+  sleep 5
+done
+
+if [[ -z "$_logs_mount" || ! -f "${_logs_mount}/setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json" ]]; then
+  echo "ERROR: msi-evidence-complete.json missing — physical E2E blocked" >>"$_log"
+  setuphelfer_rescue_write_boot_state "auto_physical_e2e_blocked_evidence_gate"
+  exit 0
+fi
 
 _ev_base="$(setuphelfer_rescue_evidence_writable_base 2>/dev/null || echo /run/setuphelfer/esp-rw)"
 _e2e_ok=0

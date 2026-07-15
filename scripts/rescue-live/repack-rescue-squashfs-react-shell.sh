@@ -154,7 +154,7 @@ TIMERS="${SYSTEMD}/timers.target.wants"
 mkdir -p "$WANTS" "$TIMERS"
 for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service \
   setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service \
-  setuphelfer-rescue-auto-physical-e2e.service; do
+  setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-tui.service; do
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done

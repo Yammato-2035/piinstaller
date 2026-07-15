@@ -181,6 +181,103 @@ _tui_shell() {
   chvt 2 2>/dev/null || true
 }
 
+_tui_auto_e2e_active() {
+  setuphelfer_rescue_msi_e2e_auto_active
+}
+
+_tui_auto_read_state() {
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo "{}"
+import json
+from core.rescue_physical_e2e_auto_e2e_state import PHASE_LABELS_DE, read_auto_e2e_state
+
+state = read_auto_e2e_state() or {}
+phase = state.get("phase") or "msi_hardware_check"
+lines = [
+    "Automatischer Setuphelfer-Test",
+    "",
+    "Ablauf:",
+]
+for idx, key in enumerate(
+    (
+        "msi_hardware_check",
+        "evidence_collection",
+        "test_disk_prepare",
+        "test_data_create",
+        "backup_create",
+        "backup_verify",
+        "restore_run",
+        "data_compare",
+        "telemetry_send",
+        "diagnostics_fetch",
+        "evidence_save",
+        "shutdown",
+    ),
+    start=1,
+):
+    label = PHASE_LABELS_DE.get(key, key)
+    marker = "→" if key == phase else " "
+    done = "✓" if state.get("phase_index", -1) > idx - 1 else " "
+    lines.append(f"{marker} {idx:2}. [{done}] {label}")
+lines.extend(
+    [
+        "",
+        f"Aktuelle Phase: {PHASE_LABELS_DE.get(phase, phase)}",
+        f"Status: {state.get('status', 'wartet')}",
+        f"Verstrichene Zeit: {state.get('elapsed_sec', 0)} s",
+        f"Letzter Fortschritt: {state.get('last_progress') or '—'}",
+        f"Abbruch: {'ja' if state.get('cancel_requested') else 'nein'}",
+        f"Shutdown: {'vorgemerkt' if state.get('shutdown_requested') else 'nein'}",
+    ]
+)
+print("\n".join(lines))
+PY
+}
+
+_tui_auto_e2e_menu() {
+  local choice
+  while true; do
+    local body
+    body="$(_tui_auto_read_state)"
+    choice="$(whiptail --title "Setuphelfer — Automatischer Test" --menu \
+      "${body}" 26 78 2 \
+      "cancel" "Abbrechen" \
+      "poweroff" "Herunterfahren" \
+      3>&1 1>"$_wt" 2>&3)" || choice=""
+    case "$choice" in
+      cancel)
+        PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from core.rescue_physical_e2e_auto_e2e_state import request_cancel
+request_cancel()
+PY
+        _tui_msg "Abbruch angefordert.\nDer Orchestrator beendet sicher nach der aktuellen Phase."
+        ;;
+      poweroff)
+        PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from core.rescue_physical_e2e_auto_e2e_state import request_shutdown
+request_shutdown()
+PY
+        _tui_msg "Herunterfahren vorgemerkt.\nShutdown erfolgt nach Evidence-Sync."
+        ;;
+      "")
+        sleep 3
+        ;;
+    esac
+    local terminal
+    terminal="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo ""
+from core.rescue_physical_e2e_auto_e2e_state import read_auto_e2e_state
+state = read_auto_e2e_state() or {}
+print(state.get("status") or "")
+PY
+)"
+    case "$terminal" in
+      passed|failed|blocked|cancelled)
+        _tui_msg "Automatischer Test beendet.\nStatus: ${terminal}"
+        return 0
+        ;;
+    esac
+  done
+}
+
 _tui_main_menu() {
   local choice
   while true; do
@@ -230,7 +327,20 @@ fi
 
 if [[ "$MODE" == "--boot-trigger" ]] || [[ "$MODE" == "--interactive" ]]; then
   setuphelfer_rescue_prepare_tty1 || true
+  if _tui_auto_e2e_active; then
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from core.rescue_physical_e2e_auto_e2e_state import init_auto_e2e_state
+init_auto_e2e_state(mode="auto_physical_e2e_locked")
+PY
+    _tui_auto_e2e_menu
+    exit 0
+  fi
   _tui_main_menu
+  exit 0
+fi
+
+if _tui_auto_e2e_active; then
+  _tui_auto_e2e_menu
   exit 0
 fi
 

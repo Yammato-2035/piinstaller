@@ -34,7 +34,7 @@ from pathlib import Path
 from core.rescue_physical_e2e_run_control import build_run_control, write_run_control
 
 logs = Path(${SETUP_LOGS@Q})
-control = build_run_control(expected_payload_version="1.10.0.22")
+control = build_run_control(expected_payload_version="1.10.0.23")
 path = write_run_control(logs, control)
 print(json.dumps({"ok": True, "path": str(path), "run_nonce": control["run_nonce"], "secrets_in_file": False}, indent=2))
 PY

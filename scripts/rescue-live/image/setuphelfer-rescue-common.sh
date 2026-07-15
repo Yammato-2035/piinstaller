@@ -498,6 +498,7 @@ import sys
 from pathlib import Path
 
 from core.rescue_msi_e2e_auto import run_msi_physical_e2e_auto, write_msi_e2e_auto_result
+from core.rescue_physical_e2e_unattended import is_physical_e2e_success_status
 
 ev_base = Path(${ev_base@Q}) if ${ev_base@Q} else None
 logs = None
@@ -523,9 +524,9 @@ elif ev_base is not None:
 print(json.dumps({
     "status": result.get("status"),
     "layout_mode": result.get("layout_mode"),
-    "e2e_run_id": (result.get("workflow") or {}).get("e2e_run_id"),
+    "e2e_run_id": result.get("e2e_run_id") or (result.get("workflow") or {}).get("e2e_run_id"),
 }, ensure_ascii=False))
-sys.exit(0 if result.get("status") == "msi_e2e_auto_passed" else 1)
+sys.exit(0 if is_physical_e2e_success_status(result.get("status")) else 1)
 PY
 }
 

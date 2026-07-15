@@ -1,6 +1,6 @@
 [Unit]
 Description=Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot, late gate)
-After=setuphelfer-backend.service network-online.target
+After=setuphelfer-backend.service network-online.target setuphelfer-rescue-start-assistant.service
 Wants=setuphelfer-backend.service setuphelfer-rescue-start-assistant.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence
 ConditionPathExists=!/run/setuphelfer-rescue/auto-msi-evidence.done
@@ -9,8 +9,10 @@ ConditionPathExists=!/run/setuphelfer-rescue/auto-msi-evidence.done
 Type=oneshot
 TimeoutStartSec=900
 ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence
+StandardInput=null
 StandardOutput=journal
 StandardError=journal
+TTYPath=
 SuccessExitStatus=0
 
 [Install]

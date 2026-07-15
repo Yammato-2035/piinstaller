@@ -41,9 +41,14 @@ E2E_STATES: tuple[str, ...] = (
     "blocked",
 )
 
-DANGEROUS_RESUME_STATES = frozenset(
-    {"backup_running", "verify_running", "restore_running", "manifest_comparison_running"}
-)
+DANGEROUS_FORWARD: dict[str, frozenset[str]] = {
+    "backup_running": frozenset({"backup_completed", "failed", "blocked", "passed", "shutdown_requested"}),
+    "verify_running": frozenset({"verify_completed", "failed", "blocked", "passed", "shutdown_requested"}),
+    "restore_running": frozenset({"restore_completed", "failed", "blocked", "passed", "shutdown_requested"}),
+    "manifest_comparison_running": frozenset(
+        {"manifest_comparison_completed", "failed", "blocked", "passed", "shutdown_requested"}
+    ),
+}
 
 TERMINAL_STATES = frozenset({"passed", "failed", "blocked", "shutdown_requested"})
 
@@ -92,8 +97,10 @@ class PhysicalE2EStateMachine:
             raise ValueError(f"invalid_state:{new_state}")
         current = self.load()
         prev = str(current.get("state") or "initialized")
-        if prev in DANGEROUS_RESUME_STATES and new_state not in TERMINAL_STATES:
-            raise ValueError(f"unsafe_resume_from:{prev}")
+        if prev in DANGEROUS_FORWARD and new_state not in TERMINAL_STATES:
+            allowed = DANGEROUS_FORWARD.get(prev, frozenset())
+            if new_state not in allowed:
+                raise ValueError(f"unsafe_resume_from:{prev}")
         current["state"] = new_state
         current["previous_state"] = prev
         if detail:

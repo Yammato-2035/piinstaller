@@ -49,7 +49,8 @@ if ! curl -sf --connect-timeout 3 --max-time 8 http://127.0.0.1:8000/api/version
 fi
 
 if [[ "$_lab_auto" -eq 1 ]]; then
-  echo "Lab auto: skipping blocking start-assistant (media-check/TUI not required for unattended collect)" >>"$_log"
+  echo "Lab auto: waiting for TUI ownership (max 180s) before late gate..." >>"$_log"
+  setuphelfer_rescue_wait_for_tui_owned 180 >>"$_log" 2>&1 || echo "WARN: TUI ownership timeout — continuing with journal-only evidence" >>"$_log"
 else
   if ! systemctl is-active --quiet setuphelfer-rescue-start-assistant.service 2>/dev/null \
      && ! systemctl is-failed --quiet setuphelfer-rescue-start-assistant.service 2>/dev/null; then
@@ -99,6 +100,32 @@ fi
 if [[ "$_collect_ok" -eq 1 ]]; then
   touch "$_marker" 2>/dev/null || true
   setuphelfer_rescue_write_boot_state "auto_msi_evidence_collected"
+  _logs_mount=""
+  for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS; do
+    for _c in $_pat; do
+      [[ -d "$_c" ]] && _logs_mount="$_c" && break 2
+    done
+  done
+  if [[ -n "$_logs_mount" ]]; then
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY >>"$_log" 2>&1 || true
+from pathlib import Path
+from core.rescue_msi_lab_evidence_eval import evaluate_msi_lab_evidence
+from core.rescue_physical_e2e_msi_evidence_complete import write_msi_evidence_complete
+
+logs = Path(${_logs_mount@Q})
+ev_dir = logs / "setuphelfer/evidence/msi-rs011b"
+eval_result = evaluate_msi_lab_evidence(evidence_dir=ev_dir, lab_auto_unattended=True)
+passed = str(eval_result.get("result_status") or "") == "passed"
+write_msi_evidence_complete(
+    logs,
+    status="passed" if passed else "failed",
+    late_gate_completed=True,
+    tui_owned=bool(eval_result.get("tui_owned")),
+    evidence_synced=True,
+)
+print("msi-evidence-complete.json written", "passed" if passed else "failed")
+PY
+  fi
 else
   setuphelfer_rescue_write_boot_state "auto_msi_evidence_failed"
 fi
