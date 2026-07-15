@@ -1,0 +1,31 @@
+{
+  "schema": "setuphelfer.e2e-live-001d.auto-discovery-payload-build.v1",
+  "feature": "SETUPHELFER-E2E-LIVE-001D7B",
+  "payload_version": "1.10.0.26",
+  "artifact_path": "build/rescue/filesystem.squashfs.repacked-1.10.0.26",
+  "sha256": "70051d792062904e23f40b11b1abc2f34597f4479005358f9f6e6bfaaccb91a2",
+  "size_bytes": 1285718016,
+  "source_commit": "b2fbf22bd51dcd69858f5a25f4eb4d25a79344a6",
+  "build_mode": "repack-rescue-squashfs-react-shell",
+  "gates": {
+    "content_gate": "passed",
+    "version_gate": "passed",
+    "secret_gate": "passed",
+    "tty_gate": "passed",
+    "systemd_condition_gate": "passed",
+    "tui_runtime_path_gate": "passed",
+    "run_mode_gate": "passed",
+    "discovery_gate": "passed"
+  },
+  "contains": {
+    "discovery_start_gate": true,
+    "physical_e2e_start_gate": true,
+    "run_mode_module": true,
+    "discovery_run_control": true,
+    "corrected_tui_execstart": true,
+    "auto_discovery_service": true,
+    "session_state": true,
+    "heartbeat": true
+  },
+  "recorded_at": "2026-07-15T19:00:10Z"
+}

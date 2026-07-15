@@ -1,0 +1,10 @@
+{
+  "schema": "setuphelfer.e2e-live-001d.payload-version-selection.v1",
+  "feature": "SETUPHELFER-E2E-LIVE-001D7B",
+  "selected_version": "1.10.0.26",
+  "previous_version": "1.10.0.25",
+  "version_collision_detected": false,
+  "source_of_truth": "config/rescue_payload_version.json",
+  "implementation_commit": "b2fbf22bd51dcd69858f5a25f4eb4d25a79344a6",
+  "recorded_at": "2026-07-15T19:00:00Z"
+}
