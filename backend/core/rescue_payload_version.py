@@ -9,8 +9,8 @@ from typing import Any
 
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _PAYLOAD_VERSION_FILE = _REPO_ROOT / "config" / "rescue_payload_version.json"
-_PREVIOUS_DEFAULT = "1.10.0.25"
-_CURRENT_DEFAULT = "1.10.0.26"
+_PREVIOUS_DEFAULT = "1.10.0.26"
+_CURRENT_DEFAULT = "1.10.0.27"
 
 
 @lru_cache(maxsize=1)
