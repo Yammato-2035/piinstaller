@@ -11,10 +11,11 @@ Type=simple
 ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-hold --hold
 StandardInput=tty
 StandardOutput=tty
-StandardError=journal
+StandardError=tty
 TTYPath=/dev/tty1
 TTYReset=yes
 TTYVHangup=yes
+TTYVTDisallocate=no
 Restart=no
 TimeoutStopSec=30
 

@@ -304,6 +304,7 @@ class SessionShutdownTests(unittest.TestCase):
                 {
                     "failed_discovery_service_not_started",
                     "failed_discovery_observability_incomplete",
+                    "failed_discovery_start_gate_not_invoked",
                 },
             )
             control = load_discovery_run_control(base)
@@ -313,6 +314,7 @@ class SessionShutdownTests(unittest.TestCase):
                 {
                     "failed_discovery_service_not_started",
                     "failed_discovery_observability_incomplete",
+                    "failed_discovery_start_gate_not_invoked",
                 },
             )
 

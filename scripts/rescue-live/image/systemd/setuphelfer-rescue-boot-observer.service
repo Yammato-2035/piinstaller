@@ -1,0 +1,18 @@
+[Unit]
+Description=Setuphelfer Rescue early boot observer (001D7D)
+DefaultDependencies=no
+After=local-fs.target
+Before=setuphelfer-rescue-auto-msi-evidence.service
+Before=setuphelfer-rescue-auto-discovery.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-observer
+
+[Service]
+Type=oneshot
+TimeoutStartSec=30
+ExecStart=/usr/local/sbin/setuphelfer-rescue-boot-observer
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

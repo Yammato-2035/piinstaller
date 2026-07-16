@@ -1,0 +1,77 @@
+#!/bin/bash
+# 001D7D — Early boot observer independent from discovery service.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+_disc="/run/setuphelfer-rescue/discovery"
+mkdir -p "${_disc}" 2>/dev/null || true
+
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
+from core.rescue_discovery_observability import boot_id, discovery_boot_dir, redact_text
+
+def now():
+    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+
+bid = boot_id()
+base = find_setup_logs_mount()
+boot_dir = discovery_boot_dir(base, bid)
+runtime = Path(os.environ.get("SETUPHELFER_RESCUE_DISCOVERY_DIR", "/run/setuphelfer-rescue/discovery"))
+runtime.mkdir(parents=True, exist_ok=True)
+
+try:
+    cmdline = Path("/proc/cmdline").read_text(encoding="utf-8").strip()
+except OSError:
+    cmdline = ""
+
+ctx = {
+    "schema": "setuphelfer.rescue.discovery-boot-context.v1",
+    "boot_id": bid,
+    "called_at": now(),
+    "cmdline_redacted": redact_text(cmdline),
+}
+start = {
+    "schema": "setuphelfer.rescue.discovery-observer-start.v1",
+    "boot_id": bid,
+    "observer_started": True,
+    "started_at": now(),
+}
+hb = {
+    "schema": "setuphelfer.rescue.discovery-observer-heartbeat.v1",
+    "boot_id": bid,
+    "state": "alive",
+    "updated_at": now(),
+}
+
+for name, payload in (
+    ("00-boot-context.json", ctx),
+    ("00-observer-start.json", start),
+    ("observer-heartbeat.json", hb),
+):
+    for root in (boot_dir, runtime):
+        path = root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+msi_done = Path("/run/setuphelfer-rescue/auto-msi-evidence.done").is_file()
+gate_present = (runtime / "00-start-gate.json").is_file() or (runtime / "start-gate.json").is_file() or (boot_dir / "00-start-gate.json").is_file()
+if msi_done and not gate_present:
+    missing = {
+        "schema": "setuphelfer.rescue.discovery-start-gate-missing.v1",
+        "boot_id": bid,
+        "status": "failed_discovery_start_gate_not_invoked",
+        "recorded_at": now(),
+    }
+    for root in (boot_dir, runtime):
+        path = root / "00-start-gate-missing.json"
+        path.write_text(json.dumps(missing, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+PY
+
+exit 0

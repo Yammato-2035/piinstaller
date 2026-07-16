@@ -5,5 +5,34 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
-PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" \
-  exec python3 -m core.rescue_auto_discovery_start_gate
+setuphelfer_rescue_ensure_state_dir
+_audit="/run/setuphelfer-rescue/discovery/start-gate-wrapper.json"
+mkdir -p "$(dirname "$_audit")" 2>/dev/null || true
+cat >"$_audit" <<EOF
+{
+  "schema": "setuphelfer.rescue.discovery-wrapper-audit.v1",
+  "wrapper": "start_gate",
+  "wrapper_called": true,
+  "called_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "boot_id": "$(setuphelfer_rescue_boot_id)",
+  "stage": "before_python_import"
+}
+EOF
+
+if ! PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 -m core.rescue_auto_discovery_start_gate; then
+  _rc=$?
+  cat >"/run/setuphelfer-rescue/discovery/start-gate-wrapper-import-error.json" <<EOF
+{
+  "schema": "setuphelfer.rescue.discovery-wrapper-audit.v1",
+  "wrapper": "start_gate",
+  "wrapper_called": true,
+  "called_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "boot_id": "$(setuphelfer_rescue_boot_id)",
+  "stage": "python_import_or_exec_failed",
+  "status": "failed_discovery_gate_import",
+  "exit_code": ${_rc}
+}
+EOF
+  exit "${_rc}"
+fi
+exit 0

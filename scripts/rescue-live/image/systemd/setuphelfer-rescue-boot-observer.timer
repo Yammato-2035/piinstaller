@@ -1,0 +1,12 @@
+[Unit]
+Description=Setuphelfer Rescue boot observer heartbeat timer (001D7D)
+
+[Timer]
+OnBootSec=20s
+OnUnitInactiveSec=30s
+AccuracySec=1s
+Unit=setuphelfer-rescue-boot-observer.service
+Persistent=no
+
+[Install]
+WantedBy=timers.target

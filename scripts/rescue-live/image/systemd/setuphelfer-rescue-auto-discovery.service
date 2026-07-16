@@ -1,6 +1,6 @@
 [Unit]
 Description=Setuphelfer Rescue auto discovery (001D7C observability runner)
-After=setuphelfer-backend.service network-online.target setuphelfer-rescue-tui.service setuphelfer-rescue-auto-msi-evidence.service
+After=setuphelfer-backend.service network-online.target setuphelfer-rescue-tui.service setuphelfer-rescue-auto-msi-evidence.service setuphelfer-rescue-boot-observer.service
 Wants=setuphelfer-backend.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery-runner
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery-start-gate

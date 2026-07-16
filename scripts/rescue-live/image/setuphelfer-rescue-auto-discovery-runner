@@ -6,6 +6,18 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_ensure_state_dir
+mkdir -p /run/setuphelfer-rescue/discovery 2>/dev/null || true
+
+cat >"/run/setuphelfer-rescue/discovery/runner-wrapper.json" <<EOF
+{
+  "schema": "setuphelfer.rescue.discovery-wrapper-audit.v1",
+  "wrapper": "runner",
+  "wrapper_called": true,
+  "called_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "boot_id": "$(setuphelfer_rescue_boot_id)",
+  "stage": "before_python_import"
+}
+EOF
 
 _marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.done"
 if [[ -f "$_marker" ]]; then
@@ -17,13 +29,25 @@ _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.log"
   echo "=== auto-discovery-runner $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
 } >>"$_log"
 
-PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1 || true
+if ! PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1; then
 from core.rescue_discovery_observability import persist_service_start
 from core.rescue_payload_version import rescue_payload_version
 from core.rescue_component_heartbeat import write_component_heartbeat
 persist_service_start(payload_version=rescue_payload_version())
 write_component_heartbeat("discovery", state="runner_started")
 PY
+cat >"/run/setuphelfer-rescue/discovery/runner-wrapper-import-error.json" <<EOF
+{
+  "schema": "setuphelfer.rescue.discovery-wrapper-audit.v1",
+  "wrapper": "runner",
+  "wrapper_called": true,
+  "called_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "boot_id": "$(setuphelfer_rescue_boot_id)",
+  "stage": "python_import_or_exec_failed",
+  "status": "failed_discovery_runner_import"
+}
+EOF
+fi
 
 _rc=0
 set +e

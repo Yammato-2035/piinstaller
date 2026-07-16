@@ -36,7 +36,10 @@ REQUIRED_OBSERVABILITY = (
 UNITS = (
     "setuphelfer-rescue-auto-discovery.service",
     "setuphelfer-rescue-tui.service",
+    "setuphelfer-rescue-tui-guard.service",
+    "setuphelfer-rescue-tui-hold.service",
     "setuphelfer-rescue-auto-msi-evidence.service",
+    "setuphelfer-rescue-auto-shutdown.service",
     "setuphelfer-rescue-lab-auto-shutdown-failsafe.service",
 )
 
@@ -79,7 +82,7 @@ def harvest_late_journal(*, setup_logs_base: Path | None = None) -> dict[str, An
                 "systemctl",
                 "show",
                 unit,
-                "--property=ActiveState,SubState,Result,ExecMainStatus,ExecMainCode,ConditionResult,InactiveExitTimestamp",
+                "--property=LoadState,ActiveState,SubState,Result,ConditionResult,ExecMainStartTimestamp,ExecMainExitTimestamp,ExecMainCode,ExecMainStatus,InvocationID",
             ]
         )
         status_blob = _run(["systemctl", "status", unit, "--no-pager", "-l"])
@@ -238,7 +241,7 @@ def evaluate_discovery_boot_completion(
             missing.append("01-service-start.json")
         complete = False
     elif not start_gate:
-        status = "failed_discovery_observability_incomplete"
+        status = "failed_discovery_start_gate_not_invoked"
         failure_stage = "start_gate_missing"
         complete = False
         if "00-start-gate.json" not in missing:

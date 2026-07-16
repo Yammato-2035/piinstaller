@@ -98,6 +98,7 @@ for script in \
   setuphelfer-rescue-auto-discovery \
   setuphelfer-rescue-auto-discovery-start-gate \
   setuphelfer-rescue-auto-discovery-runner \
+  setuphelfer-rescue-boot-observer \
   setuphelfer-rescue-late-journal-harvest \
   setuphelfer-rescue-boot-finalizer \
   setuphelfer-rescue-tui-guard \
@@ -165,6 +166,7 @@ mkdir -p "$WANTS" "$TIMERS"
 for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service \
   setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service \
   setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-auto-discovery.service \
+  setuphelfer-rescue-boot-observer.service \
   setuphelfer-rescue-late-journal-harvest.service \
   setuphelfer-rescue-tui-guard.service \
   setuphelfer-rescue-tui.service; do
@@ -181,6 +183,10 @@ install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-tui-guard.timer" \
   "${SYSTEMD}/setuphelfer-rescue-tui-guard.timer"
 ln -sf "../setuphelfer-rescue-tui-guard.timer" \
   "${TIMERS}/setuphelfer-rescue-tui-guard.timer"
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-boot-observer.timer" \
+  "${SYSTEMD}/setuphelfer-rescue-boot-observer.timer"
+ln -sf "../setuphelfer-rescue-boot-observer.timer" \
+  "${TIMERS}/setuphelfer-rescue-boot-observer.timer"
 # Failsafe: absolute-max timer (3600s) + inactivity watchdog (300s+60s interval).
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.service" \
   "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"

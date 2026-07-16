@@ -5,7 +5,7 @@ Requires=setuphelfer-rescue-tui-guard.service
 [Timer]
 OnBootSec=90s
 OnUnitInactiveSec=30s
-AccuracySec=5s
+AccuracySec=1s
 Unit=setuphelfer-rescue-tui-guard.service
 
 [Install]
