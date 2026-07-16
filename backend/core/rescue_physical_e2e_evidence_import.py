@@ -47,18 +47,32 @@ def redact_text(text: str) -> str:
 
 
 def find_setup_logs_mount() -> Path | None:
-    for pattern in ("/media/*/SETUP_LOGS", "/run/media/*/SETUP_LOGS", "/mnt/setup_logs"):
-        for path in sorted(Path("/").glob(pattern.lstrip("/"))):
-            if path.is_dir():
-                return path
-    for label in ("SETUP_LOGS", "SETUPHELFER_LOGS"):
-        by_label = Path(f"/dev/disk/by-label/{label}")
-        if not by_label.exists():
-            continue
-        for mount in Path("/proc/mounts").read_text(encoding="utf-8").splitlines():
-            parts = mount.split()
-            if len(parts) >= 2 and (parts[0].endswith(label) or label in parts[0]):
-                return Path(parts[1])
+    """Resolve SETUP_LOGS via canonical resolver; never accept empty shadow dirs."""
+    try:
+        from core.rescue_setup_logs_resolver import (
+            select_setup_logs_for_import,
+            setup_logs_root_from_env,
+            resolve_setup_logs,
+        )
+    except ImportError:
+        select_setup_logs_for_import = None  # type: ignore[assignment]
+        setup_logs_root_from_env = None  # type: ignore[assignment]
+        resolve_setup_logs = None  # type: ignore[assignment]
+
+    if setup_logs_root_from_env is not None:
+        env_root = setup_logs_root_from_env()
+        if env_root is not None and env_root.is_dir():
+            return env_root
+
+    if select_setup_logs_for_import is not None:
+        selected = select_setup_logs_for_import()
+        if selected.get("ok") and selected.get("setup_logs_base"):
+            return Path(str(selected["setup_logs_base"]))
+
+    if resolve_setup_logs is not None:
+        resolved = resolve_setup_logs(allow_mount=False)
+        if resolved.get("resolved") and resolved.get("actual_mountpoint"):
+            return Path(str(resolved["actual_mountpoint"]))
     return None
 
 

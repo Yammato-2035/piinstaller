@@ -1,0 +1,57 @@
+#!/bin/bash
+# 001D7E — Resolve SETUP_LOGS to canonical runtime mount + environment file.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
+
+setuphelfer_rescue_ensure_state_dir
+mkdir -p /run/setuphelfer-rescue/bootstrap-evidence /run/setuphelfer-rescue/media 2>/dev/null || true
+
+_boot="$(setuphelfer_rescue_boot_id)"
+_boot_dir="/run/setuphelfer-rescue/bootstrap-evidence/${_boot}"
+mkdir -p "$_boot_dir" 2>/dev/null || true
+
+cat >"${_boot_dir}/00-resolver-start.json" <<EOF
+{
+  "schema": "setuphelfer.rescue.setup-logs-resolver-start.v1",
+  "boot_id": "${_boot}",
+  "started_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "stage": "resolver_start"
+}
+EOF
+
+# Best-effort udev settle before probing block devices.
+udevadm settle --timeout=10 2>/dev/null || true
+
+_rc=0
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >"/run/setuphelfer-rescue/setup-logs-resolution.json.tmp" 2>"${_boot_dir}/resolver.stderr" || _rc=$?
+import json
+from pathlib import Path
+from core.rescue_setup_logs_resolver import resolve_setup_logs, BOOTSTRAP_EVIDENCE
+
+result = resolve_setup_logs(allow_mount=True)
+print(json.dumps(result, ensure_ascii=False, indent=2))
+# Persist resolver result into bootstrap evidence always.
+boot_id = Path("/proc/sys/kernel/random/boot_id").read_text(encoding="utf-8").strip()
+boot_dir = BOOTSTRAP_EVIDENCE / boot_id
+boot_dir.mkdir(parents=True, exist_ok=True)
+(boot_dir / "01-resolver-result.json").write_text(
+    json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+)
+PY
+
+if [[ -f /run/setuphelfer-rescue/setup-logs-resolution.json.tmp ]]; then
+  mv -f /run/setuphelfer-rescue/setup-logs-resolution.json.tmp /run/setuphelfer-rescue/setup-logs-resolution.json
+fi
+
+# Export environment for dependent units when available.
+if [[ -f /run/setuphelfer-rescue/environment ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source /run/setuphelfer-rescue/environment
+  set +a
+fi
+
+# Resolver may leave runtime fallback; still exit 0 so observer can document it.
+exit 0

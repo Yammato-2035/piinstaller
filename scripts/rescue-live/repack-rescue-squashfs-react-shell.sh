@@ -99,6 +99,7 @@ for script in \
   setuphelfer-rescue-auto-discovery-start-gate \
   setuphelfer-rescue-auto-discovery-runner \
   setuphelfer-rescue-boot-observer \
+  setuphelfer-rescue-resolve-setup-logs \
   setuphelfer-rescue-late-journal-harvest \
   setuphelfer-rescue-boot-finalizer \
   setuphelfer-rescue-tui-guard \
@@ -166,6 +167,7 @@ mkdir -p "$WANTS" "$TIMERS"
 for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.service \
   setuphelfer-rescue-boot-progress.service setuphelfer-rescue-auto-msi-evidence.service \
   setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-auto-discovery.service \
+  setuphelfer-rescue-setup-logs-resolver.service \
   setuphelfer-rescue-boot-observer.service \
   setuphelfer-rescue-late-journal-harvest.service \
   setuphelfer-rescue-tui-guard.service \

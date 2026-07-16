@@ -6,6 +6,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_ensure_state_dir
+if [[ -f /run/setuphelfer-rescue/environment ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source /run/setuphelfer-rescue/environment
+  set +a
+fi
 _audit="/run/setuphelfer-rescue/discovery/start-gate-wrapper.json"
 mkdir -p "$(dirname "$_audit")" 2>/dev/null || true
 cat >"$_audit" <<EOF

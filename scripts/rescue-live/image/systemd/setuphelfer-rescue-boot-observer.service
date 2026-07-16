@@ -1,14 +1,16 @@
 [Unit]
-Description=Setuphelfer Rescue early boot observer (001D7D)
+Description=Setuphelfer Rescue early boot observer (001D7E)
 DefaultDependencies=no
-After=local-fs.target
+After=local-fs.target setuphelfer-rescue-setup-logs-resolver.service
 Before=setuphelfer-rescue-auto-msi-evidence.service
 Before=setuphelfer-rescue-auto-discovery.service
+Wants=setuphelfer-rescue-setup-logs-resolver.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-observer
 
 [Service]
 Type=oneshot
 TimeoutStartSec=30
+EnvironmentFile=-/run/setuphelfer-rescue/environment
 ExecStart=/usr/local/sbin/setuphelfer-rescue-boot-observer
 StandardInput=null
 StandardOutput=journal

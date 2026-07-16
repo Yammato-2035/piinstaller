@@ -8,6 +8,7 @@ ConditionPathExists=!/run/setuphelfer-rescue/late-journal-harvest.done
 [Service]
 Type=oneshot
 TimeoutStartSec=180
+EnvironmentFile=-/run/setuphelfer-rescue/environment
 ExecStart=/usr/local/sbin/setuphelfer-rescue-late-journal-harvest
 ExecStartPost=/bin/touch /run/setuphelfer-rescue/late-journal-harvest.done
 StandardInput=null

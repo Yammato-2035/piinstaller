@@ -6,6 +6,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_ensure_state_dir
+if [[ -f /run/setuphelfer-rescue/environment ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source /run/setuphelfer-rescue/environment
+  set +a
+fi
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/boot-finalizer.log"
 {
   echo "=== boot-finalizer $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="

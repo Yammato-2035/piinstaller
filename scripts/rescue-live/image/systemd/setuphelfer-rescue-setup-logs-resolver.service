@@ -1,0 +1,20 @@
+[Unit]
+Description=Setuphelfer Rescue SETUP_LOGS resolver (001D7E)
+DefaultDependencies=no
+After=local-fs.target
+Before=setuphelfer-rescue-boot-observer.service
+Before=setuphelfer-rescue-auto-msi-evidence.service
+Before=setuphelfer-rescue-auto-discovery.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-resolve-setup-logs
+
+[Service]
+Type=oneshot
+TimeoutStartSec=60
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/setuphelfer-rescue-resolve-setup-logs
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

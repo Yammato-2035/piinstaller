@@ -81,7 +81,18 @@ def write_dual(name: str, data: dict[str, Any], *, setup_logs_base: Path | None 
     data = {**data, "boot_id": bid, "recorded_at": data.get("recorded_at") or _utc_now()}
     runtime_path = runtime_discovery_dir() / name
     atomic_write_json(runtime_path, data)
-    base = setup_logs_base or find_setup_logs_mount()
+    base = setup_logs_base
+    if base is None:
+        try:
+            from core.rescue_setup_logs_resolver import setup_logs_root_from_env
+
+            env_base = setup_logs_root_from_env()
+            if env_base is not None:
+                base = env_base
+        except ImportError:
+            base = None
+    if base is None:
+        base = find_setup_logs_mount()
     persistent = ""
     try:
         persist_path = discovery_boot_dir(base, bid) / name
