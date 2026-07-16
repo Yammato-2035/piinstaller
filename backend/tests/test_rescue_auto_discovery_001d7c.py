@@ -302,8 +302,13 @@ class TuiAndUnitGateTests(unittest.TestCase):
 
     def test_19_tui_guard_present(self):
         guard = REPO / "scripts/rescue-live/image/setuphelfer-rescue-tui-guard"
+        hold_unit = REPO / "scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-hold.service"
         self.assertTrue(guard.is_file())
-        self.assertIn("setuphelfer-rescue-tui.service", guard.read_text(encoding="utf-8"))
+        self.assertTrue(hold_unit.is_file())
+        text = guard.read_text(encoding="utf-8")
+        self.assertIn("setuphelfer-rescue-tui.service", text)
+        self.assertIn("setuphelfer-rescue-tui-hold.service", text)
+        self.assertNotIn("--static-error", text)
 
     def test_22_details_show_error_code(self):
         hold = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-tui-hold").read_text(encoding="utf-8")

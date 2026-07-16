@@ -171,6 +171,8 @@ for unit in setuphelfer-rescue-state.service setuphelfer-rescue-evidence-spool.s
   install -m 0644 "${IMAGE}/systemd/${unit}" "${SYSTEMD}/${unit}"
   ln -sf "../${unit}" "${WANTS}/${unit}"
 done
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-tui-hold.service" \
+  "${SYSTEMD}/setuphelfer-rescue-tui-hold.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-late-journal-harvest.path" \
   "${SYSTEMD}/setuphelfer-rescue-late-journal-harvest.path"
 ln -sf "../setuphelfer-rescue-late-journal-harvest.path" \
@@ -195,8 +197,9 @@ ln -sf "../setuphelfer-rescue-lab-auto-shutdown-watchdog.timer" \
 rm -f "${WANTS}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
 # Late-journal oneshot is path-triggered (MSI marker); avoid eager boot start without marker.
 rm -f "${WANTS}/setuphelfer-rescue-late-journal-harvest.service"
-# TUI-guard oneshot is timer-triggered.
+# TUI-guard oneshot is timer-triggered; hold screen is on-demand only.
 rm -f "${WANTS}/setuphelfer-rescue-tui-guard.service"
+rm -f "${WANTS}/setuphelfer-rescue-tui-hold.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
 # GUI autostart is opt-in via GRUB/TUI; entrypoint orchestrates text default + gui watchdog.
 rm -f "${WANTS}/setuphelfer-rescue-ui.service"

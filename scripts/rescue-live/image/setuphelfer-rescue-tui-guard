@@ -1,40 +1,63 @@
 #!/bin/bash
-# 001D7C — Keep tty1 owned if TUI exits unexpectedly (no bare root shell).
+# 001D7C/001D7D — Non-blocking tty1 guard: restart TUI or hand off to hold service.
 set -uo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_ensure_state_dir
+_log="${SETUPHELFER_RESCUE_STATE_DIR}/tui-guard.log"
 
-# Do not interfere during shutdown / finalizer terminal.
+_log_line() {
+  printf '%s %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" >>"$_log" 2>/dev/null || true
+}
+
+# Never block this oneshot — hold screen runs in its own TTY unit.
 if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/boot-finalizer.done" ]]; then
   _status="$(tr -d '\n' <"${SETUPHELFER_RESCUE_STATE_DIR}/boot-finalizer.done" 2>/dev/null || true)"
   case "$_status" in
-    *shutdown*|*passed*|*failed*|*complete*|*timeout*) exit 0 ;;
+    *shutdown*|*passed*|*failed*|*complete*|*timeout*)
+      _log_line "skip boot-finalizer=${_status}"
+      exit 0
+      ;;
   esac
 fi
 
-if systemctl is-active --quiet setuphelfer-rescue-tui.service 2>/dev/null; then
+if systemctl is-active --quiet setuphelfer-rescue-tui-hold.service 2>/dev/null; then
+  _log_line "hold service already active"
   exit 0
 fi
 
-# Count restarts
+if systemctl is-active --quiet setuphelfer-rescue-tui.service 2>/dev/null; then
+  _log_line "tui service already active"
+  exit 0
+fi
+
 _count_file="${SETUPHELFER_RESCUE_STATE_DIR}/tui-guard-restarts"
 _count=0
 [[ -f "$_count_file" ]] && _count="$(tr -d '\n' <"$_count_file" 2>/dev/null || echo 0)"
 [[ "$_count" =~ ^[0-9]+$ ]] || _count=0
 
 if [[ "$_count" -ge 3 ]]; then
-  # Static hold screen via hold helper (no getty).
-  if [[ -x /usr/local/sbin/setuphelfer-rescue-tui-hold ]]; then
-    /usr/local/sbin/setuphelfer-rescue-tui-hold --static-error || true
-  fi
+  _log_line "restart limit reached (${_count}) — starting hold service"
+  systemctl reset-failed setuphelfer-rescue-tui.service 2>/dev/null || true
+  systemctl stop setuphelfer-rescue-tui.service 2>/dev/null || true
+  systemctl reset-failed setuphelfer-rescue-tui-hold.service 2>/dev/null || true
+  systemctl start setuphelfer-rescue-tui-hold.service 2>/dev/null || true
   exit 0
 fi
 
 _count=$((_count + 1))
 printf '%s\n' "$_count" >"$_count_file"
+_log_line "tui restart attempt ${_count}"
+
 systemctl reset-failed setuphelfer-rescue-tui.service 2>/dev/null || true
-systemctl start setuphelfer-rescue-tui.service 2>/dev/null || true
+if systemctl start setuphelfer-rescue-tui.service 2>/dev/null; then
+  _log_line "tui start requested"
+  exit 0
+fi
+
+_log_line "tui start failed — starting hold service"
+systemctl reset-failed setuphelfer-rescue-tui-hold.service 2>/dev/null || true
+systemctl start setuphelfer-rescue-tui-hold.service 2>/dev/null || true
 exit 0

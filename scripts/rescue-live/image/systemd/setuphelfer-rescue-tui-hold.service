@@ -1,0 +1,22 @@
+[Unit]
+Description=Setuphelfer Rescue TUI discovery hold screen (001D7D)
+After=setuphelfer-backend.service
+Conflicts=setuphelfer-rescue-tui.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-hold
+ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
+ConditionKernelCommandLine=|setuphelfer_auto_discovery=1
+
+[Service]
+Type=simple
+ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-hold --hold
+StandardInput=tty
+StandardOutput=tty
+StandardError=journal
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+Restart=no
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

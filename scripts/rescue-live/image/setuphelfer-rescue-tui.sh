@@ -297,10 +297,14 @@ PY
       return 0
     fi
     if [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
-      if [[ -x "$hold" || -f "$hold" ]]; then
-        chmod +x "$hold" 2>/dev/null || true
-        bash "$hold" --hold || true
-      fi
+      _log_line_hold="discovery hold needed — delegating to hold service"
+      echo "$_log_line_hold" >>"${SETUPHELFER_RESCUE_STATE_DIR}/tui-auto-display.log" 2>/dev/null || true
+      systemctl start setuphelfer-rescue-tui-hold.service 2>/dev/null || {
+        if [[ -x "$hold" || -f "$hold" ]]; then
+          chmod +x "$hold" 2>/dev/null || true
+          exec bash "$hold" --hold
+        fi
+      }
       return 0
     fi
     if [[ -f "$display" ]]; then
@@ -323,10 +327,12 @@ PY
       return 0
     fi
     if [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
-      if [[ -x "$hold" || -f "$hold" ]]; then
-        chmod +x "$hold" 2>/dev/null || true
-        bash "$hold" --hold || true
-      fi
+      systemctl start setuphelfer-rescue-tui-hold.service 2>/dev/null || {
+        if [[ -x "$hold" || -f "$hold" ]]; then
+          chmod +x "$hold" 2>/dev/null || true
+          exec bash "$hold" --hold
+        fi
+      }
       return 0
     fi
     # Display ended without terminal shutdown — restart child (keep tty1 held).
@@ -394,7 +400,8 @@ PY
     _tui_auto_e2e_menu
     # Only leave tty1 after hold/menu decided shutdown is underway.
     if [[ "$(_tui_shutdown_pending)" != "yes" ]] && [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
-      bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold || true
+      systemctl start setuphelfer-rescue-tui-hold.service 2>/dev/null || \
+        exec bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold
     fi
     exit 0
   fi
@@ -405,7 +412,8 @@ fi
 if _tui_auto_e2e_active; then
   _tui_auto_e2e_menu
   if [[ "$(_tui_shutdown_pending)" != "yes" ]] && [[ "$(_tui_discovery_hold_needed)" == "yes" ]]; then
-    bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold || true
+    systemctl start setuphelfer-rescue-tui-hold.service 2>/dev/null || \
+      exec bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold
   fi
   exit 0
 fi

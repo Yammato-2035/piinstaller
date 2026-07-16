@@ -1,10 +1,10 @@
 [Unit]
-Description=Setuphelfer Rescue TUI tty1 guard timer (001D7C)
+Description=Setuphelfer Rescue TUI tty1 guard timer (001D7D)
 Requires=setuphelfer-rescue-tui-guard.service
 
 [Timer]
-OnBootSec=45s
-OnUnitActiveSec=20s
+OnBootSec=90s
+OnUnitInactiveSec=30s
 AccuracySec=5s
 Unit=setuphelfer-rescue-tui-guard.service
 

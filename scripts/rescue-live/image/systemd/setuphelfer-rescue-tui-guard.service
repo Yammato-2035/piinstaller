@@ -1,5 +1,5 @@
 [Unit]
-Description=Setuphelfer Rescue TUI tty1 guard (001D7C)
+Description=Setuphelfer Rescue TUI tty1 guard (001D7D non-blocking)
 After=setuphelfer-rescue-tui.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-guard
 ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
@@ -8,6 +8,7 @@ ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1
 
 [Service]
 Type=oneshot
+TimeoutStartSec=20
 ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-guard
 StandardInput=null
 StandardOutput=journal
