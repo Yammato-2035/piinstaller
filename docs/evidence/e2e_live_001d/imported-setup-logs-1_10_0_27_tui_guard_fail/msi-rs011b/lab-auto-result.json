@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "PI-RS-MSI-AUTO-EVIDENCE-001",
+  "result_status": "passed",
+  "session_id": "20260716_101029_boot",
+  "boot_id": "bd1ca170-77a7-4517-ac55-502c91c0838e",
+  "payload_version": "",
+  "capture_uptime_s": 159.37,
+  "capture_after_120s": true,
+  "console_owner": "tui",
+  "tui_owned": true,
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_transition_allowed": false,
+  "tui_mode_selected_in_timeline": false,
+  "x11_starting_present": false,
+  "forbidden_processes": [],
+  "manual_late_evidence_file_present": true,
+  "lab_auto_unattended": true,
+  "evidence_complete": true,
+  "warnings": [
+    "tui_mode_selected_missing (lab auto unattended — non-blocking)"
+  ],
+  "errors": []
+}

@@ -1,0 +1,10 @@
+Bus 002 Device 003: ID 24a9:205a Asolid Intenso Ultra Line
+Bus 002 Device 002: ID 152d:1561 JMicron Technology Corp. / JMicron USA Technology Corp. JMS561U two ports SATA 6Gb/s bridge
+Bus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 001 Device 005: ID 1038:1122 SteelSeries ApS SteelSeries KLC
+Bus 001 Device 004: ID 0bda:0129 Realtek Semiconductor Corp. RTS5129 Card Reader Controller
+Bus 001 Device 003: ID 1038:1124 SteelSeries ApS SteelSeries ALC
+Bus 001 Device 002: ID 046a:b090 CHERRY Keyboard
+Bus 001 Device 007: ID 8087:0aaa Intel Corp. Bluetooth 9460/9560 Jefferson Peak (JfP)
+Bus 001 Device 006: ID 5986:211b Bison Electronics Inc. HD Webcam
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub

@@ -56,12 +56,14 @@ def evaluate_discovery_start_gate(
     tokens = cmdline if cmdline is not None else _cmdline_tokens()
     has_auto_discovery = "setuphelfer_auto_discovery=1" in tokens
     has_msi_lab = "setuphelfer_msi_lab_auto=1" in tokens
+    has_e2e_auto = "setuphelfer_msi_e2e_auto=1" in tokens
     actual = payload_version if payload_version is not None else rescue_payload_version()
 
     def _finish(result: dict[str, Any], *, control: dict[str, Any] | None = None) -> dict[str, Any]:
         enriched = {
             **result,
             "kernel_auto_discovery": has_auto_discovery,
+            "kernel_e2e_auto": has_e2e_auto,
             "run_control_found": control is not None,
             "run_control_enabled": bool(control.get("enabled")) if control else False,
             "run_control_consumed": bool(control.get("consumed")) if control else False,
@@ -73,6 +75,18 @@ def evaluate_discovery_start_gate(
         except OSError:
             pass
         return enriched
+
+    # Physical E2E cmdline owns the boot — discovery must not race into early shutdown.
+    if has_e2e_auto and not has_auto_discovery:
+        return _finish(
+            {
+                "start_allowed": False,
+                "reason": "skipped_for_physical_e2e_cmdline",
+                "exit_code": EXIT_SKIP,
+                "run_mode": "auto_physical_e2e",
+                "payload_version_match": True,
+            }
+        )
 
     if not has_auto_discovery and not has_msi_lab:
         return _finish(
@@ -110,6 +124,40 @@ def evaluate_discovery_start_gate(
     control = load_discovery_run_control(base)
     validation = validate_discovery_run_control(control)
     if not validation["ok"]:
+        errors = list(validation.get("errors") or [])
+        stale_lab = bool(
+            has_auto_discovery
+            and has_msi_lab
+            and control
+            and set(errors) <= {"disabled", "already_consumed"}
+        )
+        # Lab auto + kernel auto_discovery: allow re-run when one-shot token was already used.
+        if stale_lab:
+            return _finish(
+                {
+                    "start_allowed": True,
+                    "reason": "lab_auto_discovery_stale_control_rearmed",
+                    "exit_code": EXIT_START,
+                    "run_mode": "auto_discovery_only",
+                    "payload_version_match": str(control.get("expected_payload_version") or "")
+                    == actual,
+                    "errors": errors,
+                    "lab_rearm": True,
+                },
+                control=control,
+            )
+        if has_auto_discovery and has_msi_lab and not control:
+            return _finish(
+                {
+                    "start_allowed": True,
+                    "reason": "lab_auto_discovery_without_run_control",
+                    "exit_code": EXIT_START,
+                    "run_mode": "auto_discovery_only",
+                    "payload_version_match": True,
+                    "lab_rearm": True,
+                },
+                control=control,
+            )
         if has_auto_discovery and not control:
             return _finish(
                 {
@@ -123,7 +171,7 @@ def evaluate_discovery_start_gate(
             )
         code = str(validation.get("code") or "discovery_run_control_invalid")
         exit_code = EXIT_SKIP
-        if "invalid_schema" in (validation.get("errors") or []):
+        if "invalid_schema" in errors:
             exit_code = EXIT_CONFIG_ERROR
         return _finish(
             {
@@ -132,7 +180,7 @@ def evaluate_discovery_start_gate(
                 "exit_code": exit_code,
                 "run_mode": (control or {}).get("run_mode"),
                 "payload_version_match": False,
-                "errors": validation.get("errors") or [],
+                "errors": errors,
             },
             control=control,
         )
@@ -141,6 +189,21 @@ def evaluate_discovery_start_gate(
     expected = str(control.get("expected_payload_version") or "")
     payload_match = bool(expected) and expected == actual
     if not payload_match:
+        # Lab path: kernel flags trump a stale expected_payload_version on SETUP_LOGS.
+        if has_auto_discovery and has_msi_lab:
+            return _finish(
+                {
+                    "start_allowed": True,
+                    "reason": "lab_auto_discovery_payload_version_bypass",
+                    "exit_code": EXIT_START,
+                    "run_mode": "auto_discovery_only",
+                    "payload_version_match": False,
+                    "expected_payload_version": expected,
+                    "actual_payload_version": actual,
+                    "lab_rearm": True,
+                },
+                control=control,
+            )
         return _finish(
             {
                 "start_allowed": False,
@@ -218,7 +281,10 @@ def main(argv: list[str] | None = None) -> int:
             ensure_ascii=False,
         )
     )
-    return int(result.get("exit_code") or EXIT_SKIP)
+    code = result.get("exit_code")
+    if code is None:
+        return EXIT_SKIP
+    return int(code)
 
 
 if __name__ == "__main__":

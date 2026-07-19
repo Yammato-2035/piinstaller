@@ -2,7 +2,7 @@
 
 # FAQ — MSI Evidence & Rescue stick 1.10.0.x (DE)
 
-Stand: **2026-06-29**
+Stand: **2026-07-13**
 
 Ausführlich: [MSI_RS011_OPERATOR_KB.md](../knowledge-base/rescue/MSI_RS011_OPERATOR_KB.md)
 
@@ -71,11 +71,29 @@ Fix: `lsblk -b` + Parser. Auf dem Stick: `disk-discovery.json` mit `"status": "o
 
 ---
 
-## Warum überlagert die Konsole kurz vor dem Textmenü?
+## Why does the console briefly overlay the text menu?
 
-Boot-Status (`boot-progress`) schrieb auf tty1 **bevor** der Console-Shield aktiv war.
+Boot status (`boot-progress`) wrote to tty1 **before** the console shield was active.
 
-Ab **1.10.0.4:** Early Shield in `boot-progress` und `entrypoint`; weniger tty-Rewrites im MSI/Safe-UI-Modus.
+From **1.10.0.4:** early shield in `boot-progress` and entrypoint; fewer tty rewrites in MSI/safe-UI mode.
+
+**From 1.10.0.16 (PI-RS-MSI-GUI-003):** under MSI compat no `x11_starting` phase; `tui_mode_selected` instead. Console ownership blocks boot-progress writes after TUI handoff. **Physical retest pending** — see [PI_RS_MSI_GUI_003_FAQ.en.md](PI_RS_MSI_GUI_003_FAQ.en.md).
+
+---
+
+## Why does boot-timeline.jsonl still show “Starting graphical interface”?
+
+That was the **confirmed failure** in PI-RS-MSI-RETEST-002 (payload 1.10.0.15): boot progress was not coupled to GUI block.
+
+From payload **1.10.0.16** (software fix, USB update still pending): under `setuphelfer_msi_compat=1` **no** `x11_starting`; message “MSI compatibility mode: using text interface.”
+
+---
+
+## Why are gui-start.log entries from yesterday still visible?
+
+Without session binding, old GUI logs were mirrored as current evidence (session `20260712_015909` in a new boot).
+
+From **1.10.0.16:** each boot gets `session_id`/`boot_id`; stale files are no longer mirrored as current proof.
 
 ---
 
@@ -131,12 +149,16 @@ cat /mnt/setuphelfer/rescue/version.json
 sudo umount /mnt
 ```
 
-Erwartet bei aktuellem Stand: `project_version` **1.10.0.4**, `squashfs_sha256` passend zum Payload.
+Expected on current lab stick: payload **1.10.0.20**. Unattended lab boot: [PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.en.md](PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.en.md).
 
 ---
 
-## Siehe auch
+## See also
 
+- [PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.en.md](PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.en.md)
+
+- [PI_RS_MSI_GUI_003_FAQ.en.md](PI_RS_MSI_GUI_003_FAQ.en.md)
+- [MSI_TUI_CONSOLE_ISOLATION_KB_EN.md](../knowledge-base/rescue/MSI_TUI_CONSOLE_ISOLATION_KB_EN.md)
 - [RESCUE_STICK_FAQ_DE.md](RESCUE_STICK_FAQ_DE.md)
 - [RESCUE_CONNECTIVITY_TELEMETRY_KB.md](../knowledge-base/rescue/RESCUE_CONNECTIVITY_TELEMETRY_KB.md)
 - [RS_011D_EVIDENCE_CONTRACT.md](../architecture/RS_011D_EVIDENCE_CONTRACT.md)

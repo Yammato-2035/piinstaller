@@ -1,34 +1,71 @@
 {
-  "feature": "SETUPHELFER-E2E-LIVE-001D",
-  "automation_at": "2026-07-14T15:50:19Z",
-  "setup_logs_mounted": true,
-  "setup_logs_base": "/media/volker/SETUP_LOGS",
-  "production_ready": false,
-  "import": {
-    "schema_version": 1,
-    "feature": "SETUPHELFER-E2E-LIVE-001D",
-    "imported_at": "2026-07-14T15:50:19Z",
-    "physical_e2e_run_id": "e2e-rescue-physical-20260714-153401-d35375d0",
-    "source_run_dir": "/media/volker/SETUP_LOGS/setuphelfer/evidence/e2e/e2e-rescue-physical-20260714-153401-d35375d0",
-    "setup_logs_base": "/media/volker/SETUP_LOGS",
-    "files_copied": [
-      "operator-decisions.jsonl",
-      "e2e-result.json",
-      "receipts.json",
-      "event-journal.jsonl",
-      "manifest-comparison.json",
-      "source-summary.json",
-      "send-status.json",
-      "restored-summary.json",
-      "diagnostics-status.json",
-      "backup-summary.json",
-      "restore-result.json",
-      "backup-result.json",
-      "verify-result.json"
-    ],
-    "missing_required": [],
-    "import_ok": true,
-    "destination": "/home/volker/piinstaller/docs/evidence/e2e_live_001d/physical_run/e2e-rescue-physical-20260714-153401-d35375d0"
+  "feature": "SETUPHELFER-E2E-LIVE-001D7E",
+  "mode_requested": "auto-discovery",
+  "setup_logs_selection": {
+    "ok": true,
+    "setup_logs_base": "/media/volker/SETUP_LOGS2",
+    "source": "explicit",
+    "mount_source_verified": true
   },
-  "status": "dev_automation_passed"
+  "production_ready": false,
+  "setup_logs_base": "/media/volker/SETUP_LOGS2",
+  "setup_logs_mounted": true,
+  "mode_effective": "auto-discovery",
+  "import": {
+    "import_ok": true,
+    "mode": "auto-discovery",
+    "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+    "session_id": null,
+    "destination": "/home/volker/piinstaller/docs/evidence/e2e_live_001d/physical_discovery_runs/07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+    "files_copied_boot": 16,
+    "discovery_boot_imported": true,
+    "session_imported": false,
+    "payload_version": "1.10.0.29",
+    "observability": {
+      "start_gate_audit_present": true,
+      "start_gate_missing_detected": false,
+      "service_start_audit_present": true,
+      "orchestrator_exit_present": true,
+      "late_journal_present": true,
+      "boot_finalizer_present": true,
+      "session_present": false,
+      "resolver_started": true
+    },
+    "boot_observer": {
+      "started_before_discovery": true,
+      "boot_directory_created": true,
+      "start_gate_missing_detected": false,
+      "run_control_consumed": false,
+      "partition_resolved": true
+    },
+    "tui_guard": {
+      "bare_tty_visible": false,
+      "hold_unit_used": true,
+      "inline_hold_used": false,
+      "guard_completed": true
+    },
+    "run_control": {
+      "consumed": false,
+      "enabled": true,
+      "terminal_status": null
+    },
+    "setup_logs_resolution": {
+      "resolver_started": true,
+      "partition_resolved": true,
+      "mount_source_verified": true,
+      "canonical_mount_used": true,
+      "shadow_mount_ignored": true,
+      "runtime_fallback_used": false,
+      "fallback_migrated": true
+    },
+    "import": {
+      "mode": "auto-discovery",
+      "explicit_root_used": true,
+      "mount_source_verified": true,
+      "discovery_boot_imported": true,
+      "session_imported": false
+    },
+    "acceptance_status": "failed_auto_discovery_observability"
+  },
+  "status": "failed_auto_discovery_observability"
 }

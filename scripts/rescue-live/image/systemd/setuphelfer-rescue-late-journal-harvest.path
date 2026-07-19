@@ -1,6 +1,7 @@
 [Unit]
-Description=Setuphelfer Rescue late journal harvest trigger (001D7C)
-After=setuphelfer-rescue-auto-msi-evidence.service
+Description=Setuphelfer Rescue late journal harvest trigger (001D7F)
+# No After=auto-msi-evidence: Path units join paths.target→basic.target; ordering
+# After a later multi-user service created a systemd cycle that deleted TUI/backend jobs.
 
 [Path]
 PathExists=/run/setuphelfer-rescue/auto-msi-evidence.done

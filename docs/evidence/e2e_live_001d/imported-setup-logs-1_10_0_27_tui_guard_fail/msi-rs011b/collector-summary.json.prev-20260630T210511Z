@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "run_id": "RS_011D",
+  "status": "review_required",
+  "written": [
+    "console-shield-state.json",
+    "dmesg-redacted.log",
+    "kernel-console.log",
+    "lspci-nn-redacted.txt",
+    "msi-aer-summary.json",
+    "msi-killer-e2500-detection.json",
+    "network-devices-redacted.txt",
+    "operator-steps.jsonl"
+  ],
+  "missing": [],
+  "failed": [
+    "boot_state_redacted.json",
+    "disk-discovery.json"
+  ],
+  "complete": true,
+  "checked_at": "2026-06-30T20:47:08Z",
+  "secrets_exposed": false,
+  "current_result_valid": false,
+  "stale_previous_artifacts": [
+    {
+      "artifact": "lspci-nn-redacted.txt",
+      "archived_to": "/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b/lspci-nn-redacted.txt.prev-20260630T204707Z",
+      "reason": "text_without_session_metadata"
+    }
+  ],
+  "api_status": [
+    {
+      "endpoint": "rescue-health",
+      "http_code": 500,
+      "status": "api_endpoint_failed",
+      "rescue_version": "1.10.0.9",
+      "checked_at": "2026-06-30T20:47:05Z"
+    },
+    {
+      "endpoint": "disk-inventory",
+      "http_code": 500,
+      "status": "api_endpoint_failed",
+      "rescue_version": "1.10.0.9",
+      "checked_at": "2026-06-30T20:47:06Z"
+    },
+    {
+      "endpoint": "storage-discovery",
+      "http_code": 500,
+      "status": "api_endpoint_failed",
+      "rescue_version": "1.10.0.9",
+      "checked_at": "2026-06-30T20:47:06Z"
+    }
+  ],
+  "rescue_version": "1.10.0.9",
+  "collector_version": "1.10.0.9",
+  "boot_session_id": "20260630_204703_1.10.0.9",
+  "collected_at": "2026-06-30T20:47:07Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "collect_rs011d_supplement"
+}

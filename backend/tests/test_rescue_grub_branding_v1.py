@@ -35,15 +35,21 @@ class RescueGrubBrandingTests(unittest.TestCase):
     def test_generate_grub_cfg_failsafe_plain_menu(self) -> None:
         cfg = generate_fat32_esp_grub_cfg()
         self.assertIn("insmod gfxterm", cfg)
+        self.assertIn("terminal_input console", cfg)
+        self.assertNotIn("terminal_input gfxterm", cfg)
         self.assertIn("menu_color_normal=white/black", cfg)
         self.assertNotIn("set theme=", cfg)
         self.assertNotIn("insmod gfxmenu", cfg)
-        self.assertIn("Setuphelfer starten - sicherer Textmodus", cfg)
+        self.assertIn("Setuphelfer starten - grafische Oberflaeche", cfg)
+        self.assertIn("Setuphelfer starten - sicherer Textmodus (Fallback)", cfg)
         self.assertIn("setuphelfer_mode=text", cfg)
         self.assertIn("setuphelfer_kiosk=0", cfg)
         self.assertIn("setuphelfer_mode=gui", cfg)
         self.assertIn("set timeout_style=menu", cfg)
         self.assertIn("set timeout=15", cfg)
+        first_gui = cfg.index('menuentry "Setuphelfer starten - grafische Oberflaeche"')
+        first_text = cfg.index('menuentry "Setuphelfer starten - sicherer Textmodus (Fallback)"')
+        self.assertLess(first_gui, first_text)
 
     def test_stage_grub_theme_to_staging(self) -> None:
         staging = REPO / "build" / "rescue" / ".test-grub-staging"
@@ -68,6 +74,21 @@ class RescueGrubBrandingTests(unittest.TestCase):
             image_format="jpeg",
         )
         self.assertEqual(errors, [], errors)
+
+    def test_stage_grub_efi_modules_includes_gfxterm(self) -> None:
+        from rescue.rescue_grub_branding import (
+            GRUB_EFI_MODULES_DIR_REL,
+            stage_grub_efi_modules_to_fat32_staging,
+        )
+
+        staging = REPO / "build" / "rescue" / ".test-grub-modules"
+        if staging.exists():
+            import shutil
+
+            shutil.rmtree(staging)
+        meta = stage_grub_efi_modules_to_fat32_staging(staging)
+        self.assertTrue(meta["complete"], meta)
+        self.assertTrue((staging / GRUB_EFI_MODULES_DIR_REL / "gfxterm.mod").is_file())
 
     def test_bootx64_modules_include_gfx(self) -> None:
         modules = BOOTX64_MKSTANDALONE_MODULES.split()

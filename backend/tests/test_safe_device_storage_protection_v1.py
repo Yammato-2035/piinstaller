@@ -119,6 +119,10 @@ class TestSafeDeviceStorageProtectionV1(unittest.TestCase):
     def test_prefixes_include_setuphelfer(self) -> None:
         prefs = write_safe_prefixes_resolved()
         self.assertTrue(any(str(p).startswith("/mnt/setuphelfer") for p in prefs))
+        self.assertTrue(
+            any(str(p).rstrip("/").endswith("/run/setuphelfer-rescue/e2e") for p in prefs),
+            prefs,
+        )
 
     def test_system_disk_classified(self) -> None:
         def fake_run(argv, **kwargs):

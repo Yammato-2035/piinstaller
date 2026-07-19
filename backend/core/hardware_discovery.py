@@ -12,9 +12,21 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any, Optional
 
-import psutil
+try:
+    import psutil
+except ImportError:  # pragma: no cover - system python without venv site-packages
+    psutil = None  # type: ignore[assignment]
 
 HARDWARE_DISCOVERY_VERSION = 1
+
+
+def _require_psutil() -> Any:
+    if psutil is None:
+        raise RuntimeError(
+            "psutil is required but not importable — use the rescue backend venv "
+            "(/opt/setuphelfer-rescue/backend/venv/bin/python3)"
+        )
+    return psutil
 
 
 def _shell_run(cmd: str, *, timeout: int = 10) -> dict[str, Any]:
@@ -167,12 +179,13 @@ def get_all_fans():
 # --- get_all_disks (from app.py L5341-L5406) ---
 def get_all_disks():
     """Alle gemounteten Laufwerke + NVMe/Block-Geräte mit Nutzung bzw. Größe"""
+    _ps = _require_psutil()
     disks = []
     seen_devices = set()
     try:
-        for part in psutil.disk_partitions(all=False):
+        for part in _ps.disk_partitions(all=False):
             try:
-                usage = psutil.disk_usage(part.mountpoint)
+                usage = _ps.disk_usage(part.mountpoint)
                 disks.append({
                     "device": part.device,
                     "mountpoint": part.mountpoint,
@@ -206,10 +219,10 @@ def get_all_disks():
                     mountpoint = ""
                     used_gb = None
                     percent = None
-                    for p in psutil.disk_partitions(all=True):
+                    for p in _ps.disk_partitions(all=True):
                         if p.device.startswith(dev) or (dev + "1" == p.device or dev + "p1" == p.device):
                             try:
-                                u = psutil.disk_usage(p.mountpoint)
+                                u = _ps.disk_usage(p.mountpoint)
                                 mountpoint = p.mountpoint
                                 used_gb = round(u.used / (1024**3), 1)
                                 percent = u.percent

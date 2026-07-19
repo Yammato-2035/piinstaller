@@ -1,0 +1,11 @@
+session=20260712_003851_boot
+grub_entry=MSI/NVIDIA Kompatibilitaetsmodus (Text)
+msi_compat=yes pci=noaer=yes
+aer_journal_lines=0
+prev_session_without_compat_aer=428
+gui_error=startx_not_started
+xorg_log=present_no
+backend_api=HTTP_200
+boot_attempts_today=7
+boots_without_msi_compat=3 (002248,002339,002439)
+boots_with_msi_compat=4 (003600,003650,003751,003851)

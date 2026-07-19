@@ -22,6 +22,10 @@ trap 'rm -f "$_running" 2>/dev/null || true' EXIT
 
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.log"
 _late_sec="$(setuphelfer_rescue_msi_lab_late_sec)"
+# Physical E2E owns the boot: do not burn ~120s+ on MSI late evidence before SABRENT work.
+if setuphelfer_rescue_msi_e2e_auto_active; then
+  _late_sec=20
+fi
 _lab_auto=0
 if setuphelfer_rescue_msi_lab_auto_active; then
   _lab_auto=1
@@ -73,11 +77,11 @@ while true; do
   PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || true
 from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state, write_heartbeat
 update_auto_e2e_state(
-    phase="evidence_collection",
+    phase="msi_evidence_running",
     status="running",
     last_progress=f"Late-Evidence-Gate: ${_up}/${_min_uptime} s",
 )
-write_heartbeat(run_id="auto-msi-evidence", phase="evidence_collection")
+write_heartbeat(run_id="auto-msi-evidence", phase="msi_evidence_running")
 PY
   if [[ "$_up" -ge "$_min_uptime" ]]; then
     echo "Late gate reached at uptime=${_up}s" >>"$_log"
@@ -95,8 +99,9 @@ fi
 
 _collect_ok=0
 PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
-from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state
-update_auto_e2e_state(phase="evidence_collection", status="running", last_progress="Evidence wird gesammelt…")
+from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state, write_heartbeat
+update_auto_e2e_state(phase="msi_evidence_running", status="running", last_progress="Evidence wird gesammelt…")
+write_heartbeat(run_id="auto-msi-evidence", phase="msi_evidence_running")
 PY
 if setuphelfer_rescue_run_msi_rs011b_collect >>"$_log" 2>&1; then
   _collect_ok=1
@@ -137,18 +142,20 @@ if session_path.is_file():
 eval_result = evaluate_msi_lab_evidence(evidence_dir=ev_dir, lab_auto_unattended=True)
 passed = str(eval_result.get("result_status") or "") == "passed"
 collect_ok = int(${_collect_ok})
+# Completion marker = collection finished (Discovery gate). Lab score stays in lab-auto-result.json.
+marker_status = "passed" if (passed or collect_ok) else "failed"
 if passed or collect_ok:
     try:
         write_msi_evidence_complete(
             logs,
-            status="passed" if passed else "failed",
+            status=marker_status,
             session_id=session_id,
             payload_version=rescue_payload_version(),
             late_gate_completed=True,
             tui_owned=bool(eval_result.get("tui_owned")),
             evidence_synced=True,
         )
-        print("msi-evidence-complete.json written", "passed" if passed else "failed")
+        print("msi-evidence-complete.json written", marker_status)
     except OSError as exc:
         print("msi-evidence-complete write failed:", exc)
 PY

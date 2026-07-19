@@ -514,6 +514,21 @@
       "network": "Netzwerk wird geprüft",
       "services": "Dienste werden gestartet",
       "ui": "Oberfläche wird geladen"
+    },
+    "msiCompat": {
+      "tuiModeSelected": "MSI-Kompatibilitätsmodus: Textoberfläche wird verwendet.",
+      "guiSkipped": "Grafische Oberfläche unter MSI-Compat übersprungen",
+      "bootCompleteTui": "Bootvorbereitung abgeschlossen — Textmenü bereit.",
+      "guiBlockedTitle": "Grafische Oberfläche nicht verfügbar",
+      "guiBlockedHint": "Auf diesem MSI-Gerät ist nur der Textmodus stabil. Bitte das Textmenü nutzen.",
+      "staleEvidence": "GUI-Evidence stammt möglicherweise aus einer früheren Boot-Session.",
+      "useTextMode": "Textmodus verwenden"
+    },
+    "msiLabAuto": {
+      "collectingLate": "MSI-Lab: Spät-Evidence wird gesammelt (≥120 s) …",
+      "shutdownComplete": "MSI-Lab: Evidence gesammelt — System fährt herunter.",
+      "labAutoActive": "Unbeaufsichtigter MSI-Lab-Modus aktiv",
+      "lateGateWaiting": "Warte auf Spät-Evidence-Gate …"
     }
   },
   "guide": {
@@ -597,6 +612,8 @@
     "msiCollect": "MSI-Test Evidence sammeln",
     "msiFailed": "MSI Evidence fehlgeschlagen",
     "msiNoBackup": "(kein Backup)",
+    "msiStaleSession": "GUI-Log möglicherweise aus alter Boot-Session",
+    "msiTuiOnlyMode": "MSI-Compat: nur Textmodus (kein automatischer GUI-Start)",
     "recentOperatorSteps": "Letzte Operator-Schritte",
     "expertMode": "Expertenmodus (Rohdaten)",
     "mountRw": "read/write OK",

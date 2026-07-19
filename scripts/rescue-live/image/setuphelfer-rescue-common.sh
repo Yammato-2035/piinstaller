@@ -344,6 +344,17 @@ setuphelfer_rescue_shield_console_early() {
   if command -v systemctl >/dev/null 2>&1; then
     systemctl set-log-level warning 2>/dev/null || true
   fi
+  # Suppress systemd "Starting foo.service…" lines on the physical console.
+  if command -v busctl >/dev/null 2>&1; then
+    busctl call org.freedesktop.systemd1 /org/freedesktop/systemd1 \
+      org.freedesktop.systemd1.Manager SetShowStatus s no 2>/dev/null \
+      || busctl set-property org.freedesktop.systemd1 /org/freedesktop/systemd1 \
+        org.freedesktop.systemd1.Manager ShowStatus s no 2>/dev/null \
+      || true
+  fi
+  if [[ -w /proc/sys/kernel/printk ]]; then
+    printf '3 4 1 7\n' >/proc/sys/kernel/printk 2>/dev/null || true
+  fi
   if setuphelfer_rescue_safe_ui_active; then
     clear_allowed=false
   fi
@@ -357,12 +368,45 @@ setuphelfer_rescue_shield_console_early() {
 
 # PI-RS-MSI-GUI-003: boot session + tty1 ownership helpers.
 setuphelfer_rescue_backend_pythonpath() {
-  local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  local root="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}"
+  local py_backend="${root}/backend"
+  local parts=()
+  local site
+  # Absolute venv/bin/python3 -> /bin/python3 often skips venv site-packages; inject explicitly.
+  for site in "${root}/backend/venv/lib"/python*/site-packages; do
+    if [[ -d "$site" ]]; then
+      parts+=("$site")
+    fi
+  done
   if [[ -d "$py_backend" ]]; then
-    printf '%s' "${py_backend}${PYTHONPATH:+:$PYTHONPATH}"
+    parts+=("$py_backend")
+  fi
+  if [[ -n "${PYTHONPATH:-}" ]]; then
+    parts+=("$PYTHONPATH")
+  fi
+  local IFS=':'
+  printf '%s' "${parts[*]}"
+}
+
+# Prefer the in-image venv interpreter when it is a real binary (not a broken host-resolved symlink).
+setuphelfer_rescue_backend_python() {
+  local root="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}"
+  local py="${root}/backend/venv/bin/python3"
+  local py311="${root}/backend/venv/bin/python3.11"
+  if [[ -x "$py311" && ! -L "$py311" ]]; then
+    printf '%s' "$py311"
     return 0
   fi
-  printf '%s' "${PYTHONPATH:-}"
+  if [[ -x "$py" ]]; then
+    # Absolute symlink to /bin/python3 still works on the live image if site-packages are on PYTHONPATH.
+    printf '%s' "$py"
+    return 0
+  fi
+  if command -v python3.11 >/dev/null 2>&1; then
+    command -v python3.11
+    return 0
+  fi
+  printf '%s' "python3"
 }
 
 setuphelfer_rescue_read_boot_id() {
@@ -485,9 +529,43 @@ setuphelfer_rescue_msi_lab_auto_active() {
   setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_lab_auto=1"
 }
 
+setuphelfer_rescue_lab_cloud_send_env() {
+  # Lab/auto discovery: enable anonymized cloud ingest without interactive wizard.
+  if ! setuphelfer_rescue_msi_lab_auto_active \
+     && ! setuphelfer_rescue_cmdline_has_flag "setuphelfer_auto_discovery=1"; then
+    return 0
+  fi
+  local token=""
+  local cand
+  for cand in \
+    /run/setuphelfer/esp-rw/setuphelfer/lab/telemetry-lab-token \
+    /run/setuphelfer-rescue/media/SETUP_LOGS/setuphelfer/lab/telemetry-lab-token \
+    /media/*/SETUP_LOGS*/setuphelfer/lab/telemetry-lab-token
+  do
+    if [[ -f "$cand" && -s "$cand" ]]; then
+      token="$cand"
+      break
+    fi
+  done
+  export SETUPHELFER_RS_TELEMETRY_LAB_SEND_ENABLED="${SETUPHELFER_RS_TELEMETRY_LAB_SEND_ENABLED:-1}"
+  export SETUPHELFER_RS_TELEMETRY_OPERATOR_APPROVAL="${SETUPHELFER_RS_TELEMETRY_OPERATOR_APPROVAL:-explicit}"
+  export SETUPHELFER_RS_TELEMETRY_CONSENT_STATUS="${SETUPHELFER_RS_TELEMETRY_CONSENT_STATUS:-granted_lab}"
+  export SETUPHELFER_RS_TELEMETRY_BOOT_MODE="${SETUPHELFER_RS_TELEMETRY_BOOT_MODE:-lab_auto_discovery}"
+  export SETUPHELFER_RS_TELEMETRY_ENDPOINT="${SETUPHELFER_RS_TELEMETRY_ENDPOINT:-https://telemetrie.setuphelfer.de/v1/telemetry/ingest}"
+  if [[ -n "$token" ]]; then
+    export SETUPHELFER_RS_TELEMETRY_LAB_TOKEN_FILE="$token"
+  fi
+  mkdir -p "${SETUPHELFER_RESCUE_STATE_DIR:-/run/setuphelfer-rescue}" 2>/dev/null || true
+  : >"${SETUPHELFER_RESCUE_STATE_DIR:-/run/setuphelfer-rescue}/telemetry-opt-in" 2>/dev/null || true
+  export SETUPHELFER_RESCUE_TELEMETRY_OPT_IN="${SETUPHELFER_RESCUE_TELEMETRY_OPT_IN:-1}"
+}
+
 setuphelfer_rescue_msi_e2e_auto_active() {
-  setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_e2e_auto=1" \
-    || setuphelfer_rescue_msi_lab_auto_active
+  # Only the explicit physical-E2E cmdline flag — NOT lab-auto.
+  # Lab-auto is shared with Discovery; treating it as e2e_auto shortened the
+  # MSI late gate to 20s, eval required 120s, marker stayed "failed", and
+  # Discovery hung on "Warte auf MSI-Evidence-Marker…" (Phase A post-restore).
+  setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_e2e_auto=1"
 }
 
 setuphelfer_rescue_run_msi_physical_e2e_auto() {
@@ -502,13 +580,30 @@ from core.rescue_physical_e2e_unattended import is_physical_e2e_success_status
 
 ev_base = Path(${ev_base@Q}) if ${ev_base@Q} else None
 logs = None
-for pattern in ("/media/*/SETUP_LOGS", "/run/media/*/SETUP_LOGS"):
-    for candidate in Path("/").glob(pattern.lstrip("/")):
-        if candidate.is_dir():
-            logs = candidate
+try:
+    from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
+    logs = find_setup_logs_mount()
+except Exception:
+    logs = None
+if logs is None:
+    for pattern in (
+        "/run/setuphelfer/esp-rw",
+        "/media/*/SETUP_LOGS",
+        "/media/*/SETUP_LOGS*",
+        "/run/media/*/SETUP_LOGS",
+        "/run/media/*/SETUP_LOGS*",
+    ):
+        if "*" in pattern:
+            for candidate in Path("/").glob(pattern.lstrip("/")):
+                if candidate.is_dir() and (candidate / "setuphelfer").is_dir():
+                    logs = candidate
+                    break
+        else:
+            candidate = Path(pattern)
+            if candidate.is_dir() and (candidate / "setuphelfer").is_dir():
+                logs = candidate
+        if logs is not None:
             break
-    if logs:
-        break
 if logs is None and ev_base is not None:
     logs = ev_base
 
@@ -646,6 +741,10 @@ setuphelfer_rescue_dmi_suggests_msi_ge63() {
 }
 
 setuphelfer_rescue_should_disable_gui_for_msi_compat() {
+  # Explicit GUI boots must be allowed to try; gui-watchdog falls back to TUI.
+  if setuphelfer_rescue_cmdline_has_flag "setuphelfer_mode=gui"; then
+    return 1
+  fi
   setuphelfer_rescue_msi_compat_active || return 1
   if setuphelfer_rescue_cmdline_has_nomodeset; then
     return 0
@@ -770,12 +869,12 @@ EOF
 setuphelfer_rescue_gui_failure_code() {
   local raw="${1:-unknown_gui_failure}"
   case "$raw" in
+    openvt_console_busy|openvt_console_not_released|openvt_failed)
+      printf 'openvt_console_busy'
+      ;;
     startx_not_started)
-      if setuphelfer_rescue_msi_compat_active; then
-        printf 'openvt_console_2_not_released'
-        return 0
-      fi
-      printf '%s' "$raw"
+      # Keep the real cause — do not remap to a fake openvt code under pci=noaer.
+      printf 'startx_not_started'
       ;;
     *)
       printf '%s' "$raw"
@@ -1251,6 +1350,33 @@ setuphelfer_rescue_should_start_gui() {
   return 1
 }
 
+# Multi-host lab: durable fingerprint so SETUP_LOGS evidence can be attributed per machine.
+setuphelfer_rescue_write_host_fingerprint() {
+  local dest="${SETUPHELFER_RESCUE_STATE_DIR}/host-fingerprint.json"
+  local product board vendor bios
+  product="$(cat /sys/class/dmi/id/product_name 2>/dev/null | tr -d '\0' || true)"
+  board="$(cat /sys/class/dmi/id/board_name 2>/dev/null | tr -d '\0' || true)"
+  vendor="$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null | tr -d '\0' || true)"
+  bios="$(cat /sys/class/dmi/id/bios_version 2>/dev/null | tr -d '\0' || true)"
+  setuphelfer_rescue_write_json "$dest" <<EOF
+{
+  "schema_version": 1,
+  "boot_id": "$(setuphelfer_rescue_read_boot_id)",
+  "recorded_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "payload_version": "$(cat /opt/setuphelfer-rescue/VERSION 2>/dev/null || echo unknown)",
+  "vendor": $(printf '%s' "$vendor" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),
+  "product": $(printf '%s' "$product" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),
+  "board": $(printf '%s' "$board" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),
+  "bios": $(printf '%s' "$bios" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()))' 2>/dev/null || echo '""'),
+  "uname": "$(uname -srm 2>/dev/null || true)",
+  "local_evidence_only": true,
+  "telemetry_auto_push": false,
+  "diagnostics_server_hop": false
+}
+EOF
+  setuphelfer_rescue_mirror_evidence_file "$dest" "setuphelfer/evidence/boot/host-fingerprint.json" 2>/dev/null || true
+}
+
 setuphelfer_rescue_write_boot_state() {
   local phase="${1:-}"
   local py_backend="/opt/setuphelfer-rescue/backend"
@@ -1378,12 +1504,76 @@ setuphelfer_rescue_gui_chain_log_xorg_artifacts() {
 }
 
 # RS-P2G: GUI health probes, TUI marker, kiosk VT helpers.
+# VT7 avoids getty@tty1..tty6 (NAutoVTs=6) which blocks openvt ("Konsole N nicht freigegeben").
 SETUPHELFER_RESCUE_TUI_ACTIVE_FILE="${SETUPHELFER_RESCUE_TUI_ACTIVE_FILE:-/run/setuphelfer/rescue-tui-active}"
-SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-2}"
+SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
 
 setuphelfer_rescue_tui_mark_active() {
   mkdir -p /run/setuphelfer 2>/dev/null || true
   touch "$SETUPHELFER_RESCUE_TUI_ACTIVE_FILE" 2>/dev/null || true
+  # Heartbeat oneshots print "Starting/Finished …" on the console and corrupt whiptail.
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl stop setuphelfer-rescue-boot-observer.timer 2>/dev/null || true
+    systemctl stop setuphelfer-rescue-boot-observer.service 2>/dev/null || true
+    # Exclusive tty1: getty must not reclaim the console (TTYVHangup → HUP kills TUI).
+    systemctl stop getty@tty1.service 2>/dev/null || true
+    systemctl mask --runtime getty@tty1.service 2>/dev/null || true
+  fi
+  setuphelfer_rescue_quiet_console_for_tui || true
+}
+
+# Free a VT so openvt can allocate it (getty/login otherwise owns tty1–tty6).
+setuphelfer_rescue_prepare_kiosk_vt() {
+  local vt="${1:-$SETUPHELFER_RESCUE_KIOSK_VT}"
+  local tty="/dev/tty${vt}"
+  local attempt
+  setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT" "vt=${vt}"
+  setuphelfer_rescue_x11_log "PREPARE_KIOSK_VT" "vt=${vt}"
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl stop "getty@tty${vt}.service" 2>/dev/null || true
+    systemctl mask --runtime "getty@tty${vt}.service" 2>/dev/null || true
+  fi
+  # Drop lingering login/getty holders on the target VT.
+  if [[ -c "$tty" ]] && command -v fuser >/dev/null 2>&1; then
+    fuser -k "${tty}" >/dev/null 2>&1 || true
+  fi
+  for attempt in 1 2 3 4 5; do
+    if command -v deallocvt >/dev/null 2>&1; then
+      deallocvt "$vt" >/dev/null 2>&1 || true
+    fi
+    # Prefer an unused VT: no processes attached.
+    if [[ -c "$tty" ]] && command -v fuser >/dev/null 2>&1; then
+      if ! fuser "$tty" >/dev/null 2>&1; then
+        setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_OK" "vt=${vt} attempt=${attempt}"
+        return 0
+      fi
+    else
+      setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_OK" "vt=${vt} attempt=${attempt} fuser=skip"
+      return 0
+    fi
+    sleep 0.4
+  done
+  setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_BUSY" "vt=${vt}"
+  return 1
+}
+
+setuphelfer_rescue_quiet_console_for_tui() {
+  # Best-effort: hide systemd unit status lines that overwrite the text UI on tty1.
+  setuphelfer_rescue_shield_console_early "tui_owned" || true
+  if command -v busctl >/dev/null 2>&1; then
+    busctl call org.freedesktop.systemd1 /org/freedesktop/systemd1 \
+      org.freedesktop.systemd1.Manager SetShowStatus s no 2>/dev/null \
+      || busctl set-property org.freedesktop.systemd1 /org/freedesktop/systemd1 \
+        org.freedesktop.systemd1.Manager ShowStatus s no 2>/dev/null \
+      || true
+  fi
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl set-log-level warning 2>/dev/null || true
+  fi
+  if [[ -w /proc/sys/kernel/printk ]]; then
+    printf '3 4 1 7\n' >/proc/sys/kernel/printk 2>/dev/null || true
+  fi
+  return 0
 }
 
 setuphelfer_rescue_tui_mark_inactive() {
@@ -1533,17 +1723,47 @@ setuphelfer_rescue_run_on_kiosk_vt() {
     setuphelfer_rescue_x11_log "GUI_VT_BLOCKED" "reason=msi_compat_nomodeset"
     return 1
   fi
+  local openvt_err="/run/setuphelfer/openvt-vt${vt}.err"
+  local openvt_pid=""
+  local switched=0
+  local wait_i
+  setuphelfer_rescue_prepare_kiosk_vt "$vt" || true
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  : >"$openvt_err"
   if command -v openvt >/dev/null 2>&1; then
     setuphelfer_rescue_gui_chain_log "OPENVT_START" "vt=${vt} cmd=$*"
     setuphelfer_rescue_x11_log "OPENVT_START" "vt=${vt} cmd=$*"
-    openvt -f -s -w -c "$vt" -- "$@"
+    # -w keeps openvt alive until the kiosk exits (so the watchdog can monitor it).
+    # Switch to the kiosk VT only after X is actually up — never leave the operator
+    # on a blank VT while discovery still runs on tty1 progress text.
+    openvt -f -w -c "$vt" -- "$@" 2>"$openvt_err" &
+    openvt_pid=$!
+    for wait_i in $(seq 1 120); do
+      if setuphelfer_rescue_x11_ready; then
+        chvt "$vt" 2>/dev/null || true
+        switched=1
+        setuphelfer_rescue_gui_chain_log "CHVT_KIOSK" "vt=${vt} reason=x11_ready"
+        break
+      fi
+      if ! kill -0 "$openvt_pid" 2>/dev/null; then
+        break
+      fi
+      sleep 0.5
+    done
+    wait "$openvt_pid"
     _rc=$?
+    if [[ "$switched" -eq 0 ]]; then
+      chvt 1 2>/dev/null || true
+    fi
     if [[ "$_rc" -eq 0 ]]; then
-      setuphelfer_rescue_gui_chain_log "OPENVT_OK" "vt=${vt} exit=0"
+      setuphelfer_rescue_gui_chain_log "OPENVT_OK" "vt=${vt} exit=0 switched=${switched}"
       setuphelfer_rescue_x11_log "OPENVT_OK" "vt=${vt} exit=0"
     else
-      setuphelfer_rescue_gui_chain_log "OPENVT_FAIL" "vt=${vt} exit=${_rc}"
+      setuphelfer_rescue_gui_chain_log "OPENVT_FAIL" "vt=${vt} exit=${_rc} err=$(tr '\n' ' ' <"$openvt_err" 2>/dev/null | head -c 160)"
       setuphelfer_rescue_x11_log "OPENVT_FAIL" "vt=${vt} exit=${_rc}"
+      if grep -Eiq 'nicht freigegeben|could not be released|cannot open' "$openvt_err" 2>/dev/null; then
+        return 78
+      fi
     fi
     return "$_rc"
   fi

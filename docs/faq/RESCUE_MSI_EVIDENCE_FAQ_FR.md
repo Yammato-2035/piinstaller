@@ -4,7 +4,7 @@
 
 # FAQ — MSI Evidence & Clé de secours 1.10.0.x (DE)
 
-Stand: **2026-06-29**
+Stand: **2026-07-13**
 
 Ausführlich: [MSI_RS011_OPERATOR_KB.md](../kNonwledge-base/Secours/MSI_RS011_OPERATOR_KB.md)
 
@@ -138,6 +138,8 @@ Erwartet bei aktuellem Stand: `project_version` **1.10.0.4**, `squashfs_sha256` 
 ---
 
 ## Siehe auch
+
+- [PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.fr.md](PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.fr.md)
 
 - [Secours_STICK_FAQ_DE.md](Secours_STICK_FAQ_DE.md)
 - [Secours_CONNECTIVITY_TELEMETRY_KB.md](../kNonwledge-base/Secours/Secours_CONNECTIVITY_TELEMETRY_KB.md)

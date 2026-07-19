@@ -1,25 +1,29 @@
 [Unit]
 Description=Setuphelfer Rescue TUI (exclusive console owner)
 After=setuphelfer-backend.service
-Before=setuphelfer-rescue-auto-msi-evidence.service setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-auto-discovery.service
-Wants=setuphelfer-backend.service setuphelfer-rescue-start-assistant.service
+Before=setuphelfer-rescue-auto-msi-evidence.service setuphelfer-rescue-auto-physical-e2e.service setuphelfer-rescue-auto-discovery.service getty@tty1.service
+Wants=setuphelfer-backend.service
+# Exclusive tty1 — stop interactive assistant and getty if they race onto the console.
+Conflicts=setuphelfer-rescue-start-assistant.service getty@tty1.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-entrypoint
 ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1
 ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
 ConditionKernelCommandLine=|setuphelfer_auto_discovery=1
-StartLimitBurst=3
-StartLimitIntervalSec=30
+StartLimitBurst=6
+StartLimitIntervalSec=120
 
 [Service]
 Type=simple
+ExecStartPre=/bin/sh -c 'systemctl stop getty@tty1.service 2>/dev/null || true; systemctl mask --runtime getty@tty1.service 2>/dev/null || true; exit 0'
 ExecStart=/usr/local/sbin/setuphelfer-rescue-entrypoint --boot-trigger
 StandardInput=tty
 StandardOutput=tty
 StandardError=journal
 TTYPath=/dev/tty1
 TTYReset=yes
-TTYVHangup=yes
+# Keep TUI alive if another unit briefly touches tty1 (getty reclaim used to HUP-kill us).
+TTYVHangup=no
 Restart=on-failure
 RestartSec=1
 

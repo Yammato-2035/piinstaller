@@ -279,4 +279,23 @@
 - KB: `docs/knowledge-base/deploy/DEPLOY_TO_OPT_RUNTIME_SYNC.md`
 - DCC/Dev-Server-Details: **nicht** in FAQ/KB — `docs/dev-dashboard/internal/`
 
+## MSI GE63 — TUI durch Boot-Progress zerstört (PI-RS-MSI-RETEST-002 / GUI-003)
+
+- Thema: Whiptail-TUI visuell kaputt trotz `gui_available=false`; `boot-timeline.jsonl` zeigt `x11_starting`; stale `gui-start.log` aus alter Session.
+- Problem: Boot-Progress und GUI-Sperre nicht gekoppelt; tty1-Writes nach TUI-Start; Evidence ohne Session-Bindung.
+- Ursache: MSI-Compat blockierte GUI, aber Boot-Timeline plante weiterhin X11-Phase; Console-Ownership fehlte; Session-Mirror ohne Stale-Guard.
+- Lösung: PI-RS-MSI-GUI-003 — Payload **1.10.0.16** — `tui_mode_selected`, Console-Ownership, Session-Evidence, Version-Sync.
+- FAQ-Kandidat: ja → `docs/faq/PI_RS_MSI_GUI_003_FAQ.de.md`, `.en.md`
+- KB: `docs/knowledge-base/rescue/MSI_TUI_CONSOLE_ISOLATION_KB_DE.md`, `_EN.md`
+- Runbook: `docs/rescue-stick/PI_RS_MSI_GUI_003_TUI_CONSOLE_ISOLATION.md`
+- Status: **`passed`** — abgeschlossen via PI-RS-MSI-AUTO-EVIDENCE-001 / Retest-003+003B
+
+## MSI GE63 — Vollautomatisierter Lab-Boot (PI-RS-MSI-AUTO-EVIDENCE-001)
+
+- Thema: Unattended MSI-Boot, Spät-Evidence ≥120 s, RS-011B-Collect, Auto-Shutdown, CSE-Preview.
+- Lösung: Payload **1.10.0.18–1.10.0.20** — GRUB-Lab, `auto-msi-evidence`, Failsafe-Timer-Fix, kein blockierendes `start-assistant`.
+- FAQ: `docs/faq/PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.{de,en,fr,nl}.md`
+- KB: `docs/knowledge-base/rescue/MSI_LAB_AUTO_EVIDENCE_KB_{DE,EN}.md`
+- Zusammenfassung: `docs/evidence/pi_rs_msi_auto_evidence_001/PI_RS_MSI_AUTO_EVIDENCE_001_SUMMARY.md`
+- Status: **`passed`** — Session `20260713_003100_boot`, Payload **1.10.0.20**
 

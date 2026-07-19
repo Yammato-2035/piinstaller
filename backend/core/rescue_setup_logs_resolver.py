@@ -268,7 +268,6 @@ def ensure_canonical_mount(device_path: str) -> dict[str, Any]:
 
 
 def write_resolution_state(payload: dict[str, Any]) -> Path:
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
     data = {
         "schema": RESOLUTION_SCHEMA,
         "resolved": bool(payload.get("resolved")),
@@ -284,22 +283,29 @@ def write_resolution_state(payload: dict[str, Any]) -> Path:
         "runtime_fallback_used": bool(payload.get("runtime_fallback_used")),
         "shadow_mount_ignored": bool(payload.get("shadow_mount_ignored")),
     }
-    RESOLUTION_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    try:
+        STATE_DIR.mkdir(parents=True, exist_ok=True)
+        RESOLUTION_PATH.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    except OSError:
+        pass
     return RESOLUTION_PATH
 
 
 def write_environment_file(*, setup_logs_root: Path, evidence_root: Path) -> Path:
-    STATE_DIR.mkdir(parents=True, exist_ok=True)
-    ENV_FILE.write_text(
-        "SETUPHELFER_SETUP_LOGS_ROOT={root}\n"
-        "SETUPHELFER_EVIDENCE_ROOT={ev}\n"
-        "SETUPHELFER_RESCUE_STATE_DIR={state}\n".format(
-            root=setup_logs_root,
-            ev=evidence_root,
-            state=STATE_DIR,
-        ),
-        encoding="utf-8",
-    )
+    try:
+        STATE_DIR.mkdir(parents=True, exist_ok=True)
+        ENV_FILE.write_text(
+            "SETUPHELFER_SETUP_LOGS_ROOT={root}\n"
+            "SETUPHELFER_EVIDENCE_ROOT={ev}\n"
+            "SETUPHELFER_RESCUE_STATE_DIR={state}\n".format(
+                root=setup_logs_root,
+                ev=evidence_root,
+                state=STATE_DIR,
+            ),
+            encoding="utf-8",
+        )
+    except OSError:
+        pass
     return ENV_FILE
 
 
@@ -526,7 +532,7 @@ def select_setup_logs_for_import(
         if check.get("ok") or (path.is_dir() and (path / "setuphelfer").is_dir() and findmnt_source(path)):
             return {
                 "ok": True,
-                "setup_logs_base": path,
+                "setup_logs_base": str(path),
                 "source": "explicit",
                 "mount_source_verified": bool(check.get("mount_source_verified") or findmnt_source(path)),
             }
@@ -538,7 +544,7 @@ def select_setup_logs_for_import(
         if path.is_dir() and (path / "setuphelfer").is_dir() and findmnt_source(path):
             return {
                 "ok": True,
-                "setup_logs_base": path,
+                "setup_logs_base": str(path),
                 "source": "environment",
                 "mount_source_verified": True,
             }
@@ -585,7 +591,7 @@ def select_setup_logs_for_import(
     if len(uniq) == 1:
         return {
             "ok": True,
-            "setup_logs_base": uniq[0],
+            "setup_logs_base": str(uniq[0]),
             "source": "findmnt_lsblk",
             "mount_source_verified": True,
             "shadow_mount_ignored": True,

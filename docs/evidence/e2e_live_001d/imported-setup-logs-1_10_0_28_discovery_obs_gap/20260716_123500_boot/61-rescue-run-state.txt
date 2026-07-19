@@ -1,0 +1,110 @@
+== /run/setuphelfer/console-ownership.json ==
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "tui",
+  "lifecycle_state": "tui_owned",
+  "write_allowed_for": [
+    "tui"
+  ],
+  "clear_allowed_for": [
+    "tui"
+  ],
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": false,
+  "reason": "tui_owned",
+  "session_id": "20260716_123503_boot",
+  "boot_id": "e5caa488-9d3f-4a68-b9f9-8361f9e050dc",
+  "updated_at": "2026-07-16T12:35:04Z"
+}
+
+== /run/setuphelfer/console-shield.json ==
+{
+  "schema_version": 2,
+  "enabled": true,
+  "reason": "tui_owned",
+  "tty": "tty1",
+  "owner": "tui",
+  "lifecycle_state": "tui_owned",
+  "tty1_write_allowed": false,
+  "tty1_clear_allowed": false,
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": false,
+  "write_allowed_for": [
+    "tui"
+  ],
+  "clear_allowed_for": [
+    "tui"
+  ],
+  "owner_since": "2026-07-16T12:35:04Z",
+  "session_id": "20260716_123503_boot",
+  "journal_to_console_blocked": true,
+  "production_ready": false
+}
+
+== /run/setuphelfer/current-session.json ==
+{
+  "schema_version": 1,
+  "session_id": "20260716_123503_boot",
+  "boot_id": "e5caa488-9d3f-4a68-b9f9-8361f9e050dc",
+  "payload_version": "1.10.0.28",
+  "session_started_at": "2026-07-16T12:35:04Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+
+== /run/setuphelfer/gui-availability.json ==
+{
+  "schema_version": 1,
+  "gui_available": false,
+  "reason": "msi_compat_nomodeset",
+  "tui_primary": true,
+  "openvt_allowed": false,
+  "chvt_allowed": false,
+  "startx_allowed": false,
+  "operator_next_action": "use_text_mode",
+  "production_ready": false
+}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 0, "message": "Bootvorbereitung abgeschlossen \u2014 Textmen\u00fc bereit.", "updated_at": "2026-07-16T12:35:03Z"}
+
+== /run/setuphelfer-rescue/boot_state.json ==
+{
+  "schema_version": 1,
+  "phase": "tui_start",
+  "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120",
+  "selected_mode": "text",
+  "kiosk_requested": false,
+  "text_mode_started": true,
+  "gui_requested": false,
+  "backup_execute_allowed": false
+}
+
+== /run/setuphelfer-rescue/gui-fallback.json ==
+{
+  "schema_version": 1,
+  "gui_status": "disabled_msi_compat_nomodeset",
+  "gui_reason": "msi_compat_nomodeset",
+  "openvt_attempted": false,
+  "chvt_attempted": false,
+  "startx_attempted": false,
+  "chvt_target": "none",
+  "tui_preserved": true,
+  "tui_rerendered": false,
+  "operator_next_action": "use_text_mode",
+  "production_ready": false
+}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-07-16T12:35:02Z",
+  "boot_id": "e5caa488-9d3f-4a68-b9f9-8361f9e050dc",
+  "task_available": false,
+  "secrets_exposed": false
+}
+

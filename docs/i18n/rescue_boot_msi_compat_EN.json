@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "locale": "en",
+  "namespace": "rescue.boot.msi_compat",
+  "generated_for": "PI-RS-MSI-GUI-003",
+  "strings": {
+    "tui_mode_selected": "MSI compatibility mode: using text interface.",
+    "gui_skipped_audit": "GUI start skipped under MSI compatibility",
+    "boot_complete_tui": "Boot preparation complete — text menu ready.",
+    "gui_not_available_title": "Graphical interface not available",
+    "gui_not_available_body": "On this device in MSI compatibility mode only text mode is stable. Please use the text menu.",
+    "stale_evidence_warning": "Note: This GUI evidence is from a previous boot session.",
+    "console_write_blocked": "Console output blocked — text interface active"
+  }
+}

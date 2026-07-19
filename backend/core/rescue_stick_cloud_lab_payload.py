@@ -62,12 +62,16 @@ def build_rescue_stick_lab_payload(
     stick_version: str,
     boot_mode: str = "lab",
     host_id_hash: str | None = None,
+    discovery_summary: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     timestamp = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
-    body_without_hash = {
+    event_type = LAB_EVENT_TYPE
+    if discovery_summary:
+        event_type = "rescue_stick.discovery_evidence"
+    body_without_hash: dict[str, Any] = {
         "schema_version": LAB_PAYLOAD_SCHEMA_VERSION,
         "source": LAB_SOURCE,
-        "event_type": LAB_EVENT_TYPE,
+        "event_type": event_type,
         "environment": "lab",
         "production_ready": False,
         "contains_pii": False,
@@ -79,11 +83,36 @@ def build_rescue_stick_lab_payload(
         "health_status": "health_ok",
         "timestamp": timestamp,
     }
+    if discovery_summary:
+        # Already anonymized by caller; keep only JSON-safe scalars/lists.
+        body_without_hash["discovery_summary"] = dict(discovery_summary)
     payload_hash = calculate_payload_hash(body_without_hash)
     return {**body_without_hash, "payload_hash": payload_hash}
 
 
-_SAFE_VALUE_KEYS = frozenset({"stick_version", "schema_version", "payload_hash", "host_id_hash", "timestamp"})
+_SAFE_VALUE_KEYS = frozenset(
+    {
+        "stick_version",
+        "schema_version",
+        "payload_hash",
+        "host_id_hash",
+        "timestamp",
+        "payload_version",
+        "session_id_hash",
+        "boot_id_hash",
+        "model_family",
+        "vendor_class",
+        "architecture",
+        "status",
+        "run_mode",
+        "event_type",
+        "boot_mode",
+        "telemetry_path",
+        "health_status",
+        "environment",
+        "source",
+    }
+)
 
 
 def assert_no_pii_in_payload(payload: Mapping[str, Any]) -> None:
@@ -92,16 +121,28 @@ def assert_no_pii_in_payload(payload: Mapping[str, Any]) -> None:
     if forbidden:
         raise ValueError(f"forbidden_pii_keys:{sorted(forbidden)}")
 
-    for key, value in payload.items():
-        if str(key) in _SAFE_VALUE_KEYS:
-            continue
-        serialized = canonical_json(value) if isinstance(value, (dict, list)) else str(value)
+    def _scan(value: Any, *, parent_key: str = "") -> None:
+        if isinstance(value, dict):
+            for key, item in value.items():
+                if str(key).lower() in _FORBIDDEN_PII_KEYS:
+                    raise ValueError(f"forbidden_pii_keys:{[str(key)]}")
+                _scan(item, parent_key=str(key))
+            return
+        if isinstance(value, list):
+            for item in value:
+                _scan(item, parent_key=parent_key)
+            return
+        if parent_key in _SAFE_VALUE_KEYS:
+            return
+        serialized = str(value)
         if _IPV4_RE.search(serialized):
             raise ValueError("forbidden_plaintext_ipv4")
         if _MAC_RE.search(serialized):
             raise ValueError("forbidden_plaintext_mac")
         if _HOME_PATH_RE.search(serialized):
             raise ValueError("forbidden_home_path")
+
+    _scan(dict(payload))
 
 
 def redact_payload_for_preview(payload: Mapping[str, Any]) -> dict[str, Any]:

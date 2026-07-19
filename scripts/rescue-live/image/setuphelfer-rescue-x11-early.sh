@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
-KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-2}"
+KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
 HOLD="${SCRIPT_DIR}/setuphelfer-rescue-x11-hold"
 STATUS="/run/setuphelfer/x11-early.json"
 
@@ -53,6 +53,7 @@ fi
 
 setuphelfer_rescue_gui_chain_log "X11_EARLY_START" "vt=${KIOSK_VT} hold=${HOLD}"
 setuphelfer_rescue_x11_log "X11_EARLY_START" "vt=${KIOSK_VT}"
+setuphelfer_rescue_prepare_kiosk_vt "$KIOSK_VT" || true
 
 if command -v openvt >/dev/null 2>&1; then
   openvt -f -c "$KIOSK_VT" -- startx "$HOLD" -- ":0" "vt${KIOSK_VT}" >>"${SETUPHELFER_X11_LAUNCH_LOG:-/run/setuphelfer/x11-launch.log}" 2>&1 &

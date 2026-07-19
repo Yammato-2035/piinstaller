@@ -1,14 +1,22 @@
 [Unit]
 Description=Setuphelfer Rescue auto physical E2E (MSI lab / cmdline)
-After=setuphelfer-backend.service network-online.target setuphelfer-rescue-auto-msi-evidence.service
-Wants=setuphelfer-backend.service
+# Do not After=auto-msi-evidence: the 120s late gate delayed physical E2E until
+# discovery auto-shutdown already powered off the host (Phase A MSI 2026-07-18).
+# Do not After=network-online or backend: backend itself After=network-online, so
+# MSI without link left physical stuck forever while TUI pinned
+# "physischer E2E startet" (Phase A MSI 2026-07-18 ~500s).
+# Unattended Python uses /opt/setuphelfer-rescue PYTHONPATH — no HTTP backend needed.
+After=local-fs.target setuphelfer-rescue-setup-logs-resolver.service
+Wants=setuphelfer-rescue-setup-logs-resolver.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-physical-e2e
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-physical-e2e-start-gate
 ConditionPathExists=!/run/setuphelfer-rescue/auto-physical-e2e.done
+ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1
 
 [Service]
 Type=oneshot
-TimeoutStartSec=1200
+# SABRENT wipe + backup/verify/restore can exceed 20 minutes on ~1TB disks.
+TimeoutStartSec=14400
 ExecCondition=/usr/local/sbin/setuphelfer-rescue-physical-e2e-start-gate
 ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-physical-e2e
 StandardInput=null

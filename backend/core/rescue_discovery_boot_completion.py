@@ -39,6 +39,7 @@ UNITS = (
     "setuphelfer-rescue-tui-guard.service",
     "setuphelfer-rescue-tui-hold.service",
     "setuphelfer-rescue-auto-msi-evidence.service",
+    "setuphelfer-rescue-auto-physical-e2e.service",
     "setuphelfer-rescue-auto-shutdown.service",
     "setuphelfer-rescue-lab-auto-shutdown-failsafe.service",
 )
@@ -257,6 +258,40 @@ def evaluate_discovery_boot_completion(
         if status == "failed_discovery_session_never_persisted" and missing:
             status = "failed_discovery_observability_incomplete"
 
+    # 001D7F: Do not finalize/consume/mark-done while discovery never got a start-gate
+    # chance (e.g. premature hold recheck while MSI late gate still holds the queue).
+    msi_done = (_state_dir() / "auto-msi-evidence.done").is_file()
+    discovery_attempted = bool(start_gate or service_start or orch_exit or service_result)
+    waiting_for_discovery = (
+        status == "failed_discovery_start_gate_not_invoked" and not discovery_attempted and not msi_done
+    )
+    if waiting_for_discovery:
+        final = persist_boot_finalizer(
+            {
+                "status": "waiting_discovery_start_gate",
+                "observability_complete": False,
+                "run_control_consumed": False,
+                "shutdown_safe": False,
+                "terminal": False,
+                "missing": missing,
+                "notes": [
+                    f"payload={rescue_payload_version()}",
+                    "deferred_until_discovery_or_msi_done",
+                    f"msi_done={msi_done}",
+                ],
+            }
+        )
+        write_component_heartbeat("boot_finalizer", state="waiting_discovery")
+        return {
+            "action": "deferred",
+            "status": "waiting_discovery_start_gate",
+            "observability_complete": False,
+            "run_control_consumed": False,
+            "missing": missing,
+            "finalizer": final,
+            "failure_fully_observed": False,
+        }
+
     consumed = False
     if base and control and not control.get("consumed"):
         # Consume when terminal for one-shot (including skip due to invalid config / no start).
@@ -285,10 +320,12 @@ def evaluate_discovery_boot_completion(
         }
     )
     write_component_heartbeat("boot_finalizer", state="terminal")
-    try:
-        (_state_dir() / "auto-discovery.done").write_text(status + "\n", encoding="utf-8")
-    except OSError:
-        pass
+    # Only mark done after a real discovery attempt or MSI finished (gate had its chance).
+    if discovery_attempted or msi_done or status != "failed_discovery_start_gate_not_invoked":
+        try:
+            (_state_dir() / "auto-discovery.done").write_text(status + "\n", encoding="utf-8")
+        except OSError:
+            pass
 
     # Compat alias for 001D7B tests: failed path that consumed control.
     action = "finalized"

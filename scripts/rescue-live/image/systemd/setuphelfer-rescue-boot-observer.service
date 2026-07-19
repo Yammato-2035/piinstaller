@@ -6,6 +6,8 @@ Before=setuphelfer-rescue-auto-msi-evidence.service
 Before=setuphelfer-rescue-auto-discovery.service
 Wants=setuphelfer-rescue-setup-logs-resolver.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-boot-observer
+# Do not re-fire while the text UI owns tty1 — systemd status lines overwrite whiptail.
+ConditionPathExists=!/run/setuphelfer/rescue-tui-active
 
 [Service]
 Type=oneshot

@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.rescue.discovery-service-result.v1",
+  "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+  "completed_at": "2026-07-16T16:26:31Z",
+  "exit_code": 1,
+  "status": "failed_discovery_import",
+  "run_control_consumed": true,
+  "session_id": null,
+  "failure_stage": "orchestrator_exception",
+  "recorded_at": "2026-07-16T16:26:31Z"
+}

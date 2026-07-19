@@ -1,97 +1,53 @@
 {
-  "feature": "SETUPHELFER-E2E-LIVE-001D7B",
-  "status": "failed_rescue_auto_discovery",
+  "feature": "SETUPHELFER-E2E-LIVE-001D7E",
+  "status": "failed_auto_discovery_observability",
   "production_ready": false,
-  "session_id": "20260715_200455_boot",
-  "boot_id": "88fd4c2f-dc26-42fa-9fc0-900a167c4790",
-  "payload_version": "1.10.0.25",
-  "payload_sha256": "7eb88035c1f1b940978ec4d02853c53790efe9965bb88707225264a4b546a6af",
-  "implementation_commit": "060ce2df0889e27d81db92b39d2a423bae453a77",
-  "failure": {
-    "code": "auto_discovery_unit_skipped_condition_kernel_cmdline",
-    "detail": "ConditionKernelCommandLine used a single space-joined token; service never started",
-    "operator_abort_heartbeat_age_sec": 667,
-    "tui_stuck_phase": "msi_evidence_complete / physischer E2E startet"
+  "payload_version": "1.10.0.29",
+  "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+  "session_id": null,
+  "setup_logs_resolution": {
+    "resolver_started": true,
+    "partition_resolved": true,
+    "mount_source_verified": true,
+    "canonical_mount_used": true,
+    "shadow_mount_ignored": true,
+    "runtime_fallback_used": false,
+    "fallback_migrated": true
   },
-  "service_start": {
-    "condition_gate_passed": false,
-    "auto_discovery_service_started": false,
-    "physical_e2e_skipped_by_mode": false
+  "boot_observer": {
+    "started_before_discovery": true,
+    "boot_directory_created": true,
+    "start_gate_missing_detected": false,
+    "run_control_consumed": false,
+    "partition_resolved": true
   },
-  "tui_runtime": {
-    "execstart_path_valid": false,
-    "live_refresh": false,
-    "discovery_mode_visible": false,
-    "incorrect_physical_e2e_text_visible": true
+  "tui_guard": {
+    "bare_tty_visible": false,
+    "hold_unit_used": true,
+    "inline_hold_used": false,
+    "guard_completed": true
   },
-  "tui": {
-    "exclusive_owner": true,
-    "live_refresh": true,
-    "phase_changes_visible": false,
-    "cancel_available": true,
-    "shutdown_available": true,
-    "systemd_unit_skipped_wrong_path": true
-  },
-  "setup_logs": {
-    "detected": true,
-    "mounted": true,
-    "writable": true,
-    "unclean_detected": false,
-    "fallback_used": false
-  },
-  "msi_evidence": {
-    "lab_auto_result_status": "passed",
-    "msi_evidence_complete_json": true,
-    "completed_at": "2026-07-15T20:07:01Z",
-    "capture_uptime_s": 156.4,
-    "rs011d_supplement_ok": true
-  },
-  "discovery": {
-    "service_started": false,
-    "service_skipped": true,
-    "machine": false,
-    "firmware": false,
-    "cpu_memory": false,
-    "pci": false,
-    "usb": false,
-    "storage": false,
-    "partitions": false,
-    "filesystems": false,
-    "smart": false,
-    "network": false,
-    "kernel": false,
-    "services": false,
-    "payload": false
-  },
-  "evidence": {
-    "complete": false,
-    "session_consistent": false,
-    "boot_id_consistent": true,
-    "sessions_dir_present": false,
-    "privacy_gate_passed": false,
-    "secret_gate_passed": true
-  },
-  "telemetry": {
-    "status": "not_requested",
-    "events_sent": 0,
-    "receipts": 0
-  },
-  "diagnostics": {
-    "status": "incomplete",
-    "case_created": false,
-    "finding_count": null
-  },
-  "shutdown": {
-    "after_evidence": false,
-    "failsafe_used": false,
-    "operator_abort": true
+  "observability": {
+    "start_gate_audit_present": true,
+    "start_gate_missing_detected": false,
+    "service_start_audit_present": true,
+    "orchestrator_exit_present": true,
+    "late_journal_present": true,
+    "boot_finalizer_present": true,
+    "session_present": false,
+    "resolver_started": true
   },
   "run_control": {
-    "loaded": true,
     "consumed": false,
-    "discovery_enabled": true,
-    "discovery_consumed": false,
-    "physical_e2e_enabled": false
+    "enabled": true,
+    "terminal_status": null
   },
-  "updated_at": "2026-07-15T18:58:00Z"
+  "import": {
+    "mode": "auto-discovery",
+    "explicit_root_used": false,
+    "mount_source_verified": true,
+    "discovery_boot_imported": true,
+    "session_imported": false
+  },
+  "updated_at": "2026-07-16T14:30:40Z"
 }

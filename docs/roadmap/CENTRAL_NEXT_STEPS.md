@@ -1,23 +1,24 @@
 # Central Next Steps
 
-Stand: 2026-07-12 (PI-RS-MSI-GUI-002 Payload 1.10.0.15)
+Stand: 2026-07-13 (PI-RS-MSI-AUTO-EVIDENCE-001 **passed**, Payload **1.10.0.20**)
 
 ## Empfohlene Reihenfolge
 
-1. **PI-RS-USB-MSI-GUI-002** — USB-Update auf Payload **1.10.0.15** + GE63 MSI-Compat Boot-Retest (`docs/rescue-stick/PI_RS_MSI_GUI_002_DISABLE_GUI_UNDER_MSI_COMPAT.md`)
-2. SETUP_LOGS importieren → TUI stabil, GUI-Menü gesperrt, keine openvt/chvt-Zerstörung
-3. Optional: Telemetry Preview vom gebooteten Stick (kein Send ohne Token)
-4. **CSE-OPS-MAINT-001** — Server Updates + kontrollierter Reboot
+1. Optional: **PI-RS-TEL-LIVE-001** — Telemetry-Send vom gebooteten Stick (nur mit expliziter Freigabe)
+2. **CSE-OPS-MAINT-001** — Server Updates + kontrollierter Reboot
+3. Optional: `tui_mode_selected` in Boot-Timeline für Lab-Auto nachziehen (nicht blockierend)
 
 ## Abgeschlossen (Referenz)
 
-- PI-RS-USB-MSI-FIX-001 — USB Payload **1.10.0.13 → 1.10.0.14**, verify OK
-- PI-RS-MSI-FIX-001 — SquashFS 1.10.0.14 (Console-Shield, boot-progress Race, GUI-Fallback)
-- PI-RS-MSI-RETEST-002 Session 3 — Root Cause dokumentiert
-- PI-RS-TEL-SEND-001 — Lab Send accepted (`req-fd36496e-…`)
+- **PI-RS-MSI-AUTO-EVIDENCE-001** — unattended MSI lab boot **passed** (GE63, Session `20260713_003100_boot`)
+- **PI-RS-MSI-RETEST-003 / 003B** — **passed** (superseded by auto-lab)
+- **PI-RS-MSI-GUI-003** — TUI/Console-Isolation **passed** on hardware
+- PI-RS-USB-UPDATER-001 — atomarer Payload-Write
+- PI-RS-MSI-GUI-002 — GUI unter MSI-Compat gesperrt
+- PI-RS-MSI-FIX-001 — Console-Shield 1.10.0.14
+- PI-RS-TEL-SEND-001 — Lab Send accepted
 
 ## Offen
 
-- GE63 MSI-Compat Boot-Retest mit **1.10.0.14**
-- SETUP_LOGS Import nach Boot
-- `version.json` auf FAT32: `project_version` noch 1.10.0.13 (Metadaten-Drift, SquashFS-SHA maßgeblich)
+- TEL-CLOUD-HEALTH-001 / TEL-CLOUD-FIX-001 — IONOS TLS/Proxy
+- Telemetry production send (gated)

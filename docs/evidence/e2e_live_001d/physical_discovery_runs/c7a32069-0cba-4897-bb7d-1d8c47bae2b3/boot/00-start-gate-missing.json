@@ -1,0 +1,7 @@
+{
+  "schema": "setuphelfer.rescue.discovery-start-gate-missing.v1",
+  "boot_id": "c7a32069-0cba-4897-bb7d-1d8c47bae2b3",
+  "status": "failed_discovery_start_gate_not_invoked",
+  "recorded_at": "2026-07-16T13:47:49Z",
+  "storage_mode": "persistent_setup_logs"
+}

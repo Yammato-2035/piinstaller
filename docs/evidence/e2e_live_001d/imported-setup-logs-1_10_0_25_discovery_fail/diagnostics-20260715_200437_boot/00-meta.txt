@@ -1,0 +1,10 @@
+stamp_utc=20260715_200437
+phase=boot
+persistent_to_stick=true
+esp_base=/run/setuphelfer/esp-rw
+uptime=12.53 127.50
+cmdline=BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset setuphelfer_msi_lab_auto=1 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+uname=Linux setuphelfer-rescue 6.1.0-49-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.174-1 (2026-05-26) x86_64 GNU/Linux
+product=GE63 Raider RGB 8RF
+board=MS-16P5
+bios=E16P5IMS.109

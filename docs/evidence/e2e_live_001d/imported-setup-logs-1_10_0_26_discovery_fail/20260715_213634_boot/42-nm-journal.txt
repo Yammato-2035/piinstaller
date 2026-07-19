@@ -1,0 +1,60 @@
+Jul 15 21:36:34 setuphelfer-rescue systemd[1]: Starting NetworkManager.service - Network Manager...
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.2908] NetworkManager (version 1.42.4) is starting... (boot:9f573ac5-281a-4cb8-a130-1335fd470875)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.2910] Read config: /etc/NetworkManager/NetworkManager.conf (lib: no-mac-addr-change.conf)
+Jul 15 21:36:35 setuphelfer-rescue systemd[1]: Started NetworkManager.service - Network Manager.
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.2961] bus-manager: acquired D-Bus service "org.freedesktop.NetworkManager"
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.4016] manager[0x5584ae0c3000]: monitoring kernel firmware directory '/lib/firmware'.
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.4017] monitoring ifupdown state file '/run/network/ifstate'.
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5430] hostname: hostname: using hostnamed
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5430] hostname: static hostname changed from (none) to "setuphelfer-rescue"
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5445] dns-mgr: init: dns=default,systemd-resolved rc-manager=symlink (auto)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5455] rfkill1: found Wi-Fi radio killswitch (at /sys/devices/pci0000:00/0000:00:14.3/ieee80211/phy0/rfkill1) (driver iwlwifi)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5456] manager[0x5584ae0c3000]: rfkill: Wi-Fi hardware radio set enabled
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5456] manager[0x5584ae0c3000]: rfkill: WWAN hardware radio set enabled
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <warn>  [1784151395.5516] plugin: skip invalid file /usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-adsl.so: file has invalid owner (should be root)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <warn>  [1784151395.5517] plugin: skip invalid file /usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-bluetooth.so: file has invalid owner (should be root)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <warn>  [1784151395.5517] plugin: skip invalid file /usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-team.so: file has invalid owner (should be root)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <warn>  [1784151395.5517] plugin: skip invalid file /usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-wifi.so: file has invalid owner (should be root)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <warn>  [1784151395.5517] plugin: skip invalid file /usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-wwan.so: file has invalid owner (should be root)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5517] manager: rfkill: Wi-Fi enabled by radio killswitch; enabled by state file
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5518] manager: rfkill: WWAN enabled by radio killswitch; enabled by state file
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5518] manager: Networking is enabled by state file
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <warn>  [1784151395.5519] settings: could not load plugin 'ifupdown' from file '/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-settings-plugin-ifupdown.so': file must be owned by root
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5520] settings: Loaded settings plugin: keyfile (internal)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5562] dhcp: init: Using DHCP client 'internal'
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5563] manager: (lo): new Loopback device (/org/freedesktop/NetworkManager/Devices/1)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5604] device (lo): state change: unmanaged -> unavailable (reason 'connection-assumed', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5607] device (lo): state change: unavailable -> disconnected (reason 'connection-assumed', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5611] device (lo): Activation: starting connection 'lo' (1f05fd9d-f8e7-4d20-b68b-3302c755eb90)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5615] device (enp5s0): carrier: link connected
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5617] manager: (enp5s0): new Ethernet device (/org/freedesktop/NetworkManager/Devices/2)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5623] settings: (enp5s0): created default wired connection 'Kabelgebundene Verbindung 1'
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5624] manager: (enp5s0): assume: will attempt to assume matching connection 'Kabelgebundene Verbindung 1' (c4d7377d-4503-3177-a8b6-5a859e9b2dba) (guessed)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5625] device (enp5s0): state change: unmanaged -> unavailable (reason 'connection-assumed', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5628] device (enp5s0): state change: unavailable -> disconnected (reason 'connection-assumed', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5631] device (enp5s0): Activation: starting connection 'Kabelgebundene Verbindung 1' (c4d7377d-4503-3177-a8b6-5a859e9b2dba)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5631] manager: (wlo1): 'wifi' plugin not available; creating generic device
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.5635] manager: (wlo1): new Generic device (/org/freedesktop/NetworkManager/Devices/3)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6051] device (lo): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6055] device (lo): state change: prepare -> config (reason 'none', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6057] device (lo): state change: config -> ip-config (reason 'none', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6059] device (enp5s0): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6062] device (enp5s0): state change: prepare -> config (reason 'none', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6065] device (lo): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6071] device (enp5s0): state change: config -> ip-config (reason 'none', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6075] dhcp4 (enp5s0): activation: beginning transaction (timeout in 45 seconds)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6104] dhcp4 (enp5s0): state changed new lease, address=192.168.178.54
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6108] policy: set 'Kabelgebundene Verbindung 1' (enp5s0) as default for IPv4 routing and DNS
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6131] device (enp5s0): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6161] device (lo): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6163] device (lo): state change: secondaries -> activated (reason 'none', sys-iface-state: 'external')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6169] device (lo): Activation: successful, device activated.
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6175] device (enp5s0): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6178] device (enp5s0): state change: secondaries -> activated (reason 'none', sys-iface-state: 'assume')
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6183] manager: NetworkManager state is now CONNECTED_SITE
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6186] device (enp5s0): Activation: successful, device activated.
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6189] manager: NetworkManager state is now CONNECTED_GLOBAL
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6196] manager: startup complete
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6666] dhcp6 (enp5s0): activation: beginning transaction (timeout in 45 seconds)
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6670] policy: set 'Kabelgebundene Verbindung 1' (enp5s0) as default for IPv6 routing and DNS
+Jul 15 21:36:35 setuphelfer-rescue NetworkManager[1671]: <info>  [1784151395.6713] dhcp6 (enp5s0): state changed new lease

@@ -31,6 +31,8 @@ _DEFAULT_WRITE_PREFIX_STR: tuple[str, ...] = (
     "/tmp/setuphelfer-restore-test",
     "/tmp/setuphelfer-rescue-restore-test",
     "/tmp/setuphelfer-rescue-dryrun-state",
+    # Physical E2E mounts SABRENT partitions here (001D5 destructive lab).
+    "/run/setuphelfer-rescue/e2e",
 )
 
 # Explizit unsichere Mount-Bäume für Schreibziele (Fail-Fast).

@@ -62,9 +62,24 @@
     "starting": "Setuphelfer Rescue start…",
     "steps": {
       "hardware": "Hardware wordt herkend",
-      "network": "Netwerk wird geprüft",
+      "network": "Netwerk wordt gecontroleerd",
       "services": "Diensten worden gestart",
       "ui": "Interface wordt voorbereid"
+    },
+    "msiCompat": {
+      "tuiModeSelected": "MSI-compatibiliteitsmodus: tekstinterface wordt gebruikt.",
+      "guiSkipped": "Grafische interface overgeslagen onder MSI-compatibiliteit",
+      "bootCompleteTui": "Bootvoorbereiding voltooid — tekstmenu gereed.",
+      "guiBlockedTitle": "Grafische interface niet beschikbaar",
+      "guiBlockedHint": "Op dit MSI-apparaat is alleen de tekstmodus stabiel. Gebruik het tekstmenu.",
+      "staleEvidence": "GUI-evidence kan van een eerdere bootsessie komen.",
+      "useTextMode": "Tekstmodus gebruiken"
+    },
+    "msiLabAuto": {
+      "collectingLate": "MSI-lab: late evidence verzamelen (≥120 s) …",
+      "shutdownComplete": "MSI-lab: evidence verzameld — systeem schakelt uit.",
+      "labAutoActive": "Onbeheerde MSI-labmodus actief",
+      "lateGateWaiting": "Wachten op late-evidence-gate …"
     },
     "subtitle": "Rescue-assistent",
     "title": "Setuphelfer Rescue"
@@ -97,6 +112,8 @@
     "msiCollecting": "Collecting MSI evidence…",
     "msiFailed": "MSI evidence collection failed",
     "msiNoBackup": "(Nee Terugup)",
+    "msiStaleSession": "GUI-log mogelijk van een eerdere bootsessie",
+    "msiTuiOnlyMode": "MSI-compat: alleen tekstmodus (geen automatische GUI-start)",
     "no": "Nee",
     "noDevices": "Nee Apparaats.",
     "noOpenIssues": "Nee open issues.",

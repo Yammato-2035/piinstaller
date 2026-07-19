@@ -29,6 +29,11 @@ from core.rescue_os_detection import classify_detected_os
 from core.rescue_backup_target_policy import classify_storage_role
 from core.rescue_wifi_diagnostics import classify_wifi_status
 from core.rescue_setup_logs_persistence import resolve_rescue_evidence_root
+from core.rescue_windows_backup_scope import (
+    build_backup_scope_plan,
+    normalize_backup_scope,
+    validate_scope_against_target,
+)
 
 CONTRACT_VERSION = 2
 SETUP_LOGS_LABELS = frozenset({"SETUP_LOGS"})
@@ -115,6 +120,14 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
     if target_role == "linux_system_disk":
         errors.append(_err("target_not_external", "Internes Ziel blockiert."))
 
+    scope_plan = build_backup_scope_plan(
+        scope=payload.get("backup_scope") or payload.get("scope"),
+        custom_paths=list(payload.get("custom_paths") or []),
+    )
+    errors.extend(validate_scope_against_target(scope_plan=scope_plan, target_role=str(target_role)))
+    for scope_err in scope_plan.get("errors") or []:
+        errors.append(scope_err if isinstance(scope_err, dict) else _err("scope_invalid", str(scope_err)))
+
     if target_mode == "cloud":
         if wifi.get("blocks_cloud_backup"):
             errors.append(_err("cloud_selected_but_wifi_missing", "Cloud gewählt, aber kein WLAN/Netz."))
@@ -182,6 +195,8 @@ def build_rescue_backup_plan(body: dict[str, Any] | None = None) -> dict[str, An
         "plan_status": plan_status,
         "plan_id": f"RBP-{session_id[:8]}",
         "backup_mode": backup_mode,
+        "backup_scope": normalize_backup_scope(str(payload.get("backup_scope") or payload.get("scope") or "")),
+        "scope_plan": scope_plan,
         "source": {"device": source_device, "scope": source_scope, "type": payload.get("source_type", "windows_ntfs_disk")},
         "target": {
             "mode": target_mode,

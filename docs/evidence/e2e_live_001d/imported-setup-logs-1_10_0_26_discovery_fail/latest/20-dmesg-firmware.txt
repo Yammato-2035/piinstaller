@@ -1,0 +1,43 @@
+[    0.083868] MDS: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.083873] MMIO Stale Data: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.083878] SRBDS: Vulnerable: No microcode
+[    0.083881] GDS: Vulnerable: No microcode
+[    0.296778] pci 0000:05:00.0: [Firmware Bug]: disabling VPD access (can't determine size of non-standard VPD format)
+[    0.794044] microcode: sig=0x906ea, pf=0x20, revision=0x84
+[    0.794502] microcode: Microcode Update Driver: v2.2.
+[    6.810842] platform regulatory.0: firmware: direct-loading firmware regulatory.db
+[    6.812867] platform regulatory.0: firmware: direct-loading firmware regulatory.db.p7s
+[    6.842335] iwlwifi 0000:00:14.3: enabling device (0000 -> 0002)
+[    6.916489] iwlwifi 0000:00:14.3: firmware: direct-loading firmware iwlwifi-9000-pu-b0-jf-b0-46.ucode
+[    6.916966] iwlwifi 0000:00:14.3: WRT: Overriding region id 0
+[    6.917448] iwlwifi 0000:00:14.3: WRT: Overriding region id 1
+[    6.917882] iwlwifi 0000:00:14.3: WRT: Overriding region id 2
+[    6.918321] iwlwifi 0000:00:14.3: WRT: Overriding region id 3
+[    6.918754] iwlwifi 0000:00:14.3: WRT: Overriding region id 4
+[    6.919167] iwlwifi 0000:00:14.3: WRT: Overriding region id 6
+[    6.919572] iwlwifi 0000:00:14.3: WRT: Overriding region id 8
+[    6.919980] iwlwifi 0000:00:14.3: WRT: Overriding region id 9
+[    6.920386] iwlwifi 0000:00:14.3: WRT: Overriding region id 10
+[    6.920784] iwlwifi 0000:00:14.3: WRT: Overriding region id 11
+[    6.921167] iwlwifi 0000:00:14.3: WRT: Overriding region id 15
+[    6.921548] iwlwifi 0000:00:14.3: WRT: Overriding region id 16
+[    6.921922] iwlwifi 0000:00:14.3: WRT: Overriding region id 18
+[    6.922293] iwlwifi 0000:00:14.3: WRT: Overriding region id 19
+[    6.923013] iwlwifi 0000:00:14.3: WRT: Overriding region id 20
+[    6.923733] iwlwifi 0000:00:14.3: WRT: Overriding region id 21
+[    6.924454] iwlwifi 0000:00:14.3: WRT: Overriding region id 28
+[    6.925727] iwlwifi 0000:00:14.3: firmware: failed to load iwl-debug-yoyo.bin (-2)
+[    6.926266] firmware_class: See https://wiki.debian.org/Firmware for information about missing firmware
+[    6.926651] iwlwifi 0000:00:14.3: firmware: failed to load iwl-debug-yoyo.bin (-2)
+[    6.927023] iwlwifi 0000:00:14.3: loaded firmware version 46.ea3728ee.0 9000-pu-b0-jf-b0-46.ucode op_mode iwlmvm
+[    7.098658] Bluetooth: hci0: Minimum firmware build 1 week 10 2014
+[    7.101583] iwlwifi 0000:00:14.3: Detected Intel(R) Wireless-AC 9560 160MHz, REV=0x312
+[    7.129444] bluetooth hci0: firmware: direct-loading firmware intel/ibt-17-16-1.sfi
+[    7.129804] Bluetooth: hci0: Found device firmware: intel/ibt-17-16-1.sfi
+[    7.130533] Bluetooth: hci0: Firmware Version: 108-45.22
+[    7.163011] iwlwifi 0000:00:14.3: base HW address: c0:b6:f9:77:75:b3, OTP minor version: 0x4
+[    7.309409] iwlwifi 0000:00:14.3 wlo1: renamed from wlan0
+[    8.620616] Bluetooth: hci0: Waiting for firmware download to complete
+[    8.621066] Bluetooth: hci0: Firmware loaded in 1455969 usecs
+[    8.640536] bluetooth hci0: firmware: direct-loading firmware intel/ibt-17-16-1.ddc
+[    8.644061] Bluetooth: hci0: Firmware revision 0.1 build 108 week 45 2022

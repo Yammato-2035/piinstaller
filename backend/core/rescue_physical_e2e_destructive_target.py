@@ -18,7 +18,9 @@ MOUNT_BASE = Path("/run/setuphelfer-rescue/e2e")
 LAB_PARTITIONS: tuple[dict[str, Any], ...] = (
     {"number": 1, "label": "SETUP_E2E_SOURCE", "size_gib": 8, "fstype": "ext4"},
     {"number": 2, "label": "SETUP_E2E_BACKUP", "size_gib": 32, "fstype": "ext4"},
-    {"number": 3, "label": "SETUP_E2E_RESTORE", "size_gib": 32, "fstype": "ext4"},
+    # ext4 labels are max 16 bytes; SETUP_E2E_RESTORE (17) was truncated to SETUP_E2E_RESTOR
+    # and failed layout verification on MSI Phase A (2026-07-18).
+    {"number": 3, "label": "SETUP_E2E_RSTR", "size_gib": 32, "fstype": "ext4"},
 )
 
 
@@ -195,7 +197,17 @@ def verify_destructive_target_identity(
     expected_uuid = str(config.get("expected_existing_partition_uuid") or "").lower()
     expected_label = str(config.get("expected_existing_label") or "")
     expected_role = str(config.get("expected_role") or "")
-    if expected_role and candidate.role != expected_role:
+
+    # After a wipe/partition attempt the pre-format Backup UUID/label is gone.
+    # Accept current lab E2E labels (incl. legacy truncated RESTORE) as same disk.
+    lab_labels = {str(s["label"]) for s in LAB_PARTITIONS} | {
+        "SETUP_E2E_RESTORE",
+        "SETUP_E2E_RESTOR",
+    }
+    part_labels = {str(p.get("label") or "") for p in candidate.partitions}
+    lab_layout_present = bool(part_labels & lab_labels)
+
+    if expected_role and candidate.role != expected_role and not lab_layout_present:
         errors.append("role_mismatch")
 
     uuid_match = False
@@ -205,9 +217,9 @@ def verify_destructive_target_identity(
             uuid_match = True
         if expected_label and str(part.get("label") or "") == expected_label:
             label_match = True
-    if expected_uuid and not uuid_match:
+    if expected_uuid and not uuid_match and not lab_layout_present:
         errors.append("preformat_uuid_mismatch")
-    if expected_label and not label_match:
+    if expected_label and not label_match and not lab_layout_present:
         errors.append("label_mismatch")
 
     flat = flat_devices or _flatten(_lsblk_tree())
@@ -296,7 +308,7 @@ def wipe_and_partition_disk(
     if abort and abort.get("immediate"):
         return {"ok": False, "code": abort.get("reason")}
 
-    write_heartbeat(run_id=run_id, phase="test_disk_prepare")
+    write_heartbeat(run_id=run_id, phase="disk_partitioning")
     steps: list[dict[str, Any]] = []
 
     for cmd in (
@@ -306,6 +318,7 @@ def wipe_and_partition_disk(
     ):
         result = _run_cmd(cmd, allowed_disk=disk_path)
         steps.append(result)
+        write_heartbeat(run_id=run_id, phase="disk_partitioning")
         if not result.get("ok"):
             return {"ok": False, "code": "destructive_wipe_failed", "steps": steps}
 
@@ -413,12 +426,12 @@ def prepare_destructive_run_paths(mounts: dict[str, Path], e2e_run_id: str) -> d
     source_data = source / "testdata"
     source_data.mkdir(parents=True, exist_ok=True)
     restore.mkdir(parents=True, exist_ok=True)
-    if any(restore.iterdir()):
+    # Fresh ext4 always has lost+found; ignore filesystem scaffolding.
+    ignore_names = {".keep", "lost+found"}
+    if any(child.name not in ignore_names for child in restore.iterdir()):
         raise ValueError("restore_partition_not_empty")
-    if any(backup.iterdir()):
-        for child in backup.iterdir():
-            if child.name != ".keep":
-                raise ValueError("backup_partition_not_empty")
+    if any(child.name not in ignore_names for child in backup.iterdir()):
+        raise ValueError("backup_partition_not_empty")
     work_root = source / "setuphelfer-e2e" / e2e_run_id
     return {
         "layout_mode": "dedicated_external_lab_hdd",

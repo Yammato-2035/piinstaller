@@ -48,7 +48,10 @@ def main(argv: list[str] | None = None) -> int:
             ensure_ascii=False,
         )
     )
-    return int(result.get("exit_code") or EXIT_SKIP)
+    code = result.get("exit_code")
+    if code is None:
+        return EXIT_SKIP
+    return int(code)
 
 
 if __name__ == "__main__":

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "run_id": "RS_011D",
+  "status": "failed",
+  "error_code": "BOOT_STATE_MISSING",
+  "classification": "missing_due_to_boot_writer_failure",
+  "errors": [
+    "boot_state_missing"
+  ],
+  "checked_at": "2026-07-01T00:11:27Z",
+  "secrets_exposed": false,
+  "current_result_valid": false,
+  "missing_but_nonfatal": true,
+  "rescue_version": "1.10.0.12",
+  "collector_version": "1.10.0.12",
+  "boot_session_id": "20260701_001121_1.10.0.12",
+  "collected_at": "2026-07-01T00:11:27Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "boot_state_failed_stub"
+}

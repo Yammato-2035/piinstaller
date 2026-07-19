@@ -29,8 +29,9 @@
 | PI-RS-MSI-FIX-001 Console Shield + boot-progress tty1 | GRÜN | SquashFS **1.10.0.14** repacked; Helper + Race-Fix; Content/Secret-Check ok |
 | PI-RS-USB-MSI-FIX-001 USB Update + GE63 Boot Retest | GELB | USB **1.10.0.14** geschrieben; Session 20260712_015835 — GUI/openvt defekt |
 | PI-RS-MSI-GUI-002 Disable GUI under MSI Compat | GRÜN | SquashFS **1.10.0.15** repacked; GUI gesperrt unter MSI-Compat |
-| PI-RS-MSI-GUI-003 TUI Console Isolation (1.10.0.16) | GELB | Retest-003 **review_required** — Operator TUI ok; Timeline-Lücke |
+| PI-RS-MSI-GUI-003 TUI Console Isolation (1.10.0.16) | GRÜN | Retest-003/003B **passed** via PI-RS-MSI-AUTO-EVIDENCE-001 Session `20260713_003100_boot` |
 | PI-RS-USB-MSI-GUI-002 USB Update 1.10.0.15 + GE63 Retest | GELB | USB **1.10.0.15** ok; GE63-Boot Session `20260712_111206` — TUI **failed** |
 | PI-RS-USB-UPDATER-001 Atomic Payload + Version Sync (1.10.0.16) | GRÜN | Updater gehärtet; Stick **1.10.0.16** atomar; keine manuelle Metadatenkorrektur |
-| PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | GELB | review_required — Operator TUI ok; Timeline ohne tui_mode_selected |
-| PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | ROT | Session `20260712_225944_boot` — Capture ~10,5 s; kein console_owner=tui |
+| PI-RS-MSI-RETEST-003 Physical Boot Retest | GRÜN | **passed** — Session `20260713_003100_boot`, Payload **1.10.0.20**, Auto-Lab-Evidence |
+| PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | GRÜN | **passed** — Late capture 153,8 s, `console_owner=tui`, `lab-auto-result` passed |
+| PI-RS-MSI-AUTO-EVIDENCE-001 Unattended MSI Lab Boot | GRÜN | Payload **1.10.0.20**; ~2,5 min Boot→Collect→Shutdown; Evidence importiert + CSE preview ok |

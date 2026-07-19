@@ -70,6 +70,16 @@ class SystemdAndStartGateTests(unittest.TestCase):
         self.assertTrue(result["start_allowed"])
         self.assertEqual(result["exit_code"], EXIT_START)
 
+    def test_02b_physical_e2e_cmdline_skips_discovery(self):
+        result = evaluate_discovery_start_gate(
+            setup_logs_base=None,
+            cmdline={"setuphelfer_msi_lab_auto=1", "setuphelfer_msi_e2e_auto=1"},
+            payload_version="1.10.0.37",
+        )
+        self.assertFalse(result["start_allowed"])
+        self.assertEqual(result["reason"], "skipped_for_physical_e2e_cmdline")
+        self.assertEqual(result["exit_code"], EXIT_SKIP)
+
     def test_03_missing_run_control_skips(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -143,6 +153,37 @@ class SystemdAndStartGateTests(unittest.TestCase):
         gate = REPO / "scripts/rescue-live/image/setuphelfer-rescue-auto-discovery-start-gate"
         self.assertTrue(gate.is_file())
 
+    def test_08b_discovery_not_ordered_after_msi_evidence(self):
+        """001D7F: start-gate must not wait for MSI late gate (~120s)."""
+        unit = DISCOVERY_UNIT.read_text(encoding="utf-8")
+        self.assertNotIn("setuphelfer-rescue-auto-msi-evidence.service", unit)
+
+    def test_08b2_physical_e2e_not_ordered_after_msi_evidence(self):
+        """Phase A: physical E2E must not wait for MSI late gate before starting."""
+        phys = PHYSICAL_UNIT.read_text(encoding="utf-8")
+        self.assertNotIn("After=setuphelfer-rescue-auto-msi-evidence.service", phys)
+        self.assertNotIn(
+            "After=setuphelfer-backend.service network-online.target setuphelfer-rescue-auto-msi-evidence.service",
+            phys,
+        )
+        # Backend After=network-online would re-introduce the hang chain on MSI without link.
+        self.assertNotIn("After=setuphelfer-backend.service", phys)
+        self.assertNotIn("network-online.target", phys)
+        self.assertIn("TimeoutStartSec=14400", phys)
+        self.assertIn("ConditionKernelCommandLine=|setuphelfer_msi_e2e_auto=1", phys)
+        discovery = DISCOVERY_UNIT.read_text(encoding="utf-8")
+        self.assertIn("ConditionKernelCommandLine=!setuphelfer_msi_e2e_auto=1", discovery)
+
+    def test_08c_late_journal_path_has_no_after_msi(self):
+        path_unit = (
+            REPO / "scripts/rescue-live/image/systemd/setuphelfer-rescue-late-journal-harvest.path"
+        ).read_text(encoding="utf-8")
+        self.assertNotIn("After=setuphelfer-rescue-auto-msi-evidence", path_unit)
+
+    def test_08d_tui_conflicts_start_assistant(self):
+        unit = TUI_UNIT.read_text(encoding="utf-8")
+        self.assertIn("Conflicts=setuphelfer-rescue-start-assistant.service", unit)
+        self.assertNotIn("Wants=setuphelfer-backend.service setuphelfer-rescue-start-assistant.service", unit)
 
 class TuiPathTests(unittest.TestCase):
     def test_09_unit_execstart_exists(self):
@@ -192,6 +233,23 @@ class RunModeTests(unittest.TestCase):
         self.assertEqual(decision["reason"], "run_mode_auto_discovery_only")
         self.assertEqual(decision["skip_class"], "skipped_by_run_mode")
         self.assertEqual(gate["exit_code"], EXIT_SKIP)
+
+    def test_14b_physical_start_gate_main_returns_zero_when_allowed(self):
+        """systemd ExecCondition treats exit 1 as skip — exit_code 0 must not become 1 via `or`."""
+        from core.rescue_physical_e2e_start_gate import EXIT_START as PHYS_EXIT_START
+        from core.rescue_physical_e2e_start_gate import main as physical_gate_main
+
+        with patch(
+            "core.rescue_physical_e2e_start_gate.evaluate_physical_e2e_start_gate",
+            return_value={
+                "physical_e2e_start_allowed": True,
+                "reason": "run_mode_allows_physical_e2e",
+                "run_mode": "auto_physical_e2e",
+                "skip_class": "",
+                "exit_code": PHYS_EXIT_START,
+            },
+        ):
+            self.assertEqual(physical_gate_main([]), 0)
 
     def test_15_16_no_backup_restore_text_in_discovery_refresh(self):
         text = AUTO_E2E_STATE.read_text(encoding="utf-8")
@@ -285,6 +343,8 @@ class SessionShutdownTests(unittest.TestCase):
             state = Path(logs) / "run-state"
             disc = state / "discovery"
             disc.mkdir(parents=True)
+            # MSI finished → discovery had its window; missing start-gate is terminal.
+            (state / "auto-msi-evidence.done").write_text("test\n", encoding="utf-8")
             with patch.dict(
                 os.environ,
                 {
@@ -317,6 +377,39 @@ class SessionShutdownTests(unittest.TestCase):
                     "failed_discovery_start_gate_not_invoked",
                 },
             )
+
+    def test_23b_defer_start_gate_missing_while_msi_running(self):
+        """001D7F: premature finalizer must not write auto-discovery.done before MSI."""
+        with tempfile.TemporaryDirectory() as tmp:
+            logs = Path(tmp)
+            base = logs / "SETUP_LOGS"
+            base.mkdir()
+            write_discovery_run_control(
+                base,
+                build_discovery_run_control(expected_payload_version="1.10.0.26"),
+            )
+            state = Path(logs) / "run-state"
+            disc = state / "discovery"
+            disc.mkdir(parents=True)
+            with patch.dict(
+                os.environ,
+                {
+                    "SETUPHELFER_RESCUE_STATE_DIR": str(state),
+                    "SETUPHELFER_RESCUE_DISCOVERY_DIR": str(disc),
+                },
+            ):
+                with patch("core.rescue_discovery_boot_completion._run", return_value=""):
+                    with patch(
+                        "core.rescue_discovery_observability.find_setup_logs_mount",
+                        return_value=base,
+                    ):
+                        result = evaluate_discovery_boot_completion(setup_logs_base=base)
+            self.assertEqual(result["action"], "deferred")
+            self.assertEqual(result["status"], "waiting_discovery_start_gate")
+            self.assertFalse((state / "auto-discovery.done").is_file())
+            self.assertFalse((state / "boot-finalizer.done").is_file())
+            control = load_discovery_run_control(base)
+            self.assertFalse(control["consumed"])
 
     def test_24_shutdown_requires_terminal_state_in_wrapper(self):
         script = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-auto-discovery").read_text(
@@ -368,6 +461,7 @@ class OrchestratorSmokeTests(unittest.TestCase):
             )
 
             fake_storage = {
+                "target_candidates": [{"path": "/dev/sdb"}],
                 "targets": [{"path": "/dev/sdb"}],
                 "classified": [{"type": "disk", "path": "/dev/sdb", "fstype": "", "label": ""}],
             }

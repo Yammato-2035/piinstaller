@@ -7,9 +7,50 @@ source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
 setuphelfer_rescue_ensure_state_dir
 
+_progress_write() {
+  local phase="$1"
+  local msg="$2"
+  local now up
+  now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  up="$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)"
+  mkdir -p "${SETUPHELFER_RESCUE_STATE_DIR}" 2>/dev/null || true
+  PHASE="$phase" MSG="$msg" NOW="$now" UP="$up" python3 - <<'PY' 2>/dev/null || true
+import json, os
+from pathlib import Path
+payload = {
+    "phase": os.environ.get("PHASE") or "sabrent_waiting",
+    "message": os.environ.get("MSG") or "",
+    "updated_at": os.environ.get("NOW") or "",
+    "uptime_sec": int(os.environ.get("UP") or "0"),
+}
+path = Path(os.environ.get("SETUPHELFER_RESCUE_STATE_DIR", "/run/setuphelfer-rescue")) / "physical-progress.json"
+path.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
+for base in (
+    Path("/run/setuphelfer/esp-rw"),
+    Path("/run/setuphelfer-rescue/media/SETUP_LOGS"),
+):
+    target = base / "setuphelfer/evidence/e2e/physical-progress.json"
+    if (base / "setuphelfer").is_dir():
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
+        break
+PY
+  PHASE="$phase" MSG="$msg" PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+import os
+from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state, write_heartbeat
+phase = os.environ.get("PHASE") or "sabrent_waiting"
+msg = os.environ.get("MSG") or ""
+update_auto_e2e_state(phase=phase, status="running", last_progress=msg)
+write_heartbeat(run_id="auto-physical-e2e", phase=phase)
+PY
+}
+
 if ! setuphelfer_rescue_msi_e2e_auto_active; then
   exit 0
 fi
+
+_progress_write "sabrent_waiting" "Physical-E2E gestartet — Initialisierung…"
+setuphelfer_rescue_write_boot_state "auto_physical_e2e_running" || true
 
 # 001D7B: run-mode lock (also enforced via ExecCondition start-gate).
 _skip_mode="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || echo allow
@@ -21,6 +62,7 @@ PY
 if [[ "$_skip_mode" == "skip" ]]; then
   touch "${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done" 2>/dev/null || true
   setuphelfer_rescue_write_boot_state "auto_physical_e2e_skipped_by_run_mode" || true
+  _progress_write "shutdown" "Physical-E2E übersprungen (Run-Mode)"
   exit 0
 fi
 
@@ -35,44 +77,87 @@ _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.log"
   echo "cmdline=$(tr '\0' ' ' </proc/cmdline 2>/dev/null || true)"
 } >>"$_log"
 
-_logs_mount=""
-for _pat in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS /run/setuphelfer/esp-rw; do
-  for _c in $_pat; do
-    if [[ -d "$_c" ]]; then
-      if [[ "$_c" == "/run/setuphelfer/esp-rw" ]] || [[ "$(basename "$_c")" == "SETUP_LOGS" ]]; then
-        _logs_mount="$_c"
-        break 2
-      fi
-    fi
-  done
-done
+_resolve_setup_logs() {
+  # Prefer the writable esp-rw mount that actually holds setuphelfer/.
+  if [[ -d /run/setuphelfer/esp-rw/setuphelfer ]]; then
+    echo /run/setuphelfer/esp-rw
+    return 0
+  fi
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+from pathlib import Path
+from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
 
+logs = find_setup_logs_mount()
+if logs is not None and (logs / "setuphelfer").is_dir():
+    print(logs)
+    raise SystemExit(0)
+for candidate in (
+    Path("/run/setuphelfer/esp-rw"),
+    Path("/run/setuphelfer-rescue/media/SETUP_LOGS"),
+):
+    if (candidate / "setuphelfer").is_dir():
+        print(candidate)
+        raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
+_logs_mount="$(_resolve_setup_logs || true)"
 _wait_i=0
-_wait_max=900
-echo "Waiting for msi-evidence-complete.json (max ${_wait_max}s)..." >>"$_log"
+_wait_max=90
+echo "Waiting for SETUP_LOGS with setuphelfer/ (max ${_wait_max}s)…" >>"$_log"
 while [[ "$_wait_i" -lt "$_wait_max" ]]; do
-  if [[ -n "$_logs_mount" && -f "${_logs_mount}/setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json" ]]; then
-    echo "MSI evidence complete marker found at uptime=$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)s" >>"$_log"
+  if [[ -n "$_logs_mount" && -d "$_logs_mount/setuphelfer" ]]; then
+    echo "SETUP_LOGS ready: ${_logs_mount}" >>"$_log"
     break
   fi
-  if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-msi-evidence.done" ]]; then
-    sleep 5
-    if [[ -n "$_logs_mount" && -f "${_logs_mount}/setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json" ]]; then
-      break
-    fi
-  fi
+  _progress_write "sabrent_waiting" "Warte auf SETUP_LOGS… (${_wait_i}/${_wait_max}s)"
+  _logs_mount="$(_resolve_setup_logs || true)"
   _wait_i=$((_wait_i + 5))
   sleep 5
 done
 
-if [[ -z "$_logs_mount" || ! -f "${_logs_mount}/setuphelfer/evidence/msi-rs011b/msi-evidence-complete.json" ]]; then
-  echo "ERROR: msi-evidence-complete.json missing — physical E2E blocked" >>"$_log"
-  setuphelfer_rescue_write_boot_state "auto_physical_e2e_blocked_evidence_gate"
+if [[ -z "$_logs_mount" || ! -d "$_logs_mount/setuphelfer" ]]; then
+  echo "ERROR: SETUP_LOGS mount missing — physical E2E blocked" >>"$_log"
+  setuphelfer_rescue_write_boot_state "auto_physical_e2e_blocked_setup_logs"
+  _progress_write "shutdown" "SETUP_LOGS fehlt — Physical-E2E blockiert"
+  # Still try to leave the log somewhere visible via spool.
+  setuphelfer_rescue_mirror_evidence_file "$_log" "setuphelfer/evidence/e2e/auto-physical-e2e.log" 2>/dev/null || true
   exit 0
 fi
 
-_ev_base="$(setuphelfer_rescue_evidence_writable_base 2>/dev/null || echo /run/setuphelfer/esp-rw)"
+mkdir -p "${_logs_mount}/setuphelfer/evidence/e2e" 2>/dev/null || true
+cp -f "$_log" "${_logs_mount}/setuphelfer/evidence/e2e/auto-physical-e2e.log" 2>/dev/null || true
+cp -f "${SETUPHELFER_RESCUE_STATE_DIR}/physical-progress.json" \
+  "${_logs_mount}/setuphelfer/evidence/e2e/physical-progress.json" 2>/dev/null || true
+
+_progress_write "sabrent_waiting" "Suche SABRENT-Festplatte…"
+
+_ev_base="$(setuphelfer_rescue_evidence_writable_base 2>/dev/null || echo "${_logs_mount}")"
 _e2e_ok=0
+# Heartbeat watchdog while Python runs (wipe can take many minutes).
+(
+  while true; do
+    sleep 10
+    if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/auto-physical-e2e.done" ]]; then
+      exit 0
+    fi
+    if ! kill -0 $$ 2>/dev/null; then
+      exit 0
+    fi
+    phase="disk_partitioning"
+    if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/physical-progress.json" ]]; then
+      phase="$(python3 -c "import json;print(json.load(open('${SETUPHELFER_RESCUE_STATE_DIR}/physical-progress.json')).get('phase') or 'disk_partitioning')" 2>/dev/null || echo disk_partitioning)"
+    fi
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || true
+from core.rescue_physical_e2e_auto_e2e_state import write_heartbeat
+write_heartbeat(run_id="auto-physical-e2e", phase="${phase}")
+PY
+  done
+) &
+_hb_pid=$!
+
+_progress_write "sabrent_waiting" "Starte Backup/Verify/Restore auf SABRENT…"
 if setuphelfer_rescue_run_msi_physical_e2e_auto "$_ev_base" >>"$_log" 2>&1; then
   _e2e_ok=1
   echo "E2E auto: passed" >>"$_log"
@@ -80,16 +165,22 @@ else
   echo "WARN: auto physical E2E failed" >>"$_log"
 fi
 
+kill "${_hb_pid}" 2>/dev/null || true
+wait "${_hb_pid}" 2>/dev/null || true
+
 _result="${_ev_base}/setuphelfer/evidence/e2e/msi-e2e-auto-result.json"
 if [[ -f "$_result" ]]; then
   setuphelfer_rescue_mirror_evidence_file "$_result" "setuphelfer/evidence/e2e/msi-e2e-auto-result.json" 2>/dev/null || true
 fi
+cp -f "$_log" "${_logs_mount}/setuphelfer/evidence/e2e/auto-physical-e2e.log" 2>/dev/null || true
 
 if [[ "$_e2e_ok" -eq 1 ]]; then
   touch "$_marker" 2>/dev/null || true
   setuphelfer_rescue_write_boot_state "auto_physical_e2e_passed"
+  _progress_write "shutdown" "Physical-E2E erfolgreich"
 else
   setuphelfer_rescue_write_boot_state "auto_physical_e2e_failed"
+  _progress_write "shutdown" "Physical-E2E fehlgeschlagen — siehe auto-physical-e2e.log"
 fi
 
 sync 2>/dev/null || true

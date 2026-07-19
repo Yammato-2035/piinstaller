@@ -109,6 +109,46 @@ export async function runFullBackupPlan(body: Record<string, unknown>): Promise<
   return res.json();
 }
 
+export async function runWindowsBackupExecute(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const res = await fetch('/api/rescue/backup/execute', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('backup_execute_failed');
+  return res.json();
+}
+
+export async function runWindowsBackupVerify(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const res = await fetch('/api/rescue/backup/verify', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('backup_verify_failed');
+  return res.json();
+}
+
+export async function runSystemDiskRestorePreview(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const res = await fetch('/api/rescue/restore/system-disk/preview', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('system_disk_restore_preview_failed');
+  return res.json();
+}
+
+export async function runSystemDiskRestoreExecute(body: Record<string, unknown>): Promise<Record<string, unknown>> {
+  const res = await fetch('/api/rescue/restore/system-disk/execute', {
+    method: 'POST',
+    headers: jsonHeaders,
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error('system_disk_restore_execute_failed');
+  return res.json();
+}
+
 export async function fetchSystemSummary(): Promise<RescueSystemSummary> {
   const res = await fetch('/api/rescue/system/summary', { cache: 'no-store' });
   if (!res.ok) throw new Error('system_summary_failed');

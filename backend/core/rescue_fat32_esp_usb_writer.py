@@ -12,6 +12,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
+from core.rescue_msi_lab_auto_boot import (
+    msi_compat_menu_append,
+    msi_lab_auto_menu_append,
+)
 from core.rescue_usb_operator_selection import (
     EVIDENCE_REL,
     REQUIRED_CONFIRMATIONS,
@@ -22,6 +26,7 @@ from core.rescue_usb_operator_selection import (
 from core.safe_device import list_classified_devices
 from rescue.rescue_grub_branding import (
     generate_grub_cfg_failsafe_plain_lines,
+    stage_grub_efi_modules_to_fat32_staging,
     stage_grub_theme_to_fat32_staging,
 )
 
@@ -193,6 +198,8 @@ insmod jpeg
 insmod all_video
 insmod efi_gop
 insmod video
+terminal_output gfxterm
+terminal_input console
 
 search --no-floppy --label {fat_label} --set=root
 
@@ -369,6 +376,7 @@ def generate_fat32_esp_grub_cfg(
     *,
     fat_label: str = FAT_VOLUME_LABEL,
     fat_uuid: str | None = None,
+    lab_auto_msi_boot: bool = False,
 ) -> str:
     """GRUB menu for FAT32 ESP USB — root via FAT UUID/label, not ISO9660."""
     assert_valid_fat_volume_label(fat_label)
@@ -382,35 +390,60 @@ def generate_fat32_esp_grub_cfg(
         )
 
     base_live = "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1"
+    gui_append = f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1"
+    msi_append = msi_compat_menu_append(base_live)
+    if lab_auto_msi_boot:
+        gui_lab_append = msi_lab_auto_menu_append(base_live)
+        text_lab_append = (
+            f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
+            f"pci=noaer setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 "
+            "setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0 setuphelfer_msi_lab_late_sec=120"
+        )
+        menu_entries = [
+            entry("Setuphelfer Lab-Auto (GUI, Discovery)", gui_lab_append),
+            entry("Setuphelfer Lab-Auto (Text, Discovery)", text_lab_append),
+            entry("Setuphelfer starten - grafische Oberflaeche", gui_append),
+            entry(
+                "Setuphelfer starten - sicherer Textmodus (Fallback)",
+                f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1",
+            ),
+            entry(
+                "Diagnose sammeln und auf Stick speichern",
+                f"{base_live} setuphelfer_mode=diagnostics setuphelfer_kiosk=0 setuphelfer_collect_diagnostics=1",
+            ),
+            entry(
+                "Hardware- und WLAN-Diagnose",
+                f"{base_live} setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1",
+            ),
+            entry("Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)", msi_append),
+        ]
+    else:
+        menu_entries = [
+            entry("Setuphelfer starten - grafische Oberflaeche", gui_append),
+            entry(
+                "Setuphelfer starten - sicherer Textmodus (Fallback)",
+                f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1",
+            ),
+            entry(
+                "Diagnose sammeln und auf Stick speichern",
+                f"{base_live} setuphelfer_mode=diagnostics setuphelfer_kiosk=0 setuphelfer_collect_diagnostics=1",
+            ),
+            entry(
+                "Hardware- und WLAN-Diagnose",
+                f"{base_live} setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1",
+            ),
+            entry("Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)", msi_append),
+        ]
+
     lines = [
-        "set timeout=15",
-        "set timeout_style=menu",
+        f"set timeout={3 if lab_auto_msi_boot else 15}",
+        "set timeout_style=countdown" if lab_auto_msi_boot else "set timeout_style=menu",
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
         *generate_grub_cfg_failsafe_plain_lines(),
         "",
-        entry(
-            "Setuphelfer starten - sicherer Textmodus",
-            f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1",
-        ),
-        entry(
-            "Setuphelfer starten - grafische Oberflaeche",
-            f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1",
-        ),
-        entry(
-            "Diagnose sammeln und auf Stick speichern",
-            f"{base_live} setuphelfer_mode=diagnostics setuphelfer_kiosk=0 setuphelfer_collect_diagnostics=1",
-        ),
-        entry(
-            "Hardware- und WLAN-Diagnose",
-            f"{base_live} setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1",
-        ),
-        entry(
-            "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)",
-            f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 "
-            "pci=noaer nouveau.modeset=0 nomodeset",
-        ),
+        *menu_entries,
         'menuentry "Neustart" { reboot }',
         'menuentry "Ausschalten" { halt }',
         "",
@@ -1001,6 +1034,7 @@ def extract_iso_files(
     (output_dir / "boot" / "grub").mkdir(parents=True, exist_ok=True)
     (output_dir / "boot" / "grub" / "grub.cfg").write_text(grub_cfg, encoding="utf-8")
     theme_meta = stage_grub_theme_to_fat32_staging(output_dir, _workspace_root())
+    modules_meta = stage_grub_efi_modules_to_fat32_staging(output_dir)
 
     extract_list = [
         (live_paths["vmlinuz"], "live/vmlinuz"),
@@ -1101,6 +1135,7 @@ def extract_iso_files(
         "bootx64_iso_copied": False,
         "bootx64_modules_requested": bootx64_meta["modules_requested"],
         "grub_theme_staged": theme_meta,
+        "grub_efi_modules_staged": modules_meta,
         "bootx64_sha256": bootx64_meta["sha256"],
         "iso_bootx64_sha256": iso_bootx64_sha256,
         "bootx64_differs_from_iso": bool(

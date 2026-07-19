@@ -28,3 +28,15 @@
 
 ## Nicht geändert
 - USB-Updater, Telemetrie-Server, Safety-Gates, GUI unter MSI (bleibt gesperrt).
+
+## Dokumentation (2026-07-12)
+
+| Artefakt | Pfad |
+|----------|------|
+| Sprint-Zusammenfassung | [PI_RS_MSI_GUI_003_SUMMARY.md](PI_RS_MSI_GUI_003_SUMMARY.md) |
+| Operator-Runbook | [PI_RS_MSI_GUI_003_TUI_CONSOLE_ISOLATION.md](../../rescue-stick/PI_RS_MSI_GUI_003_TUI_CONSOLE_ISOLATION.md) |
+| FAQ DE / EN | [PI_RS_MSI_GUI_003_FAQ.de.md](../../faq/PI_RS_MSI_GUI_003_FAQ.de.md), [PI_RS_MSI_GUI_003_FAQ.en.md](../../faq/PI_RS_MSI_GUI_003_FAQ.en.md) |
+| Wissensdatenbank | [MSI_TUI_CONSOLE_ISOLATION_KB_DE.md](../../knowledge-base/rescue/MSI_TUI_CONSOLE_ISOLATION_KB_DE.md), [MSI_TUI_CONSOLE_ISOLATION_KB_EN.md](../../knowledge-base/rescue/MSI_TUI_CONSOLE_ISOLATION_KB_EN.md) |
+| i18n (Doku-JSON) | [rescue_boot_msi_compat_DE.json](../../i18n/rescue_boot_msi_compat_DE.json), [rescue_boot_msi_compat_EN.json](../../i18n/rescue_boot_msi_compat_EN.json) |
+| Rescue-UI i18n | `frontend/src/rescue/i18n/{de,en,fr,nl}.json` → `boot.msiCompat.*`, `evidence.msiStaleSession`, `evidence.msiTuiOnlyMode` |
+| MSI-Evidence-FAQ | Ergänzt in [RESCUE_MSI_EVIDENCE_FAQ_DE.md](../../faq/RESCUE_MSI_EVIDENCE_FAQ_DE.md) / EN |

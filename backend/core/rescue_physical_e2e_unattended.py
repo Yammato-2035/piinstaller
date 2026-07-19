@@ -183,8 +183,8 @@ def _run_destructive_lab_path(
         }
 
     init_auto_e2e_state(mode="auto_physical_e2e_locked", run_id=e2e_run_id)
-    update_auto_e2e_state(phase="test_disk_prepare", status="running", run_id=e2e_run_id)
-    write_heartbeat(run_id=e2e_run_id, phase="test_disk_prepare")
+    update_auto_e2e_state(phase="sabrent_waiting", status="running", run_id=e2e_run_id, last_progress="Suche SABRENT…")
+    write_heartbeat(run_id=e2e_run_id, phase="sabrent_waiting")
 
     abort = check_abort()
     if abort:
@@ -220,7 +220,8 @@ def _run_destructive_lab_path(
     )
     sm.transition("test_target_verified")
 
-    update_auto_e2e_state(phase="disk_partitioning", status="running")
+    update_auto_e2e_state(phase="disk_partitioning", status="running", last_progress="SABRENT wird partitioniert…")
+    write_heartbeat(run_id=e2e_run_id, phase="disk_partitioning")
     partition_result = wipe_and_partition_disk(candidate.disk_path, config=destructive_cfg, run_id=e2e_run_id)
     if not partition_result.get("ok"):
         sm.transition("failed", detail=partition_result)
@@ -389,22 +390,27 @@ def run_unattended_msi_physical_e2e(
 
     run_control = load_run_control(logs) if logs else None
     rc_gate = validate_run_control(run_control)
+    e2e_run_id = new_msi_physical_e2e_run_id()
+    correlation_id = str(uuid.uuid4())
+    journal_dir = (logs or Path("/run/setuphelfer/esp-rw")) / "setuphelfer/evidence/e2e" / e2e_run_id
+    sm = PhysicalE2EStateMachine(journal_dir, e2e_run_id=e2e_run_id, correlation_id=correlation_id)
     if not rc_gate.get("ok"):
-        return {
+        sm.transition("blocked", detail={"reason": "run_control", "errors": rc_gate.get("errors")})
+        result = {
             "feature": FEATURE_ID_UNATTENDED,
             "status": "blocked",
             "code": rc_gate.get("code"),
             "errors": rc_gate.get("errors"),
             "automation_class": "blocked",
             "production_ready": PRODUCTION_READY,
+            "e2e_run_id": e2e_run_id,
         }
+        write_json(journal_dir / AUTO_RESULT, result)
+        return result
 
-    e2e_run_id = new_msi_physical_e2e_run_id()
-    correlation_id = str(uuid.uuid4())
-    journal_dir = (logs or Path("/run/setuphelfer/esp-rw")) / "setuphelfer/evidence/e2e" / e2e_run_id
-    sm = PhysicalE2EStateMachine(journal_dir, e2e_run_id=e2e_run_id, correlation_id=correlation_id)
     sm.transition("initialized")
-    write_heartbeat(run_id=e2e_run_id, phase="initialized")
+    write_heartbeat(run_id=e2e_run_id, phase="sabrent_waiting")
+    update_auto_e2e_state(phase="sabrent_waiting", status="running", run_id=e2e_run_id)
 
     boot_gate = verify_boot_parameters()
     if not boot_gate.get("ok"):

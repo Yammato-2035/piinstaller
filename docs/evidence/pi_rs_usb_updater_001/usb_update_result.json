@@ -1,31 +1,31 @@
 {
   "status": "success",
   "source": {
-    "path": "build/rescue/filesystem.squashfs.repacked-1.10.0.16",
-    "expected_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
-    "actual_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
-    "filename_version": "1.10.0.16",
+    "path": "/home/volker/piinstaller/build/rescue/filesystem.squashfs.repacked-1.10.0.30",
+    "expected_sha256": "13ecbc1c9df61abd28da52d21a520795f1c75651b33d7c53404c08051ef2123d",
+    "actual_sha256": "13ecbc1c9df61abd28da52d21a520795f1c75651b33d7c53404c08051ef2123d",
+    "filename_version": "1.10.0.30",
     "internal_versions": {
-      "VERSION": "1.10.0.16",
-      "rescue_payload_version.json": "1.10.0.16",
-      "version.json": "1.10.0.16"
+      "VERSION": "1.10.0.30",
+      "rescue_payload_version.json": "1.10.0.30",
+      "version.json": "1.10.0.30"
     },
     "version_consistent": true,
     "content_gate": "passed_in_run_verify",
-    "secret_gate": "passed_on_source_pre_write"
+    "secret_gate": "not_run_on_device"
   },
   "target": {
-    "device_path_at_runtime": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0",
-    "partition": "/dev/disk/by-id/usb-Intenso_Ultra_Line_24111412110686-0:0-part1",
+    "device_path_at_runtime": "/dev/sdd",
+    "partition": "/dev/sdd1",
     "label": "SETUPHELFER"
   },
   "before": {
-    "payload_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+    "payload_sha256": "31085200f36b703219f3b471ed0fa833a446aeff9fbc82f9dd78994a65d9b141",
     "payload_version": "1.10.0.15"
   },
   "after": {
-    "payload_sha256": "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5",
-    "payload_version": "1.10.0.16"
+    "payload_sha256": "13ecbc1c9df61abd28da52d21a520795f1c75651b33d7c53404c08051ef2123d",
+    "payload_version": "1.10.0.30"
   },
   "atomic_replace": true,
   "atomic_metadata_replace": false,
@@ -37,5 +37,5 @@
   "manual_metadata_fix_required": false,
   "warnings": [],
   "errors": [],
-  "generated_at": "2026-07-12T20:25:36.778482+00:00"
+  "generated_at": "2026-07-16T14:30:21.151773+00:00"
 }

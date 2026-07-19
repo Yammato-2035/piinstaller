@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "status": "ok",
+  "written": [
+    "lspci-nn-redacted.txt"
+  ],
+  "failed": [],
+  "complete": true,
+  "rescue_version": "1.10.0.27",
+  "collector_version": "1.10.0.27",
+  "boot_session_id": "20260716_101251_1.10.0.27",
+  "collected_at": "2026-07-16T10:12:53Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "collect_rs011d_supplement",
+  "error_reason": null
+}

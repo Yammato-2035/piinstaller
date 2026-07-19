@@ -189,6 +189,9 @@ install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-boot-observer.timer" \
   "${SYSTEMD}/setuphelfer-rescue-boot-observer.timer"
 ln -sf "../setuphelfer-rescue-boot-observer.timer" \
   "${TIMERS}/setuphelfer-rescue-boot-observer.timer"
+mkdir -p "${ROOT}/etc/systemd/system.conf.d"
+install -m 0644 "${IMAGE}/systemd/system.conf.d/10-setuphelfer-quiet-console.conf" \
+  "${ROOT}/etc/systemd/system.conf.d/10-setuphelfer-quiet-console.conf"
 # Failsafe: absolute-max timer (3600s) + inactivity watchdog (300s+60s interval).
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.service" \
   "${SYSTEMD}/setuphelfer-rescue-lab-auto-shutdown-failsafe.service"
@@ -211,6 +214,10 @@ rm -f "${WANTS}/setuphelfer-rescue-tui-hold.service"
 install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-ui.service" "${SYSTEMD}/setuphelfer-rescue-ui.service"
 # GUI autostart is opt-in via GRUB/TUI; entrypoint orchestrates text default + gui watchdog.
 rm -f "${WANTS}/setuphelfer-rescue-ui.service"
+
+# 001D7F: overwrite baked start-assistant so lab/auto cmdline never fights TUI on tty1.
+install -m 0644 "${IMAGE}/systemd/setuphelfer-rescue-start-assistant.service" \
+  "${SYSTEMD}/setuphelfer-rescue-start-assistant.service"
 
 # Offline-first: network/telemetry not auto-started at boot.
 rm -f "${WANTS}/setuphelfer-rescue-network-onboarding.service" \

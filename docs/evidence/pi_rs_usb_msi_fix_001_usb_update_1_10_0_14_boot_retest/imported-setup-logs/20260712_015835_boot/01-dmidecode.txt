@@ -1,0 +1,178 @@
+# dmidecode 3.4
+Getting SMBIOS data from sysfs.
+SMBIOS 3.1.1 present.
+
+Handle 0x0001, DMI type 0, 26 bytes
+BIOS Information
+	Vendor: American Megatrends Inc.
+	Version: E16P5IMS.109
+	Release Date: 05/16/2018
+	Address: 0xF0000
+	Runtime Size: 64 kB
+	ROM Size: 16 MB
+	Characteristics:
+		PCI is supported
+		BIOS is upgradeable
+		BIOS shadowing is allowed
+		Boot from CD is supported
+		Selectable boot is supported
+		EDD is supported
+		5.25"/1.2 MB floppy services are supported (int 13h)
+		3.5"/720 kB floppy services are supported (int 13h)
+		3.5"/2.88 MB floppy services are supported (int 13h)
+		Print screen service is supported (int 5h)
+		8042 keyboard services are supported (int 9h)
+		Serial services are supported (int 14h)
+		Printer services are supported (int 17h)
+		ACPI is supported
+		USB legacy is supported
+		BIOS boot specification is supported
+		Targeted content distribution is supported
+		UEFI is supported
+	BIOS Revision: 1.9
+
+Handle 0x0002, DMI type 1, 27 bytes
+System Information
+	Manufacturer: Micro-Star International Co., Ltd.
+	Product Name: GE63 Raider RGB 8RF
+	Version: REV:1.0
+	Serial Number: 9S716P512427ZI7000038
+	UUID: f9d79b61-c9f1-7d4e-88e1-8f7478207bf4
+	Wake-up Type: Power Switch
+	SKU Number: 16P5.1
+	Family: GE
+
+Handle 0x0003, DMI type 2, 15 bytes
+Base Board Information
+	Manufacturer: Micro-Star International Co., Ltd.
+	Product Name: MS-16P5
+	Version: REV:1.0
+	Serial Number: BSS-0123456789
+	Asset Tag: Default string
+	Features:
+		Board is a hosting board
+		Board is replaceable
+	Location In Chassis: Default string
+	Chassis Handle: 0x0004
+	Type: Motherboard
+	Contained Object Handles: 0
+
+Handle 0x0022, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Video
+	Status: Enabled
+	Description:    To Be Filled By O.E.M.
+
+Handle 0x0023, DMI type 12, 5 bytes
+System Configuration Options
+	Option 1: Default string
+
+Handle 0x0024, DMI type 32, 20 bytes
+System Boot Information
+	Status: No errors detected
+
+Handle 0x004A, DMI type 13, 22 bytes
+BIOS Language Information
+	Language Description Format: Long
+	Installable Languages: 3
+		en|US|iso8859-1
+		zh|CN|unicode
+		zh|TW|unicode
+	Currently Installed Language: Not Specified
+
+Handle 0x004B, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 1
+	Bus Address: 0000:00:00.0
+
+Handle 0x004C, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Video
+	Type: Video
+	Status: Enabled
+	Type Instance: 1
+	Bus Address: 0000:00:02.0
+
+Handle 0x004D, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 2
+	Bus Address: 0000:00:12.0
+
+Handle 0x004E, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 3
+	Bus Address: 0000:00:14.0
+
+Handle 0x004F, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 4
+	Bus Address: 0000:00:14.2
+
+Handle 0x0050, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Ethernet
+	Type: Ethernet
+	Status: Enabled
+	Type Instance: 1
+	Bus Address: 0000:00:14.3
+
+Handle 0x0051, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 5
+	Bus Address: 0000:00:16.0
+
+Handle 0x0052, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - SATA
+	Type: SATA Controller
+	Status: Enabled
+	Type Instance: 1
+	Bus Address: 0000:00:17.0
+
+Handle 0x0053, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 6
+	Bus Address: 0000:00:1f.0
+
+Handle 0x0054, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Sound
+	Type: Sound
+	Status: Enabled
+	Type Instance: 1
+	Bus Address: 0000:00:1f.3
+
+Handle 0x0055, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 7
+	Bus Address: 0000:00:1f.4
+
+Handle 0x0056, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard - Other
+	Type: Other
+	Status: Enabled
+	Type Instance: 8
+	Bus Address: 0000:00:1f.5
+

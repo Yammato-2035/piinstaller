@@ -1,0 +1,41 @@
+{
+  "schema": "setuphelfer.rescue.discovery-service-status-late.v1",
+  "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+  "units": [
+    {
+      "unit": "setuphelfer-rescue-auto-discovery.service",
+      "show": "Result=success\nExecMainStartTimestamp=Thu 2026-07-16 16:26:30 UTC\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=activating\nSubState=start\nConditionResult=yes\nInvocationID=f70ce5b76f3f4342a9fa9567495e44fc",
+      "status_excerpt": "● setuphelfer-rescue-auto-discovery.service - Setuphelfer Rescue auto discovery (001D7E canonical evidence root)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-auto-discovery.service; enabled; preset: enabled)\n     Active: activating (start) since Thu 2026-07-16 16:26:30 UTC; 1s ago\n    Process: 2453 ExecCondition=/usr/local/sbin/setuphelfer-rescue-auto-discovery-start-gate (code=exited, status=0/SUCCESS)\n   Main PID: 2504 (setuphelfer-res)\n      Tasks: 3 (limit: 18794)\n     Memory: 13.0M\n        CPU: 568ms\n     CGroup: /system.slice/setuphelfer-rescue-auto-discovery.service\n             ├─2504 /bin/bash /usr/local/sbin/setuphelfer-rescue-auto-discovery-runner\n             ├─2544 python3 -\n             └─2554 systemctl status setuphelfer-rescue-auto-discovery.service --no-pager -l\n\nJul 16 16:26:30 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-auto-discovery.service - Setuphelfer Rescue auto discovery (001D7E canonical evidence root)...\nJul 16 16:26:30 setuphelfer-rescue setuphelfer-rescue-auto-discovery-start-gate[2477]: {\"start_allowed\": false, \"reason\": \"discovery_run_control_invalid\", \"run_mode\": \"auto_discovery_only\", \"payload_version_match\": false, \"exit_code\": 1}\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui.service",
+      "show": "Result=success\nExecMainStartTimestamp=Thu 2026-07-16 16:25:24 UTC\nExecMainExitTimestamp=Thu 2026-07-16 16:25:24 UTC\nExecMainCode=2\nExecMainStatus=1\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=yes\nInvocationID=d04fe6b2f30d4c169649bf392a9c234b",
+      "status_excerpt": "○ setuphelfer-rescue-tui.service - Setuphelfer Rescue TUI (exclusive console owner)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-tui.service; enabled; preset: enabled)\n     Active: inactive (dead) since Thu 2026-07-16 16:25:24 UTC; 1min 7s ago\n   Duration: 18ms\n    Process: 2206 ExecStart=/usr/local/sbin/setuphelfer-rescue-entrypoint --boot-trigger (code=killed, signal=HUP)\n   Main PID: 2206 (code=killed, signal=HUP)\n        CPU: 1ms\n\nJul 16 16:25:24 setuphelfer-rescue systemd[1]: Started setuphelfer-rescue-tui.service - Setuphelfer Rescue TUI (exclusive console owner).\nJul 16 16:25:24 setuphelfer-rescue systemd[1]: setuphelfer-rescue-tui.service: Deactivated successfully.\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui-guard.service",
+      "show": "Result=success\nExecMainStartTimestamp=Thu 2026-07-16 16:26:24 UTC\nExecMainExitTimestamp=Thu 2026-07-16 16:26:24 UTC\nExecMainCode=1\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=yes\nInvocationID=53e4e3ce7f1f49e1aace8250c5358020",
+      "status_excerpt": "○ setuphelfer-rescue-tui-guard.service - Setuphelfer Rescue TUI tty1 guard (001D7D non-blocking)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-tui-guard.service; disabled; preset: enabled)\n     Active: inactive (dead) since Thu 2026-07-16 16:26:24 UTC; 7s ago\nTriggeredBy: ● setuphelfer-rescue-tui-guard.timer\n    Process: 2305 ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-guard (code=exited, status=0/SUCCESS)\n   Main PID: 2305 (code=exited, status=0/SUCCESS)\n        CPU: 15ms\n\nJul 16 16:26:24 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-tui-guard.service - Setuphelfer Rescue TUI tty1 guard (001D7D non-blocking)...\nJul 16 16:26:24 setuphelfer-rescue systemd[1]: setuphelfer-rescue-tui-guard.service: Deactivated successfully.\nJul 16 16:26:24 setuphelfer-rescue systemd[1]: Finished setuphelfer-rescue-tui-guard.service - Setuphelfer Rescue TUI tty1 guard (001D7D non-blocking).\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui-hold.service",
+      "show": "Result=success\nExecMainStartTimestamp=Thu 2026-07-16 16:25:54 UTC\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=active\nSubState=running\nConditionResult=yes\nInvocationID=fd7608069e9846e599464dd1f7f6af20",
+      "status_excerpt": "● setuphelfer-rescue-tui-hold.service - Setuphelfer Rescue TUI discovery hold screen (001D7D)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-tui-hold.service; disabled; preset: enabled)\n     Active: active (running) since Thu 2026-07-16 16:25:54 UTC; 37s ago\n   Main PID: 2259 (setuphelfer-res)\n      Tasks: 3 (limit: 18794)\n     Memory: 5.2M\n        CPU: 109ms\n     CGroup: /system.slice/setuphelfer-rescue-tui-hold.service\n             ├─2259 /bin/bash /usr/local/sbin/setuphelfer-rescue-tui-hold --hold\n             ├─2266 /bin/bash /usr/local/sbin/setuphelfer-rescue-tui-hold --hold\n             └─2267 whiptail --title \"Setuphelfer — Discovery-Fehler\" --menu \"Automatische Systemerkundung konnte nicht gestartet werden.\\n\\nStatus:\\n  failed_discovery_unknown\\n\\nEvidence:\\n  wurde gespeichert\\n\\nVerfügbare Aktionen:\\n- Details anzeigen\\n- Herunterfahren\" 22 74 3 details \"Details anzeigen\" recheck \"Erneut prüfen (read-only)\" shutdown Herunterfahren\n\nJul 16 16:25:54 setuphelfer-rescue systemd[1]: Started setuphelfer-rescue-tui-hold.service - Setuphelfer Rescue TUI discovery hold screen (001D7D).\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-msi-evidence.service",
+      "show": "Result=success\nExecMainStartTimestamp=Thu 2026-07-16 16:24:07 UTC\nExecMainExitTimestamp=Thu 2026-07-16 16:26:30 UTC\nExecMainCode=1\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=yes\nInvocationID=1e58a8f5748e4705a2a1534483243340",
+      "status_excerpt": "○ setuphelfer-rescue-auto-msi-evidence.service - Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot, late gate)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-auto-msi-evidence.service; enabled; preset: enabled)\n     Active: inactive (dead) since Thu 2026-07-16 16:26:30 UTC; 1s ago\n    Process: 1778 ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence (code=exited, status=0/SUCCESS)\n   Main PID: 1778 (code=exited, status=0/SUCCESS)\n        CPU: 2.686s\n\nJul 16 16:24:07 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-auto-msi-evidence.service - Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot, late gate)...\nJul 16 16:26:30 setuphelfer-rescue systemd[1]: setuphelfer-rescue-auto-msi-evidence.service: Deactivated successfully.\nJul 16 16:26:30 setuphelfer-rescue systemd[1]: Finished setuphelfer-rescue-auto-msi-evidence.service - Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot, late gate).\nJul 16 16:26:30 setuphelfer-rescue systemd[1]: setuphelfer-rescue-auto-msi-evidence.service: Consumed 2.686s CPU time.\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-shutdown.service",
+      "show": "Result=success\nExecMainStartTimestamp=\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=not-found\nActiveState=inactive\nSubState=dead\nConditionResult=no\nInvocationID=",
+      "status_excerpt": "Unit setuphelfer-rescue-auto-shutdown.service could not be found.\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-lab-auto-shutdown-failsafe.service",
+      "show": "Result=success\nExecMainStartTimestamp=\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=no\nInvocationID=",
+      "status_excerpt": "○ setuphelfer-rescue-lab-auto-shutdown-failsafe.service - Setuphelfer Rescue MSI lab auto-shutdown failsafe\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-lab-auto-shutdown-failsafe.service; disabled; preset: enabled)\n     Active: inactive (dead)\nTriggeredBy: ● setuphelfer-rescue-lab-auto-shutdown-failsafe.timer\n"
+    }
+  ]
+}

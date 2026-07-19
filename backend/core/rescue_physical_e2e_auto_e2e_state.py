@@ -72,7 +72,10 @@ PHASE_LABELS_DE: dict[str, str] = {
     "disk_formatting": "Testfestplatte wird formatiert",
     "test_data_create": "Testdaten erzeugen",
     "backup_create": "Backup erstellen",
-    "backup_verify": "Backup prüfen",
+    "backup_verify": "Backup prüfen (Verify)",
+    "restore_prepare": "Restore vorbereiten",
+    "restore_execute": "Restore ausführen",
+    "restore_verify": "Restore prüfen (Verify)",
     "restore_run": "Restore durchführen",
     "data_compare": "Daten vergleichen",
     "telemetry_send": "Telemetrie senden",
@@ -350,7 +353,44 @@ def refresh_auto_e2e_phase_from_runtime() -> dict[str, Any]:
         if discovery_only:
             progress = "MSI-Evidence abgeschlossen — Automatische Systemerkundung startet"
         else:
-            progress = "MSI-Evidence abgeschlossen — physischer E2E startet"
+            # Prefer current-boot marker; stale msi-evidence-complete.json alone is weak.
+            if evidence_done:
+                progress = "MSI-Evidence abgeschlossen — physischer E2E startet"
+            else:
+                progress = (
+                    "Ältere MSI-Evidence-Datei gesehen — warte auf Physical-E2E-Service…"
+                )
+    # If physical E2E already advanced state/heartbeat, do not pin UI on MSI-complete.
+    existing_phase = str(existing.get("phase") or "")
+    if (
+        not discovery_only
+        and existing_phase in AUTO_E2E_PHASES
+        and AUTO_E2E_PHASES.index(existing_phase) > AUTO_E2E_PHASES.index("msi_evidence_complete")
+    ):
+        phase = existing_phase
+        progress = str(existing.get("last_progress") or PHASE_LABELS_DE.get(phase, phase))
+    # Live progress file from physical runner must win over MSI pin text.
+    for progress_path in (
+        Path("/run/setuphelfer-rescue/physical-progress.json"),
+        Path("/run/setuphelfer/esp-rw/setuphelfer/evidence/e2e/physical-progress.json"),
+    ):
+        if not progress_path.is_file():
+            continue
+        try:
+            payload = json.loads(progress_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError, TypeError):
+            continue
+        if not isinstance(payload, dict):
+            continue
+        msg = str(payload.get("message") or "").strip()
+        pf_phase = str(payload.get("phase") or "").strip()
+        if msg:
+            progress = msg
+        if pf_phase in AUTO_E2E_PHASES:
+            if AUTO_E2E_PHASES.index(pf_phase) >= AUTO_E2E_PHASES.index(phase):
+                phase = pf_phase
+        break
+
     if discovery_only and (discovery_started or discovery_done):
         phase = "msi_evidence_complete"
         progress = "Automatische Systemerkundung läuft…"

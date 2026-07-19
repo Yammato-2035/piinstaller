@@ -1,0 +1,104 @@
+{
+  "feature": "PI-RS-MSI-AUTO-EVIDENCE-001",
+  "supersedes_retest_features": [
+    "PI-RS-MSI-RETEST-003",
+    "PI-RS-MSI-RETEST-003B"
+  ],
+  "workspace": "/home/volker/piinstaller",
+  "repository_head": "b8651d33",
+  "test_device": {
+    "vendor": "MSI",
+    "model": "GE63 Raider RGB 8RF",
+    "model_code": "MS-16P5",
+    "bios": "E16P5IMS.109"
+  },
+  "payload": {
+    "version": "1.10.0.20",
+    "squashfs_sha256": "813a6e882d2214d6d29a45406cbfd8079441c326eae90afbb0131f31159383d5",
+    "hash_verified": true,
+    "version_carriers_consistent": true
+  },
+  "boot": {
+    "completed": true,
+    "session_id": "20260713_003100_boot",
+    "boot_id": "961e195f-ae27-4880-abdc-174be2561f83",
+    "diagnostics_session_id": "20260713_003043_boot",
+    "kernel_boot_utc": "2026-07-13T00:30:39Z",
+    "shutdown_phase": "auto_shutdown_evidence_complete",
+    "shutdown_utc": "2026-07-13T00:33:10Z",
+    "total_duration_s": 151,
+    "grub_lab_auto": true,
+    "kernel_parameters": [
+      "setuphelfer_msi_compat=1",
+      "setuphelfer_msi_lab_auto=1",
+      "setuphelfer_auto_shutdown=1",
+      "setuphelfer_msi_lab_late_sec=120",
+      "nomodeset",
+      "nouveau.modeset=0",
+      "pci=noaer",
+      "setuphelfer_mode=text"
+    ],
+    "failsafe_timer_fired": false,
+    "x11_starting_present": false
+  },
+  "auto_evidence": {
+    "service_started": true,
+    "late_gate_min_uptime_s": 150,
+    "late_evidence_file": "late-evidence-auto-20260713_003306.txt",
+    "late_evidence_uptime_s": 153.8,
+    "lab_auto_result_status": "passed",
+    "capture_uptime_s": 157.96,
+    "capture_after_120s": true,
+    "lab_auto_unattended": true,
+    "evidence_complete": true,
+    "errors": []
+  },
+  "console": {
+    "tui_owned_at_late_capture": true,
+    "console_owner": "tui",
+    "boot_progress_write_allowed": false,
+    "boot_progress_clear_allowed": false,
+    "gui_transition_allowed": false,
+    "tui_mode_selected_in_timeline": false
+  },
+  "gui": {
+    "available": false,
+    "blocked_under_msi_compat": true,
+    "openvt_executed": false,
+    "xorg_started": false
+  },
+  "session_isolation": {
+    "payload_version_current": true,
+    "stale_evidence_detected": false,
+    "current_session_evidence": true
+  },
+  "safety": {
+    "internal_drive_written": false,
+    "dangerous_operation_executed": false
+  },
+  "import": {
+    "workspace_dir": "docs/evidence/pi_rs_msi_auto_evidence_001/imported-setup-logs",
+    "cse_fixture_dir": "setuphelfer-cloudserver-edition/tests/fixtures/rescue_boot_evidence_preview",
+    "files_imported": 8,
+    "cse_preview_tests_passed": true
+  },
+  "retest_003_status": "passed",
+  "retest_003b_status": "passed",
+  "status": "passed",
+  "status_reason": "Unattended MSI lab boot on GE63 with payload 1.10.0.20: late evidence at 153.8s uptime, lab-auto-result passed, graceful shutdown via evidence_complete (~2.5 min).",
+  "warnings": [
+    "tui_mode_selected still missing from boot-timeline.jsonl (non-blocking under lab_auto_unattended eval)"
+  ],
+  "errors": [],
+  "evidence_paths": [
+    "docs/evidence/pi_rs_msi_auto_evidence_001/PI_RS_MSI_AUTO_EVIDENCE_001_ACCEPTANCE.json",
+    "docs/evidence/pi_rs_msi_auto_evidence_001/PI_RS_MSI_AUTO_EVIDENCE_001_RESULT.md",
+    "docs/evidence/pi_rs_msi_auto_evidence_001/imported-setup-logs/",
+    "docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260712_221733",
+    "docs/test-plans/PI_RS_MSI_AUTO_EVIDENCE_001_OPERATOR_RUNBOOK.md"
+  ],
+  "prior_failed_sessions": [
+    "20260713_000057_boot",
+    "20260713_000807_boot"
+  ]
+}

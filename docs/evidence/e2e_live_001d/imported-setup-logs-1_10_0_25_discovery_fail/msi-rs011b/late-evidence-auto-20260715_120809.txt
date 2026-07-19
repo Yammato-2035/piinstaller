@@ -1,0 +1,40 @@
+=== LATE EVIDENCE PI-RS-MSI-AUTO-EVIDENCE-001 ===
+2026-07-15T12:08:09+00:00
+--- uptime ---
+1949.44 23303.09
+--- cmdline ---
+BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset setuphelfer_msi_lab_auto=1 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+--- console-ownership.json ---
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "tui",
+  "lifecycle_state": "tui_owned",
+  "write_allowed_for": [
+    "tui"
+  ],
+  "clear_allowed_for": [
+    "tui"
+  ],
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": false,
+  "reason": "tui_owned",
+  "session_id": "20260715_113609_boot",
+  "boot_id": "8351649c-658a-4a8a-b328-29575a6d9456",
+  "updated_at": "2026-07-15T11:36:09Z"
+}
+--- current-session.json ---
+{
+  "schema_version": 1,
+  "session_id": "20260715_113609_boot",
+  "boot_id": "8351649c-658a-4a8a-b328-29575a6d9456",
+  "payload_version": "1.10.0.24",
+  "session_started_at": "2026-07-15T11:36:09Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+--- boot-timeline tail ---
+MISSING
+--- processes ---

@@ -1,0 +1,66 @@
+===== setuphelfer-backend =====
+○ setuphelfer-backend.service - Setuphelfer Rescue Backend
+     Loaded: loaded (/etc/systemd/system/setuphelfer-backend.service; enabled; preset: enabled)
+     Active: inactive (dead)
+
+===== setuphelfer =====
+● setuphelfer.service - Setuphelfer Rescue Web UI
+     Loaded: loaded (/etc/systemd/system/setuphelfer.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-07-16 12:35:00 UTC; 5s ago
+   Main PID: 1668 (python3)
+      Tasks: 1 (limit: 18794)
+     Memory: 12.6M
+        CPU: 429ms
+     CGroup: /system.slice/setuphelfer.service
+             └─1668 python3 /opt/setuphelfer-rescue/scripts/serve-frontend-production.py --root /opt/setuphelfer-rescue/frontend/dist --host 127.0.0.1 --port 3001
+
+Jul 16 12:35:00 setuphelfer-rescue systemd[1]: Started setuphelfer.service - Setuphelfer Rescue Web UI.
+Jul 16 12:35:00 setuphelfer-rescue start-ui-localonly.sh[1668]: Rescue temp runtime: UI http://127.0.0.1:3001/ (local-only)
+Jul 16 12:35:02 setuphelfer-rescue start-ui-localonly.sh[1668]: Serving SPA from /opt/setuphelfer-rescue/frontend/dist at http://127.0.0.1:3001/
+
+===== setuphelfer-rescue-media-check =====
+● setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-media-check.service; enabled; preset: enabled)
+     Active: activating (start) since Thu 2026-07-16 12:35:00 UTC; 5s ago
+   Main PID: 1646 (python3)
+      Tasks: 1 (limit: 18794)
+     Memory: 428.5M
+        CPU: 488ms
+     CGroup: /system.slice/setuphelfer-rescue-media-check.service
+             └─1646 python3 /usr/local/sbin/setuphelfer-rescue-live-medium-check.py
+
+Jul 16 12:35:00 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check...
+
+===== setuphelfer-rescue-start-assistant =====
+○ setuphelfer-rescue-start-assistant.service - Setuphelfer Rescue Start Assistant
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-start-assistant.service; enabled; preset: enabled)
+     Active: inactive (dead)
+
+===== setuphelfer-rescue-ui =====
+○ setuphelfer-rescue-ui.service - Setuphelfer Rescue React Shell (offline-first)
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-ui.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+===== NetworkManager =====
+● NetworkManager.service - Network Manager
+     Loaded: loaded (/lib/systemd/system/NetworkManager.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2026-07-16 12:35:02 UTC; 2s ago
+       Docs: man:NetworkManager(8)
+   Main PID: 1717 (NetworkManager)
+      Tasks: 4 (limit: 18794)
+     Memory: 9.9M
+        CPU: 574ms
+     CGroup: /system.slice/NetworkManager.service
+             └─1717 /usr/sbin/NetworkManager --no-daemon
+
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1593] device (lo): Activation: successful, device activated.
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1597] device (enp5s0): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'assume')
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1599] device (enp5s0): state change: secondaries -> activated (reason 'none', sys-iface-state: 'assume')
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1602] manager: NetworkManager state is now CONNECTED_SITE
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1604] device (enp5s0): Activation: successful, device activated.
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1607] manager: NetworkManager state is now CONNECTED_GLOBAL
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.1615] manager: startup complete
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.3061] dhcp6 (enp5s0): activation: beginning transaction (timeout in 45 seconds)
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.3069] policy: set 'Kabelgebundene Verbindung 1' (enp5s0) as default for IPv6 routing and DNS
+Jul 16 12:35:03 setuphelfer-rescue NetworkManager[1717]: <info>  [1784205303.3123] dhcp6 (enp5s0): state changed new lease
+

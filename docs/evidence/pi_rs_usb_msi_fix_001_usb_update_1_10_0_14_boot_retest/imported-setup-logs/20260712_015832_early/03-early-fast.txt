@@ -1,0 +1,88 @@
+=== loaded net/gpu modules ===
+iwlmvm                385024  0
+mac80211             1175552  1 iwlmvm
+btrtl                  28672  1 btusb
+bluetooth             970752  6 btrtl,btmtk,btintel,btbcm,btusb
+iwlwifi               360448  1 iwlmvm
+cfg80211             1155072  3 iwlmvm,iwlwifi,mac80211
+rfkill                 40960  4 iwlmvm,bluetooth,cfg80211
+i915                 3059712  0
+nouveau              2433024  0
+drm_buddy              20480  1 i915
+drm_ttm_helper         16384  1 nouveau
+i2c_algo_bit           16384  2 i915,nouveau
+ttm                    94208  3 drm_ttm_helper,i915,nouveau
+drm_display_helper    184320  2 i915,nouveau
+drm_kms_helper        212992  3 drm_display_helper,i915,nouveau
+drm                   614400  7 drm_kms_helper,drm_display_helper,drm_buddy,drm_ttm_helper,i915,ttm,nouveau
+cec                    61440  2 drm_display_helper,i915
+mxm_wmi                16384  1 nouveau
+video                  65536  3 msi_wmi,i915,nouveau
+wmi                    36864  5 video,wmi_bmof,msi_wmi,mxm_wmi,nouveau
+button                 24576  1 nouveau
+
+=== systemd default target / current ===
+graphical.target
+initializing
+
+=== dmesg tail ===
+[    6.744746] Intel(R) Wireless WiFi driver for Linux
+[    6.745606] iwlwifi 0000:00:14.3: enabling device (0000 -> 0002)
+[    6.754028] input: HD Webcam: HD Webcam as /devices/pci0000:00/0000:00:14.0/usb1/1-13/1-13:1.0/input/input14
+[    6.754556] usbcore: registered new interface driver uvcvideo
+[    6.771996] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input15
+[    6.772920] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input16
+[    6.774720] input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input17
+[    6.775604] input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input18
+[    6.801460] iwlwifi 0000:00:14.3: firmware: direct-loading firmware iwlwifi-9000-pu-b0-jf-b0-46.ucode
+[    6.801942] iwlwifi 0000:00:14.3: WRT: Overriding region id 0
+[    6.802398] iwlwifi 0000:00:14.3: WRT: Overriding region id 1
+[    6.802838] iwlwifi 0000:00:14.3: WRT: Overriding region id 2
+[    6.803280] iwlwifi 0000:00:14.3: WRT: Overriding region id 3
+[    6.803787] iwlwifi 0000:00:14.3: WRT: Overriding region id 4
+[    6.804466] iwlwifi 0000:00:14.3: WRT: Overriding region id 6
+[    6.805074] iwlwifi 0000:00:14.3: WRT: Overriding region id 8
+[    6.805900] iwlwifi 0000:00:14.3: WRT: Overriding region id 9
+[    6.806394] iwlwifi 0000:00:14.3: WRT: Overriding region id 10
+[    6.807054] iwlwifi 0000:00:14.3: WRT: Overriding region id 11
+[    6.807485] iwlwifi 0000:00:14.3: WRT: Overriding region id 15
+[    6.807486] iwlwifi 0000:00:14.3: WRT: Overriding region id 16
+[    6.807488] iwlwifi 0000:00:14.3: WRT: Overriding region id 18
+[    6.807489] iwlwifi 0000:00:14.3: WRT: Overriding region id 19
+[    6.807491] iwlwifi 0000:00:14.3: WRT: Overriding region id 20
+[    6.809869] iwlwifi 0000:00:14.3: WRT: Overriding region id 21
+[    6.809872] iwlwifi 0000:00:14.3: WRT: Overriding region id 28
+[    6.812705] iwlwifi 0000:00:14.3: firmware: failed to load iwl-debug-yoyo.bin (-2)
+[    6.813063] firmware_class: See https://wiki.debian.org/Firmware for information about missing firmware
+[    6.813499] iwlwifi 0000:00:14.3: firmware: failed to load iwl-debug-yoyo.bin (-2)
+[    6.813908] iwlwifi 0000:00:14.3: loaded firmware version 46.ea3728ee.0 9000-pu-b0-jf-b0-46.ucode op_mode iwlmvm
+[    6.844573] Bluetooth: Core ver 2.22
+[    6.845009] NET: Registered PF_BLUETOOTH protocol family
+[    6.845560] Bluetooth: HCI device and connection manager initialized
+[    6.846014] Bluetooth: HCI socket layer initialized
+[    6.846408] Bluetooth: L2CAP socket layer initialized
+[    6.846934] Bluetooth: SCO socket layer initialized
+[    6.998340] iwlwifi 0000:00:14.3: Detected Intel(R) Wireless-AC 9560 160MHz, REV=0x312
+[    6.998986] thermal thermal_zone3: failed to read out thermal zone (-61)
+[    7.007094] intel_rapl_common: Found RAPL domain package
+[    7.007580] intel_rapl_common: Found RAPL domain core
+[    7.007913] intel_rapl_common: Found RAPL domain uncore
+[    7.008255] intel_rapl_common: Found RAPL domain dram
+[    7.037664] usbcore: registered new interface driver btusb
+[    7.039004] Bluetooth: hci0: Bootloader revision 0.1 build 42 week 52 2015
+[    7.041012] Bluetooth: hci0: Device revision is 2
+[    7.041463] Bluetooth: hci0: Secure boot is enabled
+[    7.041869] Bluetooth: hci0: OTP lock is enabled
+[    7.042195] Bluetooth: hci0: API lock is enabled
+[    7.042523] Bluetooth: hci0: Debug lock is disabled
+[    7.042843] Bluetooth: hci0: Minimum firmware build 1 week 10 2014
+[    7.056346] iwlwifi 0000:00:14.3: base HW address: c0:b6:f9:77:75:b3, OTP minor version: 0x4
+[    7.074084] bluetooth hci0: firmware: direct-loading firmware intel/ibt-17-16-1.sfi
+[    7.074416] Bluetooth: hci0: Found device firmware: intel/ibt-17-16-1.sfi
+[    7.074484] Bluetooth: hci0: Boot Address: 0x40800
+[    7.075084] Bluetooth: hci0: Firmware Version: 108-45.22
+[    7.169544] ieee80211 phy0: Selected rate control algorithm 'iwl-mvm-rs'
+[    7.201549] iwlwifi 0000:00:14.3 wlo1: renamed from wlan0
+[    7.307883] FAT-fs (sdc2): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+[    7.319949] alx 0000:05:00.0 enp5s0: NIC Up: 1 Gbps Full
+[    7.320914] IPv6: ADDRCONF(NETDEV_CHANGE): enp5s0: link becomes ready

@@ -5,6 +5,10 @@ import {
   fetchStorageDiscovery,
   fetchSystemSummary,
   runFullBackupPlan,
+  runSystemDiskRestoreExecute,
+  runSystemDiskRestorePreview,
+  runWindowsBackupExecute,
+  runWindowsBackupVerify,
   saveCloudTargetLocal,
   writeEvidenceEvent,
   type BackupPlanResult,
@@ -17,6 +21,7 @@ const BOOT_BG = '/assets/rescue/boot-menu/setuphelfer-boot-menu-de.png';
 const LOGO = '/assets/rescue/logo/setuphelfer-logo2.png';
 
 type TargetMode = 'hdd' | 'cloud';
+type BackupScope = 'full' | 'selective_personal' | 'selective_custom';
 
 function formatBytes(n?: number): string {
   if (!n) return '—';
@@ -36,11 +41,20 @@ export const RescueBackupPanel: React.FC<{ locale: RescueLocale; onBack: () => v
   const [targetMount, setTargetMount] = useState('');
   const [capabilities, setCapabilities] = useState<{ booted_from_rescue?: boolean }>({});
   const [backupMode, setBackupMode] = useState<'raw_image' | 'linux_full_root_tar' | 'auto'>('auto');
+  const [backupScope, setBackupScope] = useState<BackupScope>('full');
+  const [customPathsText, setCustomPathsText] = useState('Users/*/Documents\nUsers/*/Desktop\nUsers/*/Pictures');
   const [encryptionRequested, setEncryptionRequested] = useState(false);
   const [verifyRequested, setVerifyRequested] = useState(true);
   const [systemSummary, setSystemSummary] = useState<Record<string, unknown> | null>(null);
   const [plan, setPlan] = useState<BackupPlanResult | null>(null);
   const [planLoading, setPlanLoading] = useState(false);
+  const [execLoading, setExecLoading] = useState(false);
+  const [execResult, setExecResult] = useState<Record<string, unknown> | null>(null);
+  const [restoreArtifact, setRestoreArtifact] = useState('');
+  const [restoreTargetPartition, setRestoreTargetPartition] = useState('');
+  const [restoreConsent, setRestoreConsent] = useState(false);
+  const [restoreLoading, setRestoreLoading] = useState(false);
+  const [restoreResult, setRestoreResult] = useState<Record<string, unknown> | null>(null);
   const [error, setError] = useState('');
   const [cloudEndpoint, setCloudEndpoint] = useState('');
   const [cloudUser, setCloudUser] = useState('');
@@ -104,6 +118,14 @@ export const RescueBackupPanel: React.FC<{ locale: RescueLocale; onBack: () => v
         source_role: selectedSource?.role,
         source_label: selectedSource?.label,
         backup_mode: backupMode,
+        backup_scope: backupScope,
+        custom_paths:
+          backupScope === 'selective_custom'
+            ? customPathsText
+                .split('\n')
+                .map((line) => line.trim())
+                .filter(Boolean)
+            : [],
         target_mode: targetMode === 'cloud' ? 'cloud_pro' : 'external_hdd',
         target_mount: targetMount,
         target_device: targetPath,
@@ -244,6 +266,28 @@ export const RescueBackupPanel: React.FC<{ locale: RescueLocale; onBack: () => v
 
         <section style={panel}>
           <h2 style={h2}>{t('backupPanel.backupType')}</h2>
+          <label style={label}>Umfang</label>
+          <select
+            value={backupScope}
+            onChange={(e) => setBackupScope(e.target.value as BackupScope)}
+            style={input}
+          >
+            <option value="full">Vollbackup (Systemvolume)</option>
+            <option value="selective_personal">Persönliche Daten (Benutzerprofile)</option>
+            <option value="selective_custom">Manuelle Auswahl</option>
+          </select>
+          {backupScope === 'selective_custom' ? (
+            <>
+              <label style={label}>Pfade (eine Zeile je Glob relativ zum Windows-Volume)</label>
+              <textarea
+                value={customPathsText}
+                onChange={(e) => setCustomPathsText(e.target.value)}
+                rows={5}
+                style={{ ...input, fontFamily: 'monospace' }}
+              />
+            </>
+          ) : null}
+          <label style={{ ...label, marginTop: 12 }}>Technikmodus</label>
           <select value={backupMode} onChange={(e) => setBackupMode(e.target.value as typeof backupMode)} style={input}>
             <option value="auto">{t('backupPanel.modeAuto')}</option>
             <option value="raw_image">{t('backupPanel.modeRawImage')}</option>
@@ -325,6 +369,51 @@ export const RescueBackupPanel: React.FC<{ locale: RescueLocale; onBack: () => v
             <button type="button" style={btnPrimary} onClick={runPlanCheck} disabled={planLoading}>
               {planLoading ? t('backupPanel.checking') : t('backupPanel.createPlan')}
             </button>
+            <button
+              type="button"
+              style={btnPrimary}
+              disabled={execLoading || !capabilities.booted_from_rescue || plan?.plan_status === 'blocked'}
+              onClick={async () => {
+                setError('');
+                setExecLoading(true);
+                setExecResult(null);
+                try {
+                  const body = {
+                    source_device: sourcePath,
+                    source_partition: sourcePath,
+                    target_mount: targetMount,
+                    target_device: targetPath,
+                    backup_scope: backupScope,
+                    custom_paths:
+                      backupScope === 'selective_custom'
+                        ? customPathsText
+                            .split('\n')
+                            .map((line) => line.trim())
+                            .filter(Boolean)
+                        : [],
+                    operator_confirm_source: true,
+                    operator_confirm_target: true,
+                    lab_force_execute: backupScope !== 'full',
+                  };
+                  const result = await runWindowsBackupExecute(body);
+                  setExecResult(result);
+                  if (verifyRequested && result.artifact) {
+                    const verified = await runWindowsBackupVerify({
+                      artifact: result.artifact,
+                      sha256: result.sha256,
+                      manifest: result.manifest,
+                    });
+                    setExecResult({ ...result, verify: verified });
+                  }
+                } catch {
+                  setError('Backup-Ausführung fehlgeschlagen');
+                } finally {
+                  setExecLoading(false);
+                }
+              }}
+            >
+              {execLoading ? 'Backup läuft…' : 'Backup starten'}
+            </button>
             <button type="button" style={btnSecondary} onClick={() => window.location.reload()}>
               {t('backupPanel.refreshDevices')}
             </button>
@@ -333,6 +422,109 @@ export const RescueBackupPanel: React.FC<{ locale: RescueLocale; onBack: () => v
             <p style={{ color: '#fbbf24', marginTop: 12 }}>{t('backupPanel.rescueBootOnly')}</p>
           ) : null}
           {renderPlanFeedback()}
+          {execResult ? (
+            <pre style={pre}>{JSON.stringify(execResult, null, 2)}</pre>
+          ) : null}
+        </section>
+
+        <section style={panel}>
+          <h2 style={h2}>Systemdisk-Restore (Phase C, gated)</h2>
+          <p style={{ fontSize: 14, color: '#fbbf24', marginTop: 0 }}>
+            Standardmäßig blockiert. Benötigt one-shot Run-Control (
+            <code>system-disk-restore-control.json</code>) und explizite Bestätigung. Nur selektives
+            Tar-Artefakt; Vollimage-Restore bleibt deaktiviert.
+          </p>
+          <label style={label}>Backup-Artefakt</label>
+          <input
+            value={restoreArtifact}
+            onChange={(e) => setRestoreArtifact(e.target.value)}
+            placeholder={
+              typeof execResult?.artifact === 'string'
+                ? String(execResult.artifact)
+                : '/media/.../selective-backup.tar.gz'
+            }
+            style={input}
+          />
+          <label style={label}>Zielpartition (NTFS, z. B. /dev/nvme0n1p4)</label>
+          <input
+            value={restoreTargetPartition}
+            onChange={(e) => setRestoreTargetPartition(e.target.value)}
+            placeholder="/dev/nvme0n1p4"
+            style={input}
+          />
+          <label style={{ ...label, display: 'flex', alignItems: 'center', gap: 8, marginTop: 12 }}>
+            <input
+              type="checkbox"
+              checked={restoreConsent}
+              onChange={(e) => setRestoreConsent(e.target.checked)}
+            />
+            Ich bestätige explizit den Restore auf die Windows-Systempartition (destruktiv).
+          </label>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 12 }}>
+            <button
+              type="button"
+              style={btnSecondary}
+              disabled={restoreLoading}
+              onClick={async () => {
+                setError('');
+                setRestoreLoading(true);
+                try {
+                  const preview = await runSystemDiskRestorePreview({
+                    artifact: restoreArtifact || execResult?.artifact,
+                    target_device: restoreTargetPartition,
+                    operator_consent: restoreConsent ? 'explicit' : '',
+                    machine_vendor:
+                      (systemSummary?.identity as { vendor?: string } | undefined)?.vendor || '',
+                    machine_model:
+                      (systemSummary?.identity as { model?: string } | undefined)?.model || '',
+                  });
+                  setRestoreResult(preview);
+                } catch {
+                  setError('Systemdisk-Restore-Preview fehlgeschlagen');
+                } finally {
+                  setRestoreLoading(false);
+                }
+              }}
+            >
+              Preview
+            </button>
+            <button
+              type="button"
+              style={{ ...btnPrimary, background: '#b91c1c' }}
+              disabled={
+                restoreLoading ||
+                !capabilities.booted_from_rescue ||
+                !restoreConsent ||
+                !(restoreArtifact || execResult?.artifact) ||
+                !restoreTargetPartition
+              }
+              onClick={async () => {
+                setError('');
+                setRestoreLoading(true);
+                try {
+                  const result = await runSystemDiskRestoreExecute({
+                    artifact: restoreArtifact || execResult?.artifact,
+                    sha256: execResult?.sha256,
+                    manifest: execResult?.manifest,
+                    target_partition: restoreTargetPartition,
+                    operator_consent: 'explicit',
+                    machine_vendor:
+                      (systemSummary?.identity as { vendor?: string } | undefined)?.vendor || '',
+                    machine_model:
+                      (systemSummary?.identity as { model?: string } | undefined)?.model || '',
+                  });
+                  setRestoreResult(result);
+                } catch {
+                  setError('Systemdisk-Restore fehlgeschlagen');
+                } finally {
+                  setRestoreLoading(false);
+                }
+              }}
+            >
+              {restoreLoading ? 'Restore…' : 'Systemdisk-Restore ausführen'}
+            </button>
+          </div>
+          {restoreResult ? <pre style={pre}>{JSON.stringify(restoreResult, null, 2)}</pre> : null}
         </section>
       </div>
     </div>

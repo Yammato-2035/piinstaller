@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "import_id": "PI-RS-MSI-AUTO-EVIDENCE-001",
+  "imported_at": "20260712T223524Z",
+  "source_evidence_dir": "/media/volker/SETUP_LOGS/setuphelfer/evidence/msi-rs011b",
+  "files": [
+    "boot-summary.json",
+    "boot-timeline.jsonl",
+    "lab-auto-result.json",
+    "collector-summary.json",
+    "api-version.json",
+    "rescue-health.json",
+    "console-shield-state.json",
+    "late-evidence-latest.txt"
+  ],
+  "preview_only": true,
+  "raw_log_visible": false
+}

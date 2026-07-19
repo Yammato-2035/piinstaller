@@ -1,0 +1,21 @@
+== /run/setuphelfer/console-shield.json ==
+{
+  "schema_version": 1,
+  "enabled": true,
+  "reason": "early_boot_progress",
+  "tty1_clear_allowed": false,
+  "journal_to_console_blocked": true,
+  "production_ready": false
+}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 1, "message": "Hardware wird erkannt \u2026", "updated_at": "2026-07-12T01:58:39Z"}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-07-12T01:58:35Z",
+  "boot_id": "84271241-6ed3-45d0-bd77-7795d506b6dc",
+  "task_available": false,
+  "secrets_exposed": false
+}
+

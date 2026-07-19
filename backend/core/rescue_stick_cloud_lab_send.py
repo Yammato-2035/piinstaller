@@ -209,6 +209,22 @@ def evaluate_rescue_stick_lab_preconditions(
     )
 
 
+def _build_send_payload(
+    config: RescueStickLabSendConfig,
+    *,
+    discovery_summary: Mapping[str, Any] | None = None,
+    host_id_hash: str | None = None,
+) -> dict[str, Any]:
+    payload = build_rescue_stick_lab_payload(
+        stick_version=config.stick_version,
+        boot_mode=config.boot_mode,
+        host_id_hash=host_id_hash,
+        discovery_summary=discovery_summary,
+    )
+    assert_no_pii_in_payload(payload)
+    return payload
+
+
 def preview_rescue_stick_lab_send(
     config: RescueStickLabSendConfig | None = None,
     *,
@@ -242,6 +258,8 @@ def execute_rescue_stick_lab_send(
     health_check: HealthCheckFn | None = None,
     http_transport: HttpTransportFn | None = None,
     request_id_factory: Callable[[], str] | None = None,
+    discovery_summary: Mapping[str, Any] | None = None,
+    host_id_hash: str | None = None,
 ) -> RescueStickLabSendResult:
     cfg = config or rescue_stick_lab_send_config_from_env()
     preview = evaluate_rescue_stick_lab_preconditions(cfg, health_check=health_check)
@@ -251,11 +269,11 @@ def execute_rescue_stick_lab_send(
     transport = http_transport or _default_http_transport
     request_id = (request_id_factory or (lambda: f"req-{uuid4()}"))()
 
-    payload = build_rescue_stick_lab_payload(
-        stick_version=cfg.stick_version,
-        boot_mode=cfg.boot_mode,
+    payload = _build_send_payload(
+        cfg,
+        discovery_summary=discovery_summary,
+        host_id_hash=host_id_hash,
     )
-    assert_no_pii_in_payload(payload)
     body = json.dumps(payload, separators=(",", ":"), ensure_ascii=True).encode("utf-8")
     token = _read_bearer_token(cfg.token_file)
     headers = {

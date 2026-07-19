@@ -1,13 +1,20 @@
-"""Rescue backup plan-only API handlers (RS-F2S)."""
+"""Rescue backup API handlers (plan + gated execute)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
 
+from core.rescue_backup_plan_contract import build_rescue_backup_plan, build_rescue_full_backup_plan
 from core.rescue_backup_target_policy import rescue_backup_preflight, rescue_capabilities_matrix
 from core.rescue_cloud_target_local import cloud_target_status, save_cloud_target_config
 from core.rescue_storage_discovery import discover_rescue_storage
+from core.rescue_system_disk_restore_execute import (
+    execute_system_disk_restore,
+    preview_system_disk_restore,
+)
+from core.rescue_system_identity import build_rescue_system_summary
+from core.rescue_windows_backup_execute import execute_windows_backup, verify_windows_backup
 from rescue.boot_context import build_rescue_boot_context
 
 
@@ -28,9 +35,12 @@ async def get_rescue_capabilities() -> dict[str, Any]:
         "public_repo_implementation": False,
         "status": cloud_target_status(),
     }
+    base["backup_scopes"] = ["full", "selective_personal", "selective_custom"]
     base["endpoints"] = {
         "backup_execute": base["booted_from_rescue"],
+        "backup_verify": True,
         "restore_execute": False,
+        "restore_system_disk_execute": base["booted_from_rescue"],
         "restore_preview": True,
         "wipe": False,
         "linux_install": False,
@@ -70,18 +80,28 @@ async def post_backup_preflight(body: dict[str, Any]) -> dict[str, Any]:
 
 
 async def post_backup_plan(body: dict[str, Any]) -> dict[str, Any]:
-    from core.rescue_backup_plan_contract import build_rescue_backup_plan
-
     return build_rescue_backup_plan(body)
 
 
 async def post_full_backup_plan(body: dict[str, Any]) -> dict[str, Any]:
-    from core.rescue_backup_plan_contract import build_rescue_full_backup_plan
-
     return build_rescue_full_backup_plan(body)
 
 
 async def get_system_summary() -> dict[str, Any]:
-    from core.rescue_system_identity import build_rescue_system_summary
-
     return build_rescue_system_summary()
+
+
+async def post_windows_backup_execute(body: dict[str, Any]) -> dict[str, Any]:
+    return execute_windows_backup(body)
+
+
+async def post_windows_backup_verify(body: dict[str, Any]) -> dict[str, Any]:
+    return verify_windows_backup(body)
+
+
+async def post_system_disk_restore_preview(body: dict[str, Any]) -> dict[str, Any]:
+    return preview_system_disk_restore(body)
+
+
+async def post_system_disk_restore_execute(body: dict[str, Any]) -> dict[str, Any]:
+    return execute_system_disk_restore(body)

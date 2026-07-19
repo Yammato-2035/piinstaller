@@ -1,0 +1,21 @@
+iwlmvm                385024  0
+mac80211             1175552  1 iwlmvm
+btrtl                  28672  1 btusb
+bluetooth             970752  6 btrtl,btmtk,btintel,btbcm,btusb
+iwlwifi               360448  1 iwlmvm
+cfg80211             1155072  3 iwlmvm,iwlwifi,mac80211
+rfkill                 40960  4 iwlmvm,bluetooth,cfg80211
+i915                 3059712  0
+nouveau              2433024  0
+drm_buddy              20480  1 i915
+drm_ttm_helper         16384  1 nouveau
+i2c_algo_bit           16384  2 i915,nouveau
+ttm                    94208  3 drm_ttm_helper,i915,nouveau
+drm_display_helper    184320  2 i915,nouveau
+drm_kms_helper        212992  3 drm_display_helper,i915,nouveau
+drm                   614400  7 drm_kms_helper,drm_display_helper,drm_buddy,drm_ttm_helper,i915,ttm,nouveau
+cec                    61440  2 drm_display_helper,i915
+mxm_wmi                16384  1 nouveau
+video                  65536  3 msi_wmi,i915,nouveau
+wmi                    36864  5 video,wmi_bmof,msi_wmi,mxm_wmi,nouveau
+button                 24576  1 nouveau

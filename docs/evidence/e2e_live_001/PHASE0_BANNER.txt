@@ -1,0 +1,35 @@
+============================================================
+SETUPHELFER END-TO-END-AUFTRAG
+============================================================
+Auftrag:
+  SETUPHELFER-E2E-LIVE-001
+
+Ziel:
+  Reale Rettungsstick-Datenaufnahme, Diagnostik,
+  Lösungsanzeige und Backup-/Verify-/Restore-Nachweis
+
+Beteiligte Workspaces:
+1. /home/volker/setuphelfer-private/setuphelfer-telemetry-server
+2. /home/volker/setuphelfer-private/diagnostics-server
+3. /home/volker/piinstaller
+4. /home/volker/setuphelfer-cloudserver-edition
+
+Workspace-Wechsel:
+  nur nach sichtbarem Abschluss des vorherigen Workspaces
+
+Realtest:
+  ausschließlich mit eigens erzeugten Testdaten
+
+Produktive Daten:
+  nicht verwenden
+
+Interne Systempartitionen:
+  nicht beschreiben
+
+production_ready:
+  false
+
+E2E_RUN_ID:
+  e2e-20260713-195709-5cc32d39
+============================================================
+

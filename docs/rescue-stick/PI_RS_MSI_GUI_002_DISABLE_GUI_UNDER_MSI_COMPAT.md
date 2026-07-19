@@ -48,4 +48,6 @@ Bitte Textmodus nutzen.
 
 ## Nächster Schritt
 
-**PI-RS-USB-MSI-GUI-002** — USB-Update auf Payload 1.10.0.15 + GE63 Boot-Retest (MSI-Compat, TUI stabil, GUI-Menü gesperrt)
+**Abgeschlossen:** PI-RS-USB-MSI-GUI-002 (USB 1.10.0.15) — physischer Retest **failed** (PI-RS-MSI-RETEST-002).
+
+**Folge-Sprint:** [PI-RS-MSI-GUI-003](PI_RS_MSI_GUI_003_TUI_CONSOLE_ISOLATION.md) — Payload **1.10.0.16**, TUI/Console-Isolation. Nächste Operator-Schritte: **PI-RS-USB-UPDATER-001** + **PI-RS-MSI-RETEST-003**.

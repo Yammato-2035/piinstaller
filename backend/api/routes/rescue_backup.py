@@ -1,7 +1,7 @@
 """
-Rescue backup / restore-preview plan-only routes (RS-F2S).
+Rescue backup / restore routes (plan + gated execute).
 
-No execute, wipe, linux-install, or credential endpoints.
+Wipe / linux-install remain unavailable. System-disk restore requires one-shot control.
 """
 
 from __future__ import annotations
@@ -56,6 +56,26 @@ async def rescue_full_backup_plan_route(body: dict[str, Any] = Body(...)):
     return await backup_handlers.post_full_backup_plan(body)
 
 
+@router.post("/backup/execute")
+async def rescue_backup_execute_route(body: dict[str, Any] = Body(...)):
+    return await backup_handlers.post_windows_backup_execute(body)
+
+
+@router.post("/backup/verify")
+async def rescue_backup_verify_route(body: dict[str, Any] = Body(...)):
+    return await backup_handlers.post_windows_backup_verify(body)
+
+
 @router.post("/restore/preview-preflight")
 async def rescue_restore_preview_preflight_route(body: dict[str, Any] = Body(...)):
     return await restore_handlers.post_restore_preview_preflight(body)
+
+
+@router.post("/restore/system-disk/preview")
+async def rescue_system_disk_restore_preview_route(body: dict[str, Any] = Body(...)):
+    return await backup_handlers.post_system_disk_restore_preview(body)
+
+
+@router.post("/restore/system-disk/execute")
+async def rescue_system_disk_restore_execute_route(body: dict[str, Any] = Body(...)):
+    return await backup_handlers.post_system_disk_restore_execute(body)

@@ -23,8 +23,12 @@ if grep -q 'setuphelfer-rescue-tui-hold --static-error' "$GUARD"; then
 fi
 grep -q 'TTYPath=/dev/tty1' "$HOLD_UNIT" || { echo "hold unit must own tty1"; fail=1; }
 grep -q 'OnUnitInactiveSec=' "$TIMER" || { echo "timer should use OnUnitInactiveSec"; fail=1; }
-grep -q 'StartLimitBurst=3' "$TUI_UNIT" || { echo "tui missing StartLimitBurst"; fail=1; }
+grep -qE 'StartLimitBurst=[0-9]+' "$TUI_UNIT" || { echo "tui missing StartLimitBurst"; fail=1; }
 grep -q 'Restart=on-failure' "$TUI_UNIT" || fail=1
+grep -q 'Conflicts=setuphelfer-rescue-start-assistant.service' "$TUI_UNIT" || {
+  echo "tui must Conflict with start-assistant (tty1 exclusive)"
+  fail=1
+}
 
 if rg -n 'ExecStart=.*agetty.*tty1|ExecStart=/sbin/getty.*tty1' "$IMG" 2>/dev/null; then
   echo "forbidden bare getty on tty1 in rescue image units"

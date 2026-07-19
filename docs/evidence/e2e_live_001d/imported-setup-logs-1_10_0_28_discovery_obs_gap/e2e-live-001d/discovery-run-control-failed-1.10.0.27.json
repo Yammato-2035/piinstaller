@@ -1,0 +1,18 @@
+{
+  "schema": "setuphelfer.rescue.discovery-control.v1",
+  "enabled": false,
+  "one_shot": true,
+  "expected_payload_version": "1.10.0.27",
+  "expected_machine_family": "GE63 Raider",
+  "run_mode": "auto_discovery_only",
+  "allow_destructive_storage_actions": false,
+  "allow_backup": false,
+  "allow_restore": false,
+  "auto_shutdown": true,
+  "consumed": true,
+  "run_nonce": "1d5380e13ced94dc6032b35fb05568bc",
+  "created_at": "2026-07-15T20:13:12Z",
+  "terminal_status": "failed_bare_tty_regression",
+  "archived_at": "2026-07-16T09:45:00Z",
+  "archive_reason": "failed_1.10.0.27_tui_guard_regression"
+}

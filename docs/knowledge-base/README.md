@@ -23,6 +23,8 @@ Kuratierte Notizen aus Support- und Setup-Runden, damit Lösungen **nicht doppel
 | [safety/WRITE_SAFETY_OVERVIEW.md](safety/WRITE_SAFETY_OVERVIEW.md) | **Write-Safety:** Zweck, Blockregeln, kein Override in Phase 1 |
 | [preflight/PREFLIGHT_BACKUP_OVERVIEW.md](preflight/PREFLIGHT_BACKUP_OVERVIEW.md) | **Preflight Backup:** Zweck, Token-Bestätigung, Hard-Stop-Zielprüfung |
 | [rescue/RESCUE_START_ASSISTANT_OVERVIEW.md](rescue/RESCUE_START_ASSISTANT_OVERVIEW.md) | **Start Assistant 1.7.7.0:** TUI-Wizard, WLAN/Telemetrie, Boot-Menü-Fix, read-only Disk-Discovery, Pläne ohne Ausführung |
+| [rescue/MSI_TUI_CONSOLE_ISOLATION_KB_DE.md](rescue/MSI_TUI_CONSOLE_ISOLATION_KB_DE.md) | **MSI PI-RS-MSI-GUI-003:** TUI/tty1-Isolation, Boot-Timeline `tui_mode_selected`, Session-Evidence, Payload 1.10.0.16 |
+| [rescue/MSI_TUI_CONSOLE_ISOLATION_KB_EN.md](rescue/MSI_TUI_CONSOLE_ISOLATION_KB_EN.md) | **MSI PI-RS-MSI-GUI-003 (EN):** same topic, English summary |
 | [../rescue-stick/RESCUE_START_ASSISTANT_WIZARD_STATE.md](../rescue-stick/RESCUE_START_ASSISTANT_WIZARD_STATE.md) | **WizardState JSON:** Schema für TUI und künftige GUI |
 | [../rescue-stick/RESCUE_BOOT_MENU_BRANDING.md](../rescue-stick/RESCUE_BOOT_MENU_BRANDING.md) | **Boot-Menü:** ISOLINUX/GRUB-Einträge, Branding, Validator |
 | [../rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md](../rescue-stick/RESCUE_RESTORE_PREVIEW_HANDOFF_2026-05-20.md) | **Rettungsstick C.4:** Restore-Preview-Plan, kanonische Dryrun/Verify-Referenz, kein Restore |

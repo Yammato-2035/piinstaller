@@ -14,7 +14,7 @@ KIOSK="${SCRIPT_DIR}/setuphelfer-rescue-kiosk-start"
 UI_STATUS="/run/setuphelfer/rescue-ui-status.json"
 
 export SETUPHELFER_RESCUE_GUI_STRICT=1
-export SETUPHELFER_RESCUE_KIOSK_VT=2
+export SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
 export SETUPHELFER_RESCUE_UI_GRAPHICAL_ONLY=1
 
 mkdir -p /run/setuphelfer "$(dirname "$LOG")" 2>/dev/null || true
@@ -119,11 +119,9 @@ if [[ ! -c /dev/tty1 ]]; then
   setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=missing"
   return $(_fail "tty_unavailable")
 fi
-if setuphelfer_rescue_tty1_clear_allowed 2>/dev/null; then
-  setuphelfer_rescue_blank_fb_tty 1
-fi
-chvt "$SETUPHELFER_RESCUE_KIOSK_VT" 2>/dev/null || true
-setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=blanked kiosk_vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
+# Keep tty1 progress visible until X is healthy — do not blank early.
+setuphelfer_rescue_prepare_kiosk_vt "$SETUPHELFER_RESCUE_KIOSK_VT" || true
+setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=kept kiosk_vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
 
 # RS-P2G: kiosk on dedicated VT with controlling terminal (openvt), not background on watchdog shell.
 setuphelfer_rescue_gui_chain_log "KIOSK_FOREGROUND_VT" "vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
@@ -135,7 +133,12 @@ _elapsed=0
 _health_rc=99
 while [[ "$_elapsed" -lt "$TIMEOUT_SEC" ]]; do
   if ! kill -0 "$_kpid" 2>/dev/null; then
-    setuphelfer_rescue_gui_chain_log "KIOSK_PID_EXIT" "pid=${_kpid} elapsed_sec=${_elapsed}"
+    wait "$_kpid" 2>/dev/null
+    _kexit=$?
+    setuphelfer_rescue_gui_chain_log "KIOSK_PID_EXIT" "pid=${_kpid} elapsed_sec=${_elapsed} exit=${_kexit}"
+    if [[ "$_kexit" -eq 78 ]]; then
+      return $(_fail "openvt_console_busy")
+    fi
     if ! setuphelfer_rescue_x11_ready; then
       return $(_fail "startx_not_started")
     fi
@@ -145,16 +148,14 @@ while [[ "$_elapsed" -lt "$TIMEOUT_SEC" ]]; do
     return $(_fail "unknown_gui_failure")
   fi
 
-  if setuphelfer_rescue_gui_health_ok "$STABLE_SEC"; then
-    _health_rc=0
+  setuphelfer_rescue_gui_health_ok "$STABLE_SEC"
+  _health_rc=$?
+  if [[ "$_health_rc" -eq 0 ]]; then
     setuphelfer_rescue_gui_chain_log "GUI_HEALTH_OK" "stable_sec=${STABLE_SEC} elapsed_sec=${_elapsed}"
     break
   fi
-  _health_rc=$?
   setuphelfer_rescue_gui_chain_log "GUI_HEALTH_WAIT" "rc=${_health_rc} elapsed_sec=${_elapsed}"
-  if [[ "$_health_rc" -ne 0 ]]; then
-    setuphelfer_rescue_gui_chain_log "GUI_HEALTH_FAIL" "rc=${_health_rc} elapsed_sec=${_elapsed}"
-  fi
+  setuphelfer_rescue_gui_chain_log "GUI_HEALTH_FAIL" "rc=${_health_rc} elapsed_sec=${_elapsed}"
   sleep 2
   _elapsed=$((_elapsed + 2))
 done

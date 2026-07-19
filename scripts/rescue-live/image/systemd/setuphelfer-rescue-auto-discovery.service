@@ -1,10 +1,14 @@
 [Unit]
-Description=Setuphelfer Rescue auto discovery (001D7E canonical evidence root)
-After=setuphelfer-backend.service network-online.target setuphelfer-rescue-tui.service setuphelfer-rescue-auto-msi-evidence.service setuphelfer-rescue-boot-observer.service setuphelfer-rescue-setup-logs-resolver.service
+Description=Setuphelfer Rescue auto discovery (001D7F — parallel to MSI evidence)
+# Do not After=auto-msi-evidence: MSI late gate (~120s) previously delayed discovery until
+# TUI/finalizer already wrote auto-discovery.done and skipped the start-gate forever.
+After=setuphelfer-backend.service network-online.target setuphelfer-rescue-tui.service setuphelfer-rescue-boot-observer.service setuphelfer-rescue-setup-logs-resolver.service
 Wants=setuphelfer-backend.service setuphelfer-rescue-setup-logs-resolver.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery-runner
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-discovery-start-gate
 ConditionPathExists=!/run/setuphelfer-rescue/auto-discovery.done
+# Physical E2E one-shot must not race discovery into early auto-shutdown.
+ConditionKernelCommandLine=!setuphelfer_msi_e2e_auto=1
 
 [Service]
 Type=oneshot

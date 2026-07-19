@@ -10,13 +10,14 @@ setuphelfer_rescue_ensure_state_dir
 _marker="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.done"
 [[ -f "$_marker" ]] && exit 0
 
+_PY="$(setuphelfer_rescue_backend_python)"
+_PYPATH="$(setuphelfer_rescue_backend_pythonpath)"
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.log"
 {
-  echo "=== auto-discovery $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  echo "=== auto-discovery $(date -u +%Y-%m-%dT%H:%M:%SZ) python=${_PY} ==="
 } >>"$_log"
 
-_status=""
-PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
+PYTHONPATH="${_PYPATH}" "${_PY}" - <<'PY' >>"$_log" 2>&1
 import json
 from core.rescue_auto_discovery_orchestrator import run_auto_discovery
 
@@ -31,7 +32,7 @@ touch "$_marker" 2>/dev/null || true
 setuphelfer_rescue_write_boot_state "auto_discovery_complete" || true
 
 # Shutdown only when terminal discovery evidence is complete / safe.
-_shutdown_ok="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY'
+_shutdown_ok="$(PYTHONPATH="${_PYPATH}" "${_PY}" - <<'PY'
 import json
 from pathlib import Path
 from core.rescue_session_state import read_session_state

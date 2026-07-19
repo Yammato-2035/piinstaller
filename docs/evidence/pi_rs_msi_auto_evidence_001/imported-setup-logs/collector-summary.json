@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "run_id": "RS_011D",
+  "status": "review_required",
+  "written": [
+    "redacted-id.json",
+    "dmesg-redacted.log",
+    "kernel-console.log",
+    "lspci-nn-redacted.txt",
+    "msi-aer-summary.json",
+    "redacted-id.json",
+    "redacted-id.txt",
+    "operator-steps.jsonl"
+  ],
+  "missing": [
+    "collector-summary.json"
+  ],
+  "failed": [
+    "boot_state_redacted.json",
+    "disk-discovery.json"
+  ],
+  "complete": false,
+  "checked_at": "2026-07-01T00:11:28Z",
+  "secrets_exposed": false,
+  "current_result_valid": false,
+  "stale_previous_artifacts": [
+    {
+      "artifact": "redacted-id.json",
+      "archived_to": "/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b/redacted-id.json.prev-20260701T001127Z",
+      "reason": "version_or_session_mismatch",
+      "previous_rescue_version": "0.0.0.0",
+      "previous_boot_session_id": "20260630_212529_1.10.0.11"
+    },
+    {
+      "artifact": "msi-aer-summary.json",
+      "archived_to": "/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b/msi-aer-summary.json.prev-20260701T001127Z",
+      "reason": "version_or_session_mismatch",
+      "previous_rescue_version": "0.0.0.0",
+      "previous_boot_session_id": "20260630_212529_1.10.0.11"
+    },
+    {
+      "artifact": "collector-summary.json",
+      "archived_to": "/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b/collector-summary.json.prev-20260701T001127Z",
+      "reason": "version_or_session_mismatch",
+      "previous_rescue_version": "0.0.0.0",
+      "previous_boot_session_id": "20260630_212529_1.10.0.11"
+    },
+    {
+      "artifact": "disk-discovery.json",
+      "archived_to": "/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b/disk-discovery.json.prev-20260701T001127Z",
+      "reason": "version_or_session_mismatch",
+      "previous_rescue_version": "0.0.0.0",
+      "previous_boot_session_id": "20260630_212529_1.10.0.11"
+    },
+    {
+      "artifact": "lspci-nn-redacted.txt",
+      "archived_to": "/run/setuphelfer/esp-rw/setuphelfer/evidence/msi-rs011b/lspci-nn-redacted.txt.prev-20260701T001127Z",
+      "reason": "text_session_mismatch"
+    }
+  ],
+  "api_status": [
+    {
+      "endpoint": "rescue-health",
+      "http_code": 200,
+      "status": "ok",
+      "rescue_version": "0.0.0.0",
+      "checked_at": "2026-07-01T00:11:23Z"
+    },
+    {
+      "endpoint": "disk-inventory",
+      "http_code": 200,
+      "status": "ok",
+      "rescue_version": "0.0.0.0",
+      "checked_at": "2026-07-01T00:11:25Z"
+    },
+    {
+      "endpoint": "storage-discovery",
+      "http_code": 200,
+      "status": "ok",
+      "rescue_version": "0.0.0.0",
+      "checked_at": "2026-07-01T00:11:25Z"
+    }
+  ],
+  "rescue_version": "0.0.0.0",
+  "collector_version": "0.0.0.0",
+  "boot_session_id": "20260701_001121_1.10.0.12",
+  "collected_at": "2026-07-01T00:11:27Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "collect_rs011d_supplement",
+  "collector_status": "review_required",
+  "sections": {
+    "supplement": "ok",
+    "killer_e2500": "ok",
+    "aer": "ok",
+    "lspci": "ok",
+    "api": "ok",
+    "boot_state": "review_required",
+    "disk_discovery": "review_required",
+    "storage_discovery": "ok"
+  },
+  "api_status_ref": "api-endpoint-status.json",
+  "failed_stubs": [
+    "boot_state_redacted.json",
+    "disk-discovery.json"
+  ]
+}

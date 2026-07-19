@@ -1,0 +1,38 @@
+{
+  "schema": "setuphelfer.rescue.physical-e2e-control.v1",
+  "feature": "SETUPHELFER-E2E-LIVE-001D5",
+  "enabled": false,
+  "one_shot": true,
+  "consumed": false,
+  "expected_payload_version": "1.10.0.24",
+  "expected_machine": {
+    "vendor": "Micro-Star International Co., Ltd.",
+    "model_contains": "GE63 Raider"
+  },
+  "target_marker_schema": "setuphelfer.rescue.e2e-target.v1",
+  "telemetry_required": true,
+  "diagnostics_required": true,
+  "expected_event_count": 8,
+  "auto_shutdown": true,
+  "created_at": "2026-07-15T09:30:56Z",
+  "run_nonce": "c5b2f427c1d98f2c5861e76280734618",
+  "destructive_lab_target": {
+    "enabled": true,
+    "operator_authorized": true,
+    "purpose": "setuphelfer_msi_physical_e2e_only",
+    "expected_transport": "usb",
+    "expected_model_contains": "SABRENT",
+    "expected_size_bytes_min": 900000000000,
+    "expected_size_bytes_max": 1100000000000,
+    "expected_existing_partition_uuid": "44ce6f76-7896-4623-87b0-d81aedbed6d5",
+    "expected_existing_label": "Backup",
+    "expected_role": "external_backup_hdd",
+    "allow_wipefs": true,
+    "allow_new_gpt": true,
+    "allow_partitioning": true,
+    "allow_format": true,
+    "allow_backup": true,
+    "allow_restore": true
+  },
+  "archived_reason": "superseded_by_discovery_run_control_001d7a"
+}

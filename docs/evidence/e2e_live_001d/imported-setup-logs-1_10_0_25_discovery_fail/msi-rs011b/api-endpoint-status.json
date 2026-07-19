@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "rescue_version": "1.10.0.25",
+  "boot_session_id": "20260715_200658_1.10.0.25",
+  "endpoints": [
+    {
+      "endpoint": "rescue-health",
+      "http_code": 404,
+      "status": "api_endpoint_failed",
+      "rescue_version": "1.10.0.25",
+      "checked_at": "2026-07-15T20:06:58Z"
+    },
+    {
+      "endpoint": "disk-inventory",
+      "http_code": 404,
+      "status": "api_endpoint_failed",
+      "rescue_version": "1.10.0.25",
+      "checked_at": "2026-07-15T20:06:58Z"
+    },
+    {
+      "endpoint": "storage-discovery",
+      "http_code": 200,
+      "status": "ok",
+      "rescue_version": "1.10.0.25",
+      "checked_at": "2026-07-15T20:06:59Z"
+    }
+  ]
+}

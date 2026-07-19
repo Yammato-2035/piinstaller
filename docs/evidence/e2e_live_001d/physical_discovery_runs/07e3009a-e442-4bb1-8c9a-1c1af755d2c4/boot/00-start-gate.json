@@ -1,0 +1,17 @@
+{
+  "schema": "setuphelfer.rescue.discovery-start-gate.v1",
+  "called": true,
+  "called_at": "2026-07-16T16:26:30Z",
+  "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+  "payload_version": "1.10.0.29",
+  "kernel_auto_discovery": true,
+  "run_control_found": true,
+  "run_control_enabled": false,
+  "run_control_consumed": true,
+  "run_mode": "auto_discovery_only",
+  "payload_version_match": false,
+  "start_allowed": false,
+  "decision_code": "discovery_run_control_invalid",
+  "exit_code": 1,
+  "recorded_at": "2026-07-16T16:26:30Z"
+}

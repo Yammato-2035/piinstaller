@@ -14,24 +14,36 @@ if str(_backend) not in sys.path:
 
 from core.rescue_fat32_esp_usb_writer import generate_fat32_esp_grub_cfg  # noqa: E402
 from core.rescue_msi_lab_auto_boot import (  # noqa: E402
+    GUI_MENU_TITLE,
+    LAB_AUTO_GUI_MENU_TITLE,
+    LAB_AUTO_MENU_TITLE,
     MSI_COMPAT_MENU_TITLE,
     MSI_LAB_CMDLINE_FLAGS,
     patch_grub_cfg_for_msi_lab_auto_boot,
+    patch_grub_cfg_for_msi_gui_interactive_boot,
 )
 from core.rescue_msi_lab_evidence_eval import evaluate_msi_lab_evidence  # noqa: E402
 
 
 class MsiLabAutoBootTests(unittest.TestCase):
-    def test_generate_grub_lab_auto_msi_first_entry(self) -> None:
+    def test_generate_grub_lab_auto_gui_first_entry(self) -> None:
         cfg = generate_fat32_esp_grub_cfg(lab_auto_msi_boot=True)
         self.assertIn("set timeout=3", cfg)
         self.assertIn("set timeout_style=countdown", cfg)
         self.assertIn(MSI_LAB_CMDLINE_FLAGS.split()[0], cfg)
         self.assertIn("setuphelfer_auto_discovery=1", cfg)
         self.assertIn("setuphelfer_msi_e2e_auto=0", cfg)
-        first_menu = cfg.index('menuentry "Setuphelfer MSI/NVIDIA')
-        first_text = cfg.index('menuentry "Setuphelfer starten - sicherer Textmodus')
-        self.assertLess(first_menu, first_text)
+        first_gui_lab = cfg.index(f'menuentry "{LAB_AUTO_GUI_MENU_TITLE}"')
+        first_text_lab = cfg.index(f'menuentry "{LAB_AUTO_MENU_TITLE}"')
+        first_gui = cfg.index(f'menuentry "{GUI_MENU_TITLE}"')
+        first_msi = cfg.index(f'menuentry "{MSI_COMPAT_MENU_TITLE}"')
+        self.assertLess(first_gui_lab, first_text_lab)
+        self.assertLess(first_gui_lab, first_gui)
+        self.assertLess(first_gui_lab, first_msi)
+        lab_block = cfg[first_gui_lab:first_text_lab]
+        self.assertIn("setuphelfer_mode=gui", lab_block)
+        self.assertIn("setuphelfer_gui_watchdog=1", lab_block)
+        self.assertIn("setuphelfer_msi_lab_auto=1", lab_block)
 
     def test_patch_existing_grub_adds_discovery_flag_when_lab_auto_present(self) -> None:
         base = generate_fat32_esp_grub_cfg()
@@ -42,14 +54,31 @@ class MsiLabAutoBootTests(unittest.TestCase):
         self.assertIn("setuphelfer_auto_discovery=1", patched)
         self.assertNotIn("setuphelfer_msi_e2e_auto=1", patched)
 
-    def test_patch_existing_grub_for_lab_auto(self) -> None:
+    def test_patch_existing_grub_for_lab_auto_gui_first(self) -> None:
         base = generate_fat32_esp_grub_cfg()
         patched = patch_grub_cfg_for_msi_lab_auto_boot(base)
         self.assertIn("setuphelfer_msi_lab_auto=1", patched)
         self.assertIn("set timeout=3", patched)
-        first_msi = patched.index(f'menuentry "{MSI_COMPAT_MENU_TITLE}"')
-        first_text = patched.index('menuentry "Setuphelfer starten - sicherer Textmodus"')
-        self.assertLess(first_msi, first_text)
+        self.assertIn(LAB_AUTO_GUI_MENU_TITLE, patched)
+        self.assertIn(LAB_AUTO_MENU_TITLE, patched)
+        first_gui_lab = patched.index(f'menuentry "{LAB_AUTO_GUI_MENU_TITLE}"')
+        first_text_lab = patched.index(f'menuentry "{LAB_AUTO_MENU_TITLE}"')
+        first_gui = patched.index(f'menuentry "{GUI_MENU_TITLE}"')
+        self.assertLess(first_gui_lab, first_text_lab)
+        self.assertLess(first_gui_lab, first_gui)
+        lab_block = patched[first_gui_lab:first_text_lab]
+        self.assertIn("setuphelfer_mode=gui", lab_block)
+        self.assertIn("setuphelfer_gui_watchdog=1", lab_block)
+
+    def test_gui_interactive_patch_for_backup_verify(self) -> None:
+        base = generate_fat32_esp_grub_cfg()
+        patched = patch_grub_cfg_for_msi_gui_interactive_boot(base)
+        self.assertIn("Setuphelfer Lab-Auto (GUI, Backup/Verify)", patched)
+        self.assertIn("setuphelfer_mode=gui", patched)
+        self.assertIn("setuphelfer_gui_watchdog=1", patched)
+        self.assertIn("setuphelfer_auto_discovery=0", patched)
+        self.assertIn("setuphelfer_auto_shutdown=0", patched)
+        self.assertIn("Setuphelfer Lab-Auto (Text, Backup/Verify)", patched)
 
 
 class MsiLabEvidenceEvalTests(unittest.TestCase):

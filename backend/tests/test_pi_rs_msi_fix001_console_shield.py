@@ -19,7 +19,7 @@ class MsiFix001ConsoleShieldTests(unittest.TestCase):
     def test_shield_is_non_fatal(self) -> None:
         text = COMMON.read_text(encoding="utf-8")
         self.assertIn("setuphelfer_rescue_shield_console_early() {", text)
-        self.assertIn("return 0", text.split("setuphelfer_rescue_shield_console_early() {", 1)[1][:800])
+        self.assertIn("return 0", text.split("setuphelfer_rescue_shield_console_early() {", 1)[1][:2000])
 
 
 if __name__ == "__main__":

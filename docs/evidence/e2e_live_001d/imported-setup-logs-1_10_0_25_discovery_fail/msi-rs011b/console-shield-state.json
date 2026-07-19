@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "shield_applied_at_stage": "entrypoint",
+  "applied_at": "2026-07-01T00:11:09Z",
+  "dmesg_level": 2,
+  "safe_ui": false,
+  "msi_compat": true,
+  "debug_mode": false,
+  "methods_applied": [
+    "dmesg -n",
+    "sysctl -w",
+    "tty_clear"
+  ]
+}

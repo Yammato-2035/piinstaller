@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "browser_started": false,
+  "server_started": false,
+  "menu_visible": false,
+  "status": "failed",
+  "reason": "openvt_console_2_not_released",
+  "display_mode": "failed",
+  "secrets_exposed": false
+}

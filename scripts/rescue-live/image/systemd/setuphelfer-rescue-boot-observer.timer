@@ -1,10 +1,11 @@
 [Unit]
 Description=Setuphelfer Rescue boot observer heartbeat timer (001D7D)
+ConditionPathExists=!/run/setuphelfer/rescue-tui-active
 
 [Timer]
 OnBootSec=20s
-OnUnitInactiveSec=30s
-AccuracySec=1s
+OnUnitInactiveSec=120s
+AccuracySec=5s
 Unit=setuphelfer-rescue-boot-observer.service
 Persistent=no
 

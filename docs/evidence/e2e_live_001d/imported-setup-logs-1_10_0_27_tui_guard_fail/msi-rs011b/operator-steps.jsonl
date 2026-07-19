@@ -1,0 +1,197 @@
+{"ts":"2026-06-29T17:23:42Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T17:23:42Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T17:23:42Z","run_id":"RS_011B","phase":"version_check","status":"fail","message":"expected 1.10.0.4 got 1.9.16.1"}
+{"ts":"2026-06-29T17:24:12Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T17:24:12Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T17:24:13Z","run_id":"RS_011B","phase":"version_check","status":"review_required","message":"skip RS011B_SKIP_VERSION_CHECK=1 api=1.9.16.1"}
+{"ts":"2026-06-29T17:24:13Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-06-29T17:24:13Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-06-29T17:24:13Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T17:24:14Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts": "2026-06-29T17:24:14Z", "run_id": "RS_011B", "phase": "collect_start", "status": "ok"}
+{"ts": "2026-06-29T17:24:15Z", "run_id": "RS_011B", "phase": "collect_done", "status": "ok"}
+{"ts":"2026-06-29T20:45:16Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T20:45:16Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T20:45:16Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.5"}
+{"ts":"2026-06-29T20:45:19Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T20:45:19Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T20:45:19Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T20:45:19Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-29T21:07:48Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T21:07:48Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T21:07:49Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.5"}
+{"ts":"2026-06-29T21:07:51Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:07:51Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:07:52Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:07:52Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-29T21:40:04Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T21:40:04Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T21:40:04Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.6"}
+{"ts":"2026-06-29T21:40:06Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:07Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:07Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:07Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-29T21:40:34Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T21:40:34Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T21:40:34Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.6"}
+{"ts":"2026-06-29T21:40:37Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:37Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:37Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:38Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-29T21:40:42Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-29T21:40:43Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-29T21:40:43Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.6"}
+{"ts":"2026-06-29T21:40:45Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:45Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:45Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-29T21:40:46Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-30T01:31:45Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-30T01:31:45Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T01:31:45Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.7"}
+{"ts":"2026-06-30T01:31:48Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T01:31:48Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T01:31:48Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T01:31:49Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-30T01:54:28Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-30T01:54:29Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T01:54:29Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.8"}
+{"ts":"2026-06-30T01:54:31Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T01:54:31Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T01:54:32Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T01:54:33Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-06-30T01:54:33Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-30T20:47:02Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-30T20:47:03Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T20:47:03Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.9"}
+{"ts":"2026-06-30T20:47:05Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T20:47:05Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T20:47:06Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"warn","message":"HTTP 500"}
+{"ts":"2026-06-30T20:47:08Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-06-30T20:47:09Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-30T21:05:06Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-30T21:05:06Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:05:07Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.10"}
+{"ts":"2026-06-30T21:05:09Z","run_id":"RS_011B","phase":"api_rescue-health","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:05:09Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:05:09Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:05:12Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-06-30T21:05:12Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-06-30T21:25:28Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-06-30T21:25:28Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:25:28Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.11"}
+{"ts":"2026-06-30T21:25:31Z","run_id":"RS_011B","phase":"api_rescue-health","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:25:33Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:25:33Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-06-30T21:25:36Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-06-30T21:25:36Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-01T00:11:20Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-01T00:11:20Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-01T00:11:21Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.12"}
+{"ts":"2026-07-01T00:11:23Z","run_id":"RS_011B","phase":"api_rescue-health","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-01T00:11:25Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-01T00:11:25Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-01T00:11:29Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-07-01T00:11:29Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-12T01:58:59Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-12T01:58:59Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-12T01:58:59Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-summary.json"}
+{"ts":"2026-07-12T01:59:00Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-summary.md"}
+{"ts":"2026-07-12T01:59:00Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T01:59:00Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.12"}
+{"ts":"2026-07-12T01:59:00Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T01:59:01Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T01:59:01Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T01:59:03Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-12T01:59:03Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-12T11:12:30Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-12T11:12:31Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-12T11:12:31Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-summary.json"}
+{"ts":"2026-07-12T11:12:31Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-summary.md"}
+{"ts":"2026-07-12T11:12:31Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T11:12:32Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.12"}
+{"ts":"2026-07-12T11:12:32Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T11:12:32Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T11:12:33Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T11:12:34Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-12T11:12:34Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-12T22:50:52Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-12T22:50:52Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-12T22:50:52Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T22:50:53Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.16"}
+{"ts":"2026-07-12T22:50:53Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T22:50:54Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T22:50:55Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T22:50:58Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-12T22:50:58Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-12T22:59:52Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-12T22:59:53Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-12T22:59:53Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T22:59:54Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.16"}
+{"ts":"2026-07-12T22:59:54Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T22:59:55Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-12T22:59:56Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-12T22:59:58Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-12T22:59:59Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-13T00:33:07Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-13T00:33:07Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-13T00:33:07Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-13T00:33:07Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.20"}
+{"ts":"2026-07-13T00:33:08Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-13T00:33:08Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-13T00:33:09Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-13T00:33:10Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-13T00:33:10Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-14T18:23:23Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-14T18:23:24Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-14T18:23:24Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-14T18:23:24Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.21"}
+{"ts":"2026-07-14T18:23:25Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-14T18:23:25Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-14T18:23:25Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-14T18:23:27Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-14T18:23:27Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-15T09:41:44Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-15T09:41:44Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-15T09:41:44Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T09:41:44Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.22"}
+{"ts":"2026-07-15T09:41:45Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T09:41:45Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T09:41:46Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T09:41:47Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-15T09:41:47Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-15T12:08:09Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-15T12:08:10Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-15T12:08:10Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T12:08:10Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.24"}
+{"ts":"2026-07-15T12:08:10Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T12:08:11Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T12:08:11Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T12:08:13Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"warn","message":"failed — see rs011d-supplement.log"}
+{"ts":"2026-07-15T12:08:13Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-15T20:06:57Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-15T20:06:57Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-15T20:06:57Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T20:06:58Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.25"}
+{"ts":"2026-07-15T20:06:58Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T20:06:58Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T20:06:59Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T20:07:00Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-07-15T20:07:00Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-15T21:38:59Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-15T21:38:59Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-15T21:38:59Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T21:39:00Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.26"}
+{"ts":"2026-07-15T21:39:00Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T21:39:00Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-15T21:39:01Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-15T21:39:02Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-07-15T21:39:03Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}
+{"ts":"2026-07-16T10:12:50Z","run_id":"RS_011B","phase":"collect_start","status":"ok","message":"Evidence collection started logs_root=/run/setuphelfer/esp-rw"}
+{"ts":"2026-07-16T10:12:50Z","run_id":"RS_011B","phase":"boot_evidence","status":"ok","message":"copied boot-timeline.jsonl"}
+{"ts":"2026-07-16T10:12:50Z","run_id":"RS_011B","phase":"api_version","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-16T10:12:51Z","run_id":"RS_011B","phase":"version_check","status":"ok","message":"project_version=1.10.0.27"}
+{"ts":"2026-07-16T10:12:51Z","run_id":"RS_011B","phase":"api_rescue-health","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-16T10:12:51Z","run_id":"RS_011B","phase":"api_disk-inventory","status":"warn","message":"HTTP 404"}
+{"ts":"2026-07-16T10:12:52Z","run_id":"RS_011B","phase":"api_storage-discovery","status":"ok","message":"HTTP 200"}
+{"ts":"2026-07-16T10:12:53Z","run_id":"RS_011B","phase":"rs011d_supplement","status":"ok","message":"ok collector_python=/opt/setuphelfer-rescue/backend/venv/bin/python3"}
+{"ts":"2026-07-16T10:12:53Z","run_id":"RS_011B","phase":"collect_done","status":"ok","message":"Phase 1 complete"}

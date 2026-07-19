@@ -12,7 +12,11 @@ if [[ -f /run/setuphelfer-rescue/environment ]]; then
   source /run/setuphelfer-rescue/environment
   set +a
 fi
+setuphelfer_rescue_lab_cloud_send_env || true
 mkdir -p /run/setuphelfer-rescue/discovery 2>/dev/null || true
+
+_PY="$(setuphelfer_rescue_backend_python)"
+_PYPATH="$(setuphelfer_rescue_backend_pythonpath)"
 
 cat >"/run/setuphelfer-rescue/discovery/runner-wrapper.json" <<EOF
 {
@@ -21,7 +25,8 @@ cat >"/run/setuphelfer-rescue/discovery/runner-wrapper.json" <<EOF
   "wrapper_called": true,
   "called_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "boot_id": "$(setuphelfer_rescue_boot_id)",
-  "stage": "before_python_import"
+  "stage": "before_python_import",
+  "python": "${_PY}"
 }
 EOF
 
@@ -32,10 +37,10 @@ fi
 
 _log="${SETUPHELFER_RESCUE_STATE_DIR}/auto-discovery.log"
 {
-  echo "=== auto-discovery-runner $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+  echo "=== auto-discovery-runner $(date -u +%Y-%m-%dT%H:%M:%SZ) python=${_PY} ==="
 } >>"$_log"
 
-if ! PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1; then
+if ! PYTHONPATH="${_PYPATH}" "${_PY}" - <<'PY' >>"$_log" 2>&1; then
 from core.rescue_discovery_observability import persist_service_start
 from core.rescue_payload_version import rescue_payload_version
 from core.rescue_component_heartbeat import write_component_heartbeat
@@ -50,14 +55,15 @@ cat >"/run/setuphelfer-rescue/discovery/runner-wrapper-import-error.json" <<EOF
   "called_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "boot_id": "$(setuphelfer_rescue_boot_id)",
   "stage": "python_import_or_exec_failed",
-  "status": "failed_discovery_runner_import"
+  "status": "failed_discovery_runner_import",
+  "python": "${_PY}"
 }
 EOF
 fi
 
 _rc=0
 set +e
-PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' >>"$_log" 2>&1
+PYTHONPATH="${_PYPATH}" "${_PY}" - <<'PY' >>"$_log" 2>&1
 import json
 import sys
 from core.rescue_auto_discovery_orchestrator import main
@@ -85,7 +91,7 @@ set -euo pipefail
 } >>"$_log"
 
 # Ensure exit/result artifacts exist even on early crash before main() ran.
-PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY >>"$_log" 2>&1 || true
+PYTHONPATH="${_PYPATH}" "${_PY}" - <<PY >>"$_log" 2>&1 || true
 from core.rescue_discovery_observability import persist_orchestrator_exit, persist_service_result, read_runtime_json
 from core.rescue_discovery_boot_completion import harvest_late_journal, evaluate_discovery_boot_completion
 from core.rescue_physical_e2e_evidence_import import find_setup_logs_mount
@@ -115,7 +121,7 @@ touch "$_marker" 2>/dev/null || true
 setuphelfer_rescue_write_boot_state "auto_discovery_complete" || true
 
 # Shutdown only when boot-finalizer says shutdown_safe.
-_shutdown_ok="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY'
+_shutdown_ok="$(PYTHONPATH="${_PYPATH}" "${_PY}" - <<'PY'
 import json
 from pathlib import Path
 from core.rescue_discovery_observability import read_runtime_json

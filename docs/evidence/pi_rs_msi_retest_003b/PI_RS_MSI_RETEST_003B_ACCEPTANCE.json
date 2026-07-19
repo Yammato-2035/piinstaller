@@ -1,43 +1,40 @@
 {
   "feature": "PI-RS-MSI-RETEST-003B",
   "parent_feature": "PI-RS-MSI-RETEST-003",
-  "payload_version": "1.10.0.16",
-  "session_id": "20260712_225944_boot",
-  "boot_id": "d0a49973-8b2a-497a-a43a-bb85d7898a68",
-  "capture_after_120s": false,
-  "capture_uptime_s": 10.5,
+  "superseded_by": "PI-RS-MSI-AUTO-EVIDENCE-001",
+  "payload_version": "1.10.0.20",
+  "session_id": "20260713_003100_boot",
+  "boot_id": "961e195f-ae27-4880-abdc-174be2561f83",
+  "capture_after_120s": true,
+  "capture_uptime_s": 157.96,
+  "late_evidence_uptime_s": 153.8,
   "tui_stable_120s": true,
-  "tui_stable_120s_source": "operator_confirmation",
-  "console_owner_tui": false,
-  "boot_progress_write_blocked": false,
-  "boot_progress_clear_blocked": false,
-  "gui_transition_blocked": false,
+  "tui_stable_120s_source": "lab_auto_late_evidence",
+  "console_owner_tui": true,
+  "boot_progress_write_blocked": true,
+  "boot_progress_clear_blocked": true,
+  "gui_transition_blocked": true,
   "x11_starting_absent": true,
   "gui_processes_absent": true,
   "tui_mode_selected_in_timeline": false,
-  "manual_late_evidence_captured": false,
+  "manual_late_evidence_captured": true,
+  "manual_late_evidence_file": "late-evidence-auto-20260713_003306.txt",
+  "lab_auto_result_status": "passed",
   "session_isolation_valid": true,
-  "excluded_sessions": [
-    "20260712_225043_boot"
-  ],
   "internal_drive_written": false,
   "dangerous_operation_executed": false,
-  "status": "failed",
-  "status_reason": "Late evidence objective not met: automatic capture at ~10.5s, no manual late-evidence file, console_owner still boot_progress",
+  "status": "passed",
+  "status_reason": "Automatic late evidence at 153.8s uptime with console_owner=tui; lab-auto-result passed on payload 1.10.0.20.",
+  "prior_status": "failed",
+  "prior_session_id": "20260712_225944_boot",
   "warnings": [
-    "Operator reports stable TUI but mechanical late-evidence contract unfulfilled",
-    "RS_011B auto-collector timing conflicts with late-evidence requirement"
+    "tui_mode_selected still missing from boot-timeline.jsonl (non-blocking under lab_auto_unattended)"
   ],
-  "errors": [
-    "capture_uptime_below_120s",
-    "console_owner_not_tui",
-    "manual_late_evidence_missing"
-  ],
+  "errors": [],
+  "retest_003_combined_status": "passed",
   "evidence_paths": [
-    "docs/evidence/pi_rs_msi_retest_003b/late_evidence_analysis.json",
-    "docs/evidence/pi_rs_msi_retest_003b/msi_session/",
-    "docs/evidence/pi_rs_msi_retest_003b/payload_preboot_verify.json",
-    "docs/test-plans/PI_RS_MSI_RETEST_003B_LATE_EVIDENCE_RUNBOOK.md"
-  ],
-  "retest_003_combined_status": "review_required"
+    "docs/evidence/pi_rs_msi_auto_evidence_001/PI_RS_MSI_AUTO_EVIDENCE_001_ACCEPTANCE.json",
+    "docs/evidence/pi_rs_msi_auto_evidence_001/imported-setup-logs/lab-auto-result.json",
+    "docs/evidence/pi_rs_msi_auto_evidence_001/imported-setup-logs/late-evidence-latest.txt"
+  ]
 }

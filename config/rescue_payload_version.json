@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rescue_payload_version": "1.10.0.29",
-  "previous_rescue_payload_version": "1.10.0.28",
+  "rescue_payload_version": "1.10.0.38",
+  "previous_rescue_payload_version": "1.10.0.37",
   "pi_rs_msi_fix_001": true,
   "pi_rs_msi_gui_002": true,
   "pi_rs_msi_gui_003": true,
@@ -9,5 +9,9 @@
   "pi_rs_e2e_live_001d": true,
   "version_source_of_truth": true,
   "includes_lab_telemetry_send": true,
-  "pi_rs_payload_telemetry_001": true
+  "pi_rs_payload_telemetry_001": true,
+  "pi_rs_discovery_lab_telemetry_001": true,
+  "pi_rs_windows_backup_scope_001": true,
+  "pi_rs_system_disk_restore_gate_001": true,
+  "pi_rs_msi_gui_lab_auto_001": true
 }

@@ -1,0 +1,22 @@
+{
+  "MSI_KILLER_E2500_DETECTED": true,
+  "pci_slot": "05:00.0",
+  "vendor_device": "1969:e0b1",
+  "driver": "alx",
+  "device_name": "Qualcomm Atheros / Killer E2500 Gigabit Ethernet Controller",
+  "risk": "AER_SPAM",
+  "schema_version": 1,
+  "MSI_AER_RISK": true,
+  "prefer_wifi": true,
+  "ethernet_auto_force": false,
+  "alx_action": "defer_or_soft_unload",
+  "require_lan": false,
+  "notes_de": "Killer E2500 (alx) erkannt — WLAN bevorzugt, Ethernet nicht erzwingen.",
+  "rescue_version": "1.10.0.10",
+  "collector_version": "1.10.0.10",
+  "boot_session_id": "20260630_210507_1.10.0.10",
+  "collected_at": "2026-06-30T21:05:11Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "collect_rs011d_supplement"
+}

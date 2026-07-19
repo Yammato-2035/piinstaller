@@ -1,0 +1,13 @@
+JOB UNIT                                         TYPE  STATE
+2   multi-user.target                            start waiting
+108 setuphelfer-rescue-auto-physical-e2e.service start waiting
+118 setuphelfer-rescue-boot-diagnostics.service  start running
+106 setuphelfer-rescue-start-assistant.service   start waiting
+1   graphical.target                             start waiting
+129 setuphelfer-rescue-state.service             start waiting
+125 systemd-update-utmp-runlevel.service         start waiting
+113 setuphelfer-rescue-auto-msi-evidence.service start running
+122 setuphelfer-rescue-media-check.service       start running
+88  setuphelfer-rescue-boot-logs.service         start waiting
+
+10 jobs listed.

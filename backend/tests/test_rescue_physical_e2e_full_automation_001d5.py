@@ -151,9 +151,13 @@ class MsiEvidenceGateTests(unittest.TestCase):
             write_msi_evidence_complete(logs)
             self.assertTrue(msi_evidence_complete_ok(logs))
 
-    def test_physical_e2e_waits_for_marker(self):
+    def test_physical_e2e_waits_for_setup_logs_not_msi_marker(self):
         script = Path("scripts/rescue-live/image/setuphelfer-rescue-auto-physical-e2e").read_text(encoding="utf-8")
-        self.assertIn("msi-evidence-complete.json", script)
+        self.assertIn("Waiting for SETUP_LOGS with setuphelfer/", script)
+        self.assertIn("_progress_write", script)
+        self.assertIn("physical-progress.json", script)
+        self.assertIn("find_setup_logs_mount", script)
+        self.assertNotIn("msi-evidence-complete.json missing — physical E2E blocked", script)
 
 
 class DestructiveTargetIdentityTests(unittest.TestCase):
@@ -232,6 +236,24 @@ class DestructiveLayoutTests(unittest.TestCase):
     def test_lab_layout_has_three_partitions(self):
         self.assertEqual(len(LAB_PARTITIONS), 3)
 
+    def test_lab_partition_labels_fit_ext4(self):
+        for spec in LAB_PARTITIONS:
+            label = str(spec["label"])
+            self.assertLessEqual(len(label.encode("utf-8")), 16, label)
+
+    def test_identity_accepts_lab_labels_after_wipe(self):
+        cfg = _sabrent_config()
+        cand = _sabrent_candidate(
+            role="rescue_usb_target_candidate",
+            partitions=[
+                {"path": "/dev/sdb1", "label": "SETUP_E2E_SOURCE", "uuid": "aaa", "fstype": "ext4", "mountpoint": None},
+                {"path": "/dev/sdb2", "label": "SETUP_E2E_BACKUP", "uuid": "bbb", "fstype": "ext4", "mountpoint": None},
+                {"path": "/dev/sdb3", "label": "SETUP_E2E_RESTOR", "uuid": "ccc", "fstype": "ext4", "mountpoint": None},
+            ],
+        )
+        gate = verify_destructive_target_identity(cand, cfg, flat_devices=[])
+        self.assertTrue(gate["ok"], gate)
+
     def test_prepare_paths_restore_empty(self):
         with tempfile.TemporaryDirectory() as tmp:
             base = Path(tmp)
@@ -242,9 +264,26 @@ class DestructiveLayoutTests(unittest.TestCase):
             }
             for mp in mounts.values():
                 mp.mkdir(parents=True)
+            (mounts["backup"] / "lost+found").mkdir()
             paths = prepare_destructive_run_paths(mounts, "e2e-rescue-msi-test-001")
             self.assertEqual(paths["layout_mode"], "dedicated_external_lab_hdd")
             self.assertFalse(any(paths["restore_dir"].iterdir()))
+
+    def test_prepare_paths_rejects_real_backup_content(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            base = Path(tmp)
+            mounts = {
+                "source": base / "source",
+                "backup": base / "backup",
+                "restore": base / "restore",
+            }
+            for mp in mounts.values():
+                mp.mkdir(parents=True)
+            (mounts["backup"] / "lost+found").mkdir()
+            (mounts["backup"] / "stale.tar.gz").write_text("x", encoding="utf-8")
+            with self.assertRaises(ValueError) as ctx:
+                prepare_destructive_run_paths(mounts, "e2e-rescue-msi-test-002")
+            self.assertIn("backup_partition_not_empty", str(ctx.exception))
 
     def test_layout_verification_partition_count(self):
         with patch("core.rescue_physical_e2e_destructive_target._flatten", return_value=[{"path": "/dev/sdb1", "type": "part", "parent_path": "/dev/sdb", "label": "SETUP_E2E_SOURCE", "fstype": "ext4"}]):

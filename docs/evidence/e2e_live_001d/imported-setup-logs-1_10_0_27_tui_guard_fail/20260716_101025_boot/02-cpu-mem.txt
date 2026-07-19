@@ -1,0 +1,45 @@
+model name	: Intel(R) Core(TM) i7-8750H CPU @ 2.20GHz
+12
+              gesamt       benutzt     frei      gemns.  Puffer/Cache verfügbar
+Speicher:       15Gi       504Mi        15Gi        17Mi       247Mi        14Gi
+Swap:             0B          0B          0B
+MemTotal:       16212476 kB
+MemFree:        15732464 kB
+MemAvailable:   15696256 kB
+Buffers:            6716 kB
+Cached:           217384 kB
+SwapCached:            0 kB
+Active:            61396 kB
+Inactive:         228152 kB
+Active(anon):       8080 kB
+Inactive(anon):    75568 kB
+Active(file):      53316 kB
+Inactive(file):   152584 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:                 0 kB
+Writeback:             0 kB
+AnonPages:         66364 kB
+Mapped:            41960 kB
+Shmem:             17552 kB
+KReclaimable:      29724 kB
+Slab:              86424 kB
+SReclaimable:      29724 kB
+SUnreclaim:        56700 kB
+KernelStack:        4220 kB
+PageTables:         4228 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:     8106236 kB
+Committed_AS:     253472 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:       37044 kB
+VmallocChunk:          0 kB
+Percpu:             8832 kB
+HardwareCorrupted:     0 kB

@@ -1,0 +1,8 @@
+{
+  "schema_version": 1,
+  "run_id": "RS_011B",
+  "status": "pending_msi_session",
+  "plan_status": null,
+  "execute_allowed": false,
+  "notes": "Preflight only — fill after Backup-Plan erstellen on MSI, do NOT execute backup"
+}

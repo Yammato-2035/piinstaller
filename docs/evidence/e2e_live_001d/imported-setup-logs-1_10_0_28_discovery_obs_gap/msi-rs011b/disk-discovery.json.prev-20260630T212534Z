@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "run_id": "RS_011D",
+  "status": "failed",
+  "error_code": "DISK_DISCOVERY_MISSING",
+  "classification": "missing_due_to_path_error",
+  "errors": [
+    "disk-discovery.json_not_in_state"
+  ],
+  "checked_at": "2026-06-30T21:05:11Z",
+  "secrets_exposed": false,
+  "current_result_valid": false,
+  "missing_due_to_api_failure": false,
+  "rescue_version": "1.10.0.10",
+  "collector_version": "1.10.0.10",
+  "boot_session_id": "20260630_210507_1.10.0.10",
+  "collected_at": "2026-06-30T21:05:11Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "disk_discovery_failed_stub"
+}

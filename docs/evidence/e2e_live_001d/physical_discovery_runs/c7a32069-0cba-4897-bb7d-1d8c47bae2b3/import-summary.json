@@ -1,0 +1,55 @@
+{
+  "import_ok": true,
+  "mode": "auto-discovery",
+  "boot_id": "c7a32069-0cba-4897-bb7d-1d8c47bae2b3",
+  "session_id": null,
+  "destination": "/home/volker/piinstaller/docs/evidence/e2e_live_001d/physical_discovery_runs/c7a32069-0cba-4897-bb7d-1d8c47bae2b3",
+  "files_copied_boot": 13,
+  "discovery_boot_imported": true,
+  "session_imported": false,
+  "payload_version": "1.10.0.29",
+  "observability": {
+    "start_gate_audit_present": false,
+    "start_gate_missing_detected": true,
+    "service_start_audit_present": false,
+    "orchestrator_exit_present": false,
+    "late_journal_present": true,
+    "boot_finalizer_present": true,
+    "session_present": false,
+    "resolver_started": true
+  },
+  "boot_observer": {
+    "started_before_discovery": true,
+    "boot_directory_created": true,
+    "start_gate_missing_detected": true,
+    "run_control_consumed": true,
+    "partition_resolved": true
+  },
+  "tui_guard": {
+    "bare_tty_visible": false,
+    "hold_unit_used": true,
+    "inline_hold_used": false,
+    "guard_completed": true
+  },
+  "run_control": {
+    "consumed": true,
+    "enabled": false,
+    "terminal_status": "failed_discovery_start_gate_not_invoked"
+  },
+  "setup_logs_resolution": {
+    "resolver_started": true,
+    "partition_resolved": true,
+    "mount_source_verified": true,
+    "canonical_mount_used": true,
+    "shadow_mount_ignored": true,
+    "runtime_fallback_used": false,
+    "fallback_migrated": true
+  },
+  "import": {
+    "mode": "auto-discovery",
+    "explicit_root_used": false,
+    "mount_source_verified": true,
+    "discovery_boot_imported": true,
+    "session_imported": false
+  }
+}

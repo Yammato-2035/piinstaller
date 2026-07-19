@@ -1,0 +1,1 @@
+Jul 12 01:58:35 setuphelfer-rescue live-config[668]:  xinit keyboard-configuration util-linux login xserver-xorg.

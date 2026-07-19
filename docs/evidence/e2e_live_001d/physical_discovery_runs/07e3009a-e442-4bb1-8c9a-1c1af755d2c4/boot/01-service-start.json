@@ -1,0 +1,9 @@
+{
+  "schema": "setuphelfer.rescue.discovery-service-start.v1",
+  "runner_started": true,
+  "started_at": "2026-07-16T16:26:30Z",
+  "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+  "payload_version": "1.10.0.29",
+  "pid": 2516,
+  "recorded_at": "2026-07-16T16:26:30Z"
+}

@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "locale": "de",
+  "namespace": "rescue.boot.msi_compat",
+  "generated_for": "PI-RS-MSI-GUI-003",
+  "strings": {
+    "tui_mode_selected": "MSI-Kompatibilitätsmodus: Textoberfläche wird verwendet.",
+    "gui_skipped_audit": "GUI-Start unter MSI-Compat übersprungen",
+    "boot_complete_tui": "Bootvorbereitung abgeschlossen — Textmenü bereit.",
+    "gui_not_available_title": "Grafische Oberfläche nicht verfügbar",
+    "gui_not_available_body": "Auf diesem Gerät im MSI-Kompatibilitätsmodus ist nur der Textmodus stabil. Bitte Textmenü nutzen.",
+    "stale_evidence_warning": "Hinweis: Diese GUI-Evidence stammt aus einer früheren Boot-Session.",
+    "console_write_blocked": "Konsolenausgabe blockiert — Textoberfläche aktiv"
+  }
+}

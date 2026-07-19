@@ -10,11 +10,11 @@ from core.rescue_payload_version import previous_rescue_payload_version, rescue_
 
 class MsiFix001PayloadVersionTests(unittest.TestCase):
     def test_version_bumped(self) -> None:
-        self.assertEqual(rescue_payload_version(), "1.10.0.16")
-        self.assertEqual(previous_rescue_payload_version(), "1.10.0.15")
+        self.assertEqual(rescue_payload_version(), "1.10.0.38")
+        self.assertEqual(previous_rescue_payload_version(), "1.10.0.37")
 
     def test_repacked_path_name(self) -> None:
-        self.assertEqual(default_repacked_squashfs_path().name, "filesystem.squashfs.repacked-1.10.0.16")
+        self.assertEqual(default_repacked_squashfs_path().name, "filesystem.squashfs.repacked-1.10.0.38")
 
     def test_payload_content_when_built(self) -> None:
         squashfs = default_repacked_squashfs_path()

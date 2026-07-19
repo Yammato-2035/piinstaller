@@ -203,11 +203,12 @@ def persist_service_result(payload: dict[str, Any]) -> dict[str, Any]:
 
 
 def persist_boot_finalizer(payload: dict[str, Any]) -> dict[str, Any]:
+    terminal = bool(payload.get("terminal", True))
     data = {
         "schema": BOOT_FINALIZER_SCHEMA,
         "boot_id": boot_id(),
         "completed_at": _utc_now(),
-        "terminal": True,
+        "terminal": terminal,
         "status": payload.get("status") or "",
         "observability_complete": bool(payload.get("observability_complete")),
         "run_control_consumed": bool(payload.get("run_control_consumed")),
@@ -217,11 +218,13 @@ def persist_boot_finalizer(payload: dict[str, Any]) -> dict[str, Any]:
     }
     write_dual("boot-finalizer.json", data)
     atomic_write_json(runtime_discovery_dir() / "boot-finalizer.json", data)
-    try:
-        state_dir().mkdir(parents=True, exist_ok=True)
-        (state_dir() / "boot-finalizer.done").write_text(data["status"] + "\n", encoding="utf-8")
-    except OSError:
-        pass
+    # Only stamp boot-finalizer.done for terminal outcomes (guard must keep retrying otherwise).
+    if terminal:
+        try:
+            state_dir().mkdir(parents=True, exist_ok=True)
+            (state_dir() / "boot-finalizer.done").write_text(data["status"] + "\n", encoding="utf-8")
+        except OSError:
+            pass
     return data
 
 

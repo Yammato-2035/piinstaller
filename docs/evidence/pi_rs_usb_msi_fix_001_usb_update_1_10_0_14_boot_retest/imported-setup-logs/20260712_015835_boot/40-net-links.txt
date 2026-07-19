@@ -1,0 +1,13 @@
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+enp5s0           UP             30:9c:23:92:df:fd <BROADCAST,MULTICAST,UP,LOWER_UP> 
+wlo1             DOWN           c0:b6:f9:77:75:b3 <BROADCAST,MULTICAST> 
+---addr---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp5s0           UP             192.168.178.32/24 metric 1024 192.168.178.54/24 2a00:6020:4191:d300:8ab9:d790:6cd6:728d/64 fd87:fe51:17e7:0:b02e:b337:3c8:2b88/64 fd87:fe51:17e7:0:329c:23ff:fe92:dffd/64 2a00:6020:4191:d300:329c:23ff:fe92:dffd/64 fe80::329c:23ff:fe92:dffd/64 
+wlo1             DOWN           
+---route---
+default via 192.168.178.1 dev enp5s0 proto dhcp src 192.168.178.54 metric 100 
+default via 192.168.178.1 dev enp5s0 proto dhcp src 192.168.178.32 metric 1024 
+192.168.178.0/24 dev enp5s0 proto kernel scope link src 192.168.178.54 metric 100 
+192.168.178.0/24 dev enp5s0 proto kernel scope link src 192.168.178.32 metric 1024 
+192.168.178.1 dev enp5s0 proto dhcp scope link src 192.168.178.32 metric 1024 

@@ -1,0 +1,22 @@
+{
+  "schema": "setuphelfer.rescue.discovery-boot-finalizer.v1",
+  "boot_id": "c7a32069-0cba-4897-bb7d-1d8c47bae2b3",
+  "completed_at": "2026-07-16T13:46:36Z",
+  "terminal": true,
+  "status": "failed_discovery_start_gate_not_invoked",
+  "observability_complete": false,
+  "run_control_consumed": true,
+  "shutdown_safe": true,
+  "missing": [
+    "00-start-gate.json",
+    "01-service-start.json",
+    "02-orchestrator-exit.json",
+    "03-service-result.json"
+  ],
+  "notes": [
+    "payload=1.10.0.29",
+    "session_dir=no",
+    "service_result=None"
+  ],
+  "recorded_at": "2026-07-16T13:46:36Z"
+}

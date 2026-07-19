@@ -1,0 +1,15 @@
+{
+  "schema": "setuphelfer.rescue.discovery-orchestrator-exit.v1",
+  "boot_id": "07e3009a-e442-4bb1-8c9a-1c1af755d2c4",
+  "started": true,
+  "started_at": "2026-07-16T16:26:31Z",
+  "completed_at": "2026-07-16T16:26:31Z",
+  "exit_code": 1,
+  "signal": null,
+  "exception_type": "ModuleNotFoundError",
+  "exception_summary": "ModuleNotFoundError: No module named 'psutil'",
+  "session_created": false,
+  "terminal_state_written": false,
+  "status": "failed_discovery_import",
+  "recorded_at": "2026-07-16T16:26:31Z"
+}

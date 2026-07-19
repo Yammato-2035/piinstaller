@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.rescue.msi-evidence-complete.v1",
+  "status": "passed",
+  "session_id": "20260716_101029_boot",
+  "payload_version": "1.10.0.27",
+  "late_gate_completed": true,
+  "tui_owned": true,
+  "evidence_synced": true,
+  "completed_at": "2026-07-16T10:12:54Z",
+  "recorded_at": "2026-07-16T10:12:54Z"
+}

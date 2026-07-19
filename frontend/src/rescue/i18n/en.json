@@ -514,6 +514,21 @@
       "network": "Checking network",
       "services": "Starting services",
       "ui": "Preparing interface"
+    },
+    "msiCompat": {
+      "tuiModeSelected": "MSI compatibility mode: using text interface.",
+      "guiSkipped": "Graphical interface skipped under MSI compatibility",
+      "bootCompleteTui": "Boot preparation complete — text menu ready.",
+      "guiBlockedTitle": "Graphical interface not available",
+      "guiBlockedHint": "On this MSI device only text mode is stable. Please use the text menu.",
+      "staleEvidence": "GUI evidence may be from a previous boot session.",
+      "useTextMode": "Use text mode"
+    },
+    "msiLabAuto": {
+      "collectingLate": "MSI lab: collecting late evidence (≥120 s) …",
+      "shutdownComplete": "MSI lab: evidence collected — shutting down.",
+      "labAutoActive": "Unattended MSI lab mode active",
+      "lateGateWaiting": "Waiting for late evidence gate …"
     }
   },
   "guide": {
@@ -597,6 +612,8 @@
     "msiCollect": "Collect MSI test evidence",
     "msiFailed": "MSI evidence collection failed",
     "msiNoBackup": "(no backup)",
+    "msiStaleSession": "GUI log may be from a previous boot session",
+    "msiTuiOnlyMode": "MSI compat: text mode only (no automatic GUI start)",
     "recentOperatorSteps": "Recent operator steps",
     "expertMode": "Expert mode (raw)",
     "mountRw": "read/write OK",

@@ -1,6 +1,6 @@
 # FAQ — MSI Evidence & Rettungsstick 1.10.0.x (DE)
 
-Stand: **2026-06-29**
+Stand: **2026-07-13**
 
 Ausführlich: [MSI_RS011_OPERATOR_KB.md](../knowledge-base/rescue/MSI_RS011_OPERATOR_KB.md)
 
@@ -75,6 +75,26 @@ Boot-Status (`boot-progress`) schrieb auf tty1 **bevor** der Console-Shield akti
 
 Ab **1.10.0.4:** Early Shield in `boot-progress` und `entrypoint`; weniger tty-Rewrites im MSI/Safe-UI-Modus.
 
+**Update 1.10.0.16 (PI-RS-MSI-GUI-003):** Unter MSI-Compat keine Phase `x11_starting` mehr; stattdessen `tui_mode_selected`. Console-Ownership verhindert Boot-Progress-Writes nach TUI-Übergabe. **Physischer Retest ausstehend** — siehe [PI_RS_MSI_GUI_003_FAQ.de.md](PI_RS_MSI_GUI_003_FAQ.de.md).
+
+---
+
+## Warum zeigt boot-timeline.jsonl noch „Grafische Oberfläche wird gestartet“?
+
+Das war der **bestätigte Fehler** in PI-RS-MSI-RETEST-002 (Payload 1.10.0.15): Boot-Progress und GUI-Sperre waren nicht gekoppelt.
+
+Ab Payload **1.10.0.16** (Software-Fix, Stick-Update noch offen): unter `setuphelfer_msi_compat=1` **kein** `x11_starting`, Meldung „MSI-Kompatibilitätsmodus: Textoberfläche wird verwendet.“
+
+**Update 2026-07-13:** Physisch bestätigt mit Payload **1.10.0.20** und PI-RS-MSI-AUTO-EVIDENCE-001 — siehe [PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.de.md](PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.de.md).
+
+---
+
+## Warum sind gui-start.log-Einträge von gestern noch sichtbar?
+
+Ohne Session-Bindung wurden alte GUI-Logs beim Evidence-Mirror als aktuell behandelt (Session `20260712_015909` in neuer Boot-Evidence).
+
+Ab **1.10.0.16:** jede Boot-Session erhält `session_id`/`boot_id`; stale Dateien werden nicht mehr als aktueller Nachweis gespiegelt.
+
 ---
 
 ## Blockiert LAN noch das WLAN?
@@ -104,8 +124,10 @@ SETUP_LOGS/setuphelfer/diagnostics/latest/
 Import:
 
 ```bash
-./scripts/rescue/import-msi-rs011b-evidence.sh /media/.../SETUP_LOGS/setuphelfer/evidence/msi-rs011b
+./scripts/rescue/import-msi-rs011b-evidence.sh /media/$USER/SETUP_LOGS
 ```
+
+(Direkter `msi-rs011b`-Pfad ebenfalls möglich.)
 
 ---
 
@@ -129,12 +151,20 @@ cat /mnt/setuphelfer/rescue/version.json
 sudo umount /mnt
 ```
 
-Erwartet bei aktuellem Stand: `project_version` **1.10.0.4**, `squashfs_sha256` passend zum Payload.
+Erwartet auf aktuellem Lab-Stick: Payload **1.10.0.20**.
+
+---
+
+## Gibt es vollautomatischen MSI-Lab-Boot?
+
+**Ja (ab 1.10.0.20, passed).** GRUB-Lab-Modus → Late-Evidence → Collect → Auto-Shutdown (~2,5 min). Details: [PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.de.md](PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.de.md).
 
 ---
 
 ## Siehe auch
 
+- [PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.de.md](PI_RS_MSI_AUTO_EVIDENCE_001_FAQ.de.md)
+- [MSI_TUI_CONSOLE_ISOLATION_KB_DE.md](../knowledge-base/rescue/MSI_TUI_CONSOLE_ISOLATION_KB_DE.md)
 - [RESCUE_STICK_FAQ_DE.md](RESCUE_STICK_FAQ_DE.md)
 - [RESCUE_CONNECTIVITY_TELEMETRY_KB.md](../knowledge-base/rescue/RESCUE_CONNECTIVITY_TELEMETRY_KB.md)
 - [RS_011D_EVIDENCE_CONTRACT.md](../architecture/RS_011D_EVIDENCE_CONTRACT.md)

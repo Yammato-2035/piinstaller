@@ -1,0 +1,20 @@
+[    0.000000] Command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+[    0.031771] Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+[    0.031978] Booted with the nomodeset parameter. Only the system framebuffer will be available
+[    0.389301] pci 0000:00:02.0: vgaarb: setting as boot VGA device
+[    0.389301] pci 0000:00:02.0: vgaarb: bridge control possible
+[    0.389301] pci 0000:00:02.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    0.389301] pci 0000:01:00.0: vgaarb: bridge control possible
+[    0.389301] pci 0000:01:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.389301] vgaarb: loaded
+[    0.779147] fb0: EFI VGA frame buffer device
+[    1.231730] ACPI: bus type drm_connector registered
+[    6.201716] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[    6.254272] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[    6.255379] systemd[1]: Finished modprobe@drm.service - Load Kernel Module drm.
+[    6.676470] RAPL PMU: hw unit of domain pp1-gpu 2^-14 Joules
+[    6.801547] snd_hda_intel 0000:01:00.1: Handle vga_switcheroo audio client
+[    6.829457] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input15
+[    6.830236] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input16
+[    6.831011] input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input17
+[    6.831646] input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input18

@@ -513,6 +513,10 @@ ConditionVirtualization=!container
 # QEMU lab uses autopilot instead of interactive assistant on serial.
 ConditionVirtualization=!qemu
 ConditionKernelCommandLine=setuphelfer_start_assistant=1
+# 001D7F: Lab/auto TUI owns tty1 — never start assistant (TTYVHangup would kill TUI).
+ConditionKernelCommandLine=!setuphelfer_auto_discovery=1
+ConditionKernelCommandLine=!setuphelfer_msi_lab_auto=1
+ConditionKernelCommandLine=!setuphelfer_msi_e2e_auto=1
 
 [Service]
 Type=oneshot
@@ -772,8 +776,9 @@ EOF
 write_text_file "${BUILD_ROOT}/config/includes.chroot/etc/systemd/system/setuphelfer-backend.service" 0644 <<'EOF'
 [Unit]
 Description=Setuphelfer Rescue Backend
-After=network-online.target
-Wants=network-online.target
+# Do not After=network-online: MSI lab often has no link; waiting blocked the whole
+# auto chain (physical E2E via After=backend) with TUI pin "physischer E2E startet".
+After=local-fs.target
 
 [Service]
 Type=simple

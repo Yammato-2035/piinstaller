@@ -1,0 +1,20 @@
+[    0.000000] Command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset
+[    0.031595] Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset
+[    0.031806] Booted with the nomodeset parameter. Only the system framebuffer will be available
+[    0.388848] pci 0000:00:02.0: vgaarb: setting as boot VGA device
+[    0.388848] pci 0000:00:02.0: vgaarb: bridge control possible
+[    0.388848] pci 0000:00:02.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    0.388848] pci 0000:01:00.0: vgaarb: bridge control possible
+[    0.388848] pci 0000:01:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.388848] vgaarb: loaded
+[    0.778442] fb0: EFI VGA frame buffer device
+[    1.239306] ACPI: bus type drm_connector registered
+[    6.170440] systemd[1]: Starting modprobe@drm.service - Load Kernel Module drm...
+[    6.216285] systemd[1]: modprobe@drm.service: Deactivated successfully.
+[    6.216909] systemd[1]: Finished modprobe@drm.service - Load Kernel Module drm.
+[    6.691809] RAPL PMU: hw unit of domain pp1-gpu 2^-14 Joules
+[    6.739865] snd_hda_intel 0000:01:00.1: Handle vga_switcheroo audio client
+[    6.771996] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input15
+[    6.772920] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input16
+[    6.774720] input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input17
+[    6.775604] input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input18

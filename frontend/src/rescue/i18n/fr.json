@@ -62,9 +62,24 @@
     "starting": "Setuphelfer Rescue démarre…",
     "steps": {
       "hardware": "Détection du matériel",
-      "network": "Réseau wird geprüft",
+      "network": "Vérification du réseau",
       "services": "Démarrage des services",
       "ui": "Préparation de l'interface"
+    },
+    "msiCompat": {
+      "tuiModeSelected": "Mode compatibilité MSI : interface texte utilisée.",
+      "guiSkipped": "Interface graphique ignorée en mode compatibilité MSI",
+      "bootCompleteTui": "Préparation terminée — menu texte prêt.",
+      "guiBlockedTitle": "Interface graphique indisponible",
+      "guiBlockedHint": "Sur cet appareil MSI, seul le mode texte est stable. Utilisez le menu texte.",
+      "staleEvidence": "Les preuves GUI peuvent provenir d'une session de boot antérieure.",
+      "useTextMode": "Utiliser le mode texte"
+    },
+    "msiLabAuto": {
+      "collectingLate": "Lab MSI : collecte de preuves tardives (≥120 s) …",
+      "shutdownComplete": "Lab MSI : preuves collectées — arrêt en cours.",
+      "labAutoActive": "Mode lab MSI sans intervention active",
+      "lateGateWaiting": "Attente du gate de preuves tardives …"
     },
     "subtitle": "Assistant rescue",
     "title": "Setuphelfer Rescue"
@@ -97,6 +112,8 @@
     "msiCollecting": "Collecting MSI evidence…",
     "msiFailed": "MSI evidence collection failed",
     "msiNoBackup": "(Non Retourup)",
+    "msiStaleSession": "Journal GUI possiblement issu d'une session de boot antérieure",
+    "msiTuiOnlyMode": "Compat MSI : mode texte uniquement (pas de démarrage GUI automatique)",
     "no": "Non",
     "noDevices": "Non Périphériques.",
     "noOpenIssues": "Non open issues.",

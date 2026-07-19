@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "artifact": "lspci-nn-redacted.txt",
+  "rescue_version": "1.10.0.12",
+  "collector_version": "1.10.0.12",
+  "boot_session_id": "20260701_001121_1.10.0.12",
+  "collected_at": "2026-07-01T00:11:27Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "collect_rs011d_supplement"
+}

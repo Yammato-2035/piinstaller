@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SETUPHELFER-E2E-LIVE-001D4 — Write one-shot run-control on SETUP_LOGS.
+# SETUPHELFER-E2E-LIVE-001D4/001D5 — Write one-shot physical E2E run-control on SETUP_LOGS.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
@@ -19,7 +19,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 if [[ -z "$SETUP_LOGS" ]]; then
-  for cand in /media/*/SETUP_LOGS /run/media/*/SETUP_LOGS; do
+  for cand in /media/*/SETUP_LOGS /media/*/SETUP_LOGS2 /run/media/*/SETUP_LOGS*; do
     [[ -d "$cand" ]] && SETUP_LOGS="$cand" && break
   done
 fi
@@ -31,10 +31,18 @@ export PYTHONPATH="${REPO_ROOT}/backend${PYTHONPATH:+:$PYTHONPATH}"
 python3 - <<PY
 import json
 from pathlib import Path
+from core.rescue_payload_version import rescue_payload_version
 from core.rescue_physical_e2e_run_control import build_run_control, write_run_control
 
 logs = Path(${SETUP_LOGS@Q})
-control = build_run_control(expected_payload_version="1.10.0.24")
+payload = rescue_payload_version() or "1.10.0.37"
+control = build_run_control(expected_payload_version=payload)
 path = write_run_control(logs, control)
-print(json.dumps({"ok": True, "path": str(path), "run_nonce": control["run_nonce"], "secrets_in_file": False}, indent=2))
+print(json.dumps({
+    "ok": True,
+    "path": str(path),
+    "expected_payload_version": control["expected_payload_version"],
+    "run_nonce": control["run_nonce"],
+    "secrets_in_file": False,
+}, indent=2))
 PY

@@ -32,6 +32,25 @@ GRUB_GFX_MODULES: tuple[str, ...] = (
 
 BOOTX64_GFX_MODULES: tuple[str, ...] = GRUB_GFX_MODULES
 
+# Minimal EFI module set staged onto the ESP so `insmod` in external grub.cfg
+# does not fail when $prefix points at the FAT root (not the mkstandalone memdisk).
+GRUB_EFI_MODULES_DIR_REL = "boot/grub/x86_64-efi"
+GRUB_EFI_HOST_MODULES_DIR = Path("/usr/lib/grub/x86_64-efi")
+GRUB_ESP_STAGED_MODULES: tuple[str, ...] = (
+    "all_video",
+    "efi_gop",
+    "efi_uga",
+    "font",
+    "gfxmenu",
+    "gfxterm",
+    "jpeg",
+    "png",
+    "video",
+    "video_bochs",
+    "video_cirrus",
+    "video_fb",
+)
+
 # Backward-compatible alias used by tests and asset manifest paths.
 GRUB_BACKGROUND_FILE = GRUB_BACKGROUND_SOURCE_FILE
 
@@ -81,32 +100,42 @@ message-color: "#e2e8f0"
 """
 
 
-def generate_grub_cfg_failsafe_plain_lines() -> list[str]:
-    """Plain high-contrast GRUB menu — no gfxmenu theme / wallpaper (RS-P2C)."""
+def generate_grub_cfg_gfxterm_lines() -> list[str]:
+    """Load gfxterm for a visible GRUB menu without the classic console error.
+
+    Root cause of ``console error: gfxterm not found`` was ``terminal_input gfxterm``
+    (gfxterm is output-only). Modules are also staged under ``boot/grub/x86_64-efi/``
+    so ``insmod`` finds files when ``$prefix`` points at the ESP.
+    """
     return [
+        "insmod all_video",
         "insmod efi_gop",
         "insmod efi_uga",
+        "insmod video",
         "insmod gfxterm",
-        "terminal_output gfxterm",
-        "terminal_input gfxterm",
         "set gfxmode=auto",
         "set gfxpayload=keep",
+        "terminal_output gfxterm",
+        "terminal_input console",
         'set menu_color_normal=white/black',
         'set menu_color_highlight=black/white',
     ]
 
 
+def generate_grub_cfg_failsafe_plain_lines() -> list[str]:
+    """Plain high-contrast GRUB menu — no gfxmenu theme / wallpaper (RS-P2C)."""
+    return generate_grub_cfg_gfxterm_lines()
+
+
 def generate_grub_cfg_branding_lines(*, image_format: str = "jpeg") -> list[str]:
     # Workspace boot-menu asset is JPEG-with-.png-suffix; GRUB needs `insmod jpeg` and a
     # matching .jpg desktop-image or theme load fails silently → text fallback on hardware.
-    lines = [
-        "insmod efi_gop",
-        "insmod efi_uga",
-        "insmod gfxterm",
-        "insmod gfxmenu",
-        "insmod all_video",
-        "insmod video",
-    ]
+    lines = generate_grub_cfg_gfxterm_lines()
+    lines.extend(
+        [
+            "insmod gfxmenu",
+        ]
+    )
     if image_format == "jpeg":
         lines.append("insmod jpeg")
     else:
@@ -116,14 +145,42 @@ def generate_grub_cfg_branding_lines(*, image_format: str = "jpeg") -> list[str]
             f'if [ -f ($root)/{GRUB_THEME_DIR_REL}/{GRUB_FONT_FILE} ]; then',
             f"  loadfont ($root)/{GRUB_THEME_DIR_REL}/{GRUB_FONT_FILE}",
             "fi",
-            "set gfxmode=auto",
-            "set gfxpayload=keep",
-            "terminal_output gfxterm",
-            "terminal_input gfxterm",
             f'set theme=($root)/{GRUB_THEME_DIR_REL}/{GRUB_THEME_FILE}',
         ]
     )
     return lines
+
+
+def stage_grub_efi_modules_to_fat32_staging(staging_dir: Path) -> dict[str, Any]:
+    """Copy minimal x86_64-efi GRUB modules onto the ESP for external grub.cfg insmod."""
+    host_dir = GRUB_EFI_HOST_MODULES_DIR
+    dst_dir = staging_dir / GRUB_EFI_MODULES_DIR_REL
+    staged: list[str] = []
+    missing: list[str] = []
+    if not host_dir.is_dir():
+        return {
+            "modules_dir": GRUB_EFI_MODULES_DIR_REL,
+            "staged_files": staged,
+            "missing": list(GRUB_ESP_STAGED_MODULES),
+            "complete": False,
+            "host_modules_dir": str(host_dir),
+        }
+    dst_dir.mkdir(parents=True, exist_ok=True)
+    for name in GRUB_ESP_STAGED_MODULES:
+        src = host_dir / f"{name}.mod"
+        if not src.is_file():
+            missing.append(name)
+            continue
+        dst = dst_dir / f"{name}.mod"
+        dst.write_bytes(src.read_bytes())
+        staged.append(str(dst.relative_to(staging_dir)))
+    return {
+        "modules_dir": GRUB_EFI_MODULES_DIR_REL,
+        "staged_files": staged,
+        "missing": missing,
+        "complete": "gfxterm" in {Path(p).stem for p in staged},
+        "host_modules_dir": str(host_dir),
+    }
 
 
 def stage_grub_theme_to_fat32_staging(staging_dir: Path, repo_root: Path) -> dict[str, Any]:
@@ -198,20 +255,35 @@ def grub_cfg_failsafe_plain_mode(grub_text: str) -> bool:
 
 
 def validate_fat32_grub_failsafe(grub_cfg_text: str) -> list[str]:
-    """Validate plain high-contrast GRUB menu (RS-P2C) — no gfxmenu theme required."""
+    """Validate plain high-contrast GRUB menu — GUI default, text fallback."""
     errors: list[str] = []
     if "insmod gfxterm" not in grub_cfg_text:
         errors.append("GRUB_CFG_GFXTERM_MISSING")
+    if "terminal_input gfxterm" in grub_cfg_text:
+        errors.append("GRUB_CFG_TERMINAL_INPUT_GFXTERM_INVALID")
+    if "terminal_input console" not in grub_cfg_text:
+        errors.append("GRUB_CFG_TERMINAL_INPUT_CONSOLE_MISSING")
     if "menu_color_normal=" not in grub_cfg_text:
         errors.append("GRUB_CFG_MENU_COLORS_MISSING")
-    if "set timeout_style=menu" not in grub_cfg_text:
+    if "set timeout_style=menu" not in grub_cfg_text and "set timeout_style=countdown" not in grub_cfg_text:
         errors.append("GRUB_CFG_TIMEOUT_STYLE_MENU_MISSING")
+    if "setuphelfer_mode=gui" not in grub_cfg_text:
+        errors.append("GRUB_CFG_GUI_MODE_MISSING")
     if "setuphelfer_mode=text" not in grub_cfg_text:
-        errors.append("GRUB_CFG_TEXT_MODE_DEFAULT_MISSING")
+        errors.append("GRUB_CFG_TEXT_MODE_FALLBACK_MISSING")
+    # Default entry (first menuentry) must be GUI; text remains available as fallback.
+    first_menu = grub_cfg_text.find('menuentry "')
+    if first_menu < 0:
+        errors.append("GRUB_CFG_MENU_MISSING")
+    else:
+        first_block_end = grub_cfg_text.find("\n}", first_menu)
+        first_block = grub_cfg_text[first_menu : first_block_end + 2] if first_block_end > 0 else ""
+        if "setuphelfer_mode=gui" not in first_block and "setuphelfer_msi_lab_auto=1" not in first_block:
+            errors.append("GRUB_CFG_GUI_NOT_DEFAULT_ENTRY")
+        if "setuphelfer_mode=text" in first_block and "setuphelfer_msi_lab_auto=1" not in first_block:
+            errors.append("GRUB_CFG_TEXT_MUST_NOT_BE_DEFAULT")
     if grub_cfg_references_theme(grub_cfg_text):
         errors.append("GRUB_CFG_THEME_SHOULD_NOT_BE_REFERENCED_IN_FAILSAFE")
-    if "setuphelfer_kiosk=1" in grub_cfg_text.split("setuphelfer_mode=text")[0]:
-        errors.append("GRUB_CFG_KIOSK_IN_DEFAULT_ENTRY")
     return errors
 
 

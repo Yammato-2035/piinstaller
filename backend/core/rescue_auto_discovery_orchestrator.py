@@ -28,6 +28,7 @@ from core.rescue_session_state import (
     heartbeat,
     init_session_state,
     mark_terminal,
+    read_session_state,
     session_evidence_dir,
     session_journal_path,
     session_state_path,
@@ -137,17 +138,22 @@ def _collect_pci_usb(session_dir: Path, state: dict[str, Any]) -> dict[str, Any]
     return usb
 
 
-def _wait_usb_devices(max_wait_sec: int = 120) -> None:
-    set_phase("storage_waiting", warning="USB-Geräte werden gesucht…")
+def _wait_usb_devices(max_wait_sec: int = 20) -> None:
+    """Short settle wait for block devices — never stall on empty backup-target lists."""
+    set_phase("storage_waiting", warning="Datenträger werden erkannt…")
     deadline = time.time() + max_wait_sec
     while time.time() < deadline:
         discovery = discover_rescue_storage()
-        targets = discovery.get("targets") or []
-        if targets:
+        classified = discovery.get("classified") or []
+        disks = [d for d in classified if str(d.get("type") or "") == "disk"]
+        # Real API uses target_candidates; older callers/tests may still use "targets".
+        targets = discovery.get("target_candidates") or discovery.get("targets") or []
+        if disks or targets:
             break
-        heartbeat(warning=f"USB-Wartephase {int(max_wait_sec - max(0, deadline - time.time()))}s")
+        remaining = int(max(0, deadline - time.time()))
+        heartbeat(warning=f"Datenträger-Suche ({remaining}s)")
         subprocess.run(["udevadm", "settle"], capture_output=True, check=False, timeout=30)
-        time.sleep(2)
+        time.sleep(1)
 
 
 def _collect_storage(session_dir: Path, state: dict[str, Any]) -> dict[str, Any]:
@@ -284,11 +290,15 @@ def _wait_msi_evidence_complete(setup_logs_base: Path | None, *, max_wait_sec: i
         heartbeat(warning="MSI-Evidence-Marker-Warten")
         if setup_logs_base and msi_evidence_complete_ok(setup_logs_base):
             return True
-        if (_state_dir() / "auto-msi-evidence.done").is_file() and setup_logs_base:
-            data = read_msi_evidence_complete(setup_logs_base)
-            if data and data.get("status") == "passed" and data.get("late_gate_completed"):
-                return True
-        # Re-detect SETUP_LOGS if it appeared later.
+        # Service finished writing a marker (even failed eval) — discovery may proceed.
+        if (_state_dir() / "auto-msi-evidence.done").is_file():
+            base = setup_logs_base or find_setup_logs_mount()
+            if base is not None:
+                data = read_msi_evidence_complete(base)
+                if data and data.get("late_gate_completed"):
+                    return True
+            # Done marker alone is enough: collect ran; do not block Discovery 15min.
+            return True
         if setup_logs_base is None:
             detected = find_setup_logs_mount()
             if detected and msi_evidence_complete_ok(detected):
@@ -446,6 +456,50 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
         status = "failed_rescue_auto_discovery"
         terminal_status = "failed"
 
+    # Persist final runtime state onto SETUP_LOGS (TUI already uses /run).
+    final_state = read_session_state() or state
+    _write_artifact(session_dir, "state.json", final_state)
+
+    # Anonymized cloud lab push so multi-host runs survive stick reuse / loss.
+    set_phase("telemetry_preparing")
+    set_phase("telemetry_sending", warning="Evidence wird an Telemetrie gesendet…")
+    try:
+        from core.rescue_discovery_lab_telemetry import (
+            send_discovery_lab_telemetry,
+            write_telemetry_artifact,
+        )
+
+        tel = send_discovery_lab_telemetry(
+            state=final_state,
+            gate=gate if isinstance(gate, dict) else {},
+            machine=machine if isinstance(machine, dict) else {},
+            modules_completed=list(REQUIRED_MODULE_NAMES),
+        )
+        write_telemetry_artifact(session_dir, tel)
+        append_journal(
+            {
+                "event": "telemetry_lab_send",
+                "send_status": tel.get("send_status"),
+                "accepted": tel.get("accepted"),
+                "request_id": tel.get("request_id"),
+            }
+        )
+    except Exception as exc:  # noqa: BLE001 — never block shutdown on cloud send
+        write_err = {
+            "schema": "setuphelfer.rescue.discovery-telemetry-lab-send.v1",
+            "send_status": "lab_send_failed",
+            "accepted": False,
+            "error_type": type(exc).__name__,
+            "error_summary": str(exc)[:300],
+        }
+        try:
+            from core.rescue_discovery_lab_telemetry import write_telemetry_artifact
+
+            write_telemetry_artifact(session_dir, write_err)
+        except Exception:
+            _write_artifact(session_dir, "17-telemetry-lab-send.json", write_err)
+        append_journal({"event": "telemetry_lab_send_failed", "error": write_err["error_type"]})
+
     control_base = setup_logs_base or find_setup_logs_mount()
     if control_base and load_discovery_run_control(control_base):
         consume_discovery_run_control(
@@ -456,6 +510,8 @@ def run_auto_discovery(*, allow_destructive: bool = False) -> dict[str, Any]:
 
     set_phase("shutdown_pending")
     heartbeat(module="shutdown_pending")
+    final_state = read_session_state() or final_state
+    _write_artifact(session_dir, "state.json", final_state)
     write_component_heartbeat("discovery", state="terminal")
     return {
         "status": status,

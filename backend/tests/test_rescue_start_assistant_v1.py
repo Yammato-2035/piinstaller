@@ -135,12 +135,17 @@ class RescueStartAssistantTests(unittest.TestCase):
 
     def test_start_assistant_service_unit_autostart_fields(self) -> None:
         prepare = (REPO / "scripts" / "rescue-live" / "prepare-controlled-live-build-tree.sh").read_text(encoding="utf-8")
-        self.assertIn("ConditionKernelCommandLine=setuphelfer_start_assistant=1", prepare)
-        self.assertIn("TTYPath=/dev/tty1", prepare)
-        self.assertIn("StandardInput=tty", prepare)
-        self.assertIn("StandardOutput=tty", prepare)
-        self.assertIn("Environment=TERM=linux", prepare)
-        self.assertIn("TTYVTDisallocate=yes", prepare)
+        unit = (IMAGE / "systemd" / "setuphelfer-rescue-start-assistant.service").read_text(encoding="utf-8")
+        for text in (prepare, unit):
+            self.assertIn("ConditionKernelCommandLine=setuphelfer_start_assistant=1", text)
+            self.assertIn("ConditionKernelCommandLine=!setuphelfer_auto_discovery=1", text)
+            self.assertIn("ConditionKernelCommandLine=!setuphelfer_msi_lab_auto=1", text)
+            self.assertIn("ConditionKernelCommandLine=!setuphelfer_msi_e2e_auto=1", text)
+            self.assertIn("TTYPath=/dev/tty1", text)
+            self.assertIn("StandardInput=tty", text)
+            self.assertIn("StandardOutput=tty", text)
+            self.assertIn("Environment=TERM=linux", text)
+            self.assertIn("TTYVTDisallocate=yes", text)
         self.assertIn("getty@tty1.service.d/setuphelfer-rescue.conf", prepare)
 
     def test_start_assistant_writes_status_path(self) -> None:

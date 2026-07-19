@@ -38,6 +38,9 @@ def nomodeset_active(cmdline: str) -> bool:
 
 
 def should_disable_gui_for_msi_compat(cmdline: str, *, dmi_suggests_msi_ge63: bool = False) -> bool:
+    # Explicit GUI boots must be allowed to try; gui-watchdog falls back to TUI.
+    if re.search(r"(?:^|\s)setuphelfer_mode=gui(?:\s|$)", cmdline or ""):
+        return False
     if not msi_compat_active(cmdline):
         return False
     if nomodeset_active(cmdline):

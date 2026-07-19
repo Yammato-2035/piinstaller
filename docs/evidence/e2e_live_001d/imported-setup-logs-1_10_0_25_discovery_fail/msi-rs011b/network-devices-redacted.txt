@@ -1,0 +1,8 @@
+=== ip -br link ===
+lo               UNKNOWN        [REDACTED:ip] <LOOPBACK,UP,LOWER_UP> 
+wlo1             DOWN           [REDACTED:ip] <BROADCAST,MULTICAST> 
+
+
+=== ip -br addr ===
+lo               UNKNOWN        [REDACTED:ip]/8 ::1/128 
+wlo1             DOWN           

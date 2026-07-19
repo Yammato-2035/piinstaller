@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-12T11:12:26Z",
+  "complete": false,
+  "total_boot_ms": 0,
+  "slowest_phase": {
+    "phase": "systemd_started",
+    "monotonic_ms": 0
+  },
+  "failed_phases": [],
+  "black_screen_indicators": [],
+  "gui_ready_ms": null,
+  "backend_ready_ms": null,
+  "screenshot_ready_ms": null,
+  "boot_score": 100,
+  "recommendation_de": "Boot abgeschlossen.",
+  "recommendation_en": "Boot complete.",
+  "error_codes": [],
+  "phase_count": 11
+}

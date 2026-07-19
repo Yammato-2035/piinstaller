@@ -13,7 +13,11 @@ from core.rescue_fat32_esp_usb_writer import (
     generate_fat32_esp_grub_cfg,
     sha256_file,
 )
-from rescue.rescue_grub_branding import stage_grub_theme_to_fat32_staging, validate_fat32_grub_branding
+from rescue.rescue_grub_branding import (
+    stage_grub_efi_modules_to_fat32_staging,
+    stage_grub_theme_to_fat32_staging,
+    validate_fat32_grub_branding,
+)
 
 CONFIRM_PHRASE_GRUB_BRANDING = "UPDATE SETUPHELFER FAT32 ESP GRUB BRANDING"
 
@@ -22,6 +26,7 @@ ALLOWED_GRUB_BRANDING_REL_PATHS: tuple[str, ...] = (
     "boot/grub/themes/setuphelfer/theme.txt",
     "boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.jpg",
     "boot/grub/themes/setuphelfer/unicode.pf2",
+    "boot/grub/x86_64-efi/",
     "EFI/BOOT/BOOTX64.EFI",
     "setuphelfer/rescue/evidence.json",
     "setuphelfer/rescue/boot-branding.txt",
@@ -90,6 +95,7 @@ def apply_grub_branding_on_mount(
 ) -> dict[str, Any]:
     """Stage theme, refresh grub.cfg, rebuild BOOTX64.EFI, refresh evidence metadata."""
     stage_meta = stage_grub_theme_to_fat32_staging(mount_root, repo_root)
+    modules_meta = stage_grub_efi_modules_to_fat32_staging(mount_root)
     cfg_text = generate_fat32_esp_grub_cfg(fat_uuid=fat_uuid)
     grub_cfg_path = mount_root / "boot" / "grub" / "grub.cfg"
     grub_cfg_path.parent.mkdir(parents=True, exist_ok=True)
@@ -101,7 +107,7 @@ def apply_grub_branding_on_mount(
     branding_txt = mount_root / "setuphelfer" / "rescue" / "boot-branding.txt"
     branding_txt.parent.mkdir(parents=True, exist_ok=True)
     branding_txt.write_text(
-        "Setuphelfer Rettungsstick — GRUB failsafe plain menu (text mode default)\n",
+        "Setuphelfer Rettungsstick — GUI default, Text-Fallback, gfxterm ESP modules\n",
         encoding="utf-8",
     )
 
@@ -114,6 +120,7 @@ def apply_grub_branding_on_mount(
             evidence = {}
     evidence["bootx64_modules_requested"] = list(bootx64_meta.get("modules_requested") or [])
     evidence["bootx64_sha256"] = bootx64_meta.get("sha256")
+    evidence["grub_efi_modules_staged"] = modules_meta
     evidence["grub_branding_updated_at"] = _now_iso()
     evidence["grub_branding_writer_mode"] = "fat32_esp_grub_branding_update"
     evidence_path.parent.mkdir(parents=True, exist_ok=True)
@@ -126,8 +133,11 @@ def apply_grub_branding_on_mount(
         bootx64_modules=evidence.get("bootx64_modules_requested"),
         image_format=str(stage_meta.get("background_format") or "jpeg"),
     )
+    if not modules_meta.get("complete"):
+        errors.append("GRUB_EFI_MODULES_GFXTERM_NOT_STAGED")
     return {
         "stage_meta": stage_meta,
+        "modules_meta": modules_meta,
         "bootx64_meta": bootx64_meta,
         "grub_cfg_path": str(grub_cfg_path),
         "grub_cfg_sha256": sha256_file(grub_cfg_path),

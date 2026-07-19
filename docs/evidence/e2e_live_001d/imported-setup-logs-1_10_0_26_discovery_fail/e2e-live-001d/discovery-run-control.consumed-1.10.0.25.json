@@ -1,0 +1,23 @@
+{
+  "schema": "setuphelfer.rescue.discovery-control.v1",
+  "feature": "SETUPHELFER-E2E-LIVE-001D7",
+  "enabled": false,
+  "one_shot": true,
+  "expected_payload_version": "1.10.0.25",
+  "expected_machine_family": "GE63 Raider",
+  "run_mode": "auto_discovery_only",
+  "allow_destructive_storage_actions": false,
+  "allow_backup": false,
+  "allow_restore": false,
+  "allow_partitioning": false,
+  "allow_format": false,
+  "telemetry_required": false,
+  "diagnostics_requested": true,
+  "auto_shutdown": true,
+  "consumed": true,
+  "run_nonce": "e2b8792647cea745d9870ed524e77b19",
+  "created_at": "2026-07-15T18:00:24Z",
+  "terminal_status": "failed_discovery_service_condition",
+  "consumed_at": "2026-07-15T19:08:42Z",
+  "archived_as": "discovery-run-control-failed-1.10.0.25.json"
+}

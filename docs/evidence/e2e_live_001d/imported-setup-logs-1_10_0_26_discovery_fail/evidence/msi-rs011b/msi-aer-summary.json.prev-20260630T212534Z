@@ -1,0 +1,17 @@
+{
+  "MSI_AER_RISK": true,
+  "corrected_count": 0,
+  "alx_related_lines": 4,
+  "fatal_detected": false,
+  "classification": "ok",
+  "device_note": "Qualcomm Atheros / Killer E2500 Gigabit Ethernet Controller",
+  "driver": "alx",
+  "schema_version": 1,
+  "rescue_version": "1.10.0.10",
+  "collector_version": "1.10.0.10",
+  "boot_session_id": "20260630_210507_1.10.0.10",
+  "collected_at": "2026-06-30T21:05:11Z",
+  "source_run_id": "RS_011B",
+  "stale": false,
+  "generated_by": "collect_rs011d_supplement"
+}

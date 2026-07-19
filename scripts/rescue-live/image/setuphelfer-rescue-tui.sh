@@ -340,6 +340,54 @@ PY
   done
 }
 
+_tui_boot_progress_steps() {
+  # Visible auto-walk so the operator sees activity before the interactive menu.
+  # Runs on --boot-trigger (GUI-Fallback oder Textmodus).
+  local _wt_local
+  _wt_local="$(setuphelfer_rescue_whiptail_tty)"
+  whiptail --title "Setuphelfer" --infobox "Schritt 1/4: Live-Medium prüfen…" 8 55 \
+    3>&1 1>"$_wt_local" 2>&3 || true
+  sleep 1
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-media-check" ]]; then
+    local media_json="${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json"
+    if [[ ! -f "$media_json" ]]; then
+      "${SCRIPT_DIR}/setuphelfer-rescue-media-check" >/dev/null 2>&1 || true
+    fi
+  fi
+  setuphelfer_rescue_write_boot_state "tui_step_media"
+
+  whiptail --title "Setuphelfer" --infobox "Schritt 2/4: System erkennen…" 8 55 \
+    3>&1 1>"$_wt_local" 2>&3 || true
+  local disc="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" >"$disc" 2>/dev/null || true
+  fi
+  setuphelfer_rescue_write_boot_state "tui_step_detect"
+
+  whiptail --title "Setuphelfer" --infobox "Schritt 3/4: Hardware/WLAN prüfen…" 8 55 \
+    3>&1 1>"$_wt_local" 2>&3 || true
+  setuphelfer_rescue_wifi_prepare_radio >/dev/null 2>&1 || true
+  setuphelfer_rescue_write_boot_state "tui_step_wifi"
+
+  whiptail --title "Setuphelfer" --infobox "Schritt 4/4: Textmenü wird vorbereitet…" 8 55 \
+    3>&1 1>"$_wt_local" 2>&3 || true
+  sleep 1
+  setuphelfer_rescue_write_boot_state "tui_steps_done"
+
+  local summary="Bereit."
+  if [[ -f "$disc" ]]; then
+    summary="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=d.get("recommendation") or {}; print(r.get("summary_de") or "System erkannt.")' "$disc" 2>/dev/null || echo "System erkannt.")"
+  fi
+  local gui_note=""
+  if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/gui-fallback.json" ]] \
+     || [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/gui-watchdog.json" ]]; then
+    gui_note="\n\nHinweis: Grafische Oberfläche war nicht verfügbar — Textmodus aktiv."
+  fi
+  whiptail --title "Setuphelfer Rettungsstick" --msgbox \
+    "Startprüfung abgeschlossen.${gui_note}\n\n${summary}\n\nAls Nächstes: Textmenü." 16 74 \
+    3>&1 1>"$_wt_local" 2>&3 || true
+}
+
 _tui_main_menu() {
   local choice
   while true; do
@@ -404,6 +452,9 @@ PY
         exec bash "${SCRIPT_DIR}/setuphelfer-rescue-tui-hold" --hold
     fi
     exit 0
+  fi
+  if [[ "$MODE" == "--boot-trigger" ]]; then
+    _tui_boot_progress_steps
   fi
   _tui_main_menu
   exit 0

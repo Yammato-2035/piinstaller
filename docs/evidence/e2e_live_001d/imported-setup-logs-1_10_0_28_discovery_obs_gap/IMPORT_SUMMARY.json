@@ -1,0 +1,16 @@
+{
+  "imported_at": "2026-07-16T11:18:52Z",
+  "source_mount": "/media/volker/SETUP_LOGS_STICK",
+  "payload_version": "1.10.0.28",
+  "session_id": "20260716_123503_boot",
+  "boot_id": "e5caa488-9d3f-4a68-b9f9-8361f9e050dc",
+  "msi_status": "passed",
+  "lab_auto_result": "passed",
+  "boot_phase": "auto_shutdown_discovery_complete",
+  "run_control_enabled": true,
+  "run_control_consumed": false,
+  "hold_screen_visible_in_late_evidence": true,
+  "discovery_boot_dir_present": false,
+  "discovery_session_present": false,
+  "import_note": "manual_import_because_dev_automation_looks_for_physical_e2e_run_dirs"
+}

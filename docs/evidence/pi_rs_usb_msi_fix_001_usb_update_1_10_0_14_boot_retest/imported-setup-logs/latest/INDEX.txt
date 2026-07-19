@@ -1,0 +1,1 @@
+last_capture=20260712_015835 phase=boot persistent=true

@@ -1,0 +1,5 @@
+1181:Jul 12 01:00:11 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-boot-progress.service - Setuphelfer Rescue Boot Progress and Timeline (RS-005/RS-008)...
+1192:Jul 12 01:00:11 setuphelfer-rescue setuphelfer-rescue-boot-progress[1658]: /usr/local/sbin/setuphelfer-rescue-boot-progress: Zeile 19: setuphelfer_rescue_shield_console_early: Kommando nicht gefunden.
+1377:Jul 12 01:00:30 setuphelfer-rescue systemd[1]: Finished setuphelfer-rescue-boot-progress.service - Setuphelfer Rescue Boot Progress and Timeline (RS-005/RS-008).
+1381:Jul 12 01:00:30 setuphelfer-rescue setuphelfer-rescue-auto-msi-evidence[2023]: /usr/local/sbin/setuphelfer-rescue-auto-msi-evidence: Zeile 10: setuphelfer_rescue_should_auto_msi_evidence: Kommando nicht gefunden.
+1395:Jul 12 01:00:33 setuphelfer-rescue start-backend-localonly.sh[2016]: ERROR:app:Config write failed: [Errno 30] Read-only file system: '/etc/setuphelfer/config.json'

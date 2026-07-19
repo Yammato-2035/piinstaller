@@ -1,0 +1,27 @@
+{"ts":"2026-06-29T17:23:42Z","event":"error_seen","detail":{"code":"MSI_VERSION_MISMATCH","version":"1.9.16.1"}}}
+{"ts":"2026-06-29T17:24:14Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts": "2026-06-29T17:24:14Z", "event": "preflight_started", "detail": {"phase": "evidence_collect"}}
+{"ts": "2026-06-29T17:24:15Z", "event": "preflight_completed", "detail": {"status": "ok"}}
+{"ts":"2026-06-29T20:45:19Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-29T21:07:52Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-29T21:40:07Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-29T21:40:37Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-29T21:40:46Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-30T01:31:49Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-30T01:54:32Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-30T20:47:06Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-30T21:05:10Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-06-30T21:25:34Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-01T00:11:26Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-12T01:59:02Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-12T11:12:34Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-12T22:50:57Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-12T22:59:58Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-13T00:33:09Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-14T18:23:26Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-15T09:41:46Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-15T12:08:12Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-15T20:06:59Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-15T21:39:02Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-16T10:12:52Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}
+{"ts":"2026-07-16T12:37:24Z","event":"preflight_started","detail":{"phase":"evidence_collect"}}}

@@ -3,7 +3,9 @@
 
 from __future__ import annotations
 
+import json
 import select
+import subprocess
 import sys
 import termios
 import time
@@ -53,6 +55,50 @@ EARLY_LABELS = {
     "discovery_service_starting": "Discovery-Service wird gestartet",
     "discovery_session_creating": "Discovery-Session wird angelegt",
 }
+
+
+def _physical_service_snapshot() -> dict[str, str]:
+    try:
+        show = subprocess.run(
+            [
+                "systemctl",
+                "show",
+                "setuphelfer-rescue-auto-physical-e2e.service",
+                "--property=ActiveState,SubState,Result",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=3,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return {"active": "unknown", "sub": "unknown", "result": ""}
+    active = sub = result = ""
+    for line in (show.stdout or "").splitlines():
+        if line.startswith("ActiveState="):
+            active = line.split("=", 1)[-1].strip()
+        elif line.startswith("SubState="):
+            sub = line.split("=", 1)[-1].strip()
+        elif line.startswith("Result="):
+            result = line.split("=", 1)[-1].strip()
+    return {"active": active or "unknown", "sub": sub or "unknown", "result": result}
+
+
+def _read_physical_progress_file() -> dict:
+    candidates = (
+        Path("/run/setuphelfer-rescue/physical-progress.json"),
+        Path("/run/setuphelfer/esp-rw/setuphelfer/evidence/e2e/physical-progress.json"),
+    )
+    for path in candidates:
+        if not path.is_file():
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict):
+            return data
+    return {}
 
 
 def _parse_ts(value: str | None) -> float | None:
@@ -204,6 +250,42 @@ def _active_state() -> dict:
     e2e["error_code"] = ""
     e2e["warn_discovery_hb"] = False
     e2e["early_phases"] = False
+    svc = _physical_service_snapshot()
+    e2e["physical_service"] = f"{svc.get('active')}/{svc.get('sub')}"
+    progress_file = _read_physical_progress_file()
+    if progress_file.get("message"):
+        e2e["last_progress"] = str(progress_file["message"])
+    if progress_file.get("phase") in AUTO_E2E_PHASES:
+        # Prefer live runner progress over MSI-complete pin.
+        pf_phase = str(progress_file["phase"])
+        cur = str(e2e.get("phase") or "")
+        if cur in AUTO_E2E_PHASES and AUTO_E2E_PHASES.index(pf_phase) >= AUTO_E2E_PHASES.index(cur):
+            e2e["phase"] = pf_phase
+        elif cur not in AUTO_E2E_PHASES or cur == "msi_evidence_complete":
+            e2e["phase"] = pf_phase
+    if str(e2e.get("phase") or "") == "msi_evidence_complete":
+        if svc.get("active") in {"activating", "active"}:
+            e2e["last_progress"] = (
+                f"Physical-E2E-Service aktiv ({svc.get('sub')}) — "
+                f"{e2e.get('last_progress') or 'warte auf SABRENT-Phasen…'}"
+            )
+        elif svc.get("active") == "failed":
+            e2e["last_progress"] = (
+                f"Physical-E2E-Service fehlgeschlagen ({svc.get('result') or svc.get('sub')}) — "
+                "Stick-Journal prüfen"
+            )
+        elif svc.get("active") == "inactive" and svc.get("sub") == "dead":
+            elapsed = int(e2e.get("elapsed_sec") or 0)
+            if elapsed >= 90:
+                e2e["last_progress"] = (
+                    f"Physical-E2E-Service nach {elapsed}s noch tot — "
+                    "vermutlich Abhängigkeit/Start-Gate; nicht nur warten"
+                )
+            else:
+                e2e["last_progress"] = (
+                    "Physical-E2E-Service noch nicht aktiv — "
+                    f"{e2e.get('last_progress') or 'Starte…'}"
+                )
     return e2e
 
 
@@ -215,12 +297,27 @@ def _format_display(state: dict) -> str:
         hb = heartbeat_age_sec()
     hb_txt = f"{hb:.0f}s" if hb is not None else "—"
     hb_note = ""
+    # Long MSI late-gate / wipe phases intentionally exceed 60s without a new beat.
+    long_ok_phases = {
+        "msi_evidence_waiting",
+        "msi_evidence_running",
+        "msi_evidence_complete",
+        "sabrent_waiting",
+        "disk_partitioning",
+        "disk_formatting",
+        "backup_create",
+        "restore_execute",
+        "restore_run",
+    }
+    warn_hb = phase not in long_ok_phases
     if state.get("warn_discovery_hb"):
         hb_note = "  ⚠ Discovery-Heartbeat fehlt"
-    elif hb is not None and hb >= 60:
+    elif warn_hb and hb is not None and hb >= 60:
         hb_note = "  ⚠ Heartbeat-Fehler (>60s)"
-    elif hb is not None and hb >= 10:
+    elif warn_hb and hb is not None and hb >= 10:
         hb_note = "  ⚠ Heartbeat veraltet (>10s)"
+    elif hb is not None and hb >= 60:
+        hb_note = "  (lange Phase — OK)"
 
     discovery_mode = bool(state.get("discovery_mode"))
     title = "Automatische Systemerkundung" if discovery_mode else "Automatischer Setuphelfer-Test"
@@ -300,6 +397,7 @@ def _format_display(state: dict) -> str:
             f"Status:           {state.get('status', 'wartet')}",
             f"Modus:            {state.get('run_mode') or ('auto_discovery_only' if discovery_mode else 'auto_physical_e2e')}",
             f"Verstrichene Zeit: {state.get('elapsed_sec', 0)} s",
+            f"Physical-Service:  {state.get('physical_service') or '—'}",
             f"Heartbeat-Alter:   {hb_txt}{hb_note}",
             f"Fortschritt:       {progress}",
         ]
