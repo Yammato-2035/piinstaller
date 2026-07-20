@@ -32,6 +32,7 @@ from core.rescue_tui_input_diagnostic_evidence import (
     atomic_write_text,
     finalize_run_dir,
 )
+from core.rescue_tui_input_diagnostic_evdev import PassiveEvdevMonitor, event_to_dict
 from core.rescue_tui_input_diagnostic_inventory import inventory_from_proc_devices
 
 
@@ -430,21 +431,54 @@ def run_tui_input_diagnostic(config: DiagnosticConfig) -> DiagnosticResult:
     result.screen_analysis = screen
     atomic_write_json(run_dir / "15-screen-comparison.json", screen)
 
-    # Placeholders for interactive stages when observe_only
-    result.internal_keyboard_test = {
-        "stage": "internal_keyboard_tty2",
-        "status": "skipped" if config.observe_only else "pending",
-        "expected_keys": [],
-        "tty_keys_received": [],
-        "evdev_keys_received": [],
-    }
-    result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped"}
-    result.menu_input_test = {
-        "stage": "tui_menu_tty1",
-        "status": "skipped" if config.observe_only else "pending",
-        "write_actions_blocked": result.write_actions_blocked,
-        "enter_test_skipped_safety_guard_unconfirmed": not result.write_actions_blocked,
-    }
+    # Placeholders / interactive keyboard stage
+    if config.observe_only or not config.interactive:
+        result.internal_keyboard_test = {
+            "stage": "internal_keyboard_tty2",
+            "status": "skipped",
+            "expected_keys": [],
+            "tty_keys_received": [],
+            "evdev_keys_received": [],
+        }
+        result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped"}
+        result.menu_input_test = {
+            "stage": "tui_menu_tty1",
+            "status": "skipped",
+            "write_actions_blocked": result.write_actions_blocked,
+            "enter_test_skipped_safety_guard_unconfirmed": not result.write_actions_blocked,
+        }
+    else:
+        result.internal_keyboard_test = _run_internal_keyboard_stage(config, devices)
+        result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped_optional"}
+        # Controlled VT switch only when guard confirmed; Enter test gated
+        menu_test: dict[str, Any] = {
+            "stage": "tui_menu_tty1",
+            "write_actions_blocked": result.write_actions_blocked,
+        }
+        if config.auto_vt_switch and result.write_actions_blocked:
+            _diag_print(config, "Wechsel in 5s auf tty1 — bitte Pfeil runter/hoch, Tab, Esc tippen (kein Backup).")
+            time.sleep(5)
+            menu_test["chvt_to_1"] = chvt_safe(1)
+            # Passive capture while operator presses keys on tty1
+            nodes = [d["event_node"] for d in devices if d.get("event_node")]
+            class_map = {d["event_node"]: ("internal" if d.get("is_internal_candidate") else "external") for d in devices}
+            events: list[dict[str, Any]] = []
+            with PassiveEvdevMonitor(nodes, class_by_node=class_map) as mon:
+                deadline = time.monotonic() + float(config.menu_test_timeout_s)
+                while time.monotonic() < deadline:
+                    for ev in mon.poll(0.2):
+                        if ev.value == 1:
+                            events.append(event_to_dict(ev))
+            menu_test["evdev_keys_received"] = [e["name"] for e in events]
+            menu_test["chvt_to_2"] = chvt_safe(2)
+            menu_test["status"] = "completed"
+            menu_test["enter_test_skipped_safety_guard_unconfirmed"] = False
+            # Skip Enter confirmation test — guard blocks dangerous actions but we still avoid Enter
+            menu_test["enter_test"] = "skipped_by_policy"
+        else:
+            menu_test["status"] = "enter_test_skipped_safety_guard_unconfirmed"
+            menu_test["enter_test_skipped_safety_guard_unconfirmed"] = True
+        result.menu_input_test = menu_test
     atomic_write_json(run_dir / "04-internal-keyboard-test.json", result.internal_keyboard_test)
     atomic_write_json(run_dir / "05-external-keyboard-test.json", result.external_keyboard_test)
     atomic_write_json(run_dir / "06-tui-menu-input-test.json", result.menu_input_test)
@@ -516,6 +550,46 @@ def run_tui_input_diagnostic(config: DiagnosticConfig) -> DiagnosticResult:
     }
     finalize_run_dir(run_dir, status=result.status, final_result=final)
     return result
+
+
+def _diag_print(config: DiagnosticConfig, msg: str) -> None:
+    tty = config.tty_diagnostic
+    try:
+        with open(tty, "w", encoding="utf-8", errors="replace") as fh:
+            fh.write(msg + "\n")
+            fh.flush()
+    except OSError:
+        print(msg, flush=True)
+
+
+def _run_internal_keyboard_stage(config: DiagnosticConfig, devices: list[dict[str, Any]]) -> dict[str, Any]:
+    expected = ["KEY_UP", "KEY_DOWN", "KEY_TAB", "KEY_ESC", "KEY_ENTER", "KEY_A"]
+    _diag_print(
+        config,
+        "Interner Tastaturtest: bitte nacheinander Pfeil hoch/runter, Tab, Esc, Enter, A tippen.",
+    )
+    nodes = [d["event_node"] for d in devices if d.get("is_internal_candidate") and d.get("event_node")]
+    if not nodes:
+        nodes = [d["event_node"] for d in devices if d.get("event_node")]
+    class_map = {
+        d["event_node"]: ("internal" if d.get("is_internal_candidate") else "external") for d in devices
+    }
+    received: list[str] = []
+    with PassiveEvdevMonitor(nodes, class_by_node=class_map) as mon:
+        for name in expected:
+            _diag_print(config, f"Erwarte: {name} (Timeout {config.input_test_timeout_s}s)")
+            got = mon.collect_until(wanted_names={name}, timeout_s=float(config.input_test_timeout_s))
+            if any(ev.name == name for ev in got):
+                received.append(name)
+    status = "passed" if len(received) == len(expected) else ("partial" if received else "timeout")
+    return {
+        "stage": "internal_keyboard_tty2",
+        "expected_keys": expected,
+        "tty_keys_received": [],
+        "evdev_keys_received": received,
+        "device": nodes[0] if nodes else "",
+        "status": status,
+    }
 
 
 def _machine_identity_redacted() -> dict[str, Any]:
