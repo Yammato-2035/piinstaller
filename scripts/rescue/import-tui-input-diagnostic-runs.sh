@@ -24,9 +24,20 @@ fi
 
 imported=0
 already=0
-for run in "$SRC"/*; do
+skipped_partial=0
+for run in "$SRC"/* "$SRC"/.[!.]*; do
+  [[ -e "$run" ]] || continue
   [[ -d "$run" ]] || continue
   name="$(basename "$run")"
+  # Ignore atomic staging directories (.<RUN_ID>.partial).
+  if [[ "$name" == .* && "$name" == *.partial ]]; then
+    echo "status=ignored_partial run=$name"
+    skipped_partial=$((skipped_partial + 1))
+    continue
+  fi
+  if [[ "$name" == .* ]]; then
+    continue
+  fi
   dest="$DEST_ROOT/$name"
   if [[ -d "$dest" ]]; then
     echo "status=already_present run=$name"
@@ -44,7 +55,8 @@ for run in "$SRC"/*; do
     imported=$((imported + 1))
   else
     echo "status=hash_mismatch run=$name"
+    rm -rf "$dest"
   fi
 done
 
-echo "imported=$imported already_present=$already"
+echo "imported=$imported already_present=$already skipped_partial=$skipped_partial"

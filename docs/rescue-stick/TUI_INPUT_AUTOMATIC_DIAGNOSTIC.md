@@ -33,9 +33,19 @@ Observed TUI remains on **tty1**. Diagnostic assistant runs on **tty2**.
 ## Safety
 
 - No exclusive `EVIOCGRAB`, no key injection, no `kill` of TUI, no `stty sane`.
-- Evidence only under SETUP_LOGS (or `/run/setuphelfer/tui-input-diagnostics` fallback).
-- Auto-shutdown default **off**.
+- Auto-shutdown default **off**; shutdown is blocked until evidence is persisted on SETUP_LOGS.
+- No success claim for runtime-only (`/run`) evidence.
 
-## Evidence layout
+## Evidence layout (PI-RS-TUI-EVIDENCE-001)
 
-`SETUP_LOGS/tui-input-diagnostics/<RUN_ID>/` with atomic writes, manifest, SHA256SUMS.
+Runtime-first, then atomic migrate:
+
+1. Working directory always: `/run/setuphelfer/tui-input-diagnostics/<RUN_ID>/`
+2. After tests: bounded wait for SETUP_LOGS (default 60s, poll 2s) via existing safe resolver (`allow_mount` only in finalizer)
+3. Stage copy: `SETUP_LOGS/tui-input-diagnostics/.<RUN_ID>.partial/`
+4. Verify sizes + SHA256, write manifest + `SHA256SUMS`, then atomic publish to  
+   `SETUP_LOGS/tui-input-diagnostics/<RUN_ID>/`
+5. Import ignores `.partial` directories
+6. Runtime cleanup only after confirmed persistent copy
+
+Operator messages distinguish waiting / failed persistence; no auto poweroff without persist.

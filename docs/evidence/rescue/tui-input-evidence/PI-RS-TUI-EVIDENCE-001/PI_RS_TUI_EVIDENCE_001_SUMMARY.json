@@ -1,0 +1,48 @@
+{
+  "task_id": "PI-RS-TUI-EVIDENCE-001",
+  "status": "implemented",
+  "workspace": {
+    "path": "/home/volker/piinstaller",
+    "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+    "head_before": "5aa71ebf0e511c8b6e90c934f2f2f7c22ba09806",
+    "head_after": "",
+    "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
+  },
+  "root_cause": {
+    "status": "confirmed",
+    "summary": "Early resolve_setup_logs(allow_mount=False) fell back to /run; no migrate to SETUP_LOGS before reboot",
+    "old_flow_reproduced": true
+  },
+  "implementation": {
+    "runtime_root_always_used": true,
+    "late_persistent_root_supported": true,
+    "mount_wait_bounded": true,
+    "safe_mount_reused": true,
+    "atomic_partial_publish": true,
+    "manifest_verified": true,
+    "sha256_verified": true,
+    "shutdown_gate": true,
+    "partial_runs_ignored_by_import": true
+  },
+  "tests": {
+    "new_tests": 27,
+    "passed": 65,
+    "failed": 0,
+    "existing_38_tests_passed": true
+  },
+  "version": {
+    "previous_payload": "1.10.0.59",
+    "next_payload": "1.10.0.60"
+  },
+  "safety": {
+    "msi_test_started": false,
+    "payload_built": false,
+    "usb_written": false,
+    "backup_started": false,
+    "restore_started": false,
+    "internal_disk_touched": false
+  },
+  "commit": null,
+  "push_performed": false,
+  "next_action": "controlled payload build and USB update"
+}

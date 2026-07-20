@@ -18,4 +18,6 @@ Do not start backup/restore.
 
 ## Outcome
 
-Review SETUP_LOGS evidence; repair only after a confirmed hypothesis.
+Evidence starts under `/run/setuphelfer/tui-input-diagnostics/`, then migrates atomically to
+`SETUP_LOGS/tui-input-diagnostics/<RUN_ID>/` (do not power off until persistence succeeds).
+Repair only after a confirmed hypothesis.

@@ -1,8 +1,8 @@
 [Unit]
 Description=Setuphelfer TUI Input Diagnostic (tty2, read-only)
 Documentation=file:///opt/setuphelfer-rescue/docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md
-After=local-fs.target setuphelfer-rescue-tui.service
-Wants=setuphelfer-rescue-tui.service
+After=local-fs.target setuphelfer-rescue-tui.service setuphelfer-rescue-setup-logs-resolver.service
+Wants=setuphelfer-rescue-tui.service setuphelfer-rescue-setup-logs-resolver.service
 ConditionKernelCommandLine=setuphelfer_tui_input_diag=1
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic
 Conflicts=getty@tty2.service

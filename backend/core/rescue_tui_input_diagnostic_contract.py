@@ -63,6 +63,10 @@ class DiagnosticConfig:
     evidence_root: Path = Path("/run/setuphelfer/tui-input-diagnostics")
     interactive: bool = True
     observe_only: bool = False
+    # Persistence (PI-RS-TUI-EVIDENCE-001): always write runtime first, then wait/migrate.
+    persist_timeout_s: float = 60.0
+    persist_interval_s: float = 2.0
+    enable_persistence: bool = True
 
 
 @dataclass
@@ -86,6 +90,10 @@ class DiagnosticResult:
     warnings: list[dict[str, Any]] = field(default_factory=list)
     errors: list[dict[str, Any]] = field(default_factory=list)
     write_actions_blocked: bool = False
+    persistence_status: str = "runtime_only"
+    persistent_path: str | None = None
+    shutdown_allowed: bool = False
+    runtime_path: str | None = None
 
 
 @dataclass

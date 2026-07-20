@@ -326,15 +326,15 @@ menuentry "Neustart" { reboot }
 
 class VersionCarrierTests(unittest.TestCase):
     def test_rescue_payload_version_is_current(self) -> None:
-        self.assertEqual(rescue_payload_version(), "1.10.0.59")
-        self.assertEqual(previous_rescue_payload_version(), "1.10.0.58")
+        self.assertEqual(rescue_payload_version(), "1.10.0.60")
+        self.assertEqual(previous_rescue_payload_version(), "1.10.0.59")
 
     def test_usb_updater_updates_all_version_and_hash_carriers_atomically(self) -> None:
-        payload = build_rescue_payload_version_json("1.10.0.59")
-        runtime = build_rescue_runtime_version_json("1.10.0.59")
-        self.assertEqual(payload["rescue_payload_version"], "1.10.0.59")
-        self.assertEqual(runtime["project_version"], "1.10.0.59")
-        self.assertEqual(runtime["rescue_payload_version"], "1.10.0.59")
+        payload = build_rescue_payload_version_json("1.10.0.60")
+        runtime = build_rescue_runtime_version_json("1.10.0.60")
+        self.assertEqual(payload["rescue_payload_version"], "1.10.0.60")
+        self.assertEqual(runtime["project_version"], "1.10.0.60")
+        self.assertEqual(runtime["rescue_payload_version"], "1.10.0.60")
 
     def test_tui_sh_guard_present(self) -> None:
         tui = (

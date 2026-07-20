@@ -18,4 +18,6 @@ Kein Backup/Restore starten.
 
 ## Ergebnis
 
-Evidence auf SETUP_LOGS auswerten; Reparatur erst nach bestätigter Hypothese.
+Evidence zuerst unter `/run/setuphelfer/tui-input-diagnostics/`, dann atomar nach
+`SETUP_LOGS/tui-input-diagnostics/<RUN_ID>/` (kein Herunterfahren ohne Persistenz).
+Reparatur erst nach bestätigter Hypothese.

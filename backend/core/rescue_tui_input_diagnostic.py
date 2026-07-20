@@ -34,7 +34,12 @@ from core.rescue_tui_input_diagnostic_evidence import (
 )
 from core.rescue_tui_input_diagnostic_evdev import PassiveEvdevMonitor, event_to_dict
 from core.rescue_tui_input_diagnostic_inventory import inventory_from_proc_devices
-
+from core.rescue_tui_input_diagnostic_persistence import (
+    build_diagnostic_shutdown_decision,
+    complete_diagnostic_persistence,
+    maybe_cleanup_runtime,
+    resolve_runtime_evidence_root,
+)
 
 def resolve_whiptail_pids(
     *,
@@ -314,242 +319,296 @@ def chvt_safe(vt: int) -> dict[str, Any]:
 
 
 def resolve_evidence_root(config: DiagnosticConfig) -> Path:
-    """Prefer SETUP_LOGS; fall back only under /run/setuphelfer."""
-    roots: list[Path] = []
-    try:
-        from core.rescue_setup_logs_resolver import resolve_setup_logs
-
-        resolved = resolve_setup_logs(allow_mount=False)
-        root = (resolved or {}).get("setup_logs_root") or (resolved or {}).get("path")
-        if root:
-            roots.append(Path(str(root)) / "tui-input-diagnostics")
-    except Exception:
-        pass
-    env_root = os.environ.get("SETUPHELFER_SETUP_LOGS_ROOT", "").strip()
-    if env_root:
-        roots.append(Path(env_root) / "tui-input-diagnostics")
-    for label_mount in (Path("/media"), Path("/run/media")):
-        if label_mount.is_dir():
-            for child in label_mount.rglob("SETUP_LOGS*"):
-                if child.is_dir():
-                    roots.append(child / "tui-input-diagnostics")
-                    break
-    run_fallback = Path("/run/setuphelfer/tui-input-diagnostics")
-    for candidate in roots:
-        try:
-            candidate.mkdir(parents=True, exist_ok=True)
-            probe = candidate / ".write_probe"
-            probe.write_text("ok", encoding="utf-8")
-            probe.unlink(missing_ok=True)
-            return candidate
-        except OSError:
-            continue
-    run_fallback.mkdir(parents=True, exist_ok=True)
-    return run_fallback
+    """Always use a runtime working root; SETUP_LOGS persistence happens at finalize."""
+    if config.evidence_root is not None:
+        root = Path(config.evidence_root)
+        # Treat explicit CLI/test evidence_root as the runtime parent.
+        if str(root) not in {"", "."}:
+            root.mkdir(parents=True, exist_ok=True)
+            return root
+    return resolve_runtime_evidence_root()
 
 
-def run_tui_input_diagnostic(config: DiagnosticConfig) -> DiagnosticResult:
+def _apply_persistence(
+    config: DiagnosticConfig,
+    result: DiagnosticResult,
+    run_dir: Path,
+    *,
+    resolver: Any = None,
+) -> None:
+    """Finalize runtime evidence onto SETUP_LOGS with a bounded mount wait."""
+    result.runtime_path = str(run_dir)
+    if not config.enable_persistence:
+        result.persistence_status = "runtime_only"
+        result.shutdown_allowed = False
+        return
+    published = complete_diagnostic_persistence(
+        runtime_run_dir=run_dir,
+        run_id=config.run_id,
+        timeout_s=float(config.persist_timeout_s),
+        interval_s=float(config.persist_interval_s),
+        allow_safe_mount=True,
+        resolver=resolver,
+        runtime_override=Path(config.evidence_root) if config.evidence_root else None,
+    )
+    result.persistence_status = published.status
+    result.persistent_path = published.persistent_path
+    result.shutdown_allowed = published.shutdown_allowed
+    decision = build_diagnostic_shutdown_decision(published)
+    _diag_print(config, decision.operator_message_de)
+    _diag_print(
+        config,
+        "\n".join(
+            [
+                "Laufdaten werden temporär erfasst: ja",
+                f"SETUP_LOGS gefunden: {'ja' if published.persistent_path else 'nein'}",
+                f"Persistente Speicherung: {decision.persistence_status}",
+                f"Herunterfahren erlaubt: {'ja' if decision.shutdown_allowed else 'nein'}",
+            ]
+        ),
+    )
+    if published.runtime_cleanup_allowed:
+        maybe_cleanup_runtime(run_dir, published)
+    if config.auto_shutdown:
+        if decision.shutdown_allowed:
+            _diag_print(config, "Auto-Shutdown freigegeben (Persistenz bestätigt).")
+            try:
+                subprocess.run(["systemctl", "poweroff"], check=False, timeout=30)
+            except (OSError, subprocess.TimeoutExpired) as exc:
+                result.warnings.append({"code": "auto_shutdown_failed", "detail": str(exc)})
+        else:
+            _diag_print(config, "Auto-Shutdown blockiert: Evidence noch nicht dauerhaft gespeichert.")
+            result.warnings.append({"code": "auto_shutdown_blocked", "detail": decision.reason})
+
+
+def run_tui_input_diagnostic(
+    config: DiagnosticConfig,
+    *,
+    persist_resolver: Any = None,
+) -> DiagnosticResult:
     result = DiagnosticResult(run_id=config.run_id)
     result.write_actions_blocked = diagnostic_mode_enabled()
     if not result.write_actions_blocked:
-        # Still allow observe-only tooling when forced, but mark warning
         result.warnings.append({"code": "diag_flag_absent", "detail": "running without cmdline flag"})
 
     evidence_parent = resolve_evidence_root(config)
     run_dir = evidence_parent / config.run_id
     run_dir.mkdir(parents=True, exist_ok=True)
+    result.runtime_path = str(run_dir)
     assert_path_under_allowed_roots(
         run_dir,
         [Path("/run/setuphelfer"), Path("/media"), Path("/run/media"), Path("/tmp"), evidence_parent],
     )
 
-    atomic_write_json(
-        run_dir / "00-run-meta.json",
-        {
-            "test_id": "PI-RS-TUI-AUTO-001",
-            "run_id": config.run_id,
-            "tty_menu": config.tty_menu,
-            "tty_diagnostic": config.tty_diagnostic,
-            "write_actions_blocked": result.write_actions_blocked,
-            "blocked_actions": sorted(blocked_tui_actions()),
-            "auto_shutdown": config.auto_shutdown,
-        },
-    )
-
-    # Machine identity (redacted)
-    identity = _machine_identity_redacted()
-    result.machine_identity = identity
-    atomic_write_json(run_dir / "01-machine-identity-redacted.json", identity)
-
     try:
-        cmdline = Path("/proc/cmdline").read_text(encoding="utf-8", errors="replace")
-    except OSError:
-        cmdline = ""
-    atomic_write_text(run_dir / "02-kernel-cmdline.txt", cmdline)
+        atomic_write_json(
+            run_dir / "00-run-meta.json",
+            {
+                "test_id": "PI-RS-TUI-AUTO-001",
+                "run_id": config.run_id,
+                "tty_menu": config.tty_menu,
+                "tty_diagnostic": config.tty_diagnostic,
+                "write_actions_blocked": result.write_actions_blocked,
+                "blocked_actions": sorted(blocked_tui_actions()),
+                "auto_shutdown": config.auto_shutdown,
+                "evidence_strategy": "runtime_first_then_setup_logs",
+            },
+        )
 
-    devices = inventory_from_proc_devices()
-    result.input_devices = devices
-    atomic_write_json(run_dir / "03-input-device-inventory.json", {"devices": devices})
+        identity = _machine_identity_redacted()
+        result.machine_identity = identity
+        atomic_write_json(run_dir / "01-machine-identity-redacted.json", identity)
 
-    # Whiptail / FD / CPU
-    whip_res = resolve_whiptail_pids()
-    selected = whip_res.get("selected") or {}
-    pid = str(selected.get("pid") or "")
-    fd_info = {"fd0": "", "fd1": "", "fd2": "", "status": "unreadable"}
-    cpu_info: dict[str, Any] = {}
-    if pid:
-        fd_info = analyze_fds(read_proc_fd(pid, 0), read_proc_fd(pid, 1), read_proc_fd(pid, 2))
-        # Short sample in observe/automated runs (tests can inject)
-        sample_n = 3 if config.observe_only else 15
-        cpu_info = sample_cpu(pid, samples=sample_n, interval_s=0.2 if config.observe_only else 1.0)
+        try:
+            cmdline = Path("/proc/cmdline").read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            cmdline = ""
+        atomic_write_text(run_dir / "02-kernel-cmdline.txt", cmdline)
 
-    result.whiptail_analysis = {
-        **whip_res,
-        **fd_info,
-        **cpu_info,
-        "pid": pid or None,
-        "fd_status": fd_info.get("status"),
-    }
-    atomic_write_json(run_dir / "07-whiptail-process.json", result.whiptail_analysis)
-    atomic_write_text(
-        run_dir / "08-whiptail-cpu-samples.jsonl",
-        "\n".join(json.dumps(s) for s in (cpu_info.get("samples") or [])) + "\n",
-    )
-    atomic_write_json(run_dir / "09-whiptail-fds.json", fd_info)
+        devices = inventory_from_proc_devices()
+        result.input_devices = devices
+        atomic_write_json(run_dir / "03-input-device-inventory.json", {"devices": devices})
 
-    tty_state = read_tty1_state(config.tty_menu)
-    result.tty_analysis = tty_state
-    atomic_write_json(run_dir / "10-tty1-state.json", tty_state)
+        whip_res = resolve_whiptail_pids()
+        selected = whip_res.get("selected") or {}
+        pid = str(selected.get("pid") or "")
+        fd_info = {"fd0": "", "fd1": "", "fd2": "", "status": "unreadable"}
+        cpu_info: dict[str, Any] = {}
+        if pid:
+            fd_info = analyze_fds(read_proc_fd(pid, 0), read_proc_fd(pid, 1), read_proc_fd(pid, 2))
+            sample_n = 3 if config.observe_only else 15
+            cpu_info = sample_cpu(pid, samples=sample_n, interval_s=0.2 if config.observe_only else 1.0)
 
-    owners = collect_tty1_owners()
-    result.process_analysis = owners
-    atomic_write_json(run_dir / "11-tty1-owners.json", owners)
-
-    # Screen dump attempt (optional)
-    dump_path = run_dir / "screen_before.txt"
-    screen = try_screen_dump(1, dump_path)
-    result.screen_analysis = screen
-    atomic_write_json(run_dir / "15-screen-comparison.json", screen)
-
-    # Placeholders / interactive keyboard stage
-    if config.observe_only or not config.interactive:
-        result.internal_keyboard_test = {
-            "stage": "internal_keyboard_tty2",
-            "status": "skipped",
-            "expected_keys": [],
-            "tty_keys_received": [],
-            "evdev_keys_received": [],
+        result.whiptail_analysis = {
+            **whip_res,
+            **fd_info,
+            **cpu_info,
+            "pid": pid or None,
+            "fd_status": fd_info.get("status"),
         }
-        result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped"}
-        result.menu_input_test = {
-            "stage": "tui_menu_tty1",
-            "status": "skipped",
-            "write_actions_blocked": result.write_actions_blocked,
-            "enter_test_skipped_safety_guard_unconfirmed": not result.write_actions_blocked,
-        }
-    else:
-        result.internal_keyboard_test = _run_internal_keyboard_stage(config, devices)
-        result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped_optional"}
-        # Controlled VT switch only when guard confirmed; Enter test gated
-        menu_test: dict[str, Any] = {
-            "stage": "tui_menu_tty1",
-            "write_actions_blocked": result.write_actions_blocked,
-        }
-        if config.auto_vt_switch and result.write_actions_blocked:
-            _diag_print(config, "Wechsel in 5s auf tty1 — bitte Pfeil runter/hoch, Tab, Esc tippen (kein Backup).")
-            time.sleep(5)
-            menu_test["chvt_to_1"] = chvt_safe(1)
-            # Passive capture while operator presses keys on tty1
-            nodes = [d["event_node"] for d in devices if d.get("event_node")]
-            class_map = {d["event_node"]: ("internal" if d.get("is_internal_candidate") else "external") for d in devices}
-            events: list[dict[str, Any]] = []
-            with PassiveEvdevMonitor(nodes, class_by_node=class_map) as mon:
-                deadline = time.monotonic() + float(config.menu_test_timeout_s)
-                while time.monotonic() < deadline:
-                    for ev in mon.poll(0.2):
-                        if ev.value == 1:
-                            events.append(event_to_dict(ev))
-            menu_test["evdev_keys_received"] = [e["name"] for e in events]
-            menu_test["chvt_to_2"] = chvt_safe(2)
-            menu_test["status"] = "completed"
-            menu_test["enter_test_skipped_safety_guard_unconfirmed"] = False
-            # Skip Enter confirmation test — guard blocks dangerous actions but we still avoid Enter
-            menu_test["enter_test"] = "skipped_by_policy"
+        atomic_write_json(run_dir / "07-whiptail-process.json", result.whiptail_analysis)
+        atomic_write_text(
+            run_dir / "08-whiptail-cpu-samples.jsonl",
+            "\n".join(json.dumps(s) for s in (cpu_info.get("samples") or [])) + "\n",
+        )
+        atomic_write_json(run_dir / "09-whiptail-fds.json", fd_info)
+
+        tty_state = read_tty1_state(config.tty_menu)
+        result.tty_analysis = tty_state
+        atomic_write_json(run_dir / "10-tty1-state.json", tty_state)
+
+        owners = collect_tty1_owners()
+        result.process_analysis = owners
+        atomic_write_json(run_dir / "11-tty1-owners.json", owners)
+
+        dump_path = run_dir / "screen_before.txt"
+        screen = try_screen_dump(1, dump_path)
+        result.screen_analysis = screen
+        atomic_write_json(run_dir / "15-screen-comparison.json", screen)
+
+        if config.observe_only or not config.interactive:
+            result.internal_keyboard_test = {
+                "stage": "internal_keyboard_tty2",
+                "status": "skipped",
+                "expected_keys": [],
+                "tty_keys_received": [],
+                "evdev_keys_received": [],
+            }
+            result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped"}
+            result.menu_input_test = {
+                "stage": "tui_menu_tty1",
+                "status": "skipped",
+                "write_actions_blocked": result.write_actions_blocked,
+                "enter_test_skipped_safety_guard_unconfirmed": not result.write_actions_blocked,
+            }
         else:
-            menu_test["status"] = "enter_test_skipped_safety_guard_unconfirmed"
-            menu_test["enter_test_skipped_safety_guard_unconfirmed"] = True
-        result.menu_input_test = menu_test
-    atomic_write_json(run_dir / "04-internal-keyboard-test.json", result.internal_keyboard_test)
-    atomic_write_json(run_dir / "05-external-keyboard-test.json", result.external_keyboard_test)
-    atomic_write_json(run_dir / "06-tui-menu-input-test.json", result.menu_input_test)
-    atomic_write_json(run_dir / "12-input-events-redacted.jsonl", [])
-    atomic_write_text(run_dir / "13-kernel-input-log-redacted.txt", _kernel_input_snippet())
-    atomic_write_text(run_dir / "14-systemd-console-status.txt", _systemd_console_status())
-    atomic_write_json(run_dir / "16-operator-observations.json", {})
+            result.internal_keyboard_test = _run_internal_keyboard_stage(config, devices)
+            result.external_keyboard_test = {"stage": "external_keyboard", "status": "skipped_optional"}
+            menu_test: dict[str, Any] = {
+                "stage": "tui_menu_tty1",
+                "write_actions_blocked": result.write_actions_blocked,
+            }
+            if config.auto_vt_switch and result.write_actions_blocked:
+                _diag_print(config, "Wechsel in 5s auf tty1 — bitte Pfeil runter/hoch, Tab, Esc tippen (kein Backup).")
+                time.sleep(5)
+                menu_test["chvt_to_1"] = chvt_safe(1)
+                nodes = [d["event_node"] for d in devices if d.get("event_node")]
+                class_map = {
+                    d["event_node"]: ("internal" if d.get("is_internal_candidate") else "external")
+                    for d in devices
+                }
+                events: list[dict[str, Any]] = []
+                with PassiveEvdevMonitor(nodes, class_by_node=class_map) as mon:
+                    deadline = time.monotonic() + float(config.menu_test_timeout_s)
+                    while time.monotonic() < deadline:
+                        for ev in mon.poll(0.2):
+                            if ev.value == 1:
+                                events.append(event_to_dict(ev))
+                menu_test["evdev_keys_received"] = [e["name"] for e in events]
+                menu_test["chvt_to_2"] = chvt_safe(2)
+                menu_test["status"] = "completed"
+                menu_test["enter_test_skipped_safety_guard_unconfirmed"] = False
+                menu_test["enter_test"] = "skipped_by_policy"
+            else:
+                menu_test["status"] = "enter_test_skipped_safety_guard_unconfirmed"
+                menu_test["enter_test_skipped_safety_guard_unconfirmed"] = True
+            result.menu_input_test = menu_test
+        atomic_write_json(run_dir / "04-internal-keyboard-test.json", result.internal_keyboard_test)
+        atomic_write_json(run_dir / "05-external-keyboard-test.json", result.external_keyboard_test)
+        atomic_write_json(run_dir / "06-tui-menu-input-test.json", result.menu_input_test)
+        atomic_write_json(run_dir / "12-input-events-redacted.jsonl", [])
+        atomic_write_text(run_dir / "13-kernel-input-log-redacted.txt", _kernel_input_snippet())
+        atomic_write_text(run_dir / "14-systemd-console-status.txt", _systemd_console_status())
+        atomic_write_json(run_dir / "16-operator-observations.json", {})
 
-    # Payload version
-    for candidate in (
-        Path("/opt/setuphelfer-rescue/VERSION"),
-        Path("/opt/setuphelfer-rescue/config/rescue_payload_version.json"),
-    ):
-        if candidate.is_file():
-            try:
-                if candidate.suffix == ".json":
-                    result.payload_version = json.loads(candidate.read_text()).get("rescue_payload_version")
-                else:
-                    result.payload_version = candidate.read_text().strip()
-            except (OSError, json.JSONDecodeError):
-                pass
-            if result.payload_version:
-                break
+        for candidate in (
+            Path("/opt/setuphelfer-rescue/VERSION"),
+            Path("/opt/setuphelfer-rescue/config/rescue_payload_version.json"),
+        ):
+            if candidate.is_file():
+                try:
+                    if candidate.suffix == ".json":
+                        result.payload_version = json.loads(candidate.read_text()).get("rescue_payload_version")
+                    else:
+                        result.payload_version = candidate.read_text().strip()
+                except (OSError, json.JSONDecodeError):
+                    pass
+                if result.payload_version:
+                    break
 
-    result.hypotheses = {
-        "fd_status": fd_info.get("status"),
-        "cpu_avg_percent": cpu_info.get("cpu_avg_percent"),
-        "tty_competition": owners.get("severity"),
-        "menu_visible_unusable": True,  # known operator symptom context for MSI runs
-        "legacy_high_cpu": float(cpu_info.get("cpu_avg_percent") or 0) >= 20.0,
-    }
+        result.hypotheses = {
+            "fd_status": fd_info.get("status"),
+            "cpu_avg_percent": cpu_info.get("cpu_avg_percent"),
+            "tty_competition": owners.get("competition"),
+            "menu_visible_unusable": True,
+            "legacy_high_cpu": float(cpu_info.get("cpu_avg_percent") or 0) >= 20.0,
+        }
 
-    decision = evaluate_tui_input_diagnostic(result)
-    result.leading_hypothesis = decision.leading_hypothesis
-    result.confidence = decision.confidence
-    result.recommended_repair_path = decision.recommended_repair_path
-    atomic_write_json(
-        run_dir / "17-hypothesis-decision.json",
-        {
-            "leading_hypothesis": decision.leading_hypothesis,
-            "confidence": decision.confidence,
-            "recommended_repair_path": decision.recommended_repair_path,
-            "reasons": decision.reasons,
-            "contradicting_evidence": decision.contradicting_evidence,
-            "missing_evidence": decision.missing_evidence,
-        },
-    )
+        decision = evaluate_tui_input_diagnostic(result)
+        result.leading_hypothesis = decision.leading_hypothesis
+        result.confidence = decision.confidence
+        result.recommended_repair_path = decision.recommended_repair_path
+        atomic_write_json(
+            run_dir / "17-hypothesis-decision.json",
+            {
+                "leading_hypothesis": decision.leading_hypothesis,
+                "confidence": decision.confidence,
+                "recommended_repair_path": decision.recommended_repair_path,
+                "reasons": decision.reasons,
+                "contradicting_evidence": decision.contradicting_evidence,
+                "missing_evidence": decision.missing_evidence,
+            },
+        )
 
-    report = _render_report(result, decision)
-    atomic_write_text(run_dir / "19-final-report.md", report)
+        report = _render_report(result, decision)
+        atomic_write_text(run_dir / "19-final-report.md", report)
 
-    if config.observe_only:
-        result.status = "review_required"
-    elif result.errors:
+        if config.observe_only:
+            result.status = "review_required"
+        elif result.errors:
+            result.status = "blocked"
+        else:
+            result.status = "review_required"
+
+        final = {
+            "test_id": "PI-RS-TUI-AUTO-001",
+            "run_id": result.run_id,
+            "status": result.status,
+            "payload_version": result.payload_version,
+            "leading_hypothesis": result.leading_hypothesis,
+            "confidence": result.confidence,
+            "recommended_repair_path": result.recommended_repair_path,
+            "write_actions_blocked": result.write_actions_blocked,
+            "write_guard": write_guard_response() if result.write_actions_blocked else None,
+            "runtime_path": str(run_dir),
+        }
+        finalize_run_dir(run_dir, status=result.status, final_result=final)
+    except Exception as exc:
+        result.errors.append({"code": "diagnostic_exception", "detail": str(exc)})
         result.status = "blocked"
-    else:
-        result.status = "review_required"
-
-    final = {
-        "test_id": "PI-RS-TUI-AUTO-001",
-        "run_id": result.run_id,
-        "status": result.status,
-        "payload_version": result.payload_version,
-        "leading_hypothesis": result.leading_hypothesis,
-        "confidence": result.confidence,
-        "recommended_repair_path": result.recommended_repair_path,
-        "write_actions_blocked": result.write_actions_blocked,
-        "write_guard": write_guard_response() if result.write_actions_blocked else None,
-    }
-    finalize_run_dir(run_dir, status=result.status, final_result=final)
+        try:
+            finalize_run_dir(
+                run_dir,
+                status="blocked",
+                final_result={
+                    "test_id": "PI-RS-TUI-AUTO-001",
+                    "run_id": result.run_id,
+                    "status": "blocked",
+                    "error": str(exc),
+                    "runtime_path": str(run_dir),
+                },
+            )
+        except Exception as finalize_exc:
+            result.errors.append({"code": "finalize_failed", "detail": str(finalize_exc)})
+    finally:
+        try:
+            _apply_persistence(config, result, run_dir, resolver=persist_resolver)
+        except Exception as persist_exc:
+            result.errors.append({"code": "persistence_failed", "detail": str(persist_exc)})
+            result.shutdown_allowed = False
+            result.persistence_status = "blocked"
     return result
+
 
 
 def _diag_print(config: DiagnosticConfig, msg: str) -> None:
@@ -676,6 +735,7 @@ def _render_report(result: DiagnosticResult, decision: Any) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     import argparse
+    import signal
 
     parser = argparse.ArgumentParser(description="Setuphelfer TUI input diagnostic (read-only)")
     parser.add_argument("--observe-only", action="store_true", help="No interactive prompts / VT switches")
@@ -697,8 +757,32 @@ def main(argv: list[str] | None = None) -> int:
         evidence_root=args.evidence_root or cfg.evidence_root,
     )
 
+    def _on_term(signum: int, _frame: Any) -> None:
+        # Raise so run_tui_input_diagnostic's finally still runs persistence.
+        raise SystemExit(128 + int(signum))
+
+    try:
+        signal.signal(signal.SIGTERM, _on_term)
+    except (OSError, ValueError):
+        pass
+
     result = run_tui_input_diagnostic(cfg)
-    print(json.dumps({"status": result.status, "run_id": result.run_id, "hypothesis": result.leading_hypothesis}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {
+                "status": result.status,
+                "run_id": result.run_id,
+                "hypothesis": result.leading_hypothesis,
+                "persistence_status": result.persistence_status,
+                "persistent_path": result.persistent_path,
+                "shutdown_allowed": result.shutdown_allowed,
+                "runtime_path": result.runtime_path,
+            },
+            ensure_ascii=False,
+        )
+    )
+    if not result.shutdown_allowed and result.persistence_status != "persisted":
+        return 3
     return 0 if result.status in {"passed", "review_required"} else 1
 
 
