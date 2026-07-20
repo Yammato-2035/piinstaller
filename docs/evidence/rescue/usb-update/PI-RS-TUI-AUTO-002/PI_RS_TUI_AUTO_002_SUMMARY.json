@@ -55,7 +55,7 @@
     "filesystem_created": false,
     "msi_test_started": false
   },
-  "evidence_commit": null,
+  "evidence_commit": "7acc9bf224aaa92674784cd2f6e372bbe91932cf",
   "push_performed": false,
   "next_action": "PI-RS-TUI-AUTO-003 MSI physical diagnostic run"
 }
