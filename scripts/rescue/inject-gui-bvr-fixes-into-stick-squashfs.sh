@@ -85,6 +85,9 @@ inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-input-diag
   "${IMG}/setuphelfer-rescue-tui-input-diagnostic"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic" \
   "${SBIN}/setuphelfer-rescue-tui-input-diagnostic"
+# Git may store the CLI as non-executable (100644); force runtime +x in squash.
+chmod +x "${IMG}/setuphelfer-rescue-tui-input-diagnostic" \
+  "${SBIN}/setuphelfer-rescue-tui-input-diagnostic" 2>/dev/null || true
 inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service" \
   "${ROOT}/etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-live-medium-check.py" \
@@ -238,10 +241,10 @@ wants.mkdir(parents=True, exist_ok=True)
 unit = root / "etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
 link = wants / "setuphelfer-rescue-tui-input-diagnostic.service"
 if unit.is_file():
-    try:
-        link.symlink_to(unit)
-    except FileExistsError:
-        pass
+    if link.exists() or link.is_symlink():
+        link.unlink()
+    # Relative Wants link (absolute temp paths break after mksquashfs).
+    link.symlink_to("../setuphelfer-rescue-tui-input-diagnostic.service")
 print("payload", ver)
 PY
 
