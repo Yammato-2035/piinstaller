@@ -34,6 +34,12 @@ unsquashfs -f -d "$ROOT" "$SQ" >/dev/null
 
 inject() {
   local src="$1" dst="$2"
+  # Optional workspace modules may be untracked/absent; skip rather than abort
+  # the whole repack. Required diagnostic paths are verified after injects.
+  if [[ ! -e "$src" ]]; then
+    echo "[SKIP] missing source: $src"
+    return 0
+  fi
   mkdir -p "$(dirname "$dst")"
   cp -a "$src" "$dst"
   echo "[OK] $dst"
@@ -179,6 +185,22 @@ for pair in \
     chmod +x "$dst"
   fi
 done
+
+# Required for PI-RS-TUI-AUTO (fail closed if diagnostic payload incomplete).
+REQUIRED_IN_ROOT=(
+  "${BE}/core/rescue_tui_input_diagnostic.py"
+  "${BE}/core/rescue_tui_input_diagnostic_contract.py"
+  "${SBIN}/setuphelfer-rescue-tui-input-diagnostic"
+  "${ROOT}/etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
+  "${IMG}/setuphelfer-rescue-tui.sh"
+)
+for req in "${REQUIRED_IN_ROOT[@]}"; do
+  if [[ ! -e "$req" ]]; then
+    echo "[ERROR] required inject missing in squash root: $req" >&2
+    exit 1
+  fi
+done
+echo "[OK] required TUI diagnostic inject paths present"
 
 # Payload version stamp — keep all carriers in sync (VERSION + both JSON files).
 python3 - <<PY
