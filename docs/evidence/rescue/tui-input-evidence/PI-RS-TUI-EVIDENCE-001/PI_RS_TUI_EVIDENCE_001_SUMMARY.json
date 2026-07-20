@@ -5,7 +5,7 @@
     "path": "/home/volker/piinstaller",
     "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
     "head_before": "5aa71ebf0e511c8b6e90c934f2f2f7c22ba09806",
-    "head_after": "",
+    "head_after": "3d494424fafecbfcdf2e2c4586b6b01ae7844ddf",
     "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
   },
   "root_cause": {
@@ -42,7 +42,8 @@
     "restore_started": false,
     "internal_disk_touched": false
   },
-  "commit": null,
-  "push_performed": false,
-  "next_action": "controlled payload build and USB update"
+  "commit": "3d494424fafecbfcdf2e2c4586b6b01ae7844ddf",
+  "push_performed": true,
+  "next_action": "controlled payload build and USB update",
+  "commit_message_note": "Primary fix landed in 3d494424 (message was metadata follow-up; content is persistence fix)"
 }

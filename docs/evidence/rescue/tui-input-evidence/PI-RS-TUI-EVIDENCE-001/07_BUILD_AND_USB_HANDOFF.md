@@ -1,7 +1,7 @@
 # Build and USB handoff
 
 ```
-Quellcommit: (filled after commit)
+Quellcommit: 3d494424fafecbfcdf2e2c4586b6b01ae7844ddf
 Zielversion: 1.10.0.60
 notwendiger Buildmodus: payload_repack (isolierter Worktree wie AUTO-002)
 geänderte Payload-Dateien:
