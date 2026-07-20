@@ -8,88 +8,184 @@ source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 MODE="${1:---interactive}"
 _wt="$(setuphelfer_rescue_whiptail_tty)"
 
-_tui_msg() {
-  whiptail --title "Setuphelfer Rettungsstick" --msgbox "$1" 18 74 3>&1 1>"$_wt" 2>&3 || true
+# whiptail/newt: UI on stdout, selection tag on stderr (see man whiptail).
+# Under command substitution stdout starts as a pipe — swap so UI hits the tty
+# and the tag is what $() captures. Painting UI to stderr left a blank screen
+# with whiptail spinning ~30% CPU (MSI 1.10.0.57).
+_tui_whiptail() {
+  local tty="${_wt:-/dev/tty1}"
+  [[ -c "$tty" && -w "$tty" ]] || tty="/dev/tty1"
+  [[ -c "$tty" ]] || tty="/dev/tty"
+  TERM="${TERM:-linux}" whiptail "$@" <"$tty" 3>&1 1>"$tty" 2>&3
 }
 
-_tui_run_system_detect() {
-  whiptail --title "Setuphelfer" --infobox "System wird erkannt…" 8 50 3>&1 1>"$_wt" 2>&3 || true
-  local out="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
-  if "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" >"$out" 2>/dev/null; then
-    local summary
-    summary="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=d.get("recommendation") or {}; print("Empfehlung:", r.get("summary_de") or "—")' "$out" 2>/dev/null || echo "Erkennung abgeschlossen.")"
-    _tui_msg "Systemerkennung\n\n${summary}\n\nDetails: ${out}"
-  else
-    _tui_msg "Systemerkennung fehlgeschlagen.\nSiehe Journal / SETUP_LOGS."
-  fi
+_tui_msg() {
+  _tui_whiptail --title "Setuphelfer Rettungsstick" --msgbox "$1" 18 74 || true
+}
+
+_tui_input_diag_active() {
+  grep -Eq '(^| )setuphelfer_tui_input_diag=1( |$)' /proc/cmdline 2>/dev/null
+}
+
+_tui_diag_blocked_action() {
+  _tui_msg "Diese Funktion ist während der Eingabediagnose gesperrt.
+This function is disabled during input diagnostics.
+
+Code: RESCUE_TUI_INPUT_DIAGNOSTIC_MODE_READ_ONLY"
 }
 
 _tui_run_wifi_diag() {
-  whiptail --title "Setuphelfer" --infobox "WLAN/Hardware wird geprüft…" 8 50 3>&1 1>"$_wt" 2>&3 || true
-  setuphelfer_rescue_wifi_prepare_radio || true
-  local py="/opt/setuphelfer-rescue/backend"
-  local text="WLAN-Diagnose nicht verfügbar (Backend fehlt)."
-  if [[ -d "$py" ]]; then
-    text="$(PYTHONPATH="${py}" python3 - <<'PY'
-import json
+  # Hard wall-clock: MSI WiFi/nmcli can enter D-state; never block the menu.
+  local out="${SETUPHELFER_RESCUE_STATE_DIR}/wifi-diag-tui.txt"
+  local secs=8
+  whiptail --title "Setuphelfer" --infobox "WLAN/Hardware wird geprüft… (max. ${secs}s)" 8 55 \
+    3>&1 1>"$_wt" 2>&3 || true
+  setuphelfer_rescue_ensure_state_dir
+  rm -f "$out"
+  (
+    export SETUPHELFER_WIFI_PREPARE_LIGHT=1
+    setuphelfer_rescue_wifi_prepare_radio || true
+    local py="/opt/setuphelfer-rescue/backend"
+    local text="WLAN-Diagnose: Timeout oder Backend fehlt."
+    if [[ -d "$py" ]]; then
+      text="$(
+        SETUPHELFER_WIFI_DIAG_LIGHT=1 PYTHONPATH="${py}" python3 - <<'PY'
 from core.rescue_wifi_diagnostics import classify_wifi_status
-w = classify_wifi_status()
+w = classify_wifi_status(light=True)
 lines = [
-    f"Status: {w.get('status')}",
-    f"Hardware: {'ja' if w.get('wifi_hardware_present') else 'nein'}",
-    f"Treiber: {w.get('driver') or '—'}",
-    f"Firmware: {w.get('firmware_status') or '—'}",
-    f"rfkill: {w.get('rfkill_state') or '—'}",
-    f"NetworkManager: {w.get('networkmanager_active')}",
-    f"HDD-Backup WLAN nötig: {'nein' if not w.get('blocks_local_hdd_backup') else 'ja'}",
+    f"Status: {w.get('status') or w.get('ui_status') or '—'}",
+    f"Hardware: {'ja' if w.get('wifi_hardware_detected') or w.get('wifi_interface_present') else 'nein'}",
+    f"Treiber iwlwifi: {'geladen' if w.get('driver_loaded') else 'nein/unbekannt'}",
+    f"Interfaces: {', '.join(w.get('interfaces') or []) or '—'}",
+    f"rfkill soft-block: {'ja' if w.get('rfkill_soft_blocked') else 'nein'}",
+    f"WLAN-Radio an: {'ja' if w.get('wifi_radio_on') else 'nein/unbekannt'}",
+    f"HDD-Backup WLAN nötig: nein",
     f"Cloud-Backup WLAN nötig: {'ja' if w.get('blocks_cloud_backup') else 'nein'}",
 ]
 print("\n".join(lines))
 PY
-)"
-  fi
-  if command -v nmcli >/dev/null 2>&1; then
-    text="${text}
+      )" || text="WLAN-Diagnose: Python-Fehler (offline fortfahren)."
+    fi
+    if command -v nmcli >/dev/null 2>&1; then
+      text="${text}
 
 nmcli radio:
-$(nmcli radio all 2>/dev/null | head -5)
+$(timeout 2 nmcli radio all 2>/dev/null | head -5 || echo '(timeout)')
 
 Interfaces:
-$(nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | head -8)"
+$(timeout 2 nmcli -t -f DEVICE,TYPE,STATE device status 2>/dev/null | head -8 || echo '(timeout)')"
+    fi
+    printf '%s\n' "$text" >"$out"
+  ) >/dev/null 2>&1 &
+  local pid=$!
+  local end=$((SECONDS + secs))
+  while kill -0 "$pid" 2>/dev/null && (( SECONDS < end )); do
+    sleep 0.2
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    kill -TERM "$pid" 2>/dev/null || true
+    kill -KILL "$pid" 2>/dev/null || true
   fi
-  _tui_msg "$text"
+  if [[ -s "$out" ]]; then
+    _tui_msg "$(cat "$out")"
+  else
+    _tui_msg "WLAN-Diagnose abgebrochen (Timeout ${secs}s).\n\nOffline fortfahren ist möglich — lokales HDD-Backup braucht kein WLAN."
+  fi
+}
+
+_tui_run_system_detect() {
+  whiptail --title "Setuphelfer" --infobox "System wird erkannt… (max. 8s)" 8 50 3>&1 1>"$_wt" 2>&3 || true
+  local out="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
+  _tui_run_bounded 8 "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" || true
+  if [[ -s "$out" ]]; then
+    local summary
+    summary="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=d.get("recommendation") or {}; print("Empfehlung:", r.get("summary_de") or "—")' "$out" 2>/dev/null || echo "Erkennung abgeschlossen.")"
+    _tui_msg "Systemerkennung\n\n${summary}\n\nDetails: ${out}"
+  else
+    _tui_msg "Systemerkennung fehlgeschlagen oder Timeout.\nSiehe Journal / SETUP_LOGS — Menü bleibt nutzbar."
+  fi
 }
 
 _tui_run_backup_plan() {
   whiptail --title "Setuphelfer" --infobox "Backup-Plan (nur Vorschau)…" 8 55 3>&1 1>"$_wt" 2>&3 || true
+  setuphelfer_rescue_ensure_state_dir
+  # Wrapper writes JSON to STATE_DIR (not stdout) — do not redirect stdout into the file.
   local disc="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
-  "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" >"$disc" 2>/dev/null || true
-  local py="/opt/setuphelfer-rescue/backend"
+  "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" >/dev/null 2>&1 || true
   local plan_out="${SETUPHELFER_RESCUE_STATE_DIR}/backup-plan-dry-run.json"
-  if [[ ! -d "$py" ]]; then
+  local plan_err="${SETUPHELFER_RESCUE_STATE_DIR}/backup-plan-dry-run.err"
+  local py_backend="/opt/setuphelfer-rescue/backend"
+  if [[ ! -d "$py_backend" ]]; then
     _tui_msg "Backup-Plan: Backend fehlt (contract_error_disk_discovery_null)."
     return
   fi
-  PYTHONPATH="${py}" python3 - <<PY >"$plan_out" 2>/dev/null || true
+  local pybin
+  pybin="$(setuphelfer_rescue_backend_python 2>/dev/null || command -v python3)"
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" "$pybin" - <<PY >"$plan_out" 2>"$plan_err" || true
 import json
+import traceback
 from pathlib import Path
+
 from core.rescue_backup_plan_contract import build_rescue_backup_plan
+from core.rescue_tui_backup_plan_body import build_tui_backup_plan_body_from_discovery
 
 disc_path = Path(${disc@Q})
-disc = {}
-if disc_path.is_file():
-    disc = json.loads(disc_path.read_text(encoding="utf-8"))
-body = {
-    "disk_discovery": disc,
-    "devices_detected": bool(disc.get("devices")),
-    "target_mode": "external_hdd",
-}
-plan = build_rescue_backup_plan(body)
-print(json.dumps(plan, indent=2, ensure_ascii=False))
+disc: dict = {}
+try:
+    if disc_path.is_file() and disc_path.stat().st_size > 0:
+        disc = json.loads(disc_path.read_text(encoding="utf-8"))
+except Exception as exc:  # noqa: BLE001
+    print(json.dumps({
+        "plan_status": "blocked",
+        "execute_allowed": False,
+        "errors": [{"code": "disk_discovery_invalid", "message": f"{type(exc).__name__}: {exc}"}],
+        "warnings": [],
+    }, indent=2, ensure_ascii=False))
+    raise SystemExit(0)
+body = build_tui_backup_plan_body_from_discovery(disc, target_mode="external_hdd")
+try:
+    plan = build_rescue_backup_plan(body)
+    plan["tui_auto_mapped"] = {
+        "source_device": body.get("source_device"),
+        "target_device": body.get("target_device"),
+        "target_mount": body.get("target_mount"),
+    }
+    print(json.dumps(plan, indent=2, ensure_ascii=False))
+except Exception as exc:  # noqa: BLE001
+    traceback.print_exc()
+    print(json.dumps({
+        "plan_status": "blocked",
+        "execute_allowed": False,
+        "errors": [{"code": "plan_exception", "message": f"{type(exc).__name__}: {exc}"}],
+        "warnings": [],
+    }, indent=2, ensure_ascii=False))
 PY
   local msg
-  msg="$(python3 -c 'import json,sys; p=json.load(open(sys.argv[1])); e=[x.get("code") for x in (p.get("errors") or [])]; w=[x.get("code") for x in (p.get("warnings") or [])]; print("Status:", p.get("plan_status"), "\nExecute:", p.get("execute_allowed"), "\nFehler:", ", ".join(e) or "—", "\nHinweise:", ", ".join(w) or "—")' "$plan_out" 2>/dev/null || echo "Plan konnte nicht erstellt werden.")"
+  msg="$(
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" "$pybin" -c '
+import json,sys
+from pathlib import Path
+p=Path(sys.argv[1])
+if not p.is_file() or p.stat().st_size==0:
+    err=Path(sys.argv[2]).read_text(encoding="utf-8", errors="replace")[:400] if Path(sys.argv[2]).is_file() else ""
+    print("Plan konnte nicht erstellt werden.")
+    if err:
+        print("Detail:", err)
+    raise SystemExit(0)
+doc=json.loads(p.read_text(encoding="utf-8"))
+e=[x.get("code") for x in (doc.get("errors") or [])]
+w=[x.get("code") for x in (doc.get("warnings") or [])]
+mapped=doc.get("tui_auto_mapped") or {}
+print("Status:", doc.get("plan_status"))
+print("Execute:", doc.get("execute_allowed"))
+print("Quelle:", mapped.get("source_device") or "—")
+print("Ziel:", mapped.get("target_device") or "—", mapped.get("target_mount") or "")
+print("Fehler:", ", ".join(e) or "—")
+print("Hinweise:", ", ".join(w) or "—")
+' "$plan_out" "$plan_err" 2>/dev/null || echo "Plan konnte nicht erstellt werden."
+  )"
   setuphelfer_rescue_mirror_evidence_file "$plan_out" "setuphelfer/evidence/backup/backup-plan-dry-run.json" 2>/dev/null || true
+  setuphelfer_rescue_mirror_evidence_file "$plan_err" "setuphelfer/evidence/backup/backup-plan-dry-run.err" 2>/dev/null || true
   _tui_msg "Backup-Plan (dry-run, keine Ausführung)\n\n${msg}\n\nGespeichert: ${plan_out}"
 }
 
@@ -340,79 +436,170 @@ PY
   done
 }
 
+_tui_run_bounded() {
+  # Wall-clock bound: never wait on USB D-state children (timeout/kill can't abort them).
+  local secs="${1:-5}"
+  shift
+  "$@" >/dev/null 2>&1 &
+  local pid=$!
+  local end=$((SECONDS + secs))
+  while kill -0 "$pid" 2>/dev/null && (( SECONDS < end )); do
+    sleep 0.2
+  done
+  if kill -0 "$pid" 2>/dev/null; then
+    kill -TERM "$pid" 2>/dev/null || true
+    kill -KILL "$pid" 2>/dev/null || true
+  fi
+  return 0
+}
+
 _tui_boot_progress_steps() {
-  # Visible auto-walk so the operator sees activity before the interactive menu.
-  # Runs on --boot-trigger (GUI-Fallback oder Textmodus).
+  # Cosmetic walk only — never call wifi/media/disk I/O here (USB D-state / NM hang).
+  # Heavy checks stay in interactive menu items with hard wall-clock aborts.
   local _wt_local
   _wt_local="$(setuphelfer_rescue_whiptail_tty)"
   whiptail --title "Setuphelfer" --infobox "Schritt 1/4: Live-Medium prüfen…" 8 55 \
     3>&1 1>"$_wt_local" 2>&3 || true
-  sleep 1
-  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-media-check" ]]; then
-    local media_json="${SETUPHELFER_RESCUE_STATE_DIR}/media-check.json"
-    if [[ ! -f "$media_json" ]]; then
-      "${SCRIPT_DIR}/setuphelfer-rescue-media-check" >/dev/null 2>&1 || true
-    fi
-  fi
+  sleep 0.5
   setuphelfer_rescue_write_boot_state "tui_step_media"
 
   whiptail --title "Setuphelfer" --infobox "Schritt 2/4: System erkennen…" 8 55 \
     3>&1 1>"$_wt_local" 2>&3 || true
-  local disc="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
-  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" ]]; then
-    "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" >"$disc" 2>/dev/null || true
-  fi
+  sleep 0.5
   setuphelfer_rescue_write_boot_state "tui_step_detect"
 
-  whiptail --title "Setuphelfer" --infobox "Schritt 3/4: Hardware/WLAN prüfen…" 8 55 \
+  whiptail --title "Setuphelfer" --infobox "Schritt 3/4: Hardware-Hinweis…" 8 55 \
     3>&1 1>"$_wt_local" 2>&3 || true
-  setuphelfer_rescue_wifi_prepare_radio >/dev/null 2>&1 || true
+  sleep 0.5
   setuphelfer_rescue_write_boot_state "tui_step_wifi"
 
   whiptail --title "Setuphelfer" --infobox "Schritt 4/4: Textmenü wird vorbereitet…" 8 55 \
     3>&1 1>"$_wt_local" 2>&3 || true
-  sleep 1
+  sleep 0.5
   setuphelfer_rescue_write_boot_state "tui_steps_done"
 
-  local summary="Bereit."
-  if [[ -f "$disc" ]]; then
-    summary="$(python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); r=d.get("recommendation") or {}; print(r.get("summary_de") or "System erkannt.")' "$disc" 2>/dev/null || echo "System erkannt.")"
+  # Reclaim console if a failed GUI attempt left chromium/openvt on another VT.
+  setuphelfer_rescue_kill_gui_leftovers || true
+  chvt 1 2>/dev/null || true
+  setuphelfer_rescue_write_boot_state "tui_menu_ready"
+}
+
+_tui_run_asus_rog_gate() {
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-asus-rog-bios-gate" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-asus-rog-bios-gate" || true
   fi
-  local gui_note=""
-  if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/gui-fallback.json" ]] \
-     || [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/gui-watchdog.json" ]]; then
-    gui_note="\n\nHinweis: Grafische Oberfläche war nicht verfügbar — Textmodus aktiv."
+  local gate="${SETUPHELFER_RESCUE_STATE_DIR}/asus-rog-bios-gate.json"
+  local body="ASUS ROG BIOS/Win11-Gate (nur Lesen, keine BIOS-Änderung).\n\n"
+  if [[ -f "$gate" ]] && command -v python3 >/dev/null 2>&1; then
+    body="$(python3 - <<PY
+import json
+from pathlib import Path
+p = Path("${gate}")
+d = json.loads(p.read_text(encoding="utf-8"))
+lines = [
+    "ASUS ROG erkannt: " + str(d.get("asus_rog_detected")),
+    "Schwere: " + str(d.get("severity")),
+    "",
+    "Nächste Schritte:",
+]
+for a in (d.get("operator_next_actions") or [])[:8]:
+    lines.append("- " + str(a))
+print("\\n".join(lines))
+PY
+)"
+  else
+    body+="Evidence fehlt — Gate-Skript ausführen."
   fi
-  whiptail --title "Setuphelfer Rettungsstick" --msgbox \
-    "Startprüfung abgeschlossen.${gui_note}\n\n${summary}\n\nAls Nächstes: Textmenü." 16 74 \
-    3>&1 1>"$_wt_local" 2>&3 || true
+  whiptail --title "ASUS ROG — BIOS / Win11" --msgbox "$body" 22 74 3>&1 1>"$_wt" 2>&3 || true
+}
+
+_tui_run_pi5_lab() {
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-pi5-lab" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-pi5-lab" || true
+  fi
+  local usb="${SETUPHELFER_RESCUE_STATE_DIR}/pi5-usb-boot-check.json"
+  local body="Pi5 Lab: USB-Boot-Check und Install-Plan.\n\n"
+  if [[ -f "$usb" ]] && command -v python3 >/dev/null 2>&1; then
+    body="$(python3 - <<PY
+import json
+from pathlib import Path
+d = json.loads(Path("${usb}").read_text(encoding="utf-8"))
+det = d.get("detection") or {}
+lines = [
+    "Modell: " + str(det.get("model") or "n/a"),
+    "Pi5: " + str(det.get("is_raspberry_pi_5")),
+    "BOOT_ORDER: " + str(d.get("boot_order")),
+    "usb_boot_ok: " + str(d.get("usb_boot_ok")),
+    "",
+    "Hinweise:",
+]
+for a in (d.get("operator_next_actions") or [])[:8]:
+    lines.append("- " + str(a))
+print("\\n".join(lines))
+PY
+)"
+  else
+    body+="Siehe docs/test-plans/PI_RS_PI5_RESCUE_USB_LAB.md"
+  fi
+  whiptail --title "Raspberry Pi 5 Lab" --msgbox "$body" 22 74 3>&1 1>"$_wt" 2>&3 || true
 }
 
 _tui_main_menu() {
+  setuphelfer_rescue_kill_gui_leftovers || true
+  chvt 1 2>/dev/null || true
+  # Refresh tty target in case early boot resolved a bad /dev/tty.
+  _wt="$(setuphelfer_rescue_whiptail_tty)"
+  # Prove the console is alive before newt (blank FB otherwise looks like a hang).
+  {
+    printf '\033[0m\033[2J\033[H'
+    printf 'Setuphelfer Textmodus — Menue startet...\n'
+  } >"${_wt}" 2>/dev/null || true
   local choice
+  local asus_hint=""
+  local pi_hint=""
+  if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/asus-rog-bios-gate.json" ]]; then
+    asus_hint="ASUS-BIOS-Checkliste"
+  fi
+  if [[ -f "${SETUPHELFER_RESCUE_STATE_DIR}/pi5-usb-boot-check.json" ]] \
+     || grep -Eq '(^| )setuphelfer_pi5_lab=1( |$)' /proc/cmdline 2>/dev/null; then
+    pi_hint="Pi5-Lab"
+  fi
   while true; do
-    choice="$(whiptail --title "Setuphelfer Rettungsstick — Textmodus" --menu \
-      "Sicherer Textmodus (kein Backup/Restore/Wipe)" 22 78 10 \
+    choice="$(_tui_whiptail --title "Setuphelfer Rettungsstick - Textmodus" --menu \
+      "Sicherer Textmodus (kein Backup/Restore/Wipe ohne Freigabe)" 24 78 12 \
       "detect" "System erkennen" \
       "wifi" "Hardware/WLAN prüfen" \
       "plan" "Backup-Plan erstellen (dry-run)" \
       "e2e" "E2E Backup-/Restore-Test" \
+      "asus" "ASUS ROG: BIOS/Win11-Checkliste${asus_hint:+ ($asus_hint)}" \
+      "pi5" "Raspberry Pi 5: USB-Boot / Install-Lab${pi_hint:+ ($pi_hint)}" \
       "evidence" "Evidence auf Stick speichern" \
       "gui" "Grafische Oberfläche starten" \
       "shell" "Shell öffnen (tty2)" \
       "reboot" "Neustart" \
-      "poweroff" "Ausschalten" \
-      3>&1 1>"$_wt" 2>&3)" || return 0
+      "poweroff" "Ausschalten")" || return 0
     case "$choice" in
       detect) _tui_run_system_detect ;;
       wifi) _tui_run_wifi_diag ;;
-      plan) _tui_run_backup_plan ;;
-      e2e) _tui_run_physical_e2e ;;
+      plan)
+        if _tui_input_diag_active; then _tui_diag_blocked_action; else _tui_run_backup_plan; fi
+        ;;
+      e2e)
+        if _tui_input_diag_active; then _tui_diag_blocked_action; else _tui_run_physical_e2e; fi
+        ;;
+      asus) _tui_run_asus_rog_gate ;;
+      pi5) _tui_run_pi5_lab ;;
       evidence) _tui_collect_evidence ;;
-      gui) _tui_start_gui ;;
+      gui)
+        if _tui_input_diag_active; then _tui_diag_blocked_action; else _tui_start_gui; fi
+        ;;
       shell) _tui_shell ;;
-      reboot) systemctl reboot 2>/dev/null || reboot ;;
-      poweroff) systemctl poweroff 2>/dev/null || poweroff ;;
+      reboot)
+        if _tui_input_diag_active; then _tui_diag_blocked_action; else systemctl reboot 2>/dev/null || reboot; fi
+        ;;
+      poweroff)
+        if _tui_input_diag_active; then _tui_diag_blocked_action; else systemctl poweroff 2>/dev/null || poweroff; fi
+        ;;
     esac
   done
 }
@@ -454,7 +641,11 @@ PY
     exit 0
   fi
   if [[ "$MODE" == "--boot-trigger" ]]; then
-    _tui_boot_progress_steps
+    # No cosmetic 1–4 walk — labels froze the operator when the shell stalled.
+    # Go straight to the interactive menu after reclaiming the console.
+    setuphelfer_rescue_kill_gui_leftovers || true
+    chvt 1 2>/dev/null || true
+    setuphelfer_rescue_write_boot_state "tui_menu_ready"
   fi
   _tui_main_menu
   exit 0

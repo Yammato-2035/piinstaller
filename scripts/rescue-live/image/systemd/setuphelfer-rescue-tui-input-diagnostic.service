@@ -1,0 +1,26 @@
+[Unit]
+Description=Setuphelfer TUI Input Diagnostic (tty2, read-only)
+Documentation=file:///opt/setuphelfer-rescue/docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md
+After=local-fs.target setuphelfer-rescue-tui.service
+Wants=setuphelfer-rescue-tui.service
+ConditionKernelCommandLine=setuphelfer_tui_input_diag=1
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic
+Conflicts=getty@tty2.service
+
+[Service]
+Type=simple
+ExecStartPre=/bin/sh -c 'systemctl stop getty@tty2.service 2>/dev/null || true; systemctl mask --runtime getty@tty2.service 2>/dev/null || true; exit 0'
+ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic
+StandardInput=tty
+StandardOutput=tty
+StandardError=journal+console
+TTYPath=/dev/tty2
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=no
+Environment=TERM=linux
+Restart=no
+TimeoutStartSec=infinity
+
+[Install]
+WantedBy=multi-user.target

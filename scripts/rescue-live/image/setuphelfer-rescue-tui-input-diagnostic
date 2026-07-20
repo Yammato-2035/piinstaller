@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# Setuphelfer TUI input diagnostic CLI (PI-RS-TUI-AUTO-001).
+# Independent of whiptail/newt — Python stdlib only via backend core.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh" 2>/dev/null || true
+
+if ! grep -Eq '(^| )setuphelfer_tui_input_diag=1( |$)' /proc/cmdline 2>/dev/null; then
+  if [[ "${1:-}" != "--observe-only" ]]; then
+    echo "setuphelfer_tui_input_diag=1 required" >&2
+    exit 2
+  fi
+fi
+
+PY_ROOT="$(setuphelfer_rescue_backend_pythonpath 2>/dev/null || true)"
+if [[ -z "${PY_ROOT}" ]]; then
+  for cand in /opt/setuphelfer-rescue/backend "${SCRIPT_DIR}/../../../backend"; do
+    if [[ -d "$cand/core" ]]; then
+      PY_ROOT="$cand"
+      break
+    fi
+  done
+fi
+export PYTHONPATH="${PY_ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+
+# Best-effort banner on tty2 without newt/whiptail
+if [[ -c /dev/tty2 && -w /dev/tty2 ]]; then
+  {
+    printf '\033[0m\033[2J\033[H'
+    printf 'Setuphelfer – TUI-Eingabediagnose\n\n'
+    printf 'Dieser Modus analysiert Tastatur/TTY/Textmenue.\n'
+    printf 'Keine Reparatur. Kein Backup/Restore.\n'
+    printf 'Evidence nur auf SETUP_LOGS (oder /run Fallback).\n\n'
+  } >/dev/tty2 2>/dev/null || true
+fi
+
+exec python3 -m core.rescue_tui_input_diagnostic "$@"

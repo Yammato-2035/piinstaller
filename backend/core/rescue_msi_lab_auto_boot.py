@@ -23,12 +23,16 @@ MSI_LAB_GUI_INTERACTIVE_FLAGS = (
     "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 "
     "setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0"
 )
-MSI_LAB_DEFAULT_TIMEOUT = 3
+MSI_LAB_DEFAULT_TIMEOUT = 10
 LAB_AUTO_MENU_TITLE = "Setuphelfer Lab-Auto (Text, Discovery)"
 LAB_AUTO_GUI_MENU_TITLE = "Setuphelfer Lab-Auto (GUI, Discovery)"
 LAB_GUI_INTERACTIVE_MENU_TITLE = "Setuphelfer Lab-Auto (GUI, Backup/Verify)"
 LAB_TEXT_INTERACTIVE_MENU_TITLE = "Setuphelfer Lab-Auto (Text, Backup/Verify)"
 LAB_PHYSICAL_E2E_MENU_TITLE = "Setuphelfer Lab-Auto (Text, Physical E2E)"
+TUI_INPUT_DIAG_MENU_TITLE = "Setuphelfer – TUI-Eingabediagnose (read-only)"
+TUI_INPUT_DIAG_FLAGS = (
+    "setuphelfer_tui_input_diag=1 setuphelfer_tui_input_diag_auto_shutdown=0"
+)
 
 
 def msi_compat_menu_append(base_live: str) -> str:
@@ -46,36 +50,51 @@ def msi_lab_auto_text_menu_append(base_live: str) -> str:
     )
 
 
+# Hybrid MSI (i915 + nouveau): keep panel on Intel; do not use nomodeset (kills i915 KMS).
+# blacklist nouveau — modeset=0 alone still loads the module and can leave a blank VT.
+_MSI_GUI_HYBRID_GPU_FLAGS = (
+    "pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0"
+)
+
+
 def msi_lab_auto_gui_menu_append(base_live: str) -> str:
     """Automated GUI lab boot with gui-watchdog → TUI fallback.
 
     Explicit mode=gui bypasses MSI compat GUI disable; watchdog owns fallback.
-    No nomodeset here so the GUI stack can try; pci=noaer keeps AER quiet.
+    No nomodeset — i915 must keep KMS for the laptop panel; nouveau is blacklisted.
     """
     return (
         f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
-        f"pci=noaer {MSI_LAB_CMDLINE_FLAGS}"
+        f"{_MSI_GUI_HYBRID_GPU_FLAGS} {MSI_LAB_CMDLINE_FLAGS}"
     )
 
 
 def msi_lab_gui_interactive_menu_append(base_live: str) -> str:
-    """GUI-first interactive boot for Backup/Verify/Restore (Phase B) with TUI fallback."""
+    """GUI interactive boot for Backup/Verify/Restore with TUI fallback."""
     return (
         f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
-        f"pci=noaer {MSI_LAB_GUI_INTERACTIVE_FLAGS}"
+        f"{_MSI_GUI_HYBRID_GPU_FLAGS} {MSI_LAB_GUI_INTERACTIVE_FLAGS}"
     )
 
 
 def msi_lab_text_interactive_menu_append(base_live: str) -> str:
-    """Text fallback for Phase B — no discovery lock, operator can run Backup/Verify."""
+    """Text fallback for unknown hardware — no discovery lock."""
     return (
         f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
-        f"pci=noaer {MSI_LAB_GUI_INTERACTIVE_FLAGS}"
+        f"{_MSI_GUI_HYBRID_GPU_FLAGS} {MSI_LAB_GUI_INTERACTIVE_FLAGS}"
+    )
+
+
+def msi_tui_input_diag_menu_append(base_live: str) -> str:
+    """Dedicated read-only TUI input diagnostic entry (not default)."""
+    return (
+        f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
+        f"{_MSI_GUI_HYBRID_GPU_FLAGS} {MSI_LAB_GUI_INTERACTIVE_FLAGS} {TUI_INPUT_DIAG_FLAGS}"
     )
 
 
 def msi_lab_auto_menu_append(base_live: str) -> str:
-    """Default automated lab path is GUI-first (watchdog → TUI)."""
+    """Default lab auto remains GUI Discovery."""
     return msi_lab_auto_gui_menu_append(base_live)
 
 
@@ -102,6 +121,7 @@ def _drop_lab_entries(grub_text: str) -> str:
         LAB_GUI_INTERACTIVE_MENU_TITLE,
         LAB_TEXT_INTERACTIVE_MENU_TITLE,
         LAB_PHYSICAL_E2E_MENU_TITLE,
+        TUI_INPUT_DIAG_MENU_TITLE,
     ):
         try:
             before, _old, after = _extract_menuentry_block(grub_text, title)
@@ -109,6 +129,35 @@ def _drop_lab_entries(grub_text: str) -> str:
         except ValueError:
             pass
     return grub_text
+
+
+def ensure_tui_input_diagnostic_menuentry(grub_text: str) -> str:
+    """Append diagnostic entry without changing default/timeout/preamble.
+
+    Places the entry before reboot/halt if present; otherwise at end.
+    """
+    try:
+        before, _old, after = _extract_menuentry_block(grub_text, TUI_INPUT_DIAG_MENU_TITLE)
+        grub_text = before + after
+    except ValueError:
+        pass
+
+    base_live = (
+        "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 "
+        "setuphelfer_telemetry_opt_in=1"
+    )
+    block = (
+        f'menuentry "{TUI_INPUT_DIAG_MENU_TITLE}" {{\n'
+        f"  linux /live/vmlinuz {msi_tui_input_diag_menu_append(base_live)}\n"
+        "  initrd /live/initrd.img\n"
+        "}\n"
+    )
+
+    for marker in ('menuentry "Neustart"', 'menuentry "Ausschalten"'):
+        idx = grub_text.find(marker)
+        if idx >= 0:
+            return grub_text[:idx] + block + "\n" + grub_text[idx:]
+    return grub_text.rstrip() + "\n\n" + block
 
 
 def _rewrite_preamble(preamble: str) -> str:
@@ -122,7 +171,7 @@ def _rewrite_preamble(preamble: str) -> str:
             lines.append(f"set timeout={MSI_LAB_DEFAULT_TIMEOUT}")
             continue
         if stripped.startswith("set timeout_style="):
-            lines.append("set timeout_style=countdown")
+            lines.append("set timeout_style=menu")
             continue
         lines.append(line)
     return "\n".join(lines).rstrip() + "\n\n"
@@ -169,7 +218,11 @@ def patch_grub_cfg_for_msi_lab_auto_boot(grub_text: str) -> str:
 
 
 def patch_grub_cfg_for_msi_gui_interactive_boot(grub_text: str) -> str:
-    """Phase B: GUI Backup/Verify default with TUI fallback via watchdog; no discovery lock."""
+    """Phase B: GUI Backup/Verify default; Text as fallback entry.
+
+    GUI may only switch VT after health OK; on fail leftovers are killed and TUI
+    owns tty1. Text remains available for unknown HW / operator choice.
+    """
     first_menu = _first_menuentry_index(grub_text)
     if first_menu < 0:
         raise ValueError("GRUB_MENU_ENTRIES_NOT_FOUND")
@@ -178,7 +231,7 @@ def patch_grub_cfg_for_msi_gui_interactive_boot(grub_text: str) -> str:
         "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 "
         "setuphelfer_telemetry_opt_in=1"
     )
-    gui_block = (
+    gui_default = (
         f'menuentry "{LAB_GUI_INTERACTIVE_MENU_TITLE}" {{\n'
         f"  linux /live/vmlinuz {msi_lab_gui_interactive_menu_append(base_live)}\n"
         "  initrd /live/initrd.img\n"
@@ -197,7 +250,8 @@ def patch_grub_cfg_for_msi_gui_interactive_boot(grub_text: str) -> str:
         raise ValueError("GRUB_MENU_ENTRIES_NOT_FOUND")
     preamble = grub_text[:first_menu]
     other_entries = grub_text[first_menu:].lstrip("\n")
-    return f"{_rewrite_preamble(preamble)}{gui_block}\n{text_fallback}\n{other_entries}"
+    patched = f"{_rewrite_preamble(preamble)}{gui_default}\n{text_fallback}\n{other_entries}"
+    return ensure_tui_input_diagnostic_menuentry(patched)
 
 
 def patch_grub_cfg_for_msi_physical_e2e_boot(grub_text: str) -> str:

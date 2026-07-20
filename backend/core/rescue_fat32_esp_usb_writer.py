@@ -13,8 +13,10 @@ from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
 from core.rescue_msi_lab_auto_boot import (
+    TUI_INPUT_DIAG_MENU_TITLE,
     msi_compat_menu_append,
     msi_lab_auto_menu_append,
+    msi_tui_input_diag_menu_append,
 )
 from core.rescue_usb_operator_selection import (
     EVIDENCE_REL,
@@ -390,13 +392,16 @@ def generate_fat32_esp_grub_cfg(
         )
 
     base_live = "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1"
-    gui_append = f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1"
+    gui_append = (
+        f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
+        "pci=noaer nouveau.modeset=0"
+    )
     msi_append = msi_compat_menu_append(base_live)
     if lab_auto_msi_boot:
         gui_lab_append = msi_lab_auto_menu_append(base_live)
         text_lab_append = (
             f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
-            f"pci=noaer setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 "
+            f"pci=noaer nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=1 "
             "setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0 setuphelfer_msi_lab_late_sec=120"
         )
         menu_entries = [
@@ -415,6 +420,7 @@ def generate_fat32_esp_grub_cfg(
                 "Hardware- und WLAN-Diagnose",
                 f"{base_live} setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1",
             ),
+            entry(TUI_INPUT_DIAG_MENU_TITLE, msi_tui_input_diag_menu_append(base_live)),
             entry("Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)", msi_append),
         ]
     else:
@@ -432,12 +438,14 @@ def generate_fat32_esp_grub_cfg(
                 "Hardware- und WLAN-Diagnose",
                 f"{base_live} setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1",
             ),
+            entry(TUI_INPUT_DIAG_MENU_TITLE, msi_tui_input_diag_menu_append(base_live)),
             entry("Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)", msi_append),
         ]
 
     lines = [
-        f"set timeout={3 if lab_auto_msi_boot else 15}",
-        "set timeout_style=countdown" if lab_auto_msi_boot else "set timeout_style=menu",
+        f"set timeout={10 if lab_auto_msi_boot else 15}",
+        # Always show the menu — countdown hid GRUB on MSI and auto-booted GUI.
+        "set timeout_style=menu",
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
