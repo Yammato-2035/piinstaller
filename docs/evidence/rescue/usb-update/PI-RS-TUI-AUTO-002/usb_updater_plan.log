@@ -1,0 +1,58 @@
+=== Source payload preflight ===
+{"path": "/home/volker/piinstaller-build-tui-auto-002/build/rescue/tui-auto-002-staging-esp/live/filesystem.squashfs", "expected_sha256": "3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e", "actual_sha256": "3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e", "filename_version": null, "internal_versions": {"VERSION": "1.10.0.59", "rescue_payload_version.json": "1.10.0.59", "version.json": "1.10.0.59"}, "canonical_version": "1.10.0.59", "version_consistent": true, "errors": [], "blocked": false}
+=== FAT32 ESP payload update safety ===
+{
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "blocked": false,
+  "blockers": [],
+  "write_allowed": true,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false,
+  "setup_logs_sibling": {
+    "parent_device": "/dev/sda",
+    "setup_logs_label": "SETUP_LOGS",
+    "sibling_setup_logs_detected": true,
+    "blockers": [],
+    "blocked": false
+  }
+}
+=== FAT32 ESP payload update plan ===
+{
+  "schema_version": 1,
+  "operation": "fat32_esp_live_payload_update",
+  "mode": "dry_run",
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "new_squashfs": "/home/volker/piinstaller-build-tui-auto-002/build/rescue/tui-auto-002-staging-esp/live/filesystem.squashfs",
+  "new_squashfs_sha256": "3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e",
+  "payload_paths": [
+    "live/filesystem.squashfs"
+  ],
+  "atomic_squashfs": ".sqtmp/filesystem.squashfs.new \u2192 live/filesystem.squashfs",
+  "safety": {
+    "target_device": "/dev/sda",
+    "target_partition": "/dev/sda1",
+    "blocked": false,
+    "blockers": [],
+    "write_allowed": true,
+    "partition_rewritten": false,
+    "filesystem_reformatted": false,
+    "secrets_exposed": false,
+    "setup_logs_sibling": {
+      "parent_device": "/dev/sda",
+      "setup_logs_label": "SETUP_LOGS",
+      "sibling_setup_logs_detected": true,
+      "blockers": [],
+      "blocked": false
+    }
+  },
+  "blocked": false,
+  "blockers": [],
+  "payload_update_executed": false,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}
+payload_update_executed=false (use --execute-update to apply)
