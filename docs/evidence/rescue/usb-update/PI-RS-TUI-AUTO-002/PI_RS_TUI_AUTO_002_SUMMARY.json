@@ -6,7 +6,7 @@
     "path": "/home/volker/piinstaller",
     "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
     "head_before": "30aa68b8f359254c3317fb6b8e83b4fef9bc2e89",
-    "head_after": "86347b0311f94292a5f826d128095083e87a8aab",
+    "head_after": "8ab1cb12a1f2be10dd8eae6a5c295980c7fc0d2c",
     "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
   },
   "build": {
@@ -55,7 +55,7 @@
     "filesystem_created": false,
     "msi_test_started": false
   },
-  "evidence_commit": "7acc9bf224aaa92674784cd2f6e372bbe91932cf",
-  "push_performed": false,
+  "evidence_commit": "8ab1cb12a1f2be10dd8eae6a5c295980c7fc0d2c",
+  "push_performed": true,
   "next_action": "PI-RS-TUI-AUTO-003 MSI physical diagnostic run"
 }
