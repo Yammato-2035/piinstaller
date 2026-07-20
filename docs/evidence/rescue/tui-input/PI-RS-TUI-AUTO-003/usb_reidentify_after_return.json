@@ -1,0 +1,34 @@
+{
+  "count": 1,
+  "candidates": [
+    {
+      "path": "/dev/sda",
+      "model": "Ultra Line",
+      "size": 63333990400,
+      "serial": "24111412110686",
+      "labels": [
+        "SETUPHELFER",
+        "SETUP_LOGS"
+      ],
+      "ok": true,
+      "children": [
+        {
+          "path": "/dev/sda1",
+          "label": "SETUPHELFER",
+          "fstype": "vfat",
+          "mountpoints": [
+            null
+          ]
+        },
+        {
+          "path": "/dev/sda2",
+          "label": "SETUP_LOGS",
+          "fstype": "vfat",
+          "mountpoints": [
+            "/media/volker/SETUP_LOGS2"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+=== hashes ===
+68649d4dab94a19c4ead0acbe060902d215fb36b4b13ffa5ef27d9f195931030  /tmp/pi-rs-tui-auto-003-esp-ro/boot/grub/grub.cfg
+d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98  /tmp/pi-rs-tui-auto-003-esp-ro/live/vmlinuz
+385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8  /tmp/pi-rs-tui-auto-003-esp-ro/live/initrd.img
+3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e  /tmp/pi-rs-tui-auto-003-esp-ro/live/filesystem.squashfs
+=== grub diag ===
+set default=0
+menuentry "Setuphelfer – TUI-Eingabediagnose (read-only)" {
+  linux /live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0 setuphelfer_tui_input_diag=1 setuphelfer_tui_input_diag_auto_shutdown=0
+=== esp version ===
+{'project_version': '1.10.0.59', 'rescue_payload_version': '1.10.0.59', 'payload_sha256': '3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e'}

@@ -1,0 +1,1 @@
+ls: Zugriff auf '/media/volker/SETUP_LOGS2/tui-input-diagnostics' nicht möglich: Datei oder Verzeichnis nicht gefunden

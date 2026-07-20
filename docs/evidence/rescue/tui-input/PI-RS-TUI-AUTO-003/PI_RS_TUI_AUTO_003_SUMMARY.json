@@ -1,0 +1,86 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-003",
+  "status": "aborted",
+  "abort_reason": "diagnostic_grub_entry_not_selected",
+  "workspace": {
+    "path": "/home/volker/piinstaller",
+    "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+    "head": "bd3c529c76f8d276b1fc099f4c18230e6efdd3af",
+    "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
+  },
+  "physical_test": {
+    "device": "MSI GE63 Raider RGB 8RF",
+    "board": "MS-16P5",
+    "payload_version": "1.10.0.59",
+    "boot_session_id": "20260720_221125_boot",
+    "actual_cmdline_mode": "gui",
+    "diagnostic_grub_entry_selected": false,
+    "diagnostic_tty_reached": false,
+    "run_completed": false,
+    "run_id": null
+  },
+  "input": {
+    "internal_keyboard_grub": null,
+    "internal_keyboard_tty2_raw": null,
+    "internal_keyboard_evdev": null,
+    "internal_keyboard_tty1_menu": null,
+    "external_keyboard_available": null,
+    "external_keyboard_tty2": null,
+    "external_keyboard_tty1_menu": null,
+    "vt_switch_success": null
+  },
+  "whiptail": {
+    "pid": null,
+    "tty": "tty1",
+    "note": "incidental_only_from_gui_default_boot",
+    "fd0": null,
+    "fd1": null,
+    "fd2": null,
+    "fd_consistent": null,
+    "average_cpu_percent": null,
+    "maximum_cpu_percent": null,
+    "dominant_wchan": null
+  },
+  "tty1": {
+    "term": null,
+    "rows": null,
+    "columns": null,
+    "raw_mode": null,
+    "suspicious_flags": [],
+    "competition": "possible"
+  },
+  "screen": {
+    "dump_available": false,
+    "changed_after_input": null,
+    "operator_observed_redraw": null,
+    "operator_observed_flicker": null
+  },
+  "evidence": {
+    "manifest_valid": false,
+    "sha256_valid": false,
+    "required_files_complete": false,
+    "import_status": "blocked",
+    "import_reason": "setup_logs_diag_root_missing"
+  },
+  "hypotheses": {
+    "h4_terminal_state": "low",
+    "h6_kernel_input": "low",
+    "h7_newt_redraw": "medium",
+    "fd_mismatch": "low",
+    "tty_competition": "low",
+    "payload_drift": "low"
+  },
+  "leading_hypothesis": "undetermined",
+  "confidence": "none",
+  "recommended_repair_path": "E_additional_targeted_diagnostic",
+  "safety": {
+    "backup_started": false,
+    "restore_started": false,
+    "partition_action_started": false,
+    "internal_disk_mounted": false,
+    "internal_disk_written": false,
+    "payload_changed": false,
+    "usb_updated": false
+  },
+  "next_action": "Repeat PI-RS-TUI-AUTO-003 selecting GRUB entry Setuphelfer \u2013 TUI-Eingabediagnose (read-only)"
+}

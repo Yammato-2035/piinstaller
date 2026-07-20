@@ -1,0 +1,41 @@
+=== LATE EVIDENCE PI-RS-MSI-AUTO-EVIDENCE-001 ===
+2026-07-20T22:13:22+00:00
+--- uptime ---
+152.34 1728.96
+--- cmdline ---
+BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0
+--- console-ownership.json ---
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "tui",
+  "lifecycle_state": "tui_owned",
+  "write_allowed_for": [
+    "tui"
+  ],
+  "clear_allowed_for": [
+    "tui"
+  ],
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": false,
+  "reason": "tui_owned",
+  "session_id": "20260720_221125_boot",
+  "boot_id": "ba747f81-4005-4ab3-bf63-97b628d1e50e",
+  "updated_at": "2026-07-20T22:11:25Z"
+}
+--- current-session.json ---
+{
+  "schema_version": 1,
+  "session_id": "20260720_221125_boot",
+  "boot_id": "ba747f81-4005-4ab3-bf63-97b628d1e50e",
+  "payload_version": "1.10.0.59",
+  "session_started_at": "2026-07-20T22:11:25Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+--- boot-timeline tail ---
+MISSING
+--- processes ---
+root        2820    2819  0 22:11 tty1     00:00:00 whiptail --title Setuphelfer Rettungsstick - Textmodus --menu Sicherer Textmodus (kein Backup/Restore/Wipe ohne Freigabe) 24 78 12 detect System erkennen wifi Hardware/WLAN prüfen plan Backup-Plan erstellen (dry-run) e2e E2E Backup-/Restore-Test asus ASUS ROG: BIOS/Win11-Checkliste pi5 Raspberry Pi 5: USB-Boot / Install-Lab evidence Evidence auf Stick speichern gui Grafische Oberfläche starten shell Shell öffnen (tty2) reboot Neustart poweroff Ausschalten

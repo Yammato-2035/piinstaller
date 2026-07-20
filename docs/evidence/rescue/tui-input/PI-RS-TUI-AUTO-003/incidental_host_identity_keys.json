@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "vendor": "Micro-Star International Co., Ltd.",
+  "product": "GE63 Raider RGB 8RF",
+  "board": "MS-16P5",
+  "_keys": [
+    "bios",
+    "board",
+    "boot_id",
+    "diagnostics_server_hop",
+    "local_evidence_only",
+    "payload_version",
+    "product",
+    "recorded_at",
+    "schema_version",
+    "telemetry_auto_push",
+    "uname",
+    "vendor"
+  ]
+}

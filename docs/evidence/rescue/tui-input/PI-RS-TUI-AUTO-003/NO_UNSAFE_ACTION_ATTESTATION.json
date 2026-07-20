@@ -1,0 +1,13 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-003",
+  "backup_started": false,
+  "restore_started": false,
+  "partition_action_started": false,
+  "internal_disk_mounted": false,
+  "internal_disk_written": false,
+  "payload_changed": false,
+  "usb_updated": false,
+  "code_changed": false,
+  "kill_or_stty_used": false,
+  "diagnostic_run_completed": false
+}
