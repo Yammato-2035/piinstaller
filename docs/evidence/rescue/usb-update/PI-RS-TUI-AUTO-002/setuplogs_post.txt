@@ -1,0 +1,13 @@
+SETUP_LOGS mount:
+TARGET                    SOURCE    FSTYPE OPTIONS
+/media/volker/SETUP_LOGS2 /dev/sda2 vfat   rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0022,codepage=437,iocharset=iso8859-1,shortname=mixed,showexec,utf8,flush,errors=remount-ro
+RUN-MSI-EVIDENCE
+setuphelfer
+START-MSI-EVIDENCE.desktop
+START-MSI-EVIDENCE.txt
+System Volume Information
+partition table:
+NAME   PATH      SIZE LABEL       FSTYPE
+sda    /dev/sda   59G             
+├─sda1 /dev/sda1   4G SETUPHELFER vfat
+└─sda2 /dev/sda2  55G SETUP_LOGS  vfat

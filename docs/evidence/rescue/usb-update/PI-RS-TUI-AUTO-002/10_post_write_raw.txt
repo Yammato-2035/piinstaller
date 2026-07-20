@@ -1,0 +1,34 @@
+=== POST WRITE HASHES ===
+68649d4dab94a19c4ead0acbe060902d215fb36b4b13ffa5ef27d9f195931030  /tmp/pi-rs-tui-auto-002-esp-rw/boot/grub/grub.cfg
+d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98  /tmp/pi-rs-tui-auto-002-esp-rw/live/vmlinuz
+385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8  /tmp/pi-rs-tui-auto-002-esp-rw/live/initrd.img
+3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e  /tmp/pi-rs-tui-auto-002-esp-rw/live/filesystem.squashfs
+=== VERSION CARRIERS ESP ===
+{'project_version': '1.10.0.59', 'rescue_payload_version': '1.10.0.59', 'payload_sha256': '3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e', 'filesystem_squashfs_sha256': '38c14ed4b205f281a7b272b625e523304d60422f709b51e20cf7964c1e7167c9', 'updated_at': '2026-07-20T20:01:20.446421+00:00', 'update_method': 'atomic_fat32_esp_payload_replace'}
+evidence_keys ['bootx64_differs_from_iso', 'bootx64_embedded_bootstrap', 'bootx64_iso_copied', 'bootx64_modules_requested', 'bootx64_sha256', 'bootx64_source', 'built_at', 'content_verified', 'files', 'filesystem_squashfs_sha256', 'grub_branding_updated_at', 'grub_branding_writer_mode', 'grub_efi_modules_staged', 'grub_theme_staged', 'iso_bootx64_sha256', 'iso_path', 'iso_sha256', 'payload_sha256', 'payload_updated_at', 'project_version']
+evidence_version 1.10.0.59
+evidence_sha 0a8feaf276779679ff4ec941d5929bbfd484a3048333c1e57d4397c042b86051
+=== GRUB titles ===
+set default=0
+menuentry "Setuphelfer Lab-Auto (GUI, Backup/Verify)" {
+menuentry "Setuphelfer Lab-Auto (Text, Backup/Verify)" {
+menuentry "Setuphelfer starten - grafische Oberflaeche" {
+menuentry "Setuphelfer starten - sicherer Textmodus (Fallback)" {
+menuentry "Diagnose sammeln und auf Stick speichern" {
+menuentry "Hardware- und WLAN-Diagnose" {
+menuentry "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)" {
+menuentry "Setuphelfer – TUI-Eingabediagnose (read-only)" {
+menuentry "Neustart" { reboot }
+menuentry "Ausschalten" { halt }
+menuentry "Setuphelfer ASUS ROG Lab (GUI, BIOS-Check)" {
+menuentry "Setuphelfer ASUS ROG Lab (Text, BIOS-Check)" {
+menuentry "Setuphelfer Pi5 Lab (Host-Prep / USB-Boot-Check)" {
+=== temp files ===
+insgesamt 2557344
+drwxr-xr-x 2 volker volker       4096 Jul 20 22:01 .
+drwxr-xr-x 8 volker volker       4096 Jan  1  1970 ..
+-rwxr-xr-x 1 volker volker 1285894144 Jul 20 22:00 filesystem.squashfs
+-rwxr-xr-x 1 volker volker 1285890048 Jul 19 19:29 filesystem.squashfs.prev-1.10.0.30
+-rwxr-xr-x 1 volker volker         65 Jul 19 19:30 filesystem.squashfs.sha256
+-rwxr-xr-x 1 volker volker   38689436 Jun 28 20:36 initrd.img
+-rwxr-xr-x 1 volker volker    8230848 Jun 28 20:36 vmlinuz

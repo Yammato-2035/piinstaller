@@ -1,0 +1,16 @@
+Found a valid SQUASHFS 4:0 superblock on /home/volker/piinstaller-build-tui-auto-002/build/rescue/tui-auto-002-staging-esp/live/filesystem.squashfs.
+Creation or last append time Mon Jul 20 21:46:01 2026
+Filesystem size 1285893753 bytes (1255755.62 Kbytes / 1226.32 Mbytes)
+Compression xz
+Block size 131072
+Filesystem is exportable via NFS
+Inodes are compressed
+Data is compressed
+Uids/Gids (Id table) are compressed
+Fragments are compressed
+Always-use-fragments option is not specified
+Xattrs are not stored
+Duplicates are removed
+Number of fragments 5436
+Number of inodes 60818
+Number of ids 1

@@ -1,0 +1,41 @@
+=== recheck after confirmation 1 2026-07-20T19:58:38Z ===
+NAME        PATH           TYPE TRAN   MODEL                   VENDOR     SIZE RM HOTPLUG RO FSTYPE LABEL       UUID                                 MOUNTPOINTS
+sda         /dev/sda       disk usb    Ultra Line              Intenso     59G  1       1  0                                                         
+├─sda1      /dev/sda1      part                                             4G  1       1  0 vfat   SETUPHELFER 9BB9-A4A6                            
+└─sda2      /dev/sda2      part                                            55G  1       1  0 vfat   SETUP_LOGS  9BC7-3950                            /media/volker/SETUP_LOGS2
+nvme1n1     /dev/nvme1n1   disk nvme   Samsung SSD 980 PRO 2TB            1,8T  0       0  0                                                         
+├─nvme1n1p1 /dev/nvme1n1p1 part nvme                                      512M  0       0  0 vfat               94A7-F964                            /boot/efi
+└─nvme1n1p2 /dev/nvme1n1p2 part nvme                                      1,8T  0       0  0 ext4               57b5dd3e-2461-41f2-821a-3c81ed058dcd /
+nvme0n1     /dev/nvme0n1   disk nvme   Samsung SSD 980 PRO 2TB            1,8T  0       0  0                                                         
+├─nvme0n1p1 /dev/nvme0n1p1 part nvme                                      757M  0       0  0 ntfs               6268DDF068DDC349                     
+├─nvme0n1p2 /dev/nvme0n1p2 part nvme                                    512,1M  0       0  0 vfat               A8E5-5B95                            
+├─nvme0n1p3 /dev/nvme0n1p3 part nvme                                       16M  0       0  0                                                         
+├─nvme0n1p4 /dev/nvme0n1p4 part nvme                                    928,8G  0       0  0 ntfs               0252FA5552FA4CC3                     
+├─nvme0n1p5 /dev/nvme0n1p5 part nvme                                      924M  0       0  0 ntfs               5E9888B698888DE9                     
+└─nvme0n1p6 /dev/nvme0n1p6 part nvme                                      931G  0       0  0 ntfs               242CFF0B2CFED730                     
+---
+ROOT_SOURCE=/dev/nvme1n1p2 ROOT_PARENT=nvme1n1
+--- usb candidate ---
+NAME   PATH      TYPE TRAN MODEL             SIZE RM HOTPLUG LABEL       SERIAL
+sda    /dev/sda  disk usb  Ultra Line 63333990400  1       1             24111412110686
+├─sda1 /dev/sda1 part                  4294967296  1       1 SETUPHELFER 
+└─sda2 /dev/sda2 part                 59037957632  1       1 SETUP_LOGS  
+--- partitions ---
+NAME   PATH      LABEL       FSTYPE SIZE MOUNTPOINTS
+sda    /dev/sda                      59G 
+├─sda1 /dev/sda1 SETUPHELFER vfat     4G 
+└─sda2 /dev/sda2 SETUP_LOGS  vfat    55G /media/volker/SETUP_LOGS2
+{
+  "device": "/dev/sda",
+  "model": "Ultra Line",
+  "size": 63333990400,
+  "serial": "24111412110686",
+  "labels": [
+    "SETUPHELFER",
+    "SETUP_LOGS"
+  ],
+  "root": "/dev/nvme1n1p2",
+  "same_target": true,
+  "criteria_ok": true,
+  "confirmation_1_accepted": true
+}

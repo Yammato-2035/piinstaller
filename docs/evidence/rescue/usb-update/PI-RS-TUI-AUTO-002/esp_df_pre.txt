@@ -1,0 +1,2 @@
+Dateisystem    Größe Benutzt Verf. Verw% Eingehängt auf
+/dev/sda1       4,0G    1,3G  2,8G   32% /tmp/pi-rs-tui-auto-002-esp-ro

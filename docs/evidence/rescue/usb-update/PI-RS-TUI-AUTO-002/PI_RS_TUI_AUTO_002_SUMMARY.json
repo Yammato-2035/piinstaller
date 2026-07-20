@@ -1,0 +1,61 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-002",
+  "status": "passed",
+  "usb_update_status": "passed",
+  "workspace": {
+    "path": "/home/volker/piinstaller",
+    "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+    "head_before": "30aa68b8f359254c3317fb6b8e83b4fef9bc2e89",
+    "head_after": "86347b0311f94292a5f826d128095083e87a8aab",
+    "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
+  },
+  "build": {
+    "source_commit": "86347b0311f94292a5f826d128095083e87a8aab",
+    "mode": "payload_repack",
+    "version": "1.10.0.59",
+    "tests_passed": true,
+    "squashfs_sha256": "3706b824a8992b8abf8d9e20a6d1daa47503cb7c3fada9ac5189e38c2b9ef43e",
+    "kernel_sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98",
+    "initramfs_sha256": "385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8",
+    "grub_sha256": "68649d4dab94a19c4ead0acbe060902d215fb36b4b13ffa5ef27d9f195931030"
+  },
+  "usb": {
+    "identified": true,
+    "device": "/dev/sda",
+    "model": "Ultra Line",
+    "size_bytes": 63333990400,
+    "confirmation_1": true,
+    "confirmation_2": true,
+    "update_started": true,
+    "update_completed": true
+  },
+  "post_write": {
+    "payload_version": "1.10.0.59",
+    "squashfs_match": true,
+    "kernel_match": true,
+    "initramfs_match": true,
+    "grub_match": true,
+    "diagnostic_entry_present": true,
+    "diagnostic_entry_default": false,
+    "auto_shutdown_default": false,
+    "version_carriers_consistent": true,
+    "version_carrier_residual_notes": [
+      "ESP version.json filesystem_squashfs_sha256 legacy field stale",
+      "live/filesystem.squashfs.sha256 sidecar not rewritten by FAT32 updater"
+    ],
+    "temporary_files_remaining": [],
+    "setuplogs_preserved": true,
+    "partition_layout_unchanged": true
+  },
+  "safety": {
+    "internal_disk_touched": false,
+    "backup_started": false,
+    "restore_started": false,
+    "partition_table_modified": false,
+    "filesystem_created": false,
+    "msi_test_started": false
+  },
+  "evidence_commit": null,
+  "push_performed": false,
+  "next_action": "PI-RS-TUI-AUTO-003 MSI physical diagnostic run"
+}

@@ -1,0 +1,69 @@
+ M VERSION
+ M backend/core/rescue_backup_plan_contract.py
+ M backend/core/rescue_msi_boot_profile.py
+ M backend/core/rescue_test_matrix.py
+ M backend/core/rescue_wifi_diagnostics.py
+ M backend/tests/test_pi_rs_e2e_live_001d_payload_version_1_10_0_26.py
+ M backend/tests/test_pi_rs_msi_auto_evidence_001_payload_version_1_10_0_17.py
+ M backend/tests/test_pi_rs_msi_fix001_payload_version_1_10_0_14.py
+ M backend/tests/test_pi_rs_msi_gui002_payload_version_1_10_0_15.py
+ M backend/tests/test_pi_rs_payload_telemetry001_version.py
+ M backend/tests/test_pi_rs_tel003_version_bump.py
+ M backend/tests/test_pi_rs_tel004_version_bump.py
+ M backend/tests/test_rescue_console_hardening_v1.py
+ M backend/tests/test_rescue_live_medium_check_v1.py
+ M backend/tests/test_rescue_msi_lab_auto_evidence_v1.py
+ M backend/tests/test_rescue_start_assistant_v1.py
+ M backend/tests/test_rescue_tui_wifi_diagnostics_v1.py
+ M backend/tests/test_rescue_wifi_diagnostics_v1.py
+ M config/version.json
+ M docs/rescue-stick/RESCUE_BOOT_MATRIX.md
+ M frontend/package-lock.json
+ M frontend/package.json
+ M frontend/src-tauri/deb-changelog.txt
+ M frontend/src-tauri/resources/setuphelfer-version.json
+ M package.json
+ M scripts/rescue-live/image/setuphelfer-rescue-common.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-entrypoint.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh
+ M scripts/rescue-live/image/setuphelfer-rescue-kiosk-start
+ M scripts/rescue-live/image/setuphelfer-rescue-live-medium-check.py
+ M scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-discovery.service
+ M scripts/rescue-live/image/systemd/setuphelfer-rescue-start-assistant.service
+ M scripts/rescue-live/image/systemd/setuphelfer-rescue-tui.service
+ M scripts/rescue-live/prepare-controlled-live-build-tree.sh
+ M scripts/rescue/prepare-stick-gui-bvr-lab.sh
+?? backend/core/rescue_asus_rog_boot_profile.py
+?? backend/core/rescue_asus_rog_lab_boot.py
+?? backend/core/rescue_pi5_lab.py
+?? backend/core/rescue_tui_backup_plan_body.py
+?? backend/tests/test_rescue_asus_rog_boot_profile_v1.py
+?? backend/tests/test_rescue_boot_walk_protection_v1.py
+?? backend/tests/test_rescue_entrypoint_sighup_contract_v1.py
+?? backend/tests/test_rescue_nm_plugin_owner_inject_v1.py
+?? backend/tests/test_rescue_pi5_lab_v1.py
+?? backend/tests/test_rescue_tui_backup_plan_body_v1.py
+?? docs/evidence/pi_rs_gui_bvr_phase/
+?? docs/evidence/pi_rs_gui_bvr_vm/
+?? docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1/git-status-before-commit.txt
+?? docs/evidence/pi_rs_scenario_matrix/
+?? docs/evidence/pi_rs_usb_msi_fix_001_usb_update_1_10_0_14_boot_retest/git-status-before-commit.txt
+?? docs/evidence/rescue/inventory/
+?? docs/evidence/rescue/tui-input/
+?? docs/evidence/rescue/usb-update/
+?? docs/rescue-stick/PI5_DUAL_ARCH_LAYOUT.md
+?? docs/test-plans/PI_RS_ASUS_ROG_BIOS_WIN11_LAB.md
+?? docs/test-plans/PI_RS_INVENTORY_BEFORE_REPAIR.md
+?? docs/test-plans/PI_RS_PI5_RESCUE_USB_LAB.md
+?? docs/testing/RESCUE_SCENARIO_TEST_MATRIX.md
+?? scripts/rescue-live/image/setuphelfer-rescue-asus-rog-bios-gate
+?? scripts/rescue-live/image/setuphelfer-rescue-pi5-lab
+?? scripts/rescue-live/image/setuphelfer-rescue-tui-deadline
+?? scripts/rescue-live/image/systemd/setuphelfer-rescue-media-check.service
+?? scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-deadline.service
+?? scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-deadline.timer
+?? scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-probe.service
+?? scripts/rescue/gate-gui-bvr-before-inject.sh
+?? scripts/rescue/prepare-pi5-dual-arch-stick.sh
+?? scripts/rescue/run-gui-bvr-phase-tests.sh
+?? scripts/rescue/run-vm-gui-bvr-boot-test.sh

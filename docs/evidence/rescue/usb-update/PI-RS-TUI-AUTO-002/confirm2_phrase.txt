@@ -1,0 +1,1 @@
+USB-UPDATE 1.10.0.59 AUF /dev/sda STARTEN

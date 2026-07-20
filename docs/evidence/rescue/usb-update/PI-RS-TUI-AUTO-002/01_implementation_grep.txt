@@ -1,0 +1,65 @@
+=== diag flag ===
+docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md:13:setuphelfer_tui_input_diag=1
+docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md:14:setuphelfer_tui_input_diag_auto_shutdown=0
+docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md:17:Optional: `setuphelfer_tui_input_diag_timeout=<seconds>`.
+scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service:6:ConditionKernelCommandLine=setuphelfer_tui_input_diag=1
+scripts/rescue-live/image/setuphelfer-rescue-tui.sh:27:  grep -Eq '(^| )setuphelfer_tui_input_diag=1( |$)' /proc/cmdline 2>/dev/null
+scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic:9:if ! grep -Eq '(^| )setuphelfer_tui_input_diag=1( |$)' /proc/cmdline 2>/dev/null; then
+scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic:11:    echo "setuphelfer_tui_input_diag=1 required" >&2
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/06_SYSTEMD_INTEGRATION.md:5:- `ConditionKernelCommandLine=setuphelfer_tui_input_diag=1`
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/05_GRUB_INTEGRATION.md:7:- Flags: `setuphelfer_tui_input_diag=1`, `setuphelfer_tui_input_diag_auto_shutdown=0`
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/01_ARCHITECTURE.md:7:  → cmdline setuphelfer_tui_input_diag=1 + mode=text
+backend/core/rescue_tui_input_diagnostic_contract.py:11:DIAG_FLAG = "setuphelfer_tui_input_diag=1"
+backend/core/rescue_tui_input_diagnostic_contract.py:12:DIAG_FLAG_NAME = "setuphelfer_tui_input_diag"
+backend/core/rescue_tui_input_diagnostic_contract.py:13:AUTO_SHUTDOWN_FLAG = "setuphelfer_tui_input_diag_auto_shutdown=1"
+backend/core/rescue_tui_input_diagnostic_contract.py:14:EXTERNAL_KB_FLAG = "setuphelfer_tui_input_diag_external_keyboard=1"
+backend/core/rescue_tui_input_diagnostic_contract.py:134:    raw = parsed.get("setuphelfer_tui_input_diag_timeout", "")
+backend/tests/test_rescue_tui_input_diagnostic_v1.py:308:        self.assertIn("setuphelfer_tui_input_diag=1", patched)
+backend/tests/test_rescue_tui_input_diagnostic_v1.py:309:        self.assertIn("setuphelfer_tui_input_diag_auto_shutdown=0", patched)
+backend/tests/test_rescue_tui_input_diagnostic_v1.py:313:        self.assertNotIn("setuphelfer_tui_input_diag=1", patched[gui_block_start:diag_start])
+backend/tests/test_rescue_tui_input_diagnostic_v1.py:353:        self.assertIn("ConditionKernelCommandLine=setuphelfer_tui_input_diag=1", unit)
+backend/core/rescue_msi_lab_auto_boot.py:34:    "setuphelfer_tui_input_diag=1 setuphelfer_tui_input_diag_auto_shutdown=0"
+backend/core/rescue_tui_input_diagnostic.py:688:        print("setuphelfer_tui_input_diag=1 required (or pass --observe-only)", flush=True)
+=== unit/cli ===
+docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md:26:| systemd | `setuphelfer-rescue-tui-input-diagnostic.service` → `/dev/tty2` |
+docs/rescue-stick/TUI_INPUT_AUTOMATIC_DIAGNOSTIC.md:27:| CLI | `/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic` |
+scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service:7:ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic
+scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service:13:ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:78:inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic" \
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:79:  "${IMG}/setuphelfer-rescue-tui-input-diagnostic"
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:80:inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic" \
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:81:  "${SBIN}/setuphelfer-rescue-tui-input-diagnostic"
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:82:inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service" \
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:83:  "${ROOT}/etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:216:unit = root / "etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
+scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh:217:link = wants / "setuphelfer-rescue-tui-input-diagnostic.service"
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/06_SYSTEMD_INTEGRATION.md:3:Unit: `setuphelfer-rescue-tui-input-diagnostic.service`
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/02_CHANGED_FILES.md:7:- `scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic`
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/02_CHANGED_FILES.md:8:- `scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service`
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/04_TEST_RESULTS.md:6:bash -n setuphelfer-rescue-tui-input-diagnostic: OK
+backend/core/rescue_tui_input_diagnostic.py:632:        "setuphelfer-rescue-tui-input-diagnostic.service",
+docs/evidence/rescue/usb-update/PI-RS-TUI-AUTO-002/01_implementation_grep.txt:5:scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service:6:ConditionKernelCommandLine=setuphelfer_tui_input_diag=1
+docs/evidence/rescue/usb-update/PI-RS-TUI-AUTO-002/01_implementation_grep.txt:7:scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic:9:if ! grep -Eq '(^| )setuphelfer_tui_input_diag=1( |$)' /proc/cmdline 2>/dev/null; then
+docs/evidence/rescue/usb-update/PI-RS-TUI-AUTO-002/01_implementation_grep.txt:8:scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic:11:    echo "setuphelfer_tui_input_diag=1 required" >&2
+backend/tests/test_rescue_tui_input_diagnostic_v1.py:350:            / "scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service"
+=== grub title ===
+docs/operator/PI_RS_TUI_INPUT_DIAGNOSTIC_RUNBOOK.md:1:# Operator-Runbook: TUI-Eingabediagnose
+docs/operator/PI_RS_TUI_INPUT_DIAGNOSTIC_RUNBOOK.md:13:2. Eintrag wählen: **Setuphelfer – TUI-Eingabediagnose (read-only)**  
+scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic:31:    printf 'Setuphelfer – TUI-Eingabediagnose\n\n'
+docs/knowledge-base/rescue/TUI_TEXT_MENU_NOT_RESPONDING_DE.md:9:GRUB-Eintrag **TUI-Eingabediagnose (read-only)** booten und Assistenten auf tty2 folgen.
+backend/core/rescue_tui_input_diagnostic.py:657:            "# Setuphelfer TUI-Eingabediagnose",
+docs/evidence/rescue/tui-input-automation/PI-RS-TUI-AUTO-001/05_GRUB_INTEGRATION.md:3:- Title: `Setuphelfer – TUI-Eingabediagnose (read-only)`
+backend/core/rescue_msi_lab_auto_boot.py:32:TUI_INPUT_DIAG_MENU_TITLE = "Setuphelfer – TUI-Eingabediagnose (read-only)"
+=== inject carriers ===
+78:inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic" \
+79:  "${IMG}/setuphelfer-rescue-tui-input-diagnostic"
+80:inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-input-diagnostic" \
+81:  "${SBIN}/setuphelfer-rescue-tui-input-diagnostic"
+82:inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-input-diagnostic.service" \
+83:  "${ROOT}/etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
+192:    build_rescue_runtime_version_json,
+212:vj.write_text(json.dumps(build_rescue_runtime_version_json(ver), indent=2) + "\n", encoding="utf-8")
+216:unit = root / "etc/systemd/system/setuphelfer-rescue-tui-input-diagnostic.service"
+217:link = wants / "setuphelfer-rescue-tui-input-diagnostic.service"
+-rwxrwxr-x 1 volker workspace 12294 Jul 20 16:10 scripts/rescue/inject-gui-bvr-fixes-into-stick-squashfs.sh
+-rwxrwxr-x 1 volker workspace 16673 Jul 20 21:31 scripts/rescue-live/repack-rescue-squashfs-react-shell.sh

@@ -1,0 +1,15 @@
+{
+  "esp_version_json_stale": true,
+  "noted_project_version_fields": [
+    "1.10.0.30",
+    "1.10.0.40",
+    "1.10.0.38"
+  ],
+  "squash_content_was": "1.10.0.58",
+  "hashes": {
+    "grub": "c8fa330c65659b2db872ab0ea1f6336ee51d0d0e2cc57103d21761a4c6478ef6",
+    "kernel": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98",
+    "initrd": "385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8",
+    "squashfs": "3322573de69243be06e363680ddbedebe6462d3badbd45ec6fca62bc8645924a"
+  }
+}

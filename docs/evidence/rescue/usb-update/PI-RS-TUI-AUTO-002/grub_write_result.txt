@@ -1,0 +1,6 @@
+diag_present True
+default_line set default=0
+diag_flag_only_in_diag True
+auto_shutdown0 True
+grub_sha256 68649d4dab94a19c4ead0acbe060902d215fb36b4b13ffa5ef27d9f195931030
+backup /tmp/pi-rs-tui-auto-002-esp-rw/boot/grub/grub.cfg.prev-tui-auto-002

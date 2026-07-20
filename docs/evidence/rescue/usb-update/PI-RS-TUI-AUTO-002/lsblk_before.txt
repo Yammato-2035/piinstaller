@@ -1,0 +1,14 @@
+NAME        PATH           TYPE TRAN   MODEL                     SIZE RM HOTPLUG RO FSTYPE LABEL       MOUNTPOINTS
+sda         /dev/sda       disk usb    Ultra Line                 59G  1       1  0                    
+├─sda1      /dev/sda1      part                                    4G  1       1  0 vfat   SETUPHELFER 
+└─sda2      /dev/sda2      part                                   55G  1       1  0 vfat   SETUP_LOGS  /media/volker/SETUP_LOGS2
+nvme1n1     /dev/nvme1n1   disk nvme   Samsung SSD 980 PRO 2TB   1,8T  0       0  0                    
+├─nvme1n1p1 /dev/nvme1n1p1 part nvme                             512M  0       0  0 vfat               /boot/efi
+└─nvme1n1p2 /dev/nvme1n1p2 part nvme                             1,8T  0       0  0 ext4               /
+nvme0n1     /dev/nvme0n1   disk nvme   Samsung SSD 980 PRO 2TB   1,8T  0       0  0                    
+├─nvme0n1p1 /dev/nvme0n1p1 part nvme                             757M  0       0  0 ntfs               
+├─nvme0n1p2 /dev/nvme0n1p2 part nvme                           512,1M  0       0  0 vfat               
+├─nvme0n1p3 /dev/nvme0n1p3 part nvme                              16M  0       0  0                    
+├─nvme0n1p4 /dev/nvme0n1p4 part nvme                           928,8G  0       0  0 ntfs               
+├─nvme0n1p5 /dev/nvme0n1p5 part nvme                             924M  0       0  0 ntfs               
+└─nvme0n1p6 /dev/nvme0n1p6 part nvme                             931G  0       0  0 ntfs               

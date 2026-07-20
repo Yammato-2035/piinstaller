@@ -1,0 +1,169 @@
+{
+  "root_source": "/dev/nvme1n1p2",
+  "internal_disks": [
+    {
+      "name": "nvme1n1",
+      "path": "/dev/nvme1n1",
+      "type": "disk",
+      "tran": "nvme",
+      "model": "Samsung SSD 980 PRO 2TB",
+      "size": "1,8T",
+      "rm": false,
+      "hotplug": false,
+      "ro": false,
+      "fstype": null,
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "children": [
+        {
+          "name": "nvme1n1p1",
+          "path": "/dev/nvme1n1p1",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "512M",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "vfat",
+          "label": null,
+          "mountpoints": [
+            "/boot/efi"
+          ]
+        },
+        {
+          "name": "nvme1n1p2",
+          "path": "/dev/nvme1n1p2",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "1,8T",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "ext4",
+          "label": null,
+          "mountpoints": [
+            "/"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "nvme0n1",
+      "path": "/dev/nvme0n1",
+      "type": "disk",
+      "tran": "nvme",
+      "model": "Samsung SSD 980 PRO 2TB",
+      "size": "1,8T",
+      "rm": false,
+      "hotplug": false,
+      "ro": false,
+      "fstype": null,
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "children": [
+        {
+          "name": "nvme0n1p1",
+          "path": "/dev/nvme0n1p1",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "757M",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "ntfs",
+          "label": null,
+          "mountpoints": [
+            null
+          ]
+        },
+        {
+          "name": "nvme0n1p2",
+          "path": "/dev/nvme0n1p2",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "512,1M",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "vfat",
+          "label": null,
+          "mountpoints": [
+            null
+          ]
+        },
+        {
+          "name": "nvme0n1p3",
+          "path": "/dev/nvme0n1p3",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "16M",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": null,
+          "label": null,
+          "mountpoints": [
+            null
+          ]
+        },
+        {
+          "name": "nvme0n1p4",
+          "path": "/dev/nvme0n1p4",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "928,8G",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "ntfs",
+          "label": null,
+          "mountpoints": [
+            null
+          ]
+        },
+        {
+          "name": "nvme0n1p5",
+          "path": "/dev/nvme0n1p5",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "924M",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "ntfs",
+          "label": null,
+          "mountpoints": [
+            null
+          ]
+        },
+        {
+          "name": "nvme0n1p6",
+          "path": "/dev/nvme0n1p6",
+          "type": "part",
+          "tran": "nvme",
+          "model": null,
+          "size": "931G",
+          "rm": false,
+          "hotplug": false,
+          "ro": false,
+          "fstype": "ntfs",
+          "label": null,
+          "mountpoints": [
+            null
+          ]
+        }
+      ]
+    }
+  ]
+}

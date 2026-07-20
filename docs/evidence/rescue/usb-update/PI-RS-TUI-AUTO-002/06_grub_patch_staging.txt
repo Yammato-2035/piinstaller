@@ -1,0 +1,19 @@
+diag_present True
+diag_flag_count 1
+auto_shutdown0 True
+set default=0
+titles:
+  0: Setuphelfer Lab-Auto (GUI, Backup/Verify)
+  1: Setuphelfer Lab-Auto (Text, Backup/Verify)
+  2: Setuphelfer starten - grafische Oberflaeche
+  3: Setuphelfer starten - sicherer Textmodus (Fallback)
+  4: Diagnose sammeln und auf Stick speichern
+  5: Hardware- und WLAN-Diagnose
+  6: Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)
+  7: Setuphelfer – TUI-Eingabediagnose (read-only)
+  8: Neustart
+  9: Ausschalten
+  10: Setuphelfer ASUS ROG Lab (GUI, BIOS-Check)
+  11: Setuphelfer ASUS ROG Lab (Text, BIOS-Check)
+  12: Setuphelfer Pi5 Lab (Host-Prep / USB-Boot-Check)
+diag_index 7

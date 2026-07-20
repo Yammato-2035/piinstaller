@@ -1,0 +1,13 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-002",
+  "allowed_usb_target_written": true,
+  "internal_disk_written": false,
+  "internal_partition_mounted": false,
+  "partition_table_modified": false,
+  "filesystem_created": false,
+  "setuplogs_deleted": false,
+  "backup_started": false,
+  "restore_started": false,
+  "msi_boot_started": false,
+  "unexpected_target_written": false
+}

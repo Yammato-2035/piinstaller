@@ -1,0 +1,10 @@
+squash VERSION:
+1.10.0.59
+payload json:
+1.10.0.59
+version json:
+1.10.0.59
+cli mode:
+-rwxrwxr-x 1 volker volker 1349 Jul 20 21:47 /tmp/pi-rs-tui-auto-002-post-ver/usr/local/sbin/setuphelfer-rescue-tui-input-diagnostic
+wants:
+../setuphelfer-rescue-tui-input-diagnostic.service
