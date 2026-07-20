@@ -5,7 +5,7 @@
     "path": "/home/volker/piinstaller",
     "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
     "head_before": "5aa71ebf0e511c8b6e90c934f2f2f7c22ba09806",
-    "head_after": "3d494424fafecbfcdf2e2c4586b6b01ae7844ddf",
+    "head_after": "71b60f6dbfd60ff4d0f88e26478cb9f27cd78faa",
     "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
   },
   "root_cause": {
