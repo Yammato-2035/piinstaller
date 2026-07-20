@@ -1,0 +1,11 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-003",
+  "attempt": "retry_20260720T202628Z",
+  "backup_started": false,
+  "restore_started": false,
+  "code_changed": false,
+  "payload_changed": false,
+  "usb_updated": false,
+  "diagnostic_run_completed": false,
+  "internal_disk_written": false
+}

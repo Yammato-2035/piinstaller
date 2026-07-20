@@ -1,0 +1,81 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-003",
+  "attempt": "retry_20260720T202628Z",
+  "status": "review_required",
+  "abort_reason": "evidence_not_finalized",
+  "workspace": {
+    "path": "/home/volker/piinstaller",
+    "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+    "head": "01a0b66fb52e45f5a724b6a959608ea0c2a1729e",
+    "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
+  },
+  "physical_test": {
+    "device": "MSI GE63 Raider RGB 8RF",
+    "board": "MS-16P5",
+    "payload_version": "1.10.0.59",
+    "boot_session_id": "20260720_222258_boot",
+    "diagnostic_grub_entry_selected": true,
+    "diagnostic_tty_reached": true,
+    "diagnostic_process_observed": "python3 -m core.rescue_tui_input_diagnostic on tty2 pid 1778",
+    "tui_whiptail_on_tty1": true,
+    "run_completed": false,
+    "run_id": null
+  },
+  "input": {
+    "internal_keyboard_grub": "likely_yes_indirect",
+    "internal_keyboard_tty2_raw": null,
+    "internal_keyboard_evdev": null,
+    "internal_keyboard_tty1_menu": null,
+    "external_keyboard_available": null,
+    "external_keyboard_tty2": null,
+    "external_keyboard_tty1_menu": null,
+    "vt_switch_success": null
+  },
+  "whiptail": {
+    "pid": 2537,
+    "tty": "tty1",
+    "source": "incidental_late_evidence",
+    "fd0": null,
+    "fd1": null,
+    "fd2": null,
+    "fd_consistent": null,
+    "average_cpu_percent": null,
+    "maximum_cpu_percent": null,
+    "dominant_wchan": null
+  },
+  "tty1": {
+    "competition": "none",
+    "note": "diag on tty2 separate"
+  },
+  "screen": {
+    "dump_available": false
+  },
+  "evidence": {
+    "manifest_valid": false,
+    "sha256_valid": false,
+    "required_files_complete": false,
+    "import_status": "blocked",
+    "import_reason": "setup_logs_diag_root_missing"
+  },
+  "hypotheses": {
+    "h4_terminal_state": "low",
+    "h6_kernel_input": "low",
+    "h7_newt_redraw": "medium",
+    "fd_mismatch": "low",
+    "tty_competition": "low",
+    "payload_drift": "low"
+  },
+  "leading_hypothesis": "undetermined",
+  "confidence": "none",
+  "recommended_repair_path": "E_additional_targeted_diagnostic",
+  "safety": {
+    "backup_started": false,
+    "restore_started": false,
+    "partition_action_started": false,
+    "internal_disk_mounted": false,
+    "internal_disk_written": false,
+    "payload_changed": false,
+    "usb_updated": false
+  },
+  "next_action": "Complete interactive diagnostic on tty2 through evidence finalize; verify SETUP_LOGS/tui-input-diagnostics/<RUN_ID> before shutdown"
+}

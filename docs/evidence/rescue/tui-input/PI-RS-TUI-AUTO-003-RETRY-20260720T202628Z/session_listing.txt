@@ -1,0 +1,22 @@
+insgesamt 672
+drwxr-xr-x  2 volker volker 32768 Jul 20 22:23 .
+drwxr-xr-x 28 volker volker 32768 Jul 20 22:22 ..
+-rw-r--r--  1 volker volker  1073 Jul 20 22:22 00-session.json
+-rw-r--r--  1 volker volker   709 Jul 20 22:22 01-machine.json
+-rw-r--r--  1 volker volker  5689 Jul 20 22:22 03-cpu-memory.json
+-rw-r--r--  1 volker volker  2631 Jul 20 22:22 04-pci.json
+-rw-r--r--  1 volker volker  1073 Jul 20 22:22 05-usb.json
+-rw-r--r--  1 volker volker 11562 Jul 20 22:23 06-storage.json
+-rw-r--r--  1 volker volker   328 Jul 20 22:23 07-partitions.json
+-rw-r--r--  1 volker volker   329 Jul 20 22:23 08-filesystems.json
+-rw-r--r--  1 volker volker   325 Jul 20 22:23 09-smart.json
+-rw-r--r--  1 volker volker   414 Jul 20 22:23 10-network-hardware.json
+-rw-r--r--  1 volker volker   962 Jul 20 22:23 11-network-connectivity.json
+-rw-r--r--  1 volker volker 11654 Jul 20 22:23 12-kernel-findings.json
+-rw-r--r--  1 volker volker  1220 Jul 20 22:23 13-services.json
+-rw-r--r--  1 volker volker   411 Jul 20 22:23 14-payload-version.json
+-rw-r--r--  1 volker volker 13816 Jul 20 22:23 15-privacy-summary.json
+-rw-r--r--  1 volker volker   919 Jul 20 22:23 16-discovery-summary.json
+-rw-r--r--  1 volker volker  2772 Jul 20 22:23 17-telemetry-lab-send.json
+-rw-r--r--  1 volker volker   737 Jul 20 22:22 journal.jsonl
+-rw-r--r--  1 volker volker   738 Jul 20 22:23 state.json
