@@ -1,0 +1,8 @@
+insgesamt 196
+drwxr-xr-x  4 volker volker 32768 Jan  1  1970 .
+drwxr-x---+ 8 root   root    4096 Jul 20 22:34 ..
+-rw-r--r--  1 volker volker  1079 Jun 30 20:58 RUN-MSI-EVIDENCE
+drwxr-xr-x  9 volker volker 32768 Jul 20 22:32 setuphelfer
+-rw-r--r--  1 volker volker   381 Jun 30 20:58 START-MSI-EVIDENCE.desktop
+-rw-r--r--  1 volker volker   396 Jun 30 20:58 START-MSI-EVIDENCE.txt
+drwxr-xr-x  2 volker volker 32768 Jul  1 19:13 System Volume Information

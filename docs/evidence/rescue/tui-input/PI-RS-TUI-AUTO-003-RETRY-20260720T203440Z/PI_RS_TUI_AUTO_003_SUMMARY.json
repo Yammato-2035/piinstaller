@@ -1,0 +1,54 @@
+{
+  "task_id": "PI-RS-TUI-AUTO-003",
+  "attempt": "retry_20260720T203440Z",
+  "status": "review_required",
+  "abort_reason": "evidence_not_finalized_likely_run_fallback",
+  "workspace": {
+    "path": "/home/volker/piinstaller",
+    "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+    "head": "cd138bdf4075d46fff6663087bc1d6ee0ca0255a",
+    "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
+  },
+  "physical_test": {
+    "device": "MSI GE63 Raider RGB 8RF",
+    "board": "MS-16P5",
+    "payload_version": "1.10.0.59",
+    "boot_id": "c671ea34-b526-4af7-b330-2b091b4d4247",
+    "diagnostic_grub_entry_selected": true,
+    "diagnostic_tty_reached": true,
+    "diagnostic_process_observed": "python3 -m core.rescue_tui_input_diagnostic pid 1762 tty2",
+    "run_completed": false,
+    "run_id": null
+  },
+  "evidence": {
+    "manifest_valid": false,
+    "sha256_valid": false,
+    "required_files_complete": false,
+    "import_status": "blocked",
+    "import_reason": "setup_logs_diag_root_missing",
+    "likely_write_root": "/run/setuphelfer/tui-input-diagnostics",
+    "setup_logs_mount_at": "/run/setuphelfer/esp-rw"
+  },
+  "hypotheses": {
+    "h4_terminal_state": "low",
+    "h6_kernel_input": "low",
+    "h7_newt_redraw": "medium",
+    "fd_mismatch": "low",
+    "tty_competition": "low",
+    "payload_drift": "low",
+    "evidence_persistence": "high"
+  },
+  "leading_hypothesis": "undetermined",
+  "secondary_blocker": "evidence_persistence_run_fallback",
+  "confidence": "none",
+  "recommended_repair_path": "E_then_fix_evidence_root",
+  "safety": {
+    "backup_started": false,
+    "restore_started": false,
+    "payload_changed": false,
+    "usb_updated": false,
+    "code_changed": false,
+    "internal_disk_written": false
+  },
+  "next_action": "Separate small fix: resolve_evidence_root must persist on SETUP_LOGS; then repeat AUTO-003"
+}

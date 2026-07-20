@@ -1,0 +1,1 @@
+EVID=docs/evidence/rescue/tui-input/PI-RS-TUI-AUTO-003-RETRY-20260720T203440Z
