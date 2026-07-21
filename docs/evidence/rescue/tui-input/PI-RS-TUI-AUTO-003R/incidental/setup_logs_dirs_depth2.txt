@@ -1,0 +1,10 @@
+/media/volker/SETUP_LOGS2
+/media/volker/SETUP_LOGS2/setuphelfer
+/media/volker/SETUP_LOGS2/setuphelfer/evidence
+/media/volker/SETUP_LOGS2/setuphelfer/scripts
+/media/volker/SETUP_LOGS2/setuphelfer/operator
+/media/volker/SETUP_LOGS2/setuphelfer/logs
+/media/volker/SETUP_LOGS2/setuphelfer/diagnostics
+/media/volker/SETUP_LOGS2/setuphelfer/e2e-live-001d
+/media/volker/SETUP_LOGS2/setuphelfer/lab
+/media/volker/SETUP_LOGS2/System Volume Information

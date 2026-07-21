@@ -1,0 +1,8 @@
+{
+  "schema": "setuphelfer.rescue.discovery-boot-context.v1",
+  "boot_id": "2ecaddca-cea9-4295-9c42-21eb0fbbb3e6",
+  "payload_version": "1.10.0.60",
+  "cmdline_redacted": "BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0 setuphelfer_tui_input_diag=1 setuphelfer_tui_input_diag_auto_shutdown=0",
+  "called_at": "2026-07-21T23:02:11Z",
+  "recorded_at": "2026-07-21T23:02:11Z"
+}

@@ -1,0 +1,21 @@
+{
+  "schema": "setuphelfer.rescue.session-state.v1",
+  "session_id": "rescue-session-20260721T230213Z-bb356a62",
+  "boot_id": "2ecaddca-cea9-4295-9c42-21eb0fbbb3e6",
+  "payload_version": "1.10.0.60",
+  "source": "physical_msi",
+  "run_mode": "interactive",
+  "started_at": "2026-07-21T23:02:13Z",
+  "updated_at": "2026-07-21T23:02:37Z",
+  "current_phase": "shutdown_pending",
+  "phase_started_at": "2026-07-21T23:02:37Z",
+  "last_heartbeat_at": "2026-07-21T23:02:37Z",
+  "progress_percent": 0,
+  "terminal": true,
+  "result": "review_required",
+  "blocking_reason": null,
+  "shutdown_safe": true,
+  "evidence_complete": true,
+  "last_completed_module": "shutdown_pending",
+  "current_warning": "Evidence wird an Telemetrie gesendet…"
+}

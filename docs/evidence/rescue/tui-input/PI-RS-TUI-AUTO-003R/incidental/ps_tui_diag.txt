@@ -1,0 +1,2 @@
+207:root        1763  0.7  0.0   8616  4860 tty1     Ss+  23:02   0:00 /bin/bash /usr/local/sbin/setuphelfer-rescue-tui --boot-trigger
+209:root        1857  8.1  0.1  28972 20184 tty2     Ss+  23:02   0:00 python3 -m core.rescue_tui_input_diagnostic
