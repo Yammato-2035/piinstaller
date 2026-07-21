@@ -19,8 +19,9 @@ class MsiFix001GuiVtFallbackTests(unittest.TestCase):
 
     def test_gui_watchdog_writes_fallback_and_preserves_tui(self) -> None:
         text = GUI.read_text(encoding="utf-8")
+        common = COMMON.read_text(encoding="utf-8")
         self.assertIn("setuphelfer_rescue_write_gui_fallback_status", text)
-        self.assertIn("setuphelfer_rescue_tty1_clear_allowed", text)
+        self.assertIn("setuphelfer_rescue_tty1_clear_allowed", common)
         self.assertIn("chvt 1", text)
 
 

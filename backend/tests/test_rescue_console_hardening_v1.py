@@ -29,6 +29,7 @@ class RescueConsoleHardeningTests(unittest.TestCase):
         )[0]
         self.assertIn("getty@tty", block)
         self.assertIn("mask --runtime", block)
+        self.assertNotIn("fuser -k", block)
 
     def test_openvt_does_not_switch_before_spawn(self) -> None:
         text = COMMON.read_text(encoding="utf-8")
@@ -46,7 +47,8 @@ class RescueConsoleHardeningTests(unittest.TestCase):
             "setuphelfer_rescue_show_start_assistant_fallback()", 1
         )[0]
         self.assertIn("startx_not_started", fn)
-        self.assertNotIn("openvt_console_2_not_released", fn)
+        self.assertIn("rescue.gui.x11.start_failed", fn)
+        self.assertIn("rescue.gui.vt.in_use", fn)
         self.assertIn("openvt_console_busy", fn)
 
     def test_tui_conflicts_getty_and_no_hangup(self) -> None:
@@ -66,8 +68,8 @@ class RescueConsoleHardeningTests(unittest.TestCase):
 
     def test_watchdog_classifies_openvt_busy(self) -> None:
         text = WATCHDOG.read_text(encoding="utf-8")
-        self.assertIn("openvt_console_busy", text)
-        self.assertIn("prepare_kiosk_vt", text)
+        self.assertIn("rescue.gui.vt.in_use", text)
+        self.assertIn("select_gui_vt", text)
         pre = text.split("KIOSK_FOREGROUND_VT", 1)[0]
         self.assertNotIn('chvt "$SETUPHELFER_RESCUE_KIOSK_VT"', pre)
 

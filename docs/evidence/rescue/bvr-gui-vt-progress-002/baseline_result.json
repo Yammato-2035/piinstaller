@@ -1,0 +1,22 @@
+{
+  "task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002",
+  "baseline_commit": "92bfcc15",
+  "run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "payload_version": "1.10.1.1",
+  "bvr_core_status": "passed",
+  "http_server_status": "ready",
+  "http_health_status": 200,
+  "gui_visible": false,
+  "fallback_status": "active",
+  "fallback_code": "openvt_console_2_not_released",
+  "fallback_code_note": "Stale gui-watchdog.json (2026-07-17) and gui-fallback.json (msi_compat); current boot gui-start.log shows VT7 openvt + Chromium auto-e2e-progress.html started",
+  "boot_profile_status": "msi_compat_nomodeset",
+  "display_progress_source": "auto-e2e-state",
+  "display_progress_value": "sabrent_waiting",
+  "display_phase_index": 4,
+  "actual_progress_source": "physical-progress",
+  "actual_progress_value": "shutdown",
+  "progress_consistent": false,
+  "overall_status": "passed_with_gui_fallback",
+  "bvr_core_frozen": true
+}

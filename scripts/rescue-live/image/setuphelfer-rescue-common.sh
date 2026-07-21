@@ -869,12 +869,26 @@ EOF
 setuphelfer_rescue_gui_failure_code() {
   local raw="${1:-unknown_gui_failure}"
   case "$raw" in
-    openvt_console_busy|openvt_console_not_released|openvt_failed)
-      printf 'openvt_console_busy'
+    openvt_console_busy|openvt_console_not_released|openvt_failed|openvt_console_2_not_released)
+      printf 'rescue.gui.vt.in_use'
       ;;
     startx_not_started)
-      # Keep the real cause — do not remap to a fake openvt code under pci=noaer.
-      printf 'startx_not_started'
+      printf 'rescue.gui.x11.start_failed'
+      ;;
+    display_missing)
+      printf 'rescue.gui.x11.not_ready'
+      ;;
+    chromium_crashed|chromium_missing)
+      printf 'rescue.gui.chromium.window_not_visible'
+      ;;
+    window_not_visible)
+      printf 'rescue.gui.chromium.window_not_visible'
+      ;;
+    vt_switch_failed|unexpected_active_console)
+      printf 'rescue.gui.vt.switch_failed'
+      ;;
+    kiosk_timeout)
+      printf 'rescue.gui.watchdog.fallback_active'
       ;;
     *)
       printf '%s' "$raw"
@@ -1523,37 +1537,65 @@ setuphelfer_rescue_tui_mark_active() {
 }
 
 # Free a VT so openvt can allocate it (getty/login otherwise owns tty1–tty6).
+# Never kill foreign processes — only stop/mask our own getty unit for the kiosk VT.
 setuphelfer_rescue_prepare_kiosk_vt() {
   local vt="${1:-$SETUPHELFER_RESCUE_KIOSK_VT}"
   local tty="/dev/tty${vt}"
   local attempt
+  local holders=""
   setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT" "vt=${vt}"
   setuphelfer_rescue_x11_log "PREPARE_KIOSK_VT" "vt=${vt}"
+  if [[ "$vt" == "1" ]]; then
+    setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_REFUSED" "vt=1 reason=tui_reserved code=rescue.gui.vt.in_use"
+    return 1
+  fi
   if command -v systemctl >/dev/null 2>&1; then
     systemctl stop "getty@tty${vt}.service" 2>/dev/null || true
     systemctl mask --runtime "getty@tty${vt}.service" 2>/dev/null || true
-  fi
-  # Drop lingering login/getty holders on the target VT.
-  if [[ -c "$tty" ]] && command -v fuser >/dev/null 2>&1; then
-    fuser -k "${tty}" >/dev/null 2>&1 || true
   fi
   for attempt in 1 2 3 4 5; do
     if command -v deallocvt >/dev/null 2>&1; then
       deallocvt "$vt" >/dev/null 2>&1 || true
     fi
-    # Prefer an unused VT: no processes attached.
     if [[ -c "$tty" ]] && command -v fuser >/dev/null 2>&1; then
-      if ! fuser "$tty" >/dev/null 2>&1; then
+      holders="$(fuser "$tty" 2>/dev/null | tr -s ' ' | sed 's/^ //' || true)"
+      if [[ -z "$holders" ]]; then
         setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_OK" "vt=${vt} attempt=${attempt}"
         return 0
       fi
+      # Own Xorg/chromium on the reserved GUI VT is acceptable for re-entry.
+      if echo "$holders" | grep -Eq '^[0-9 ]+$'; then
+        if pgrep -f "[X]org.*vt${vt}|setuphelfer-rescue-kiosk|setuphelfer-rescue-ui-launch" >/dev/null 2>&1; then
+          setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_OK" "vt=${vt} attempt=${attempt} owner=setuphelfer"
+          return 0
+        fi
+      fi
+      setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_BUSY" "vt=${vt} holders=${holders} code=rescue.gui.vt.in_use"
     else
       setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_OK" "vt=${vt} attempt=${attempt} fuser=skip"
       return 0
     fi
     sleep 0.4
   done
-  setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_BUSY" "vt=${vt}"
+  setuphelfer_rescue_gui_chain_log "PREPARE_KIOSK_VT_BUSY" "vt=${vt} code=rescue.gui.vt.reserve_failed"
+  return 1
+}
+
+# Prefer configured kiosk VT; fall back to 8/9 if busy. Never select TUI VT 1.
+setuphelfer_rescue_select_gui_vt() {
+  local preferred="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
+  local candidate
+  for candidate in "$preferred" 8 9 7; do
+    [[ "$candidate" == "1" ]] && continue
+    if setuphelfer_rescue_prepare_kiosk_vt "$candidate"; then
+      SETUPHELFER_RESCUE_KIOSK_VT="$candidate"
+      export SETUPHELFER_RESCUE_KIOSK_VT
+      setuphelfer_rescue_gui_chain_log "GUI_VT_SELECTED" "vt=${candidate} preferred=${preferred}"
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  setuphelfer_rescue_gui_chain_log "GUI_VT_NONE" "code=rescue.gui.vt.none_available"
   return 1
 }
 
@@ -1598,9 +1640,49 @@ except Exception:
 PY
 }
 
+setuphelfer_rescue_ui_entry_name() {
+  if grep -Eq '(^| )setuphelfer_msi_e2e_auto=1( |$)' /proc/cmdline 2>/dev/null \
+    && [[ -f /usr/share/setuphelfer/rescue/ui/auto-e2e-progress.html ]]; then
+    printf 'auto-e2e-progress.html\n'
+    return 0
+  fi
+  printf 'rescue.html\n'
+}
+
 setuphelfer_rescue_chromium_running() {
-  pgrep -f 'chromium.*rescue\.html' >/dev/null 2>&1 \
-    || pgrep -f 'chromium-browser.*rescue\.html' >/dev/null 2>&1
+  # Match both interactive rescue.html and Auto-E2E progress kiosk URL.
+  pgrep -f 'chromium.*(rescue\.html|auto-e2e-progress\.html)' >/dev/null 2>&1 \
+    || pgrep -f 'chromium-browser.*(rescue\.html|auto-e2e-progress\.html)' >/dev/null 2>&1 \
+    || pgrep -f 'chromium.*127\.0\.0\.1:8765' >/dev/null 2>&1 \
+    || pgrep -f 'chromium-browser.*127\.0\.0\.1:8765' >/dev/null 2>&1
+}
+
+setuphelfer_rescue_chromium_window_registered() {
+  setuphelfer_rescue_prepare_x11_env
+  if command -v xdotool >/dev/null 2>&1; then
+    xdotool search --class chromium >/dev/null 2>&1 \
+      || xdotool search --name Setuphelfer >/dev/null 2>&1 \
+      || xdotool search --class Chromium >/dev/null 2>&1
+    return $?
+  fi
+  if command -v xwininfo >/dev/null 2>&1; then
+    xwininfo -root -tree 2>/dev/null | grep -Eiq 'chromium|setuphelfer'
+    return $?
+  fi
+  # Without window tools, process + X ready is the best available signal.
+  setuphelfer_rescue_chromium_running
+}
+
+setuphelfer_rescue_expected_gui_vt_active() {
+  local expected="${1:-$SETUPHELFER_RESCUE_KIOSK_VT}"
+  local active=""
+  if [[ -r /sys/class/tty/tty0/active ]]; then
+    active="$(cat /sys/class/tty/tty0/active 2>/dev/null || true)"
+    active="${active#tty}"
+  elif command -v fgconsole >/dev/null 2>&1; then
+    active="$(fgconsole 2>/dev/null || true)"
+  fi
+  [[ -n "$active" && "$active" == "$expected" ]]
 }
 
 setuphelfer_rescue_xorg_running() {
@@ -1690,14 +1772,21 @@ setuphelfer_rescue_capture_x11_forensics() {
 }
 
 # Returns 0 only when backend, UI HTTP, display, and chromium are stable for min_sec.
+# Visibility requires: X ready + chromium process + registered window + expected VT active
+# (living chromium alone is not enough).
 setuphelfer_rescue_gui_health_ok() {
   local min_sec="${1:-5}"
   local port_ui="${SETUPHELFER_RESCUE_UI_PORT:-8765}"
+  local entry
+  entry="$(setuphelfer_rescue_ui_entry_name)"
   if ! setuphelfer_rescue_http_ok "http://127.0.0.1:8000/api/version"; then
     return 1
   fi
-  if ! setuphelfer_rescue_http_ok "http://127.0.0.1:${port_ui}/rescue.html"; then
-    return 2
+  # Prefer health.json (always present for the dedicated UI server); also accept entry HTML.
+  if ! setuphelfer_rescue_http_ok "http://127.0.0.1:${port_ui}/health.json"; then
+    if ! setuphelfer_rescue_http_ok "http://127.0.0.1:${port_ui}/${entry}"; then
+      return 2
+    fi
   fi
   if ! setuphelfer_rescue_x11_ready; then
     return 3
@@ -1713,6 +1802,20 @@ setuphelfer_rescue_gui_health_ok() {
     sleep 1
     elapsed=$((elapsed + 1))
   done
+  if ! setuphelfer_rescue_chromium_window_registered; then
+    setuphelfer_rescue_gui_chain_log "GUI_VISIBILITY" "window=missing code=rescue.gui.chromium.window_not_visible"
+    return 6
+  fi
+  if ! setuphelfer_rescue_expected_gui_vt_active "$SETUPHELFER_RESCUE_KIOSK_VT"; then
+    # Attempt one controlled switch before declaring failure.
+    chvt "$SETUPHELFER_RESCUE_KIOSK_VT" 2>/dev/null || true
+    sleep 0.5
+    if ! setuphelfer_rescue_expected_gui_vt_active "$SETUPHELFER_RESCUE_KIOSK_VT"; then
+      setuphelfer_rescue_gui_chain_log "GUI_VISIBILITY" "vt_active=unexpected expected=${SETUPHELFER_RESCUE_KIOSK_VT} code=rescue.gui.vt.unexpected_active_console"
+      return 7
+    fi
+  fi
+  setuphelfer_rescue_gui_chain_log "GUI_VISIBILITY" "ok=true vt=${SETUPHELFER_RESCUE_KIOSK_VT} entry=${entry}"
   return 0
 }
 

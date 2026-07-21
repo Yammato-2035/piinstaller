@@ -1,0 +1,52 @@
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/MSI_PHYSICAL_RETEST_HANDOFF.md:3:**Status Auftrag:** `passed_with_gui_fallback`
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/gui_http_root_cause_analysis.json:23:    "misleading_msi_compat_nomodeset_status_files_not_blocking_this_gui_boot"
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/gui_http_root_cause_analysis.json:28:    "health_readiness_before_chromium",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:3:**Endstatus: `passed_with_gui_fallback`**
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:44:- Gesamtstatus: `passed_with_gui_fallback`
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:49:- sekundäre Ursachen: irreführende `msi_compat_nomodeset`-Statusdateien (blockierten diesen GUI-Boot nicht)
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:61:- Readiness: `/health.json` vor Chromium
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:72:- Watchdog: `openvt_console_2_not_released` → TUI-Fallback
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:73:- zusätzlicher Fallback-Code in Evidence: `msi_compat_nomodeset`
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:88:- Baseline/Retest: `passed_with_gui_fallback` (kein Fake-Green)
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:136:- Gesamt (Auftrag): **`passed_with_gui_fallback`**
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:161:- Fallback: **ja** (`openvt_console_2_not_released`)
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:169:- automatisiert: Fallback bei GUI-Fail → `passed_with_gui_fallback`, kein Fake-Green: **bestanden**
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:175:Zulässiger Wert: **`passed_with_gui_fallback`**
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:183:- Blocker für volles `passed`: Chromium/VT-Handoff (`openvt_console_2_not_released`), echte GUI-Sichtbarkeit
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/ABSCHLUSSBERICHT.md:185:- technische Schulden: widersprüchliche Fallback-Statusdateien (`msi_compat_nomodeset` vs. `mode=gui`)
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/GUI_HTTP_ROOT_CAUSE_ANALYSIS.md:28:- `gui-availability.json` / `gui-fallback.json` with `msi_compat_nomodeset` are **misleading leftovers** relative to this boot (cmdline had neither `nomodeset` nor `setuphelfer_msi_compat=1`; `should_disable_gui_for_msi_compat` returns false when `mode=gui`).
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/RELEASE_NOTES_1_10_1_1.md:5:**Previous:** 1.10.1.0 (`passed_with_gui_fallback`, `http_server_failed`)
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/RELEASE_NOTES_1_10_1_1.md:10:- Health/readiness (`/health.json`) before Chromium starts
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/final_evidence_import_result.json:7:  "overall_status": "passed_with_gui_fallback"
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/IMPLEMENTATION_STATUS.md:3:**Status: `passed_with_gui_fallback`**
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/IMPLEMENTATION_STATUS.md:9:- HTTP-Root-Cause behoben und auf MSI nachgewiesen (`/health.json` ready).
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/IMPLEMENTATION_STATUS.md:11:- GUI für Operator nicht sichtbar (`openvt_console_2_not_released`).
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/baseline_bvr_result.json:17:  "overall_status": "passed_with_gui_fallback",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/PHYSICAL_MSI_RESULT.md:3:**Status: `passed_with_gui_fallback`**
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/PHYSICAL_MSI_RESULT.md:14:| HTTP-Server | **ready** (`/health.json` 200, Locales ok) |
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/PHYSICAL_MSI_RESULT.md:16:| Watchdog | `openvt_console_2_not_released` → TUI-Fallback |
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/gui_http_related_files.txt:13:backend/core/rescue_auto_e2e_gui_status.py
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/BASELINE_BVR_RESULT.md:7:Gesamt: `passed_with_gui_fallback`.
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json:7:  "overall_status": "passed_with_gui_fallback",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json:18:  "gui_chromium_started_claim": true,
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json:19:  "gui_watchdog_error": "openvt_console_2_not_released",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json:22:    "openvt_console_2_not_released",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json:23:    "msi_compat_nomodeset"
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-http-runtime.json:9:  "health_url": "http://127.0.0.1:8765/health.json",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-http-runtime.json:13:  "chromium_started": false,
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-http-runtime.json:14:  "chromium_visible": false,
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/auto-e2e-state.json:5:  "phase": "sabrent_waiting",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/auto-e2e-state.json:6:  "phase_index": 4,
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-watchdog.json:5:  "gui_error_code": "openvt_console_2_not_released",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/rescue-ui-status.json:4:  "health_url": "http://127.0.0.1:8765/health.json",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/rescue-ui-status.json:6:  "browser_candidate": "chromium",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/x11-launch.log:14:[OPENVT_START]
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-fallback.json:3:  "gui_status": "disabled_msi_compat_nomodeset",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-fallback.json:4:  "gui_reason": "msi_compat_nomodeset",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/gui-start.log:58:[OPENVT_START]
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d/incidental/rescue-ui-launch.log:2:127.0.0.1 - "GET /health.json HTTP/1.1" 200 -
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d.sha256sums.txt:10:d84b779036e1974a87a2a5cd458c208272868306f94f79a3a2b9d6f66f1837b0  ./incidental/chromium-launch.log
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d.sha256sums.txt:12:413cf48d51321349e4b97d35ad8237ad4eb6209b1a8a91971b3a53d35e633322  ./incidental/gui-http-health.json
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-000531-f1b86cfe.sha256sums.txt:4:a502511facee7cbd2d844982eec0dd9f0323c89a61b588239df659a2615a0284  ./incidental/chromium-launch.log
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/IMPLEMENTATION_STATUS.json:3:  "overall_status": "passed_with_gui_fallback",
+/home/volker/piinstaller/docs/evidence/rescue/bvr-gui-dcc-001/IMPLEMENTATION_STATUS.json:12:  "gui_watchdog_error": "openvt_console_2_not_released",

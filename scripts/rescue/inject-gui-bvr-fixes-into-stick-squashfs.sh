@@ -100,6 +100,16 @@ inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-common.sh" \
   "${IMG}/setuphelfer-rescue-common.sh"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh" \
   "${IMG}/setuphelfer-rescue-gui-watchdog.sh"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-auto-physical-e2e" \
+  "${IMG}/setuphelfer-rescue-auto-physical-e2e"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-auto-e2e-tui-display.py" \
+  "${IMG}/setuphelfer-rescue-auto-e2e-tui-display.py"
+inject "${REPO_ROOT}/backend/core/rescue_canonical_bvr_progress.py" \
+  "${BE}/core/rescue_canonical_bvr_progress.py"
+inject "${REPO_ROOT}/backend/core/rescue_auto_e2e_gui_status.py" \
+  "${BE}/core/rescue_auto_e2e_gui_status.py"
+inject "${REPO_ROOT}/config/rescue_payload_version.json" \
+  "${ROOT}/opt/setuphelfer-rescue/config/rescue_payload_version.json"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-entrypoint.sh" \
   "${IMG}/setuphelfer-rescue-entrypoint.sh"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-asus-rog-bios-gate" \
@@ -166,6 +176,8 @@ for name in setuphelfer-rescue-tui setuphelfer-rescue-common.sh \
             setuphelfer-rescue-asus-rog-bios-gate setuphelfer-rescue-pi5-lab \
             setuphelfer-rescue-tui-deadline \
             setuphelfer-rescue-physical-e2e setuphelfer-rescue-physical-e2e-start-gate \
+            setuphelfer-rescue-auto-physical-e2e \
+            setuphelfer-rescue-auto-e2e-tui-display.py \
             setuphelfer-rescue-kiosk-start setuphelfer-rescue-ui-launch \
             setuphelfer-rescue-ui-http-server \
             setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py; do

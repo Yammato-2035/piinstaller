@@ -1,4 +1,4 @@
-# GUI_WATCHDOG_FALLBACK
+# RESCUE_GUI_VT_TROUBLESHOOTING
 
 Status: `implemented_pending_physical_retest`
 

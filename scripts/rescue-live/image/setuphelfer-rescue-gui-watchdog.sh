@@ -120,7 +120,14 @@ if [[ ! -c /dev/tty1 ]]; then
   return $(_fail "tty_unavailable")
 fi
 # Keep tty1 progress visible until X is healthy — do not blank early.
-setuphelfer_rescue_prepare_kiosk_vt "$SETUPHELFER_RESCUE_KIOSK_VT" || true
+_selected_vt="$(setuphelfer_rescue_select_gui_vt || true)"
+if [[ -n "${_selected_vt}" ]]; then
+  SETUPHELFER_RESCUE_KIOSK_VT="$_selected_vt"
+  export SETUPHELFER_RESCUE_KIOSK_VT
+else
+  setuphelfer_rescue_gui_chain_log "CHECK_TTY" "RESULT=none_available"
+  return $(_fail "rescue.gui.vt.none_available")
+fi
 setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=kept kiosk_vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
 
 # RS-P2G: kiosk on dedicated VT with controlling terminal (openvt), not background on watchdog shell.
@@ -137,13 +144,13 @@ while [[ "$_elapsed" -lt "$TIMEOUT_SEC" ]]; do
     _kexit=$?
     setuphelfer_rescue_gui_chain_log "KIOSK_PID_EXIT" "pid=${_kpid} elapsed_sec=${_elapsed} exit=${_kexit}"
     if [[ "$_kexit" -eq 78 ]]; then
-      return $(_fail "openvt_console_busy")
+      return $(_fail "rescue.gui.vt.in_use")
     fi
     if ! setuphelfer_rescue_x11_ready; then
-      return $(_fail "startx_not_started")
+      return $(_fail "rescue.gui.x11.start_failed")
     fi
     if ! setuphelfer_rescue_chromium_running; then
-      return $(_fail "chromium_crashed")
+      return $(_fail "rescue.gui.chromium.window_not_visible")
     fi
     return $(_fail "unknown_gui_failure")
   fi
@@ -162,21 +169,24 @@ done
 
 if [[ "$_health_rc" -ne 0 ]]; then
   setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_TIMEOUT" "elapsed_sec=${_elapsed} last_rc=${_health_rc}"
-  pkill -f 'chromium.*rescue' 2>/dev/null || true
+  pkill -f 'chromium.*(rescue\.html|auto-e2e-progress\.html)' 2>/dev/null || true
+  pkill -f 'chromium.*127\.0\.0\.1:8765' 2>/dev/null || true
   pkill -f 'setuphelfer-rescue-ui-launch' 2>/dev/null || true
   kill "$_kpid" 2>/dev/null || true
   chvt 1 2>/dev/null || true
   case "$_health_rc" in
     1) return $(_fail "backend_unreachable") ;;
-    2) return $(_fail "display_missing") ;;
-    3) return $(_fail "xorg_missing") ;;
-    4|5) return $(_fail "chromium_crashed") ;;
-    *) return $(_fail "kiosk_timeout") ;;
+    2) return $(_fail "rescue.gui.x11.not_ready") ;;
+    3) return $(_fail "rescue.gui.x11.start_failed") ;;
+    4|5) return $(_fail "rescue.gui.chromium.window_not_visible") ;;
+    6) return $(_fail "rescue.gui.chromium.window_not_visible") ;;
+    7) return $(_fail "rescue.gui.vt.switch_failed") ;;
+    *) return $(_fail "rescue.gui.watchdog.fallback_active") ;;
   esac
 fi
 
 write_state "" true false
-setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_SUCCESS" "stable_sec=${STABLE_SEC}"
+setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_SUCCESS" "stable_sec=${STABLE_SEC} vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
 chvt "$SETUPHELFER_RESCUE_KIOSK_VT" 2>/dev/null || true
 wait "$_kpid" 2>/dev/null || true
 setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_RETURN" "RESULT=0"
