@@ -1,0 +1,6 @@
+{
+  "root_cause": "auto-e2e-state not authoritative and not finalized/mirrored; physical-progress was correct",
+  "fix": "canonical-bvr-progress.json as single source",
+  "drift_code": "rescue.bvr.progress_source_drift",
+  "confidence": "high"
+}

@@ -23,6 +23,8 @@ from urllib.parse import urlparse
 
 DEFAULT_PORT = 8765
 STATE_PATH = Path("/run/setuphelfer-rescue/auto-e2e/state.json")
+CANONICAL_PATH = Path("/run/setuphelfer-rescue/canonical-bvr-progress.json")
+PHYSICAL_PATH = Path("/run/setuphelfer-rescue/physical-progress.json")
 RUNTIME_STATUS_PATH = Path("/run/setuphelfer/gui-http-runtime.json")
 
 PHASE_LABELS: dict[str, dict[str, str]] = {
@@ -174,24 +176,82 @@ def build_health(document_root: Path, *, index_name: str) -> dict[str, Any]:
     }
 
 
+def _normalize_phase(phase: str) -> str:
+    mapping = {
+        "sabrent_waiting": "sabrent_waiting",
+        "sabrent_wait": "sabrent_waiting",
+        "backup_create": "backup",
+        "backup_verify": "verify",
+        "restore_run": "restore",
+        "evidence_save": "evidence_finalize",
+        "shutdown_pending": "completed",
+    }
+    return mapping.get(phase, phase)
+
+
 def build_auto_e2e_status(state_path: Path, locale: str) -> dict[str, Any]:
+    """Prefer canonical-bvr-progress.json; fall back to physical-progress then auto-e2e-state."""
     labels = PHASE_LABELS.get(locale) or PHASE_LABELS["en-US"]
+    canon = _read_json(CANONICAL_PATH)
+    physical = _read_json(PHYSICAL_PATH)
     state = _read_json(state_path) or {}
-    phase = str(state.get("phase") or "waiting")
-    status = str(state.get("status") or "waiting")
+    source = "auto-e2e-state"
+    if canon:
+        source = "canonical-bvr-progress"
+        phase = _normalize_phase(str(canon.get("phase") or "waiting"))
+        status = str(canon.get("status") or "waiting")
+        message = str(canon.get("message") or "")
+        run_id = str(canon.get("run_id") or "")
+        updated_at = canon.get("updated_at")
+        sequence = int(canon.get("sequence") or 0)
+        terminal = bool(canon.get("terminal"))
+        warnings = list(canon.get("warnings") or [])
+    elif physical:
+        source = "physical-progress"
+        phase = _normalize_phase(str(physical.get("phase") or "waiting"))
+        status = str(physical.get("status") or ("passed" if phase == "shutdown" else "running"))
+        message = str(physical.get("message") or "")
+        run_id = str(state.get("run_id") or "")
+        updated_at = physical.get("updated_at")
+        sequence = int(physical.get("sequence") or 0)
+        terminal = bool(physical.get("terminal")) or phase in {"shutdown", "completed"}
+        warnings = []
+    else:
+        phase = _normalize_phase(str(state.get("phase") or "waiting"))
+        status = str(state.get("status") or "waiting")
+        message = str(state.get("last_progress") or "")
+        run_id = str(state.get("run_id") or "")
+        updated_at = state.get("updated_at")
+        sequence = 0
+        terminal = status in {"passed", "failed", "cancelled", "blocked"}
+        warnings = []
+
+    # Drift: canonical/physical terminal vs sticky sabrent_waiting orchestration file.
+    if (canon or physical) and str(state.get("phase") or "") == "sabrent_waiting":
+        if terminal or phase in {"shutdown", "completed", "backup", "verify", "restore"}:
+            warnings = list(warnings) + ["rescue.bvr.progress_source_drift"]
+
+    label = labels.get(phase, labels.get("waiting", phase))
+    if message:
+        label = message if locale.startswith("de") else labels.get(phase, message)
     return {
         "schema": "setuphelfer.rescue.auto-e2e-gui-status.v1",
         "active": True,
         "status": status,
         "phase": phase,
-        "phase_label_de": labels.get(phase, labels.get("waiting", phase)),
-        "phase_label": labels.get(phase, labels.get("waiting", phase)),
-        "last_progress": str(state.get("last_progress") or ""),
-        "run_id": str(state.get("run_id") or ""),
-        "updated_at": state.get("updated_at"),
+        "phase_label_de": label,
+        "phase_label": label,
+        "last_progress": message,
+        "run_id": run_id,
+        "updated_at": updated_at,
         "locale": locale,
         "payload_version": _payload_version(),
         "progress_kind": "indeterminate",
+        "sequence": sequence,
+        "terminal": terminal,
+        "source_component": source,
+        "warnings": warnings,
+        "canonical": source == "canonical-bvr-progress",
     }
 
 

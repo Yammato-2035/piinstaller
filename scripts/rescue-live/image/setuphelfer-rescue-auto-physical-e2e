@@ -10,37 +10,40 @@ setuphelfer_rescue_ensure_state_dir
 _progress_write() {
   local phase="$1"
   local msg="$2"
+  local status="${3:-running}"
   local now up
   now="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   up="$(awk '{print int($1)}' /proc/uptime 2>/dev/null || echo 0)"
   mkdir -p "${SETUPHELFER_RESCUE_STATE_DIR}" 2>/dev/null || true
-  PHASE="$phase" MSG="$msg" NOW="$now" UP="$up" python3 - <<'PY' 2>/dev/null || true
-import json, os
-from pathlib import Path
-payload = {
-    "phase": os.environ.get("PHASE") or "sabrent_waiting",
-    "message": os.environ.get("MSG") or "",
-    "updated_at": os.environ.get("NOW") or "",
-    "uptime_sec": int(os.environ.get("UP") or "0"),
-}
-path = Path(os.environ.get("SETUPHELFER_RESCUE_STATE_DIR", "/run/setuphelfer-rescue")) / "physical-progress.json"
-path.write_text(json.dumps(payload, ensure_ascii=False) + "\n", encoding="utf-8")
-for base in (
-    Path("/run/setuphelfer/esp-rw"),
-    Path("/run/setuphelfer-rescue/media/SETUP_LOGS"),
-):
-    target = base / "setuphelfer/evidence/e2e/physical-progress.json"
-    if (base / "setuphelfer").is_dir():
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(path.read_text(encoding="utf-8"), encoding="utf-8")
-        break
-PY
-  PHASE="$phase" MSG="$msg" PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
+  PHASE="$phase" MSG="$msg" STATUS="$status" NOW="$now" UP="$up" \
+    PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<'PY' 2>/dev/null || true
 import os
+from core.rescue_canonical_bvr_progress import write_canonical_progress
 from core.rescue_physical_e2e_auto_e2e_state import update_auto_e2e_state, write_heartbeat
+
 phase = os.environ.get("PHASE") or "sabrent_waiting"
 msg = os.environ.get("MSG") or ""
-update_auto_e2e_state(phase=phase, status="running", last_progress=msg)
+status = os.environ.get("STATUS") or "running"
+terminal = phase in {"shutdown", "completed"} or status in {"passed", "failed", "cancelled"}
+write_canonical_progress(
+    phase=phase,
+    status="passed" if phase == "shutdown" and status == "running" else status,
+    message=msg,
+    source_component="auto-physical-e2e",
+    terminal=terminal,
+)
+# Compatibility: keep auto-e2e-state in sync but it is not authoritative for display.
+update_auto_e2e_state(
+    phase=phase if phase in {
+        "msi_hardware_check", "msi_evidence_waiting", "msi_evidence_running", "msi_evidence_complete",
+        "sabrent_waiting", "sabrent_detected", "sabrent_identity_verified", "disk_partitioning",
+        "disk_formatting", "test_data_create", "backup_create", "backup_verify", "restore_run",
+        "data_compare", "telemetry_send", "diagnostics_fetch", "evidence_save", "shutdown_pending",
+        "shutdown",
+    } else "sabrent_waiting",
+    status=("passed" if terminal and status != "failed" else status),
+    last_progress=msg,
+)
 write_heartbeat(run_id="auto-physical-e2e", phase=phase)
 PY
 }
@@ -177,11 +180,28 @@ cp -f "$_log" "${_logs_mount}/setuphelfer/evidence/e2e/auto-physical-e2e.log" 2>
 if [[ "$_e2e_ok" -eq 1 ]]; then
   touch "$_marker" 2>/dev/null || true
   setuphelfer_rescue_write_boot_state "auto_physical_e2e_passed"
-  _progress_write "shutdown" "Physical-E2E erfolgreich"
+  _progress_write "shutdown" "Physical-E2E erfolgreich" "passed"
 else
   setuphelfer_rescue_write_boot_state "auto_physical_e2e_failed"
-  _progress_write "shutdown" "Physical-E2E fehlgeschlagen — siehe auto-physical-e2e.log"
+  _progress_write "shutdown" "Physical-E2E fehlgeschlagen — siehe auto-physical-e2e.log" "failed"
 fi
+
+# Final mirror of orchestration state (non-authoritative) onto SETUP_LOGS.
+PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || true
+from pathlib import Path
+from core.rescue_physical_e2e_auto_e2e_state import mirror_state_to_setup_logs, read_auto_e2e_state
+from core.rescue_canonical_bvr_progress import detect_progress_source_drift, read_canonical_progress
+logs = Path("${_logs_mount}")
+mirror_state_to_setup_logs(logs)
+drift = detect_progress_source_drift(
+    canonical=read_canonical_progress(),
+    auto_e2e_state=read_auto_e2e_state(),
+)
+out = logs / "setuphelfer/evidence/e2e/progress-source-drift.json"
+out.parent.mkdir(parents=True, exist_ok=True)
+import json
+out.write_text(json.dumps(drift, indent=2) + "\n", encoding="utf-8")
+PY
 
 sync 2>/dev/null || true
 if setuphelfer_rescue_auto_shutdown_requested; then

@@ -1,0 +1,7 @@
+{
+  "sources": [
+    {"source": "canonical-bvr-progress.json", "writer": "write_canonical_progress/_progress_write", "readers": ["GUI","TUI","DCC","Evidence"], "authoritative": true, "finalized": true, "risk": "low"},
+    {"source": "physical-progress.json", "writer": "canonical projection", "readers": ["compat/TUI bootstrap"], "authoritative": false, "finalized": true, "risk": "low"},
+    {"source": "auto-e2e-state.json", "writer": "update_auto_e2e_state", "readers": ["orchestration"], "authoritative": false, "finalized": "on_complete_mirror", "risk": "medium_if_used_for_display"}
+  ]
+}

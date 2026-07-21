@@ -24,6 +24,11 @@ else:
     if _repo.is_dir():
         sys.path.insert(0, str(_repo))
 
+from core.rescue_canonical_bvr_progress import (  # noqa: E402
+    CANONICAL_PHASES,
+    normalize_phase,
+    read_progress_for_display,
+)
 from core.rescue_component_heartbeat import (  # noqa: E402
     component_heartbeat_age_sec,
     write_component_heartbeat,
@@ -43,6 +48,24 @@ from core.rescue_session_state import (  # noqa: E402
     PHASE_LABELS_DE as DISCOVERY_LABELS_DE,
     read_session_state,
 )
+
+# Keep last good display snapshot to avoid phase 0 jumps on transient read errors.
+_LAST_GOOD_STATE: dict | None = None
+
+CANONICAL_LABELS_DE = {
+    "startup": "Systemstart",
+    "device_discovery": "Geräteerkennung",
+    "target_validation": "Zielprüfung",
+    "sabrent_wait": "SABRENT wird erwartet",
+    "backup": "Backup",
+    "verify": "Verify",
+    "restore_prepare": "Restore vorbereiten",
+    "restore": "Restore",
+    "manifest_compare": "Manifest-Vergleich",
+    "evidence_finalize": "Evidence",
+    "completed": "Abgeschlossen",
+    "shutdown": "Herunterfahren",
+}
 
 EARLY_DISCOVERY_PHASES = (
     "discovery_start_checking",
@@ -244,7 +267,7 @@ def _active_state() -> dict:
         }
 
     e2e = refresh_auto_e2e_phase_from_runtime()
-    e2e["labels"] = PHASE_LABELS_DE
+    e2e["labels"] = {**PHASE_LABELS_DE, **CANONICAL_LABELS_DE}
     e2e["discovery_mode"] = False
     e2e["heartbeat_age"] = heartbeat_age_sec()
     e2e["error_code"] = ""
@@ -252,18 +275,44 @@ def _active_state() -> dict:
     e2e["early_phases"] = False
     svc = _physical_service_snapshot()
     e2e["physical_service"] = f"{svc.get('active')}/{svc.get('sub')}"
-    progress_file = _read_physical_progress_file()
-    if progress_file.get("message"):
-        e2e["last_progress"] = str(progress_file["message"])
-    if progress_file.get("phase") in AUTO_E2E_PHASES:
-        # Prefer live runner progress over MSI-complete pin.
-        pf_phase = str(progress_file["phase"])
-        cur = str(e2e.get("phase") or "")
-        if cur in AUTO_E2E_PHASES and AUTO_E2E_PHASES.index(pf_phase) >= AUTO_E2E_PHASES.index(cur):
-            e2e["phase"] = pf_phase
-        elif cur not in AUTO_E2E_PHASES or cur == "msi_evidence_complete":
-            e2e["phase"] = pf_phase
-    if str(e2e.get("phase") or "") == "msi_evidence_complete":
+
+    # Authoritative progress: canonical-bvr-progress (physical-progress is projection).
+    try:
+        canon = read_progress_for_display()
+    except Exception:
+        canon = None
+    global _LAST_GOOD_STATE
+    if isinstance(canon, dict) and canon.get("phase"):
+        phase = normalize_phase(str(canon.get("phase") or "startup"))
+        e2e["phase"] = phase
+        e2e["phase_index"] = int(canon.get("phase_index") or 0)
+        e2e["sequence"] = int(canon.get("sequence") or 0)
+        e2e["last_progress"] = str(canon.get("message") or e2e.get("last_progress") or "")
+        e2e["status"] = str(canon.get("status") or e2e.get("status") or "running")
+        e2e["canonical"] = True
+        e2e["labels"] = CANONICAL_LABELS_DE
+        e2e["phase_keys"] = list(CANONICAL_PHASES)
+        if canon.get("terminal"):
+            e2e["status"] = str(canon.get("status") or "passed")
+        warns = list(canon.get("warnings") or [])
+        if "rescue.bvr.progress_source_drift" in warns:
+            e2e["error_code"] = "rescue.bvr.progress_source_drift"
+        _LAST_GOOD_STATE = dict(e2e)
+    else:
+        # Keep last good snapshot; never jump to phase 0 on transient failure.
+        if _LAST_GOOD_STATE is not None:
+            e2e = dict(_LAST_GOOD_STATE)
+            e2e["error_code"] = e2e.get("error_code") or "rescue.bvr.progress_read_failed"
+            return e2e
+        progress_file = _read_physical_progress_file()
+        if progress_file.get("message"):
+            e2e["last_progress"] = str(progress_file["message"])
+        if progress_file.get("phase"):
+            e2e["phase"] = normalize_phase(str(progress_file["phase"]))
+            e2e["labels"] = CANONICAL_LABELS_DE
+            e2e["phase_keys"] = list(CANONICAL_PHASES)
+
+    if str(e2e.get("phase") or "") in {"msi_evidence_complete", "startup", "device_discovery"}:
         if svc.get("active") in {"activating", "active"}:
             e2e["last_progress"] = (
                 f"Physical-E2E-Service aktiv ({svc.get('sub')}) — "
@@ -274,18 +323,6 @@ def _active_state() -> dict:
                 f"Physical-E2E-Service fehlgeschlagen ({svc.get('result') or svc.get('sub')}) — "
                 "Stick-Journal prüfen"
             )
-        elif svc.get("active") == "inactive" and svc.get("sub") == "dead":
-            elapsed = int(e2e.get("elapsed_sec") or 0)
-            if elapsed >= 90:
-                e2e["last_progress"] = (
-                    f"Physical-E2E-Service nach {elapsed}s noch tot — "
-                    "vermutlich Abhängigkeit/Start-Gate; nicht nur warten"
-                )
-            else:
-                e2e["last_progress"] = (
-                    "Physical-E2E-Service noch nicht aktiv — "
-                    f"{e2e.get('last_progress') or 'Starte…'}"
-                )
     return e2e
 
 
@@ -371,16 +408,38 @@ def _format_display(state: dict) -> str:
                 mark = " "
             lines.append(f"  [{mark}] {idx:2}. {label}")
     else:
-        idx_cur = AUTO_E2E_PHASES.index(phase) if phase in AUTO_E2E_PHASES else 0
-        for idx, key in enumerate(AUTO_E2E_PHASES, start=1):
+        phase_keys = list(e2e_keys) if (e2e_keys := state.get("phase_keys")) else list(AUTO_E2E_PHASES)
+        if state.get("canonical") and not state.get("phase_keys"):
+            phase_keys = list(CANONICAL_PHASES)
+        idx_cur = phase_keys.index(phase) if phase in phase_keys else 0
+        # Fit terminal height: keep header + footer + current window of phases.
+        max_phase_lines = 12
+        try:
+            import shutil
+
+            term_h = shutil.get_terminal_size(fallback=(80, 24)).lines
+            # Reserve ~12 lines for chrome; show remaining for phases.
+            max_phase_lines = max(6, min(len(phase_keys), term_h - 14))
+        except Exception:
+            pass
+        start = 0
+        if len(phase_keys) > max_phase_lines:
+            start = max(0, min(idx_cur - 2, len(phase_keys) - max_phase_lines))
+        window = phase_keys[start : start + max_phase_lines]
+        for offset, key in enumerate(window):
+            abs_idx = start + offset
             label = labels.get(key, key)
-            if idx - 1 < idx_cur:
+            if abs_idx < idx_cur:
                 mark = "✓"
-            elif idx - 1 == idx_cur:
+            elif abs_idx == idx_cur:
                 mark = "→"
             else:
                 mark = " "
-            lines.append(f"  [{mark}] {idx:2}. {label}")
+            lines.append(f"  [{mark}] {abs_idx + 1:2}. {label}")
+        if start > 0:
+            lines.insert(5, "  …")
+        if start + max_phase_lines < len(phase_keys):
+            lines.append("  …")
 
     progress = str(state.get("last_progress") or "—")
     if discovery_mode:
@@ -415,6 +474,24 @@ def _format_display(state: dict) -> str:
     return "\n".join(lines)
 
 
+def _fit_terminal(text: str) -> str:
+    try:
+        import shutil
+
+        cols, rows = shutil.get_terminal_size(fallback=(80, 24))
+    except Exception:
+        cols, rows = 80, 24
+    out_lines = []
+    for line in text.splitlines():
+        if len(line) > cols:
+            out_lines.append(line[: max(0, cols - 1)] + "…")
+        else:
+            out_lines.append(line)
+    if len(out_lines) > rows - 1:
+        out_lines = out_lines[: rows - 2] + ["…"]
+    return "\n".join(out_lines)
+
+
 def _handle_key(ch: str) -> None:
     if ch in ("a", "A"):
         request_cancel()
@@ -430,7 +507,7 @@ def main() -> int:
         while True:
             write_component_heartbeat("tui", state="display")
             state = _active_state()
-            text = _format_display(state)
+            text = _fit_terminal(_format_display(state))
             sys.stdout.write("\033[2J\033[H" + text + "\n")
             sys.stdout.flush()
             terminal = str(state.get("status") or "")
@@ -441,6 +518,12 @@ def main() -> int:
                 if state.get("phase") == "shutdown_pending":
                     break
             elif terminal in {"passed", "failed", "blocked", "cancelled", "review_required", "timeout"}:
+                break
+            elif bool(state.get("canonical")) and state.get("phase") == "shutdown" and bool(
+                state.get("status") == "passed" or state.get("terminal")
+            ):
+                # Keep terminal end-state visible briefly then exit cleanly.
+                time.sleep(2)
                 break
             rlist, _, _ = select.select([sys.stdin], [], [], REFRESH_SEC)
             if rlist:
