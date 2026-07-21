@@ -1,0 +1,11 @@
+{
+  "exit_code": 0,
+  "summary_line": [
+    "-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html",
+    "34 passed, 1 warning in 0.54s"
+  ],
+  "expected_passed": 34,
+  "git_diff_check": "clean",
+  "i18n_parity": true,
+  "status": "passed"
+}

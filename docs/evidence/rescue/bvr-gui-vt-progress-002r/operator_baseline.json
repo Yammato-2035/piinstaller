@@ -1,0 +1,15 @@
+{
+  "workspace": "/tmp/piinstaller-vt-progress-002",
+  "repository": "piinstaller",
+  "local_branch": "pi-rs-bvr-gui-vt-progress-002-impl",
+  "head": "61bac2b3ceb6310f7826fffca1b975c5ffb90341",
+  "head_short": "61bac2b3",
+  "expected_head": "61bac2b3",
+  "origin_main": "b8651d33",
+  "worktree_clean": true,
+  "implementation_tests_reported": 34,
+  "target_payload_version": "1.10.1.2",
+  "project_version_in_commit": "1.9.20.0",
+  "version_note": "Frozen commit keeps project_version 1.9.20.0; rescue_payload_version is 1.10.1.2",
+  "operation_allowed": true
+}
