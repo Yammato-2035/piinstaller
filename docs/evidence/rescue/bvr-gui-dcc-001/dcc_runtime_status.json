@@ -1,0 +1,7 @@
+{
+  "endpoint": "/api/dev-dashboard/rescue-bvr-status",
+  "http_status": 404,
+  "code": "DEVELOPER_CAPABILITY_REQUIRED",
+  "profile": "release",
+  "note": "expected in release; module present under /opt"
+}

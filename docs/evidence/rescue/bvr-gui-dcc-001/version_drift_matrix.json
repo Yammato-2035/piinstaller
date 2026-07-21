@@ -1,67 +1,67 @@
 {
   "schema": "setuphelfer.version-commit-drift-matrix.v1",
-  "task_id": "PI-RS-BVR-GUI-DCC-001",
-  "recorded_at": "2026-07-21T21:42:29Z",
-  "overall_status": "gray",
+  "overall_status": "yellow",
   "origin_main_status": "yellow",
-  "note": "Placeholder — runtime identity unknown at documentation time; populate after Phase-0 gate and MSI retest.",
-  "drifts": ["unknown_runtime_identity"],
+  "drifts": [],
   "rows": [
     {
       "component": "workspace",
-      "version": "1.9.20.2",
-      "commit": "unknown",
+      "version": "1.9.20.0",
+      "commit": "0f6c22c3a0c9fd72d1d168b381d45a2f36a5df1a",
       "build_id": "",
       "sha256": "",
-      "expected": "feature_commit",
-      "status": "gray"
+      "expected": "4098f004fcfb0c10b55d184edd8240d3c400752d",
+      "status": "green"
     },
     {
       "component": "runtime_opt",
-      "version": "unknown",
-      "commit": "unknown",
+      "version": "1.9.20.0",
+      "commit": "4098f004fcfb0c10b55d184edd8240d3c400752d",
       "build_id": "",
       "sha256": "",
-      "expected": "feature_commit",
-      "status": "gray"
+      "expected": "4098f004fcfb0c10b55d184edd8240d3c400752d",
+      "status": "green"
     },
     {
       "component": "backend_api",
-      "version": "unknown",
+      "version": "1.9.20.0",
       "commit": "",
       "build_id": "",
       "sha256": "",
-      "expected": "1.9.20.2",
-      "status": "gray"
+      "expected": "1.9.20.0",
+      "status": "green"
     },
     {
       "component": "frontend",
-      "version": "unknown",
+      "version": "1.9.20.0",
       "commit": "",
       "build_id": "",
       "sha256": "",
-      "expected": "1.9.20.2",
-      "status": "gray"
+      "expected": "1.9.20.0",
+      "status": "green"
     },
     {
       "component": "payload",
-      "version": "1.10.1.0",
-      "commit": "unknown",
+      "version": "1.10.1.1",
+      "commit": "4098f004fcfb0c10b55d184edd8240d3c400752d",
       "build_id": "",
-      "sha256": "",
+      "sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
       "expected": "1.10.1.1",
-      "status": "yellow"
+      "status": "green"
     },
     {
       "component": "usb_stick",
-      "version": "unknown",
+      "version": "1.10.1.1",
       "commit": "",
       "build_id": "",
-      "sha256": "",
+      "sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
       "expected": "1.10.1.1",
-      "status": "gray"
+      "status": "green"
     }
   ],
-  "payload_target": "1.10.1.1",
-  "baseline_payload": "1.10.1.0"
+  "notes": [
+    "Deployed feature implementation commit 4098f004; evidence commit may be ahead",
+    "Dirty uncommitted workspace version.json (1.9.20.2) left untouched",
+    "DCC routes blocked in release profile"
+  ]
 }

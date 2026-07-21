@@ -2,21 +2,17 @@
 
 **Status:** `implemented_pending_physical_retest`
 
-## Erledigt (Workspace)
+## Erledigt
 
-- Root Cause: `http_server_failed` durch SyntaxError (Non-ASCII in `b'...'`)
-- Dedizierter HTTP-Server `setuphelfer-rescue-ui-http-server`
-- Readiness vor Chromium, strukturierte Fehlercodes `rescue.gui.*`
-- Progress-HTML + Locales de-DE/en-US/fr-FR/nl-NL
-- DCC-Endpoint `/api/dev-dashboard/rescue-bvr-status`
-- Baseline bleibt `passed_with_gui_fallback` (nicht Fake-Green)
-- Payload-Ziel: **1.10.1.1**
-- Watchdog-Fallback erhalten + Negativtest
+- Root Cause behoben (ASCII-safe HTTP-Server + Readiness)
+- i18n de/en/fr/nl für Progress-UI
+- DCC-Statusmodell + Drift-Contract
+- Payload **1.10.1.1** auf Stick (SHA256 `2c0a1552…22fbbb2`)
+- `/opt` Deploy von Commit `4098f004` (Warnung: DCC im release-Profil gesperrt)
+- Docs/FAQ/KB synchron; Baseline bleibt `passed_with_gui_fallback`
 
 ## Offen
 
-- Commit der Feature-Änderungen
-- Kontrolliertes USB-Inject auf SETUPHELFER
-- Deploy nach `/opt/setuphelfer`
-- Physischer MSI-Retest (GUI sichtbar, kein Fallback)
+- Physischer MSI-Retest mit sichtbarer GUI
 - Evidence-Import des Retests
+- DCC-Anzeige unter Developer-Capability-/Profil-Freigabe
