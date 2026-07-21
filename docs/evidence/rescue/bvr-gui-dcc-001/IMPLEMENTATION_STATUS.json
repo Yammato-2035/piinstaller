@@ -1,0 +1,12 @@
+{
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "overall_status": "implemented_pending_physical_retest",
+  "payload_version_target": "1.10.1.1",
+  "baseline_run_id": "e2e-rescue-msi-20260721-232222-ba58c7a7",
+  "baseline_status": "passed_with_gui_fallback",
+  "gui_root_cause": "SyntaxError: non-ASCII character inside Python bytes literal in inline HTTP server",
+  "gui_fix": "dedicated setuphelfer-rescue-ui-http-server + readiness before Chromium",
+  "physical_msi_retest": "pending",
+  "usb_update": "pending_after_commit",
+  "updated_at": "2026-07-21T22:00:00Z"
+}
