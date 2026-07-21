@@ -1,0 +1,19 @@
+{
+  "schema": "setuphelfer.rescue-i18n-completeness.v1",
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "recorded_at": "2026-07-21T21:42:29Z",
+  "locales_dir": "scripts/rescue-live/image/locales",
+  "required_locales": ["de-DE", "en-US", "fr-FR", "nl-NL"],
+  "present_locales": ["de-DE", "en-US", "fr-FR", "nl-NL"],
+  "missing_locales": [],
+  "reference_key_count": 11,
+  "locale_key_counts": {
+    "de-DE": 11,
+    "en-US": 11,
+    "fr-FR": 11,
+    "nl-NL": 11
+  },
+  "key_parity": true,
+  "status": "complete",
+  "notes": "Progress page requires all four locales; rescue.html does not."
+}

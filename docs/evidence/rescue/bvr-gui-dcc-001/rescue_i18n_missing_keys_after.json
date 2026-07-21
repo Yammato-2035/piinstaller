@@ -1,0 +1,22 @@
+{
+  "after": {
+    "locales": ["de-DE", "en-US", "fr-FR", "nl-NL"],
+    "key_count": 11,
+    "keys": [
+      "device",
+      "hint_failed",
+      "hint_passed",
+      "hint_running",
+      "payload",
+      "phase",
+      "progress",
+      "run_id",
+      "status",
+      "subtitle",
+      "title"
+    ],
+    "missing_keys": [],
+    "keyset_parity": true,
+    "status": "complete"
+  }
+}

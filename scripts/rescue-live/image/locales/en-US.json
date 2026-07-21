@@ -1,0 +1,13 @@
+{
+  "title": "Setuphelfer",
+  "subtitle": "Automated lab run: Backup, Verify, Restore",
+  "status": "Status",
+  "phase": "Phase",
+  "progress": "Progress",
+  "run_id": "Run ID",
+  "payload": "Payload",
+  "hint_running": "No input required. Evidence is stored on SETUP_LOGS, then auto-shutdown follows.",
+  "hint_passed": "Run passed. Shutdown follows automatically.",
+  "hint_failed": "Run ended. Check evidence and return the stick.",
+  "device": "Device"
+}

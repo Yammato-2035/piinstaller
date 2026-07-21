@@ -1,0 +1,13 @@
+{
+  "title": "Setuphelfer",
+  "subtitle": "Execution automatique: sauvegarde, verification, restauration",
+  "status": "Statut",
+  "phase": "Phase",
+  "progress": "Progression",
+  "run_id": "ID d'execution",
+  "payload": "Charge utile",
+  "hint_running": "Aucune saisie requise. Les preuves sont enregistrees sur SETUP_LOGS, puis arret automatique.",
+  "hint_passed": "Execution reussie. Arret automatique a suivre.",
+  "hint_failed": "Execution terminee. Verifier les preuves et ramener la cle.",
+  "device": "Appareil"
+}

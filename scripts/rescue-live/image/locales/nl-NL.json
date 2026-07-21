@@ -1,0 +1,13 @@
+{
+  "title": "Setuphelfer",
+  "subtitle": "Automatische labrun: Backup, Verify, Restore",
+  "status": "Status",
+  "phase": "Fase",
+  "progress": "Voortgang",
+  "run_id": "Run-ID",
+  "payload": "Payload",
+  "hint_running": "Geen bediening nodig. Evidence wordt op SETUP_LOGS opgeslagen, daarna auto-shutdown.",
+  "hint_passed": "Run geslaagd. Afsluiten volgt automatisch.",
+  "hint_failed": "Run beeindigd. Evidence controleren en stick terugbrengen.",
+  "device": "Apparaat"
+}

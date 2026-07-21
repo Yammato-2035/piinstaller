@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rescue_payload_version": "1.10.1.0",
-  "previous_rescue_payload_version": "1.10.0.60",
+  "rescue_payload_version": "1.10.1.1",
+  "previous_rescue_payload_version": "1.10.1.0",
   "pi_rs_msi_fix_001": true,
   "pi_rs_msi_gui_002": true,
   "pi_rs_msi_gui_003": true,
@@ -35,5 +35,6 @@
   "pi_rs_whiptail_tty_redirect_fix_001": true,
   "pi_rs_tui_auto_001": true,
   "pi_rs_tui_evidence_001": true,
-  "pi_rs_msi_gui_auto_bvr_001": true
+  "pi_rs_msi_gui_auto_bvr_001": true,
+  "pi_rs_bvr_gui_dcc_001": true
 }

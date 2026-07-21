@@ -1,0 +1,7 @@
+{
+  "before": {
+    "note": "Baseline 1.10.1.0 progress page had no external locale files; labels were inline DE-only in HTTP handler.",
+    "missing_locale_files": ["de-DE.json", "en-US.json", "fr-FR.json", "nl-NL.json"],
+    "raw_keys_risk": "n/a (hardcoded German labels in broken server)"
+  }
+}

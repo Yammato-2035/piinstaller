@@ -1,0 +1,13 @@
+{
+  "title": "Setuphelfer",
+  "subtitle": "Automatischer Lab-Lauf: Backup, Verify, Restore",
+  "status": "Status",
+  "phase": "Phase",
+  "progress": "Fortschritt",
+  "run_id": "Run-ID",
+  "payload": "Payload",
+  "hint_running": "Keine Bedienung noetig. Evidence wird auf SETUP_LOGS gespeichert, danach folgt Auto-Shutdown.",
+  "hint_passed": "Lauf bestanden. Herunterfahren folgt automatisch.",
+  "hint_failed": "Lauf beendet. Evidence pruefen und Stick zurueckbringen.",
+  "device": "Geraet"
+}
