@@ -1,0 +1,15 @@
+{
+  "schema": "setuphelfer.rescue.auto-e2e-state.v1",
+  "mode": "auto_physical_e2e_locked",
+  "run_id": "",
+  "phase": "sabrent_waiting",
+  "phase_index": 4,
+  "status": "running",
+  "started_at": "2026-07-22T00:27:55Z",
+  "updated_at": "2026-07-22T00:28:25Z",
+  "elapsed_sec": 30,
+  "last_progress": "SABRENT-HDD wird gesucht",
+  "cancel_requested": false,
+  "shutdown_requested": false,
+  "shutdown_deferred": false
+}

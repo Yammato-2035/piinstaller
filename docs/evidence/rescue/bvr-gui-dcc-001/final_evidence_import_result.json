@@ -1,0 +1,8 @@
+{
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "official_import_ok": true,
+  "partial_gui_pack": "docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "imported_at": "2026-07-21T22:29:58Z",
+  "overall_status": "passed_with_gui_fallback"
+}

@@ -1,0 +1,11 @@
+{
+  "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "correlation_id": "8922fc4d-994e-492a-bd21-25faf69eb42a",
+  "state": "passed",
+  "updated_at": "2026-07-22T00:28:26Z",
+  "previous_state": "evidence_complete",
+  "details": {
+    "mode": "destructive_lab_hdd",
+    "status": "physical_rescue_passed_server_verification_pending"
+  }
+}

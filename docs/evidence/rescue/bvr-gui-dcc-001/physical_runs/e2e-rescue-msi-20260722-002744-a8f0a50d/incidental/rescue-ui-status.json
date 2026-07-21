@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "ui_url": "http://127.0.0.1:8765/auto-e2e-progress.html",
+  "health_url": "http://127.0.0.1:8765/health.json",
+  "server_started": true,
+  "browser_candidate": "chromium",
+  "browser_started": true,
+  "display_mode": "kiosk",
+  "menu_visible": true,
+  "status": "ready",
+  "reason": "graphical_browser_starting",
+  "network_required": false,
+  "telemetry_required": false,
+  "rescue_ui": {
+    "server_status": "started",
+    "url": "http://127.0.0.1:8765/auto-e2e-progress.html",
+    "display_mode": "kiosk",
+    "menu_visible": true,
+    "status": "ready",
+    "reason": "graphical_browser_starting"
+  },
+  "secrets_exposed": false
+}

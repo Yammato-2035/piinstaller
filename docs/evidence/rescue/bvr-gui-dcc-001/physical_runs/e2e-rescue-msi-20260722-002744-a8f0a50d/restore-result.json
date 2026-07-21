@@ -1,0 +1,13 @@
+{
+  "success": true,
+  "restore_job_id": "8465bd379d74461c",
+  "started_at": "2026-07-22T00:28:16Z",
+  "completed_at": "2026-07-22T00:28:16Z",
+  "target_separate": true,
+  "target_initially_empty": true,
+  "file_count": 166,
+  "total_bytes": 136351863,
+  "manifest_sha256": "23afe7f068d85ea55666863546e01c4d3e41d6aa86a785422bbf05a1012bf8e1",
+  "restore_dir": "/run/setuphelfer-rescue/e2e/e2e-rescue-msi-20260722-002744-a8f0a50d/restore/data",
+  "real_operation": true
+}

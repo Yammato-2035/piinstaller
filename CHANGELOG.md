@@ -9,69 +9,69 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ### Added
 
-- **PI-RS-BVR-GUI-DCC-001:** ASCII-safe Rescue GUI HTTP server (`setuphelfer-rescue-ui-http-server`), readiness gate before Chromium, four locales (de/en/fr/nl) for auto-E2E progress page, DCC BVR/GUI/drift status ó **implemented_pending_physical_retest**; baseline BVR passed with `http_server_failed` GUI fallback; MSI retest with payload **1.10.1.1** pending.
-- **PI-RS-MSI-GUI-002:** Payload **1.10.0.15** ó GUI unter MSI-Compat/nomodeset gesperrt; kein openvt/chvt/startx; TUI prim‰r; Operator-Meldung; Repack + Content-Check; kein USB-Write.
-- **PI-RS-MSI-FIX-001:** Payload **1.10.0.14** ó Console-Shield (`setuphelfer_rescue_shield_console_early`), MSI-Evidence-Helper, boot-progress tty1-Race-Fix, GUI/openvt-Fallback; Repack + Content/Secret-Checks; kein USB-Write.
+- **PI-RS-BVR-GUI-DCC-001:** ASCII-safe Rescue GUI HTTP server (`setuphelfer-rescue-ui-http-server`), readiness gate before Chromium, four locales (de/en/fr/nl), DCC BVR/GUI/drift status, payload **1.10.1.1**. Physischer MSI-Retest: BVR passed, HTTP ready, GUI not visible (`openvt_console_2_not_released`) ? **`passed_with_gui_fallback`**.
+- **PI-RS-MSI-GUI-002:** Payload **1.10.0.15** ù GUI unter MSI-Compat/nomodeset gesperrt; kein openvt/chvt/startx; TUI primùr; Operator-Meldung; Repack + Content-Check; kein USB-Write.
+- **PI-RS-MSI-FIX-001:** Payload **1.10.0.14** ù Console-Shield (`setuphelfer_rescue_shield_console_early`), MSI-Evidence-Helper, boot-progress tty1-Race-Fix, GUI/openvt-Fallback; Repack + Content/Secret-Checks; kein USB-Write.
 - **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.
 - **PI-RS-PAYLOAD-TELEMETRY-001:** Rescue-Stick Payload Repack **1.10.0.13** mit Lab-Telemetry-Send-Code; Content/Secret-Checks, Evidence; kein USB-Write.
 - **PI-RS-TEL-SEND-001:** Erster kontrollierter Rescue-Stick Lab Send gegen Cloud-Ingest (`rs.telemetry.lab.v1`, Bearer, Gates); `lab_send_accepted` (`req-fd36496e-e1f8-41c7-9cba-9dfb735ff1ca`); Preview/Send-Scripts + Tests + Evidence.
-- **TEL-CLOUD-FIX-001:** IONOS/Plesk TLS diagnosis ó DNS split (`telemetrie` ? 217.160.0.254 broken TLS; Plesk 85.215.118.240 needs subdomain/cert/proxy); operator runbook; `tls_error_persists`.
-- **TEL-CLOUD-HEALTH-001:** IONOS telemetry health probe evidence ó DNS ok, TLS `internal error` on `telemetrie.setuphelfer.de`; ingest not tested; repack allowed with cloud send disabled.
+- **TEL-CLOUD-FIX-001:** IONOS/Plesk TLS diagnosis ù DNS split (`telemetrie` ? 217.160.0.254 broken TLS; Plesk 85.215.118.240 needs subdomain/cert/proxy); operator runbook; `tls_error_persists`.
+- **TEL-CLOUD-HEALTH-001:** IONOS telemetry health probe evidence ù DNS ok, TLS `internal error` on `telemetrie.setuphelfer.de`; ingest not tested; repack allowed with cloud send disabled.
 - **PI-RS-TEL-004:** Cloud telemetry endpoint defaults (`telemetrie.setuphelfer.de`), `telemetry.rescue.beta.v2` preview payload builder, auth/reachability gates, tests + evidence; repack/USB still deferred.
-- **PI-RS-BUILD-001:** Payload-/Build-Entscheidung f¸r MSI-Retest dokumentiert (`docs/build/PI_RS_BUILD_001_PAYLOAD_BUILD_DECISION_MSI_RETEST.md`); Entscheidung `no-build/deferred`, Repack/USB deferred.
-- **PI-RS-MSI-RETEST-001A:** WIP-Reconciliation und MSI-Retest-Readiness (Testpl‰ne, Evidence, `wip_reconciled` / `retest_not_run`).
+- **PI-RS-BUILD-001:** Payload-/Build-Entscheidung fùr MSI-Retest dokumentiert (`docs/build/PI_RS_BUILD_001_PAYLOAD_BUILD_DECISION_MSI_RETEST.md`); Entscheidung `no-build/deferred`, Repack/USB deferred.
+- **PI-RS-MSI-RETEST-001A:** WIP-Reconciliation und MSI-Retest-Readiness (Testplùne, Evidence, `wip_reconciled` / `retest_not_run`).
 - **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.
 - **PI-RS-MSI-RETEST-002 (Payload 1.10.0.13):** Stick-Bereitschaft verifiziert, historische SETUP_LOGS-Baseline importiert, Operator-Boot ausstehend; Evidence + Runbook aktualisiert.
 - **PI-RS-MSI-RETEST-002 (initial):** Operator Boot Runbook + Preflight-Evidence; Status `operator_action_required` (Payload **1.10.0.12**, kein physischer Boot in diesem Sprint).
 
 ### Changed
 
-- `docs/roadmap/STATUS_MATRIX.md` ó PI-RS-USB-MSI-FIX-001 Stick 1.10.0.14 geschrieben, GE63 boot pending
-- `docs/roadmap/STATUS_MATRIX.md` ó PI-RS-MSI-FIX-001 Payload 1.10.0.14 repacked, USB update pending
-- `docs/roadmap/STATUS_MATRIX.md` ó PI-RS-USB-TELEMETRY-001 USB write complete, boot smoke pending
-- `docs/roadmap/STATUS_MATRIX.md` ó PI-RS-TEL-SEND-001 rescue stick cloud lab send accepted
-- `docs/roadmap/STATUS_MATRIX.md` ó PI-RS-TEL-004 cloud endpoint + beta.v2 payload gate
-- `docs/roadmap/STATUS_MATRIX.md` ó PI-RS-MSI-RETEST-002 Payload 1.10.0.13 stick ready, operator boot pending
+- `docs/roadmap/STATUS_MATRIX.md` ù PI-RS-USB-MSI-FIX-001 Stick 1.10.0.14 geschrieben, GE63 boot pending
+- `docs/roadmap/STATUS_MATRIX.md` ù PI-RS-MSI-FIX-001 Payload 1.10.0.14 repacked, USB update pending
+- `docs/roadmap/STATUS_MATRIX.md` ù PI-RS-USB-TELEMETRY-001 USB write complete, boot smoke pending
+- `docs/roadmap/STATUS_MATRIX.md` ù PI-RS-TEL-SEND-001 rescue stick cloud lab send accepted
+- `docs/roadmap/STATUS_MATRIX.md` ù PI-RS-TEL-004 cloud endpoint + beta.v2 payload gate
+- `docs/roadmap/STATUS_MATRIX.md` ù PI-RS-MSI-RETEST-002 Payload 1.10.0.13 stick ready, operator boot pending
 
 ---
 
-## [1.9.1.0] ó 2026-06-16
+## [1.9.1.0] ù 2026-06-16
 
 ### Added
 
 - **F.1 MSI Windows read-only Precheck:** Device Discovery, Evidence (redacted), Precheck-Result JSON
 - **NTFS/Windows Detection Contract:** `windows_ntfs_detection_contract.py` + Tests
-- **MSI Windows API (read-only):** `api/routes/msi_windows.py` ó capabilities, precheck schema, parse-readonly
-- Rescue-Stick NTFS Capability Matrix, FAQ, KB; F.2/F.3/F.4 Prompt-Entw¸rfe; Backup-Observability-Anforderungen
+- **MSI Windows API (read-only):** `api/routes/msi_windows.py` ù capabilities, precheck schema, parse-readonly
+- Rescue-Stick NTFS Capability Matrix, FAQ, KB; F.2/F.3/F.4 Prompt-Entwùrfe; Backup-Observability-Anforderungen
 
 ### Changed
 
-- `STATUS_MATRIX.md`, `NEXT_STEPS_AFTER_1_9_0_0.md` ó F.1 gr¸n, F.2 blocked bis Execute-Prompt
+- `STATUS_MATRIX.md`, `NEXT_STEPS_AFTER_1_9_0_0.md` ù F.1 grùn, F.2 blocked bis Execute-Prompt
 
 ---
 
-## [1.9.0.0] ó 2026-06-16
+## [1.9.0.0] ù 2026-06-16
 
 ### Added
 
 - **Commercial/Public Boundary:** `COMMERCIAL_MODULE_BOUNDARY.md`, `PUBLIC_PRIVATE_PRODUCT_SPLIT.md`, `PRIVATE_REPOSITORY_STRATEGY.md`, Handoff `COMMERCIAL_MODULES_PRIVATE_HANDOFF.md`
-- **Boundary Gate:** `check-public-private-boundary.sh` erweitert (Cloud Backup, Cloud Free/Pro, Diagnostics, Exit 17ñ19, Doc-Allowlist)
-- **MSI Teststrang (Plan only):** Hardware-Testpl‰ne, Runbooks, Precheck-Contract, Evidence-Schema
+- **Boundary Gate:** `check-public-private-boundary.sh` erweitert (Cloud Backup, Cloud Free/Pro, Diagnostics, Exit 17ù19, Doc-Allowlist)
+- **MSI Teststrang (Plan only):** Hardware-Testplùne, Runbooks, Precheck-Contract, Evidence-Schema
 - **Blueprints:** Naming/Scope, `linux-development-workstation`, Roadmap
 - **Legal:** Windows Passwort/BitLocker, Commercial Publication, Beta/Hardware-Grenzen
 - **Evidence:** Monolith-Audit, Public/Private/MSI/Blueprint Abschlussberichte
 
 ### Changed
 
-- `STATUS_MATRIX.md`, `NEXT_STEPS_AFTER_1_8_12_0.md` ó neue Bereiche Commercial Boundary + MSI
+- `STATUS_MATRIX.md`, `NEXT_STEPS_AFTER_1_8_12_0.md` ù neue Bereiche Commercial Boundary + MSI
 
 ---
 
-## [1.8.12.0] ó 2026-06-16
+## [1.8.12.0] ù 2026-06-16
 
 ### Changed
 
-- **APP Router Slice E.13:** run-update-in-terminal, run-mixer, install-mixer-packages POST aus `app.py` extrahiert (20 system routes gesamt; kein `@app.post("/api/system/Ö")` mehr in app.py).
+- **APP Router Slice E.13:** run-update-in-terminal, run-mixer, install-mixer-packages POST aus `app.py` extrahiert (20 system routes gesamt; kein `@app.post("/api/system/ù")` mehr in app.py).
 - **APP Router Slice E.14:** 8 Security-Routen (scan, status, firewall, configure) aus `app.py` extrahiert.
 
 ### Added
@@ -83,36 +83,36 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.11.0] ó 2026-06-16
+## [1.8.11.0] ù 2026-06-16
 
 ### Changed
 
-- _(In 1.8.12.0 zusammengef¸hrt ó siehe E.13 dort.)_
+- _(In 1.8.12.0 zusammengefùhrt ù siehe E.13 dort.)_
 
 ### Added
 
-- _(In 1.8.12.0 zusammengef¸hrt.)_
+- _(In 1.8.12.0 zusammengefùhrt.)_
 
 ---
 
-## [1.8.10.0] ó 2026-06-16
+## [1.8.10.0] ù 2026-06-16
 
 ### Changed
 
 - **Backup B.8:** create/verify/delete/restore POST aus `app.py` extrahiert (18 POST execute gesamt; kein Backup-POST mehr in app.py).
 - **APP Router Slice E.12:** system/status, freenove-detection, ASUS-ROG (3 GET + set-profile POST).
-- **Security:** `detect_freenove_case` wiederhergestellt; sudo_store-Guard-Test f¸r Handler.
+- **Security:** `detect_freenove_case` wiederhergestellt; sudo_store-Guard-Test fùr Handler.
 
 ### Added
 
 - `detect_freenove_case` in `core/hardware_discovery.py`
-- Runtime-Adapter f¸r Backup-Core und ASUS-ROG
+- Runtime-Adapter fùr Backup-Core und ASUS-ROG
 - Tests: `test_backup_execute_router_b8_v1.py`, `test_app_router_slice_e12.py`, `test_security_sudo_store_has_password_guard_v1.py`
 - Doku: `BACKUP_EXECUTE_ROUTER_B8.md`, `APP_ROUTER_SLICE_E12.md`
 
 ---
 
-## [1.8.9.0] ó 2026-06-16
+## [1.8.9.0] ù 2026-06-16
 
 ### Changed
 
@@ -127,7 +127,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.8.0] ó 2026-06-16
+## [1.8.8.0] ù 2026-06-16
 
 ### Changed
 
@@ -142,7 +142,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.7.0] ó 2026-06-16
+## [1.8.7.0] ù 2026-06-16
 
 ### Changed
 
@@ -156,7 +156,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.6.0] ó 2026-06-16
+## [1.8.6.0] ù 2026-06-16
 
 ### Changed
 
@@ -171,7 +171,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.5.0] ó 2026-06-16
+## [1.8.5.0] ù 2026-06-16
 
 ### Changed
 
@@ -187,11 +187,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.4.0] ó 2026-06-16
+## [1.8.4.0] ù 2026-06-16
 
 ### Changed
 
-- **Core Facade Rescue Migration B.5:** `app.py` Storage-Helfer und Safety-Validierung vollst‰ndig ¸ber Facades; kein direkter `storage_discovery`/`safe_device`-Import in HTTP-Schicht.
+- **Core Facade Rescue Migration B.5:** `app.py` Storage-Helfer und Safety-Validierung vollstùndig ùber Facades; kein direkter `storage_discovery`/`safe_device`-Import in HTTP-Schicht.
 - Neue Helfer: `get_lsblk_json_tree`, `find_lsblk_node_by_*`, `list_devices_for_api`, `flatten_findmnt_filesystems`, `discover_mountpoints_for_disk`.
 
 ### Added
@@ -201,11 +201,11 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.3.0] ó 2026-06-16
+## [1.8.3.0] ù 2026-06-16
 
 ### Changed
 
-- **Core Facade Rescue Migration B.4:** `inspect_storage` listen vollst‰ndig ¸ber Facade; `rescue_persistence` Mount-Scan via `discover_mounts_flat`; Deploy-Runner-Plan mit `facade_contract`.
+- **Core Facade Rescue Migration B.4:** `inspect_storage` listen vollstùndig ùber Facade; `rescue_persistence` Mount-Scan via `discover_mounts_flat`; Deploy-Runner-Plan mit `facade_contract`.
 - Neue Helfer: `list_classified_block_devices_for_inspect`, `list_physical_disk_paths`, `get_readonly_storage_probe_contract`, `discover_mounts_flat`.
 
 ### Added
@@ -215,7 +215,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.2.0] ó 2026-06-16
+## [1.8.2.0] ù 2026-06-16
 
 ### Changed
 
@@ -229,7 +229,7 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.1.0] ó 2026-06-16
+## [1.8.1.0] ù 2026-06-16
 
 ### Changed
 
@@ -243,20 +243,20 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.8.0.0] ó 2026-06-16
+## [1.8.0.0] ù 2026-06-16
 
 ### Added
 
 - **Public/Private Boundary:** Gate-Skripte `check-public-private-boundary.sh`, `check-private-import-boundaries.sh`; Evidence unter `docs/evidence/public-private/`; Architektur- und Handoff-Dokumente (Cloudserver privat, Telemetrie intern, Operator, Plesk Future).
 - **Core Contracts (public-safe):** `redaction_contract`, `telemetry_client_contract`, `diagnostic_finding_contract`, `audit_event_contract` + pytest.
 - **Monolith Pre-Cloud Audit:** Inventar, Duplikat- und Kopplungsanalyse unter `docs/evidence/monolith/`.
-- **Legal/Beta:** Public-safe Checklisten (Beta, NDA, Telemetrie-Einwilligung, TOM, Lˆschkonzept, AV).
+- **Legal/Beta:** Public-safe Checklisten (Beta, NDA, Telemetrie-Einwilligung, TOM, Lùschkonzept, AV).
 - **OpenAPI Stubs:** `telemetry_client_contract_openapi.yaml`, `diagnostics_client_contract_openapi.yaml`, `cloud_public_contracts_openapi.yaml`.
 
 ### Changed
 
-- **STATUS_MATRIX:** Public/Private Boundary, Monolith Audit, Telemetry Handoff, Plesk Future Plan erg‰nzt.
-- **Modulgrenzen:** 15 Dom‰nen inkl. public/private-Trennung dokumentiert.
+- **STATUS_MATRIX:** Public/Private Boundary, Monolith Audit, Telemetry Handoff, Plesk Future Plan ergùnzt.
+- **Modulgrenzen:** 15 Domùnen inkl. public/private-Trennung dokumentiert.
 
 ### Not done (bewusst)
 
@@ -266,36 +266,36 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ---
 
-## [1.7.3.1] ó 2026-06-05
+## [1.7.3.1] ù 2026-06-05
 
-### Fixed (Patch W ó Fehlerbehebungen nach 1.7.3.0)
+### Fixed (Patch W ù Fehlerbehebungen nach 1.7.3.0)
 
 - **Deploy-to-opt:** Post-Deploy-Verifikation (kritische Backend-Module, OpenAPI-Routen); erweiterte Deploy-Manifest-Whitelist; KB/FAQ + interne DCC-Sammlung.
-- **DCC:** Developer-Capability-Gate f¸r `/status`; deploy_drift-Profil-Trennung; Compact-Status-Route und UI.
+- **DCC:** Developer-Capability-Gate fùr `/status`; deploy_drift-Profil-Trennung; Compact-Status-Route und UI.
 - **Version policy:** Konsistenz-Gate (`version_consistency.py`, Exit 17/18); `sync-version.js` synchronisiert auch `package-lock.json`.
-- **Packaging projection:** `version_projection.py` ó Cargo/Tauri semver X.Y.Z vs. Projektversion X.Y.Z.W; Packaging-Gate + `rename-tauri-bundle-artifacts.sh`.
+- **Packaging projection:** `version_projection.py` ù Cargo/Tauri semver X.Y.Z vs. Projektversion X.Y.Z.W; Packaging-Gate + `rename-tauri-bundle-artifacts.sh`.
 
 ### Changed
 
-- **Governance:** Roadmap-First- und Knowledge-Base-First-Regeln in `CURSOR_WORK_RULES.md`, `.cursor/rules/200_ROADMAP_KB_FIRST.md`; Known-Error-Triage-Template + Schema; KB f¸r wiederkehrende Fehler (DCC/Ports, QEMU/GLIBC, stale ISO); Next-Prompt-Registry mit 5 Tracks aktualisiert.
+- **Governance:** Roadmap-First- und Knowledge-Base-First-Regeln in `CURSOR_WORK_RULES.md`, `.cursor/rules/200_ROADMAP_KB_FIRST.md`; Known-Error-Triage-Template + Schema; KB fùr wiederkehrende Fehler (DCC/Ports, QEMU/GLIBC, stale ISO); Next-Prompt-Registry mit 5 Tracks aktualisiert.
 - **App bootstrap:** `app_bootstrap` (Factory, Middleware-, Router-Registry, Startup-Diagnostik); Dev-Dashboard-Status in `core.dev_dashboard_status_service`; Safety-Facade; Boundary-Skript JSON-Modus.
 - **Evidence:** `docs/evidence/monolith/*`, `app_decomposition_before_rescue_iso_gate.json`; ISO-Readiness Precheck dokumentiert (kein Build in diesem Lauf).
-- **Rescue Agent / Fleet:** Contract-Stubs (`rescue_agent/`), Fleet-Heartbeat `agent_state` vs. `status=running`, DCC `RescueAgentPanel`, Live-Men¸-Stub; E2EE `contract_stub_only`, nftables `apply_allowed=false`.
+- **Rescue Agent / Fleet:** Contract-Stubs (`rescue_agent/`), Fleet-Heartbeat `agent_state` vs. `status=running`, DCC `RescueAgentPanel`, Live-Menù-Stub; E2EE `contract_stub_only`, nftables `apply_allowed=false`.
 - **Deploy 2e602d0:** Sauberer Worktree vorbereitet; Deploy blockiert (`sudo`); Evidence unter `docs/evidence/deploy/DEPLOY_SYNC_2E602D0_*`.
-- **Fleet finish Exit-1:** Triage ó `fleet_session_patch` `${3:-{}}` korrumpiert JSON; Fix `${3-}`; API Finish unver‰ndert OK.
-- **Fleet smoke after script fix:** `/opt`-Script-Sync `55b7bce`; Create?Heartbeat(`running`)?Finish gr¸n; Release-Restore Operator ausstehend.
+- **Fleet finish Exit-1:** Triage ù `fleet_session_patch` `${3:-{}}` korrumpiert JSON; Fix `${3-}`; API Finish unverùndert OK.
+- **Fleet smoke after script fix:** `/opt`-Script-Sync `55b7bce`; Create?Heartbeat(`running`)?Finish grùn; Release-Restore Operator ausstehend.
 - **DCC ports:** UI :3001, API :8000, :8080 = nginx (not SetupHelfer); docs in `DCC_PORTS_AND_URLS.md`.
-- **DCC Live Acceptance (profilgetrennt):** `release` erwartbar ohne DCC-Funktionsnachweis (disabled page fachlich klar, keine Port- oder Backend-Down-Interpretation); `local_lab` Profilwechsel in Agent-Session wegen `sudo` Passwortblockiert ó DCC-Funktionsnachweis ausstehend. Evidence: `DCC_LIVE_ACCEPTANCE_RELEASE_BASELINE.md`, `DCC_DISABLED_PAGE_RELEASE_MESSAGE_REVIEW.md`, `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`.
-- **DCC Cockpit UI:** Frontend-Gating fuer Development Control basiert jetzt auf `/api/dev-dashboard/status` (no-store + `?t=`) und zeigt bei Status=200 nicht mehr f‰lschlich die release-disabled-Seite; Disabled-Page zeigt Debug (URLs/HTTP-Codes/Ports). Commit `4fb72ee`; Deploy/local_lab Live-Acceptance ausstehend (sudo). Evidence: `DCC_FRONTEND_PROFILE_DESYNC_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`.
-- **DCC Blank Screen Fail-Safe:** `DccBootDiagnosticsPanel` + `DccErrorBoundary` + `dccBootState` ó Cockpit bleibt nie leer (sieben Boot-States, Bundle-Marker `DCC_BOOT_DIAGNOSTICS_V1`). Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`.
+- **DCC Live Acceptance (profilgetrennt):** `release` erwartbar ohne DCC-Funktionsnachweis (disabled page fachlich klar, keine Port- oder Backend-Down-Interpretation); `local_lab` Profilwechsel in Agent-Session wegen `sudo` Passwortblockiert ù DCC-Funktionsnachweis ausstehend. Evidence: `DCC_LIVE_ACCEPTANCE_RELEASE_BASELINE.md`, `DCC_DISABLED_PAGE_RELEASE_MESSAGE_REVIEW.md`, `DCC_LIVE_ACCEPTANCE_LOCAL_LAB_RESULT.md`.
+- **DCC Cockpit UI:** Frontend-Gating fuer Development Control basiert jetzt auf `/api/dev-dashboard/status` (no-store + `?t=`) und zeigt bei Status=200 nicht mehr fùlschlich die release-disabled-Seite; Disabled-Page zeigt Debug (URLs/HTTP-Codes/Ports). Commit `4fb72ee`; Deploy/local_lab Live-Acceptance ausstehend (sudo). Evidence: `DCC_FRONTEND_PROFILE_DESYNC_RESULT.md`, `DCC_FRONTEND_PROFILE_DESYNC_LIVE_ACCEPTANCE_RESULT.md`.
+- **DCC Blank Screen Fail-Safe:** `DccBootDiagnosticsPanel` + `DccErrorBoundary` + `dccBootState` ù Cockpit bleibt nie leer (sieben Boot-States, Bundle-Marker `DCC_BOOT_DIAGNOSTICS_V1`). Evidence: `DCC_BLANK_SCREEN_TRIAGE_RESULT.md`.
 - **DCC Live Acceptance (Ingest):** Nach Operator-Deploy `199d3c6` Bundle-Marker in `/opt` + served JS; Operator: DCC und Boot-Diagnose sichtbar; `blank_dcc_screen` resolved; `partial_green` (release restore ausstehend). Evidence: `DCC_LIVE_ACCEPTANCE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`.
-- **DCC Release Restore (Ingest):** `release` wiederhergestellt; Dev-Routen 404 `PROFILE_ROUTE_BLOCKED`; Operator: Disabled-Page + Boot-Diagnose unter release; DCC **gr¸n**. Evidence: `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`.
+- **DCC Release Restore (Ingest):** `release` wiederhergestellt; Dev-Routen 404 `PROFILE_ROUTE_BLOCKED`; Operator: Disabled-Page + Boot-Diagnose unter release; DCC **grùn**. Evidence: `DCC_RELEASE_RESTORE_AFTER_FALLBACK_OPERATOR_OBSERVATION.md`.
 - **Windows Laptop Rescue Inspect:** Neuer P1-Track `windows-laptop-rescue-inspect` mit Schema, Diagnosekatalog (17 Codes), KB und MVP-Plan (read-only, kein NTFS-write). Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP`.
-- **Windows Rescue Telemetry + BitLocker:** Telemetrie-Schema, Server-Vertrag, Store-and-forward-Konzept; BitLocker-Codes 001ñ006; DCC `WindowsRescueInspectCard`; kein Gr¸n ohne Server-ACK. Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN`.
+- **Windows Rescue Telemetry + BitLocker:** Telemetrie-Schema, Server-Vertrag, Store-and-forward-Konzept; BitLocker-Codes 001ù006; DCC `WindowsRescueInspectCard`; kein Grùn ohne Server-ACK. Next Prompt: `WINDOWS11_RESCUE_INSPECT_MVP_OPERATOR_READONLY_SCAN`.
 - **Windows Rescue Operator Readonly Scan Stub:** Mount-Plan-Skript, Backend-Report-Stub, Operator-Sample, DCC-Report-Karte, Handoff-Checkliste. Next Prompt: `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN`.
 - **Windows Rescue Operator HW Run (Modus B):** Handoff + Ingest-Pipeline + awaiting-Status; kein Sample als echte Evidence; Next Prompt: `WINDOWS11_RESCUE_OPERATOR_HARDWARE_READONLY_RUN_PENDING`.
 - **Rescue Stick USB gate (Windows Inspect upstream):** ISO validiert (`iso_bootable_ready_for_usb_operator_write`), Blocker `RESCUE_STICK_NOT_WRITTEN`; USB-dd nur Operator-Handoff. Next Prompt: `RESCUE_USB_WRITE_OPERATOR_FOR_WINDOWS_INSPECT`.
-- **DCC Roadmap Filter:** Kurz¸berblick, Top-Blocker, Filter-Tabs und Roh-JSON nur aufklappbar (`roadmapFilter.ts`, `RoadmapDrawer.tsx`).
+- **DCC Roadmap Filter:** Kurzùberblick, Top-Blocker, Filter-Tabs und Roh-JSON nur aufklappbar (`roadmapFilter.ts`, `RoadmapDrawer.tsx`).
 - **Release restore after fleet smoke:** blocked at sudo; ingest/ISO precheck remain `blocked_by_release_restore`.
 - **Operator release restore ingest:** `release` live; profile gate green; ingest stub and ISO precheck readiness unlocked (yellow, smoke not run).
 - **Release restore re-ingest:** `release_restore_status=ok`, drift yellow/evidence-only, ingest primary next step.
@@ -305,21 +305,21 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **Controlled ISO build precheck (no build):** review_required; root-owned build-tree leftovers; cleanup handoff before operator run.
 - **Rescue ISO build-tree cleanup:** operator clean ok; validate exit 14 blocks operator build until PYTHONPATH override reviewed.
 - **Rescue ISO validate dangerous_path fix:** narrow allowlist for `PYTHONPATH=/opt/setuphelfer-rescue` in dev-agent service; validate exit 0; precheck ready for operator build (no ISO build in this run).
-- **Controlled rescue ISO build ingest:** operator LB_EXIT=0; ISO SHA `505989f7Ö` verified; squashfs validator exit 0; ready for QEMU guest-agent smoke (no build/QEMU/USB in ingest run).
+- **Controlled rescue ISO build ingest:** operator LB_EXIT=0; ISO SHA `505989f7ù` verified; squashfs validator exit 0; ready for QEMU guest-agent smoke (no build/QEMU/USB in ingest run).
 - **QEMU guest agent smoke:** blocked in agent session (sudo/local_lab); operator handoff script prepared; no QEMU executed.
-- **QEMU guest agent operator smoke ingest:** run 20260602_202725 blocked ó serial empty, timeout 124, guest_report_missing; root cause serial capture failure on standard-profile ISO.
+- **QEMU guest agent operator smoke ingest:** run 20260602_202725 blocked ù serial empty, timeout 124, guest_report_missing; root cause serial capture failure on standard-profile ISO.
 - **Developer QEMU profile fix (no build):** `developer-qemu` Prepare materializes `console=ttyS0`, Hook 090, autopilot preflight guard; standard ISO unchanged; validate exit 11 (stale root-owned binary/); review_required until operator rebuild.
 - **Developer QEMU rebuild blocker ingest:** LB_EXIT=34 on `profile=standard` attempt; root-owned cleanup + `--profile developer-qemu` handoff; prepare/validate ok; operator sudo clean pending.
-- **Developer QEMU ISO rebuild verify ingest:** LB_EXIT=0, profile=developer-qemu, new ISO SHA `3ee02b36Ö`, serial bootappend OK; autopilot not in multi-user.target.wants ó review_required before QEMU smoke.
+- **Developer QEMU ISO rebuild verify ingest:** LB_EXIT=0, profile=developer-qemu, new ISO SHA `3ee02b36ù`, serial bootappend OK; autopilot not in multi-user.target.wants ù review_required before QEMU smoke.
 - **Developer QEMU autopilot wants fix:** static wants symlink in prepare (developer-qemu only); validators extended; ready for ISO rebuild operator run.
 - **Developer QEMU ISO rebuild after autopilot fix ingest:** agent build blocked exit 30; ISO unchanged pre-fix SHA; operator terminal required.
-- **Developer QEMU ISO after autopilot success ingest:** operator LB_EXIT=0; ISO SHA `614cc86eÖ`; autopilot wants verified in squashfs; devserver preflight guard; ready for operator smoke (no build/QEMU in ingest).
+- **Developer QEMU ISO after autopilot success ingest:** operator LB_EXIT=0; ISO SHA `614cc86eù`; autopilot wants verified in squashfs; devserver preflight guard; ready for operator smoke (no build/QEMU in ingest).
 - **QEMU guest agent smoke after preflight ingest:** no post-fix smoke evidence in repo; blocked `qemu_operator_smoke_incomplete`; operator re-run required; release trap verified ok.
 - **DCC report freshness:** scan repo evidence (Jun 2026 reports first); default limit 5; filters; separate agent uploads from completion reports.
 - **DCC report freshness deploy live:** deploy blocked in agent session (sudo); operator deploy+local_lab smoke pending; release unchanged.
 - **Backend recovery after DCC deploy:** daemon-reload gap after deploy caused brief :8000 down; recovered; recent-evidence API live (Jun 2026 top-5); release trap pending operator.
 - **Backend recovery after release restart:** Operator `daemon-reload` + backend restart; transient :8000 down; recovered under `release` (profile gate green, `PROFILE_ROUTE_BLOCKED` on recent-evidence); QEMU smoke unlocked (not run).
-- **Developer backend watchdog:** external `check-backend-health.sh`, evidence JSON/JSONL, DCC health panel, read-only API `/api/dev-dashboard/backend-health` (local_lab); deploy retry 15◊2s on `/api/version`; optional systemd timer examples (not auto-enabled).
+- **Developer backend watchdog:** external `check-backend-health.sh`, evidence JSON/JSONL, DCC health panel, read-only API `/api/dev-dashboard/backend-health` (local_lab); deploy retry 15ù2s on `/api/version`; optional systemd timer examples (not auto-enabled).
 - **Watchdog deploy live verify:** drift confirmed; agent deploy blocked (sudo); workspace healthcheck ok; operator deploy + local_lab API smoke pending.
 - **Watchdog evidence path fix:** healthcheck writes chmod 664 + path metadata; loader searches /opt first with `searched_paths`; root cause was permission_denied on 600 evidence file (not missing path).
 - **Watchdog live ingest:** Operator deploy ok; /opt healthcheck exit 0; local_lab API 200 with /opt source_path; release gating verified (PROFILE_ROUTE_BLOCKED); release restore pending before QEMU.
@@ -335,14 +335,14 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - **QEMU 143148 ingest:** Read-only triage; primary `review_required` (guest rescue venv GLIBC_2.38); SEND HTTP markers visible; USB blocked.
 - **Runtime governance extraction:** New `backend/runtime_governance/`; app/devserver/install_profile delegate; parity tests; no deploy/restart.
 
-## [1.7.3.0] ó 2026-05-30
+## [1.7.3.0] ù 2026-05-30
 
 ### Changed
 - **Version:** Bump auf `1.7.3.0` (Development Server MVP, Rescue Agent MVP, Rescue Developer Profile, Control Center Overview).
 - **Development Server:** Lokaler Lab-Telemetrie-Server runtime-validiert (`local_lab`, ingest-only).
 - **Development Rescue Agent:** Read-only Collector + Dev-Server-Upload MVP.
 - **Rescue Developer Profile:** Developer-Profil mit Agent-Integration und Public-Profile-Guard.
-- **Control Center:** ‹bersicht mit Roadmap-, Telemetrie-, Doku-/Diagnostik- und Evidence-Summary (`/api/dev-dashboard/control-center-summary`).
+- **Control Center:** ùbersicht mit Roadmap-, Telemetrie-, Doku-/Diagnostik- und Evidence-Summary (`/api/dev-dashboard/control-center-summary`).
 - **Safety:** Keine Public-Telemetrie; Public Uploads und SSH bleiben disabled.
 
 ---
@@ -357,19 +357,19 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 - Test plan and artifact recheck (validator exit 0); VM test awaits VISUAL_LIVE_FUNCTIONAL_FREIGEGEBEN=1.
 - Added visual live functional classification helper and tests.
 
-### Changed (Rescue ISO runtime integration rebuild ó operator success)
+### Changed (Rescue ISO runtime integration rebuild ù operator success)
 - Operator rebuild LB_EXIT=0; validate-rescue-iso-squashfs exit 0 (bundle, units, DE locale, login hints).
 - Rescue stays yellow; next VM functional validation with user/live.
 
-### Changed (Rescue ISO runtime integration rebuild ó prepared)
-- DE keyboard/locale/timezone in live-build includes; extended squashfs validator (exit 11ñ14).
+### Changed (Rescue ISO runtime integration rebuild ù prepared)
+- DE keyboard/locale/timezone in live-build includes; extended squashfs validator (exit 11ù14).
 - systemd enable via wants symlinks; login MOTD/issue user/live; operator rebuild required.
 
-### Changed (Rescue ISO runtime integration ó operator finding)
+### Changed (Rescue ISO runtime integration ù operator finding)
 - Operator: no usable Setuphelfer in live VM; offline: bundle in squashfs but systemd units not enabled.
 - prepare: enable units via wants symlinks, live hostname/user bootappend, squashfs validator script.
 
-### Changed (Rescue ISO visual VM boot ó operator)
+### Changed (Rescue ISO visual VM boot ù operator)
 - Visual QEMU: Debian 12 to login prompt (`live_system_started`); nographic serial insufficient.
 - Next: live user login and Setuphelfer functional check; rescue stays yellow.
 

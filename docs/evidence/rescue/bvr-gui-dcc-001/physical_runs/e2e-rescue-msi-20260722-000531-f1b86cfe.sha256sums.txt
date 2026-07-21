@@ -1,0 +1,12 @@
+e91b7114efb8fc683c10722204eb071fbf7e015e88731a54bb9dcea93a3ededd  ./auto-physical-e2e-result.json
+d7fe93af0b0e4861956349e9c33c710dffb23c6441d16e85ad557ca239380609  ./incidental/auto-physical-e2e.log
+622e20da292e95c1df68f9f3c0c67a02bd8b04ccdae11478ce91670c1d9bb769  ./incidental/boot_state_redacted.json
+a502511facee7cbd2d844982eec0dd9f0323c89a61b588239df659a2615a0284  ./incidental/chromium-launch.log
+d9fff63dc6d38efa085cf0ec032797f7cb493bd06a0c9b83aae373f925afede2  ./incidental/gui-start.log
+dbdc0a37c0fe80b8bd41eb0415c98ad17843957ddd180037e810fea5b30e2518  ./incidental/host-fingerprint.json
+e91b7114efb8fc683c10722204eb071fbf7e015e88731a54bb9dcea93a3ededd  ./incidental/msi-e2e-auto-result.json
+a46091f8474870c9c7a3c98988deb870319b04ff7d43bdd78b2d7f9ea28513ca  ./incidental/physical-progress.json
+38fb54dfdc2f0ee70b27412731e31af30926edc40b98e80bff7a17287b35848b  ./incidental/run-control-at-import.json
+6e777262e8b2cd35d192d8395a5ae6df231a1db1ad56c2e95024b5e027c5600f  ./incidental/x11-launch.log
+c2b414d735de7703b6bc9aac3b6e3d3801f7740c0ce8dd552da2425ad8d86b4e  ./journal.jsonl
+39e56e3acfaa479429c0c205027114ca45371c523b8be51aeaf7dd0d5214d2b5  ./state.json

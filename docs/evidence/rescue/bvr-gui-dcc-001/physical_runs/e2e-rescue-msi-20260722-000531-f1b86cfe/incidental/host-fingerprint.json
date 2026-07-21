@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "boot_id": "d9b6084e-82fd-4e50-a8fa-0506e711d842",
+  "recorded_at": "2026-07-22T00:05:29Z",
+  "payload_version": "1.10.1.1",
+  "vendor": "Micro-Star International Co., Ltd.",
+  "product": "GE63 Raider RGB 8RF",
+  "board": "MS-16P5",
+  "bios": "E16P5IMS.109",
+  "uname": "Linux 6.1.0-49-amd64 x86_64",
+  "local_evidence_only": true,
+  "telemetry_auto_push": false,
+  "diagnostics_server_hop": false
+}

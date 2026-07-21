@@ -1,0 +1,33 @@
+{
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "device": "MSI GE63 Raider RGB 8RF",
+  "payload_version": "1.10.1.1",
+  "payload_sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
+  "overall_status": "passed_with_gui_fallback",
+  "bvr_core_status": "passed",
+  "backup_status": "passed",
+  "backup_file_count": 166,
+  "backup_bytes": 136351863,
+  "verify_status": "passed",
+  "restore_status": "passed",
+  "manifest_match": true,
+  "auto_shutdown": true,
+  "gui_visible": false,
+  "gui_http_ready": true,
+  "gui_chromium_started_claim": true,
+  "gui_watchdog_error": "openvt_console_2_not_released",
+  "gui_fallback_active": true,
+  "gui_fallback_codes": [
+    "openvt_console_2_not_released",
+    "msi_compat_nomodeset"
+  ],
+  "operator_observation": "Keine grafische Oberflaeche. Ablaufmenue bis 11., springt hoch/runter, inkonsistent, laeuft unten raus.",
+  "tui_progress_display": "inconsistent_scroll_jump",
+  "http_server_fix_verified": true,
+  "evidence_imported": true,
+  "evidence_import_kind": "full_official_plus_gui_incidental",
+  "evidence_path": "docs/evidence/rescue/bvr-gui-dcc-001/physical_runs/e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "official_import_destination": "docs/evidence/e2e_live_001d/physical_run/e2e-rescue-msi-20260722-002744-a8f0a50d",
+  "updated_at": "2026-07-21T22:29:58Z"
+}

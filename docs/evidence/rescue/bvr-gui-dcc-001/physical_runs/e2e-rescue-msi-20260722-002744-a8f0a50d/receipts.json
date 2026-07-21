@@ -1,0 +1,85 @@
+{
+  "receipts": [
+    {
+      "event_id": "f1960668-bf63-48ae-942c-06cf0c22184a",
+      "receipt_id": "a047d661-11a3-49c3-bead-189128a297d2",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:06Z"
+    },
+    {
+      "event_id": "c9409224-5e1a-42f6-b61f-6aa45d3c8b18",
+      "receipt_id": "afb339b5-1dcb-4e51-9c99-037eaf9dfff5",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:07Z"
+    },
+    {
+      "event_id": "bb3b392d-f240-4eac-96d6-35b06d1a1dcc",
+      "receipt_id": "6532af78-13e1-43a7-aa7f-2f6076439340",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:11Z"
+    },
+    {
+      "event_id": "06a94129-f5c6-47b5-bad2-090575ef810d",
+      "receipt_id": "94d749c3-3a7b-4540-9bac-bd377ee91c90",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:12Z"
+    },
+    {
+      "event_id": "5f1035a9-d9ad-4c29-b235-d8b5ce7e0d31",
+      "receipt_id": "86069f64-5fba-4d56-8bee-714ee757cfce",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:15Z"
+    },
+    {
+      "event_id": "0bea40d5-c193-4621-ac99-d7a8645eea4a",
+      "receipt_id": "d8548c1b-c04d-470a-a177-06323d2bff05",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:15Z"
+    },
+    {
+      "event_id": "51c51d68-057b-4ab0-93f7-aad04f1f905f",
+      "receipt_id": "5bd18726-29ce-4e29-86cf-02cac5d2d1b6",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:18Z"
+    },
+    {
+      "event_id": "f46e28d8-2d34-4fca-aa65-1894d5f58071",
+      "receipt_id": "dd12580c-a961-4fec-8a81-ed60bfb2b364",
+      "accepted": true,
+      "diagnostics_forwarding_status": "pending",
+      "received_at": null,
+      "http_status": 200,
+      "e2e_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+      "stored_at": "2026-07-22T00:28:19Z"
+    }
+  ],
+  "count": 8
+}

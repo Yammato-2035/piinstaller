@@ -1,0 +1,10 @@
+{
+  "contract_version": 1,
+  "vendor": "Micro-Star International Co., Ltd.",
+  "model": "GE63 Raider RGB 8RF",
+  "serial_redacted": "sha256:b92f0d411890157e",
+  "boot_mode": "uefi",
+  "arch": "x86_64",
+  "kernel": "6.1.0-49-amd64",
+  "booted_from_rescue": true
+}
