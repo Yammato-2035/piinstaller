@@ -43,7 +43,15 @@ def load_baseline_bvr(repo_root: Path) -> dict[str, Any] | None:
 
 
 def load_physical_result(repo_root: Path) -> dict[str, Any] | None:
-    return _read_json(repo_root / "docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json")
+    for rel in (
+        "docs/evidence/rescue/bvr-gui-vt-progress-002/physical_run_result.json",
+        "docs/evidence/rescue/bvr-gui-vt-progress-002/physical_msi_result.json",
+        "docs/evidence/rescue/bvr-gui-dcc-001/physical_msi_result.json",
+    ):
+        data = _read_json(repo_root / rel)
+        if data:
+            return data
+    return None
 
 
 def evaluate_i18n_status(repo_root: Path) -> tuple[str, list[str], list[str]]:
@@ -111,13 +119,13 @@ def build_rescue_bvr_dcc_status(
         overall = str(physical.get("overall_status") or "unknown")
         gui_visible = bool(physical.get("gui_visible"))
         fallback = bool(physical.get("watchdog_fallback"))
-        gui_failure = physical.get("gui_failure_code")
+        gui_failure = physical.get("gui_failure_code") or physical.get("gui_watchdog_error")
         bvr_core = "passed" if overall in {"passed", "passed_with_gui_fallback"} else (
             "failed" if overall == "failed" else "unknown"
         )
         if gui_visible and not fallback:
             gui_status = "visible"
-        elif fallback or overall == "passed_with_gui_fallback":
+        elif fallback or overall == "passed_with_gui_fallback" or physical.get("gui_fallback_active"):
             gui_status = "fallback"
         elif gui_failure:
             gui_status = "failed"

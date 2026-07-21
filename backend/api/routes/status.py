@@ -97,3 +97,16 @@ async def self_update_status():
         "can_run_deploy": can_run_deploy,
         "deploy_script": str(deploy_script),
     }
+
+
+@router.get("/api/status/rescue-bvr")
+async def api_status_rescue_bvr():
+    """Release-safe read-only Rescue BVR status (no developer capability)."""
+    from core.rescue_bvr_release_status import build_release_rescue_bvr_status
+
+    repo_root = Path(__file__).resolve().parent.parent.parent.parent
+    return build_release_rescue_bvr_status(
+        repo_root=repo_root,
+        version_drift_status="unknown",
+        deploy_drift_status="unknown",
+    )
