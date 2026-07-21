@@ -1,0 +1,12 @@
+{
+  "task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002",
+  "status": "implemented_pending_physical_retest",
+  "baseline_commit": "92bfcc15",
+  "payload_version": "1.10.1.2",
+  "root_cause_confidence": "high",
+  "bvr_core_frozen": true,
+  "gui_health_fixed_for_auto_e2e_url": true,
+  "canonical_progress": true,
+  "release_status_route": "/api/status/rescue-bvr",
+  "physical_retest": "pending"
+}

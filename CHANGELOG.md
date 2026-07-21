@@ -1,3 +1,7 @@
+## Unreleased
+
+- **PI-RS-BVR-GUI-VT-PROGRESS-002:** VT-Auswahl ohne fremdes Kill, Chromium-Health für `auto-e2e-progress.html`, kanonischer BVR-Fortschritt, Release-Status `GET /api/status/rescue-bvr`, Payload **1.10.1.2**. Status: `implemented_pending_physical_retest`.
+
 # Changelog
 
 Alle wichtigen ?nderungen am PI-Installer werden hier dokumentiert.  
