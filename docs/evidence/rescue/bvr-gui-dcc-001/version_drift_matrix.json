@@ -1,0 +1,67 @@
+{
+  "schema": "setuphelfer.version-commit-drift-matrix.v1",
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "recorded_at": "2026-07-21T21:42:29Z",
+  "overall_status": "gray",
+  "origin_main_status": "yellow",
+  "note": "Placeholder — runtime identity unknown at documentation time; populate after Phase-0 gate and MSI retest.",
+  "drifts": ["unknown_runtime_identity"],
+  "rows": [
+    {
+      "component": "workspace",
+      "version": "1.9.20.2",
+      "commit": "unknown",
+      "build_id": "",
+      "sha256": "",
+      "expected": "feature_commit",
+      "status": "gray"
+    },
+    {
+      "component": "runtime_opt",
+      "version": "unknown",
+      "commit": "unknown",
+      "build_id": "",
+      "sha256": "",
+      "expected": "feature_commit",
+      "status": "gray"
+    },
+    {
+      "component": "backend_api",
+      "version": "unknown",
+      "commit": "",
+      "build_id": "",
+      "sha256": "",
+      "expected": "1.9.20.2",
+      "status": "gray"
+    },
+    {
+      "component": "frontend",
+      "version": "unknown",
+      "commit": "",
+      "build_id": "",
+      "sha256": "",
+      "expected": "1.9.20.2",
+      "status": "gray"
+    },
+    {
+      "component": "payload",
+      "version": "1.10.1.0",
+      "commit": "unknown",
+      "build_id": "",
+      "sha256": "",
+      "expected": "1.10.1.1",
+      "status": "yellow"
+    },
+    {
+      "component": "usb_stick",
+      "version": "unknown",
+      "commit": "",
+      "build_id": "",
+      "sha256": "",
+      "expected": "1.10.1.1",
+      "status": "gray"
+    }
+  ],
+  "payload_target": "1.10.1.1",
+  "baseline_payload": "1.10.1.0"
+}

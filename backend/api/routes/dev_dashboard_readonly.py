@@ -12,6 +12,83 @@ from fastapi.responses import JSONResponse
 router = APIRouter(tags=["dev-dashboard-readonly"])
 
 
+@router.get("/api/dev-dashboard/rescue-bvr-status")
+async def dev_dashboard_rescue_bvr_status(request: Request):
+    """Read-only: Rescue Stick BVR/GUI/i18n/drift status for PI-RS-BVR-GUI-DCC-001."""
+    from pathlib import Path
+
+    from core.rescue_bvr_dcc_status import build_rescue_bvr_dcc_status
+    from core.version_commit_drift import build_version_drift_matrix
+
+    repo = Path(__file__).resolve().parents[3]
+    workspace_commit = ""
+    workspace_branch = ""
+    origin_main = ""
+    try:
+        import subprocess
+
+        workspace_commit = (
+            subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+        )
+        workspace_branch = (
+            subprocess.check_output(
+                ["git", "branch", "--show-current"], cwd=repo, text=True
+            ).strip()
+        )
+        origin_main = (
+            subprocess.check_output(
+                ["git", "rev-parse", "origin/main"], cwd=repo, text=True
+            ).strip()
+        )
+    except Exception:
+        pass
+
+    payload_meta = {}
+    project_version = ""
+    try:
+        import json
+
+        payload_meta = json.loads(
+            (repo / "config/rescue_payload_version.json").read_text(encoding="utf-8")
+        )
+        project_version = str(
+            json.loads((repo / "config/version.json").read_text(encoding="utf-8")).get(
+                "project_version"
+            )
+            or ""
+        )
+    except Exception:
+        pass
+
+    drift = build_version_drift_matrix(
+        workspace_version=project_version,
+        workspace_commit=workspace_commit,
+        runtime_version="",
+        runtime_commit="",
+        api_version=project_version,
+        frontend_version=project_version,
+        payload_version=str(payload_meta.get("rescue_payload_version") or ""),
+        payload_commit=workspace_commit,
+        payload_sha256="",
+        usb_payload_version="",
+        usb_payload_sha256="",
+        origin_main_commit=origin_main,
+        feature_commit=workspace_commit,
+    )
+    status = build_rescue_bvr_dcc_status(
+        repo_root=repo,
+        workspace_branch=workspace_branch,
+        workspace_commit=workspace_commit,
+        origin_main_commit=origin_main,
+        payload_version=str(payload_meta.get("rescue_payload_version") or ""),
+        payload_build_commit=workspace_commit,
+        version_drift_status=str(drift.get("overall_status") or "unknown"),
+        deploy_drift_status="unknown",
+    )
+    status["version_drift_matrix"] = drift
+    return status
+
+
 @router.get("/api/dev-dashboard/modules")
 async def dev_dashboard_modules():
     from core import dev_dashboard as dev_dashboard_core
