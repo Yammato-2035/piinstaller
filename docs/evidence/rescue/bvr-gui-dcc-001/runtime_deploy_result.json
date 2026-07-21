@@ -1,0 +1,21 @@
+{
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "status": "deployed_with_warning",
+  "deploy_method": "scripts/deploy-to-opt.sh",
+  "source": "/tmp/piinstaller-dcc001-inject",
+  "commit": "4098f004fcfb0c10b55d184edd8240d3c400752d",
+  "target": "/opt/setuphelfer",
+  "services_active": {
+    "setuphelfer-backend": "active"
+  },
+  "api_version_http": 200,
+  "runtime_project_version_after": "1.9.20.0",
+  "modules_present": [
+    "rescue_bvr_dcc_status.py",
+    "version_commit_drift.py"
+  ],
+  "dcc_rescue_bvr_status": "blocked_by_release_profile_DEVELOPER_CAPABILITY_REQUIRED",
+  "runtime_gate_note": "legacy gate reports DCC 404 expected in release profile",
+  "manual_copy_workaround": false,
+  "updated_at": "2026-07-21T21:57:57Z"
+}

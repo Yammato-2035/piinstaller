@@ -1,0 +1,33 @@
+{
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "captured_at": "2026-07-21T21:50:35Z",
+  "device_path": "/dev/sda",
+  "partitions": [
+    {
+      "name": "sda1",
+      "path": "/dev/sda1",
+      "size": "4G",
+      "fstype": "vfat",
+      "label": "SETUPHELFER",
+      "mountpoints": [
+        "/tmp/setuphelfer-efi-ro"
+      ]
+    },
+    {
+      "name": "sda2",
+      "path": "/dev/sda2",
+      "size": "55G",
+      "fstype": "vfat",
+      "label": "SETUP_LOGS",
+      "mountpoints": [
+        "/media/volker/SETUP_LOGS2"
+      ]
+    }
+  ],
+  "system_disk_excluded": "/dev/nvme0n1",
+  "transport_expected": "usb",
+  "model": "Ultra Line",
+  "serial": "24111412110686",
+  "size": "59G",
+  "tran": "usb"
+}

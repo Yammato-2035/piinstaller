@@ -7,6 +7,10 @@
   "gui_root_cause": "SyntaxError: non-ASCII character inside Python bytes literal in inline HTTP server",
   "gui_fix": "dedicated setuphelfer-rescue-ui-http-server + readiness before Chromium",
   "physical_msi_retest": "pending",
-  "usb_update": "pending_after_commit",
-  "updated_at": "2026-07-21T22:00:00Z"
+  "usb_update": "done",
+  "updated_at": "2026-07-21T22:00:00Z",
+  "usb_payload_version": "1.10.1.1",
+  "usb_sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
+  "runtime_deploy": "deployed_with_warning",
+  "feature_commit": "4098f004fcfb0c10b55d184edd8240d3c400752d"
 }

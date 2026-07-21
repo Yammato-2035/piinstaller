@@ -1,0 +1,8 @@
+{
+  "build_mode": "payload_repack",
+  "reason": "GUI/HTTP/i18n changes fully injectable into existing live squashfs",
+  "payload_version": "1.10.1.1",
+  "build_commit": "4098f004fcfb0c10b55d184edd8240d3c400752d",
+  "payload_sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
+  "status": "built"
+}

@@ -1,0 +1,25 @@
+{
+  "task_id": "PI-RS-BVR-GUI-DCC-001",
+  "status": "updated",
+  "device": "/dev/sda",
+  "partition": "/dev/sda1",
+  "label": "SETUPHELFER",
+  "method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "source_worktree": "/tmp/piinstaller-dcc001-inject",
+  "source_commit": "4098f004fcfb0c10b55d184edd8240d3c400752d",
+  "payload_version": "1.10.1.1",
+  "filesystem_squashfs_sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
+  "verified": {
+    "payload_version": "1.10.1.1",
+    "http_server_present": true,
+    "locales": [
+      "de-DE",
+      "en-US",
+      "fr-FR",
+      "nl-NL"
+    ],
+    "launcher_uses_dedicated_server": true,
+    "http_server_ast_ascii_ok": true
+  },
+  "updated_at": "2026-07-21T21:53:07Z"
+}
