@@ -14,6 +14,15 @@ UI_URL="http://127.0.0.1:${PORT}/rescue.html"
 STATUS_RUN="/run/setuphelfer/rescue-ui-status.json"
 LOG_RUN="/run/setuphelfer/rescue-ui-launch.log"
 SRV_PID=""
+AUTO_E2E_PROGRESS="${UI_ROOT}/auto-e2e-progress.html"
+AUTO_E2E_STATE="/run/setuphelfer-rescue/auto-e2e/state.json"
+
+# PI-RS-MSI-GUI-AUTO-BVR-001: show live BVR progress instead of interactive tiles.
+if grep -Eq '(^| )setuphelfer_msi_e2e_auto=1( |$)' /proc/cmdline 2>/dev/null \
+  && [[ -f "$AUTO_E2E_PROGRESS" ]]; then
+  HTML="$AUTO_E2E_PROGRESS"
+  UI_URL="http://127.0.0.1:${PORT}/auto-e2e-progress.html"
+fi
 
 mkdir -p /run/setuphelfer "$(dirname "$LOG_RUN")" 2>/dev/null || true
 exec > >(tee -a "$LOG_RUN") 2>&1
@@ -64,7 +73,67 @@ trap cleanup EXIT
 }
 
 cd "$UI_ROOT"
-python3 -m http.server "$PORT" --bind 127.0.0.1 >>"$LOG_RUN" 2>&1 &
+# Serve UI_ROOT and map /auto-e2e-state.json → runtime auto-E2E state (no backend required).
+python3 - "$PORT" "$UI_ROOT" "$AUTO_E2E_STATE" >>"$LOG_RUN" 2>&1 <<'PY' &
+import sys
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+
+port = int(sys.argv[1])
+root = Path(sys.argv[2]).resolve()
+state_path = Path(sys.argv[3])
+
+
+class Handler(SimpleHTTPRequestHandler):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, directory=str(root), **kwargs)
+
+    def do_GET(self):  # noqa: N802
+        if self.path.split("?", 1)[0] in ("/auto-e2e-state.json", "/api/rescue/auto-e2e-status"):
+            body = b'{"schema":"setuphelfer.rescue.auto-e2e-gui-status.v1","active":true,"status":"waiting","phase":"","phase_label_de":"Warte auf Auto-E2E…","last_progress":"","run_id":""}\n'
+            if state_path.is_file():
+                try:
+                    raw = state_path.read_bytes()
+                    # Prefer wrapping runtime state for the progress page.
+                    import json
+
+                    state = json.loads(raw.decode("utf-8"))
+                    labels = {
+                        "backup_create": "Backup erstellen",
+                        "backup_verify": "Backup prüfen (Verify)",
+                        "restore_run": "Restore durchführen",
+                        "sabrent_waiting": "SABRENT-HDD wird gesucht",
+                        "shutdown": "Herunterfahren",
+                    }
+                    phase = str(state.get("phase") or "")
+                    payload = {
+                        "schema": "setuphelfer.rescue.auto-e2e-gui-status.v1",
+                        "active": True,
+                        "status": state.get("status") or "waiting",
+                        "phase": phase,
+                        "phase_label_de": labels.get(phase, phase or "Automatischer Lab-Lauf"),
+                        "last_progress": state.get("last_progress") or "",
+                        "run_id": state.get("run_id") or "",
+                        "updated_at": state.get("updated_at"),
+                    }
+                    body = (json.dumps(payload, ensure_ascii=False) + "\n").encode("utf-8")
+                except Exception:
+                    body = raw
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        return super().do_GET()
+
+    def log_message(self, fmt, *args):
+        return
+
+
+ThreadingHTTPServer(("127.0.0.1", port), Handler).serve_forever()
+PY
 SRV_PID=$!
 sleep 1
 if ! kill -0 "$SRV_PID" 2>/dev/null; then

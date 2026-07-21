@@ -29,6 +29,7 @@ LAB_AUTO_GUI_MENU_TITLE = "Setuphelfer Lab-Auto (GUI, Discovery)"
 LAB_GUI_INTERACTIVE_MENU_TITLE = "Setuphelfer Lab-Auto (GUI, Backup/Verify)"
 LAB_TEXT_INTERACTIVE_MENU_TITLE = "Setuphelfer Lab-Auto (Text, Backup/Verify)"
 LAB_PHYSICAL_E2E_MENU_TITLE = "Setuphelfer Lab-Auto (Text, Physical E2E)"
+LAB_GUI_PHYSICAL_E2E_MENU_TITLE = "Setuphelfer Lab-Auto (GUI, Physical E2E)"
 TUI_INPUT_DIAG_MENU_TITLE = "Setuphelfer – TUI-Eingabediagnose (read-only)"
 TUI_INPUT_DIAG_FLAGS = (
     "setuphelfer_tui_input_diag=1 setuphelfer_tui_input_diag_auto_shutdown=0"
@@ -120,6 +121,7 @@ def _drop_lab_entries(grub_text: str) -> str:
         LAB_AUTO_MENU_TITLE,
         LAB_GUI_INTERACTIVE_MENU_TITLE,
         LAB_TEXT_INTERACTIVE_MENU_TITLE,
+        LAB_GUI_PHYSICAL_E2E_MENU_TITLE,
         LAB_PHYSICAL_E2E_MENU_TITLE,
         TUI_INPUT_DIAG_MENU_TITLE,
     ):
@@ -182,6 +184,14 @@ def msi_lab_physical_e2e_menu_append(base_live: str) -> str:
     return (
         f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
         f"pci=noaer {MSI_LAB_PHYSICAL_E2E_CMDLINE_FLAGS}"
+    )
+
+
+def msi_lab_gui_physical_e2e_menu_append(base_live: str) -> str:
+    """GUI-visible unattended physical E2E (SABRENT BVR) with TUI watchdog fallback."""
+    return (
+        f"{base_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
+        f"{_MSI_GUI_HYBRID_GPU_FLAGS} {MSI_LAB_PHYSICAL_E2E_CMDLINE_FLAGS}"
     )
 
 
@@ -279,3 +289,36 @@ def patch_grub_cfg_for_msi_physical_e2e_boot(grub_text: str) -> str:
     preamble = grub_text[:first_menu]
     other_entries = grub_text[first_menu:].lstrip("\n")
     return f"{_rewrite_preamble(preamble)}{e2e_block}\n{other_entries}"
+
+
+def patch_grub_cfg_for_msi_gui_physical_e2e_boot(grub_text: str) -> str:
+    """Default: GUI + unattended SABRENT Backup/Verify/Restore; text E2E as fallback."""
+    first_menu = _first_menuentry_index(grub_text)
+    if first_menu < 0:
+        raise ValueError("GRUB_MENU_ENTRIES_NOT_FOUND")
+
+    base_live = (
+        "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 "
+        "setuphelfer_telemetry_opt_in=1"
+    )
+    gui_e2e = (
+        f'menuentry "{LAB_GUI_PHYSICAL_E2E_MENU_TITLE}" {{\n'
+        f"  linux /live/vmlinuz {msi_lab_gui_physical_e2e_menu_append(base_live)}\n"
+        "  initrd /live/initrd.img\n"
+        "}\n"
+    )
+    text_e2e = (
+        f'menuentry "{LAB_PHYSICAL_E2E_MENU_TITLE}" {{\n'
+        f"  linux /live/vmlinuz {msi_lab_physical_e2e_menu_append(base_live)}\n"
+        "  initrd /live/initrd.img\n"
+        "}\n"
+    )
+
+    grub_text = _drop_lab_entries(grub_text)
+    first_menu = _first_menuentry_index(grub_text)
+    if first_menu < 0:
+        raise ValueError("GRUB_MENU_ENTRIES_NOT_FOUND")
+    preamble = grub_text[:first_menu]
+    other_entries = grub_text[first_menu:].lstrip("\n")
+    patched = f"{_rewrite_preamble(preamble)}{gui_e2e}\n{text_e2e}\n{other_entries}"
+    return ensure_tui_input_diagnostic_menuentry(patched)

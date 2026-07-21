@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchRescueBootStatus, loadOfflineBootStatus } from './rescueApi';
 import { RescueAnalyzePanel } from './RescueAnalyzePanel';
+import { RescueAutoE2eProgressBanner } from './RescueAutoE2eProgressBanner';
 import { RescueBackupPanel } from './RescueBackupPanel';
 import { RescueBootSplash } from './RescueBootSplash';
 import { RescueBootStatusPanel } from './RescueBootStatus';
@@ -290,6 +291,7 @@ export const RescueApp: React.FC = () => {
           Safe-Walk aktiv — destruktive Aktionen blockiert
         </p>
       ) : null}
+      <RescueAutoE2eProgressBanner />
       {notice ? (
         <p className="rescue-notice-banner" role="status">
           {notice}

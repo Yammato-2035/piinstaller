@@ -110,6 +110,14 @@ inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-deadline" 
   "${IMG}/setuphelfer-rescue-tui-deadline"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-kiosk-start" \
   "${IMG}/setuphelfer-rescue-kiosk-start"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-ui-launch" \
+  "${IMG}/setuphelfer-rescue-ui-launch"
+inject "${REPO_ROOT}/scripts/rescue-live/image/auto-e2e-progress.html" \
+  "${ROOT}/usr/share/setuphelfer/rescue/ui/auto-e2e-progress.html"
+inject "${REPO_ROOT}/backend/api/routes/rescue.py" \
+  "${BE}/api/routes/rescue.py"
+inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-hold.service" \
+  "${ROOT}/etc/systemd/system/setuphelfer-rescue-tui-hold.service"
 inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-tui.service" \
   "${ROOT}/etc/systemd/system/setuphelfer-rescue-tui.service"
 inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-start-assistant.service" \
@@ -148,7 +156,7 @@ for name in setuphelfer-rescue-tui setuphelfer-rescue-common.sh \
             setuphelfer-rescue-asus-rog-bios-gate setuphelfer-rescue-pi5-lab \
             setuphelfer-rescue-tui-deadline \
             setuphelfer-rescue-physical-e2e setuphelfer-rescue-physical-e2e-start-gate \
-            setuphelfer-rescue-kiosk-start \
+            setuphelfer-rescue-kiosk-start setuphelfer-rescue-ui-launch \
             setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py; do
   if [[ -e "${SBIN}/${name}" ]] || [[ -e "${IMG}/${name}" ]] || [[ -e "${IMG}/${name}.sh" ]]; then
     src=""

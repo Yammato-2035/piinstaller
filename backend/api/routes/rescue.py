@@ -23,6 +23,7 @@ from modules.rescue_readonly_analyze import run_rescue_readonly_analysis
 from modules.rescue_restore_dryrun import run_restore_dryrun_pipeline
 from modules.rescue_restore_gate import load_dry_run_grant
 from modules.rescue_restore_execute import RESTORE_LOG_PATH, run_rescue_restore
+from core.rescue_auto_e2e_gui_status import build_auto_e2e_gui_status
 
 try:
     from api.routes.data_rescue import router as data_rescue_router
@@ -75,6 +76,11 @@ async def get_rescue_boot_status() -> dict:
 
         return {"boot_status": build_rescue_state_snapshot(ui_status="ready")["boot_status"]}
     return {"boot_status": build_live_boot_status()}
+
+
+@router.get("/auto-e2e-status")
+async def get_rescue_auto_e2e_status() -> dict:
+    return build_auto_e2e_gui_status()
 
 
 @router.post("/restore-dryrun", response_model=RestoreDryRunResponse)

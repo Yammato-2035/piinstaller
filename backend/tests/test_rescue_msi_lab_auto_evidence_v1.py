@@ -17,8 +17,11 @@ from core.rescue_msi_lab_auto_boot import (  # noqa: E402
     GUI_MENU_TITLE,
     LAB_AUTO_GUI_MENU_TITLE,
     LAB_AUTO_MENU_TITLE,
+    LAB_GUI_PHYSICAL_E2E_MENU_TITLE,
+    LAB_PHYSICAL_E2E_MENU_TITLE,
     MSI_COMPAT_MENU_TITLE,
     MSI_LAB_CMDLINE_FLAGS,
+    patch_grub_cfg_for_msi_gui_physical_e2e_boot,
     patch_grub_cfg_for_msi_lab_auto_boot,
     patch_grub_cfg_for_msi_gui_interactive_boot,
 )
@@ -28,8 +31,8 @@ from core.rescue_msi_lab_evidence_eval import evaluate_msi_lab_evidence  # noqa:
 class MsiLabAutoBootTests(unittest.TestCase):
     def test_generate_grub_lab_auto_gui_first_entry(self) -> None:
         cfg = generate_fat32_esp_grub_cfg(lab_auto_msi_boot=True)
-        self.assertIn("set timeout=3", cfg)
-        self.assertIn("set timeout_style=countdown", cfg)
+        self.assertIn("set timeout=10", cfg)
+        self.assertIn("set timeout_style=menu", cfg)
         self.assertIn(MSI_LAB_CMDLINE_FLAGS.split()[0], cfg)
         self.assertIn("setuphelfer_auto_discovery=1", cfg)
         self.assertIn("setuphelfer_msi_e2e_auto=0", cfg)
@@ -58,7 +61,7 @@ class MsiLabAutoBootTests(unittest.TestCase):
         base = generate_fat32_esp_grub_cfg()
         patched = patch_grub_cfg_for_msi_lab_auto_boot(base)
         self.assertIn("setuphelfer_msi_lab_auto=1", patched)
-        self.assertIn("set timeout=3", patched)
+        self.assertIn("set timeout=10", patched)
         self.assertIn(LAB_AUTO_GUI_MENU_TITLE, patched)
         self.assertIn(LAB_AUTO_MENU_TITLE, patched)
         first_gui_lab = patched.index(f'menuentry "{LAB_AUTO_GUI_MENU_TITLE}"')
@@ -79,6 +82,34 @@ class MsiLabAutoBootTests(unittest.TestCase):
         self.assertIn("setuphelfer_auto_discovery=0", patched)
         self.assertIn("setuphelfer_auto_shutdown=0", patched)
         self.assertIn("Setuphelfer Lab-Auto (Text, Backup/Verify)", patched)
+        self.assertIn("nouveau.modeset=0", patched)
+        self.assertIn("modprobe.blacklist=nouveau", patched)
+        # GUI is default (first); Text is fallback.
+        first_gui = patched.index('menuentry "Setuphelfer Lab-Auto (GUI, Backup/Verify)"')
+        first_text = patched.index('menuentry "Setuphelfer Lab-Auto (Text, Backup/Verify)"')
+        self.assertLess(first_gui, first_text)
+        gui_block = patched[first_gui : first_gui + 500]
+        self.assertNotIn("nomodeset", gui_block)
+        self.assertIn("setuphelfer_mode=gui", gui_block)
+
+    def test_gui_physical_e2e_patch_default(self) -> None:
+        base = generate_fat32_esp_grub_cfg()
+        patched = patch_grub_cfg_for_msi_gui_physical_e2e_boot(base)
+        self.assertIn(LAB_GUI_PHYSICAL_E2E_MENU_TITLE, patched)
+        self.assertIn(LAB_PHYSICAL_E2E_MENU_TITLE, patched)
+        self.assertIn("set default=0", patched)
+        first_gui = patched.index(f'menuentry "{LAB_GUI_PHYSICAL_E2E_MENU_TITLE}"')
+        first_text = patched.index(f'menuentry "{LAB_PHYSICAL_E2E_MENU_TITLE}"')
+        self.assertLess(first_gui, first_text)
+        gui_block = patched[first_gui:first_text]
+        self.assertIn("setuphelfer_mode=gui", gui_block)
+        self.assertIn("setuphelfer_kiosk=1", gui_block)
+        self.assertIn("setuphelfer_gui_watchdog=1", gui_block)
+        self.assertIn("setuphelfer_msi_e2e_auto=1", gui_block)
+        self.assertIn("setuphelfer_auto_discovery=0", gui_block)
+        self.assertIn("setuphelfer_auto_shutdown=1", gui_block)
+        self.assertIn("modprobe.blacklist=nouveau", gui_block)
+        self.assertNotIn("nomodeset", gui_block)
 
 
 class MsiLabEvidenceEvalTests(unittest.TestCase):

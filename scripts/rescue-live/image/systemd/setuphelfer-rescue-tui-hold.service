@@ -5,6 +5,9 @@ Conflicts=setuphelfer-rescue-tui.service
 ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-tui-hold
 ConditionKernelCommandLine=|setuphelfer_msi_lab_auto=1
 ConditionKernelCommandLine=|setuphelfer_auto_discovery=1
+# GUI / Physical-E2E owns the console via entrypoint+watchdog; hold must not steal tty1.
+ConditionKernelCommandLine=!setuphelfer_msi_e2e_auto=1
+ConditionKernelCommandLine=!setuphelfer_mode=gui
 
 [Service]
 Type=simple
