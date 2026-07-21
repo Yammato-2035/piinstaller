@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "operation": "fat32_esp_live_payload_update",
+  "mode": "execute",
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "new_squashfs": "/home/volker/piinstaller-build-tui-evidence-002/build/rescue/tui-evidence-002-staging-esp/live/filesystem.squashfs",
+  "new_squashfs_sha256": "ee17958c8667c4020add87ef87b5041e6b20f4e709645bbc2846a47f9164270c",
+  "payload_paths": [
+    "live/filesystem.squashfs"
+  ],
+  "atomic_squashfs": ".sqtmp/filesystem.squashfs.new \u2192 live/filesystem.squashfs",
+  "safety": {
+    "target_device": "/dev/sda",
+    "target_partition": "/dev/sda1",
+    "blocked": false,
+    "blockers": [],
+    "write_allowed": true,
+    "partition_rewritten": false,
+    "filesystem_reformatted": false,
+    "secrets_exposed": false,
+    "setup_logs_sibling": {
+      "parent_device": "/dev/sda",
+      "setup_logs_label": "SETUP_LOGS",
+      "sibling_setup_logs_detected": true,
+      "blockers": [],
+      "blocked": false
+    }
+  },
+  "blocked": false,
+  "blockers": [],
+  "payload_update_executed": false,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}

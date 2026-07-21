@@ -1,0 +1,14 @@
+NAME        PATH           TYPE TRAN   MODEL                   VENDOR     SIZE RM HOTPLUG RO FSTYPE LABEL       UUID                                 PARTUUID                             MOUNTPOINTS
+sda         /dev/sda       disk usb    Ultra Line              Intenso     59G  1       1  0                                                                                              
+├─sda1      /dev/sda1      part                                             4G  1       1  0 vfat   SETUPHELFER 9BB9-A4A6                            5ce958bc-22e2-4a38-92a7-b34caf623aed /tmp/setuphelfer-efi-rw
+└─sda2      /dev/sda2      part                                            55G  1       1  0 vfat   SETUP_LOGS  9BC7-3950                            6ab59ae6-1515-4091-9e55-8fd88728861e /media/volker/SETUP_LOGS2
+nvme1n1     /dev/nvme1n1   disk nvme   Samsung SSD 980 PRO 2TB            1,8T  0       0  0                                                                                              
+├─nvme1n1p1 /dev/nvme1n1p1 part nvme                                      512M  0       0  0 vfat               94A7-F964                            77f82df5-80d6-488a-bedd-f59adcebf229 /boot/efi
+└─nvme1n1p2 /dev/nvme1n1p2 part nvme                                      1,8T  0       0  0 ext4               57b5dd3e-2461-41f2-821a-3c81ed058dcd 29829f22-1ffd-485c-8252-7325d2777229 /
+nvme0n1     /dev/nvme0n1   disk nvme   Samsung SSD 980 PRO 2TB            1,8T  0       0  0                                                                                              
+├─nvme0n1p1 /dev/nvme0n1p1 part nvme                                      757M  0       0  0 ntfs               6268DDF068DDC349                     4e96080d-d4ec-11ef-910b-00410e6a0272 
+├─nvme0n1p2 /dev/nvme0n1p2 part nvme                                    512,1M  0       0  0 vfat               A8E5-5B95                            4e96080e-d4ec-11ef-910b-00410e6a0272 
+├─nvme0n1p3 /dev/nvme0n1p3 part nvme                                       16M  0       0  0                                                         4e96080f-d4ec-11ef-910b-00410e6a0272 
+├─nvme0n1p4 /dev/nvme0n1p4 part nvme                                    928,8G  0       0  0 ntfs               0252FA5552FA4CC3                     4e960810-d4ec-11ef-910b-00410e6a0272 
+├─nvme0n1p5 /dev/nvme0n1p5 part nvme                                      924M  0       0  0 ntfs               5E9888B698888DE9                     18b4ea06-6574-40e7-86c2-b464941990a3 
+└─nvme0n1p6 /dev/nvme0n1p6 part nvme                                      931G  0       0  0 ntfs               242CFF0B2CFED730                     32363638-3735-6431-2d64-3465622d3131 

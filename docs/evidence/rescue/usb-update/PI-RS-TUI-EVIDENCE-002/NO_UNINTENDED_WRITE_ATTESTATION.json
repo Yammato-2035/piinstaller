@@ -1,0 +1,10 @@
+{
+  "task_id": "PI-RS-TUI-EVIDENCE-002",
+  "internal_disk_written": false,
+  "internal_disk_mounted_by_task": false,
+  "partition_table_changed": false,
+  "setup_logs_written": false,
+  "only_target": "/dev/sda1",
+  "updater": "scripts/rescue-live/update-fat32-esp-live-payload.sh",
+  "attested_at": "2026-07-21T13:43:19Z"
+}

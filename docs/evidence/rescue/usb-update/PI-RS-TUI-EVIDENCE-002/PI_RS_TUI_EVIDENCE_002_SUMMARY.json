@@ -1,0 +1,57 @@
+{
+  "task_id": "PI-RS-TUI-EVIDENCE-002",
+  "status": "passed",
+  "workspace": {
+    "path": "/home/volker/piinstaller",
+    "branch": "pi-rs-e2e-live-001d-physical-backup-restore",
+    "head_before": "6e96b7a4dfc311728e48c1852e341949ef6edfb5",
+    "head_after": "",
+    "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5"
+  },
+  "build": {
+    "source_commit": "6e96b7a4dfc311728e48c1852e341949ef6edfb5",
+    "mode": "payload_repack",
+    "version": "1.10.0.60",
+    "tests_passed": true,
+    "grub_sha256": "68649d4dab94a19c4ead0acbe060902d215fb36b4b13ffa5ef27d9f195931030",
+    "kernel_sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98",
+    "initramfs_sha256": "385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8",
+    "squashfs_sha256": "ee17958c8667c4020add87ef87b5041e6b20f4e709645bbc2846a47f9164270c"
+  },
+  "persistence_fix": {
+    "runtime_first_present": true,
+    "late_setuplogs_supported": true,
+    "partial_publish_present": true,
+    "manifest_verify_present": true,
+    "sha256_verify_present": true,
+    "shutdown_gate_present": true
+  },
+  "usb": {
+    "identified": true,
+    "device": "/dev/sda",
+    "confirmation_1": true,
+    "confirmation_2": true,
+    "update_completed": true
+  },
+  "post_write": {
+    "payload_version": "1.10.0.60",
+    "hashes_match": true,
+    "version_carriers_consistent": true,
+    "diagnostic_entry_present": true,
+    "diagnostic_entry_default": false,
+    "auto_shutdown_default": false,
+    "setuplogs_preserved": true,
+    "existing_evidence_preserved": true,
+    "partition_layout_unchanged": true
+  },
+  "safety": {
+    "internal_disk_written": false,
+    "internal_disk_mounted": false,
+    "backup_started": false,
+    "restore_started": false,
+    "msi_test_started": false
+  },
+  "evidence_commit": null,
+  "push_performed": false,
+  "next_action": "physical MSI diagnostic retry"
+}

@@ -1,0 +1,33 @@
+{
+  "project_version": "1.10.0.60",
+  "git_commit": "ddf0a85ce834f75f93be4caedf5be9b9bcec978e",
+  "built_at": "2026-06-30T22:01:13.490113+00:00",
+  "squashfs_sha256": "307ae9a381e2792fddd2ca8ebb6c20550544f0b167e2461c323c596651ecd318",
+  "contract_name": "rescue_build_manifest_v1",
+  "schema_version": 1,
+  "version_source_of_truth": false,
+  "payload_updated_at": "2026-07-21T13:41:00.006314+00:00",
+  "update_method": "atomic_fat32_esp_payload_replace",
+  "generated_at": "2026-07-21T13:41:00Z",
+  "release_stage": "internal_testing",
+  "version_track": "rescue_payload_sync",
+  "rescue_payload_version": "1.10.0.60",
+  "payload_filename": "live/filesystem.squashfs",
+  "payload_sha256": "ee17958c8667c4020add87ef87b5041e6b20f4e709645bbc2846a47f9164270c",
+  "updated_at": "2026-07-21T13:41:00.006314+00:00",
+  "content_verified": true,
+  "filesystem_squashfs_sha256": "38c14ed4b205f281a7b272b625e523304d60422f709b51e20cf7964c1e7167c9",
+  "grub_lab_mode": "text_backup_verify_default",
+  "grub_gui_watchdog": true,
+  "gui_bvr_prepared_at": "2026-07-19T05:14:52Z",
+  "workspace_rescue_payload_version": "1.10.0.38",
+  "note": "GRUB default=Lab-Auto GUI Backup/Verify; squashfs content still 1.10.0.37 until next payload rebuild",
+  "gui_bvr_blockers_fixed_at": "2026-07-19T05:34:43Z",
+  "fixes": [
+    "text_bvr_default",
+    "nouveau_blacklist",
+    "intel_xorg_busid",
+    "gui_watchdog_45s_heartbeat"
+  ],
+  "gui_hang_fix_at": "2026-07-19T05:44:28Z"
+}

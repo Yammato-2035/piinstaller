@@ -1,0 +1,17 @@
+{
+  "task_id": "PI-RS-TUI-EVIDENCE-002",
+  "payload_version": "1.10.0.60",
+  "source_commit": "6e96b7a4dfc311728e48c1852e341949ef6edfb5",
+  "build_mode": "payload_repack",
+  "built_at": "2026-07-21T13:43:19Z",
+  "tests_passed": true,
+  "persistence_fix_present": true,
+  "shutdown_gate_present": true,
+  "diagnostic_entry_present": true,
+  "diagnostic_entry_default": false,
+  "ready_for_usb_update": true,
+  "squashfs_sha256": "ee17958c8667c4020add87ef87b5041e6b20f4e709645bbc2846a47f9164270c",
+  "grub_sha256": "68649d4dab94a19c4ead0acbe060902d215fb36b4b13ffa5ef27d9f195931030",
+  "kernel_sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98",
+  "initramfs_sha256": "385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8"
+}

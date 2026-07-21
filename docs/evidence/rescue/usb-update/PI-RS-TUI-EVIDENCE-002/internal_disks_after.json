@@ -1,0 +1,21 @@
+{
+  "root_source": "/dev/nvme1n1p2",
+  "internal_disks": [
+    {
+      "name": "nvme0n1",
+      "path": "/dev/nvme0n1",
+      "tran": "nvme",
+      "model": "Samsung SSD 980 PRO 2TB",
+      "size": "1,8T",
+      "rm": false
+    },
+    {
+      "name": "nvme1n1",
+      "path": "/dev/nvme1n1",
+      "tran": "nvme",
+      "model": "Samsung SSD 980 PRO 2TB",
+      "size": "1,8T",
+      "rm": false
+    }
+  ]
+}

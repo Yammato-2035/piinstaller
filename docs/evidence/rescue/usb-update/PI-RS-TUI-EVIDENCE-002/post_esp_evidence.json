@@ -1,0 +1,111 @@
+{
+  "built_at": "2026-06-28T18:36:36.196370+00:00",
+  "iso_path": "build/rescue/binary.hybrid.repacked-1.10.0.2.iso",
+  "iso_sha256": "2db329ca30b3065dc1ed4a11913a51923d60320c641e408e3d0ba4df0ae0e095",
+  "writer_mode": "fat32_esp",
+  "bootx64_source": "grub_mkstandalone",
+  "bootx64_embedded_bootstrap": true,
+  "bootx64_iso_copied": false,
+  "bootx64_modules_requested": [
+    "part_gpt",
+    "fat",
+    "search",
+    "search_fs_uuid",
+    "search_label",
+    "normal",
+    "linux",
+    "gzio",
+    "configfile",
+    "boot",
+    "gfxterm",
+    "gfxmenu",
+    "jpeg",
+    "png",
+    "all_video",
+    "efi_gop",
+    "efi_uga",
+    "video",
+    "font"
+  ],
+  "grub_theme_staged": {
+    "theme_dir": "boot/grub/themes/setuphelfer",
+    "staged_files": [
+      "boot/grub/themes/setuphelfer/theme.txt",
+      "boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.jpg",
+      "boot/grub/themes/setuphelfer/setuphelfer-grub-logo.png",
+      "boot/grub/themes/setuphelfer/unicode.pf2"
+    ],
+    "background_present": true,
+    "background_format": "jpeg",
+    "background_staged_name": "setuphelfer-boot-menu-de.jpg",
+    "font_present": true,
+    "complete": true
+  },
+  "bootx64_sha256": "51fe5e7ba12f21b1cdf69008f16ac32fee32f06b058e7dc21f84ac2cc9b34cd0",
+  "iso_bootx64_sha256": "8656837e2f3ac643ca86931bf5419885bcfc0cbdfe75b087382c768b04fc81db",
+  "bootx64_differs_from_iso": true,
+  "files": [
+    {
+      "iso_path": "/live/vmlinuz",
+      "staging_path": "live/vmlinuz",
+      "size_bytes": 8230848,
+      "sha256": "d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98"
+    },
+    {
+      "iso_path": "/live/initrd.img",
+      "staging_path": "live/initrd.img",
+      "size_bytes": 38689436,
+      "sha256": "385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8"
+    },
+    {
+      "iso_path": "/live/filesystem.squashfs",
+      "staging_path": "live/filesystem.squashfs",
+      "size_bytes": 1285898240,
+      "sha256": "ee17958c8667c4020add87ef87b5041e6b20f4e709645bbc2846a47f9164270c"
+    },
+    {
+      "iso_path": null,
+      "staging_path": "EFI/BOOT/BOOTX64.EFI",
+      "size_bytes": 3866624,
+      "sha256": "8502d4abb55765947a17c4a62a657f422d37f490622fae24dfde4227cbe62b9a",
+      "bootx64_source": "grub_mkstandalone"
+    },
+    {
+      "iso_path": "squashfs:usr/share/setuphelfer/rescue/boot-branding.txt",
+      "staging_path": "setuphelfer/rescue/boot-branding.txt",
+      "size_bytes": 372,
+      "sha256": "305c54df578d9f44ff2c24dc7998da1b3e12d62971aafc7c2e3fc96a86631591"
+    }
+  ],
+  "secrets_exposed": false,
+  "payload_updated_at": "2026-07-21T13:41:00.006335+00:00",
+  "project_version": "1.10.0.60",
+  "rescue_payload_version": "1.10.0.60",
+  "update_method": "atomic_fat32_esp_payload_replace",
+  "content_verified": true,
+  "grub_efi_modules_staged": {
+    "modules_dir": "boot/grub/x86_64-efi",
+    "staged_files": [
+      "boot/grub/x86_64-efi/all_video.mod",
+      "boot/grub/x86_64-efi/efi_gop.mod",
+      "boot/grub/x86_64-efi/efi_uga.mod",
+      "boot/grub/x86_64-efi/font.mod",
+      "boot/grub/x86_64-efi/gfxmenu.mod",
+      "boot/grub/x86_64-efi/gfxterm.mod",
+      "boot/grub/x86_64-efi/jpeg.mod",
+      "boot/grub/x86_64-efi/png.mod",
+      "boot/grub/x86_64-efi/video.mod",
+      "boot/grub/x86_64-efi/video_bochs.mod",
+      "boot/grub/x86_64-efi/video_cirrus.mod",
+      "boot/grub/x86_64-efi/video_fb.mod"
+    ],
+    "missing": [],
+    "complete": true,
+    "host_modules_dir": "/usr/lib/grub/x86_64-efi"
+  },
+  "grub_branding_updated_at": "2026-07-17T16:50:44.745392+00:00",
+  "grub_branding_writer_mode": "fat32_esp_grub_branding_update",
+  "payload_sha256": "0a8feaf276779679ff4ec941d5929bbfd484a3048333c1e57d4397c042b86051",
+  "updated_at": "2026-07-17T16:49:14.278022+00:00",
+  "filesystem_squashfs_sha256": "e34b91c004bdd4486205c2f4c1fc30b78fe6354f4e19c834900e464607652f25"
+}
