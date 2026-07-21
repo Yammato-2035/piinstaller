@@ -8,13 +8,13 @@
 - Ausgangsbranch: `pi-rs-bvr-gui-dcc-001-http-i18n-drift-deploy` @ `92bfcc15`
 - Feature-Branch: `pi-rs-bvr-gui-vt-progress-002-impl` → Merge nach `pi-rs-bvr-gui-vt-progress-002`
 - HEAD vorher: `92bfcc15`
-- HEAD nachher: *(nach Commit)*
+- HEAD nachher: `813aed98` (Worktree-Branch `pi-rs-bvr-gui-vt-progress-002-impl`; Ref `pi-rs-bvr-gui-vt-progress-002` ebenfalls)
 - origin/main: enthalten (Baseline-Ancestor-Check Phase 0)
 - `92bfcc15` enthalten: ja
 - `71717ec5` enthalten: ja
 - `6d90ab3e` enthalten: ja
-- Commits: Feature-Commits auf VT/Progress/DCC/i18n
-- Push: nur nach Freigabe auf `origin/pi-rs-bvr-gui-vt-progress-002`
+- Commits: `6f4b5e4b`, `2adffe57`, `0ff0e6dd`, `813aed98`
+- Push: noch nicht (Freigabe erforderlich auf `origin/pi-rs-bvr-gui-vt-progress-002`)
 - fremde Drift: unangetastet im Haupt-Worktree
 - unerwartete Drift: keine im sauberen Worktree
 
