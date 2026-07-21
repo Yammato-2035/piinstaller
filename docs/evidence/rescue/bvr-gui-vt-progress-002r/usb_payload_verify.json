@@ -1,0 +1,16 @@
+{
+  "payload_version": "1.10.1.2",
+  "sha256": "5a7b0e8c23de04b7b5910494c51cd14b0e461d6fe61153f87796e1cc9422fad3",
+  "http_server_present": true,
+  "auto_e2e_progress_html": true,
+  "watchdog_auto_e2e_url": true,
+  "no_fuser_k": true,
+  "canonical_progress": true,
+  "locales": [
+    "de-DE",
+    "en-US",
+    "fr-FR",
+    "nl-NL"
+  ],
+  "status": "passed"
+}

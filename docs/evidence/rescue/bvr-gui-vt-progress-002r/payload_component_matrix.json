@@ -1,0 +1,13 @@
+{
+  "http_server": true,
+  "auto_e2e_progress_html": true,
+  "gui_watchdog_auto_e2e_url": true,
+  "vt_select_no_fuser_k": true,
+  "canonical_bvr_progress": true,
+  "locales": [
+    "de-DE",
+    "en-US",
+    "fr-FR",
+    "nl-NL"
+  ]
+}

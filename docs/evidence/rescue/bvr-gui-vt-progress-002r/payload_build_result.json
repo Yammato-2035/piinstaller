@@ -1,0 +1,26 @@
+{
+  "task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002R",
+  "status": "payload_ready_for_usb",
+  "build_mode": "payload_repack",
+  "method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "payload_version": "1.10.1.2",
+  "project_version_note": "1.9.20.0 in host product; rescue payload 1.10.1.2",
+  "git_commit": "61bac2b3",
+  "branch_tip": "324b2873",
+  "filesystem_squashfs_sha256": "5a7b0e8c23de04b7b5910494c51cd14b0e461d6fe61153f87796e1cc9422fad3",
+  "previous_sha256": "2c0a1552831219e399c7496c353bbf343d13eb0a5e042b1293639d22e22fbbb2",
+  "components": {
+    "http_server": true,
+    "auto_e2e_progress_html": true,
+    "gui_watchdog_auto_e2e_url": true,
+    "vt_select_no_fuser_k": true,
+    "canonical_bvr_progress": true,
+    "locales": [
+      "de-DE",
+      "en-US",
+      "fr-FR",
+      "nl-NL"
+    ]
+  },
+  "updated_at": "2026-07-21T23:14:08Z"
+}

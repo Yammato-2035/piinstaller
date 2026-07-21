@@ -1,0 +1,5 @@
+/tmp/setuphelfer-efi-rw-002r/live/filesystem.squashfs
+/tmp/setuphelfer-efi-rw-002r/live/filesystem.squashfs.sha256
+/tmp/setuphelfer-efi-rw-002r/setuphelfer/rescue/rescue_payload_version
+/tmp/setuphelfer-efi-rw-002r/setuphelfer/rescue/version.json
+/tmp/setuphelfer-efi-rw-002r/setuphelfer/version.json

@@ -1,0 +1,37 @@
+{
+  "device": "/dev/sda",
+  "model": "Ultra Line",
+  "serial": "24111412110686",
+  "size_bytes": 63333941248,
+  "size_human": "59G",
+  "transport": "usb",
+  "partitions": [
+    {
+      "path": "/dev/sda1",
+      "label": "SETUPHELFER",
+      "fstype": "vfat",
+      "size": "4G"
+    },
+    {
+      "path": "/dev/sda2",
+      "label": "SETUP_LOGS",
+      "fstype": "vfat",
+      "size": "55G",
+      "mount": "/media/volker/SETUP_LOGS2"
+    }
+  ],
+  "labels": [
+    "SETUPHELFER",
+    "SETUP_LOGS"
+  ],
+  "setuphelfer_partition": "/dev/sda1",
+  "setup_logs_partition": "/dev/sda2",
+  "is_system_disk": false,
+  "is_sabrent": false,
+  "identity_confidence": "high",
+  "write_allowed": true,
+  "excluded": [
+    "/dev/nvme0n1",
+    "/dev/nvme1n1"
+  ]
+}

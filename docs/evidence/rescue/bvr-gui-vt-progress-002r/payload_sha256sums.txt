@@ -1,0 +1,9 @@
+5a7b0e8c23de04b7b5910494c51cd14b0e461d6fe61153f87796e1cc9422fad3  filesystem.squashfs
+4f8083b5e2dcd542c5f78ec56223e727c5ea747f91e9c046e5450bdeed2dd8d5  /tmp/sq-verify-002r/opt/setuphelfer-rescue/VERSION
+03784f1053022f2137614bfd9cc6800e8367a7ac965f1c740a446bb80335de47  /tmp/sq-verify-002r/opt/setuphelfer-rescue/config/rescue_payload_version.json
+e73491dc85817af08c9a5ab881d1578d5ce542ea4e78e02d8d304a32ab7501b3  /tmp/sq-verify-002r/opt/setuphelfer-rescue/scripts/rescue-live/image/setuphelfer-rescue-common.sh
+0f4ebbcd0d6b6c9211d3b3faa8ddc5179f559b3ae06ff6849285ff1495c3fea0  /tmp/sq-verify-002r/opt/setuphelfer-rescue/scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh
+c2bf71b8c2feefd6f8d3244f8a9bae0567c071f2200491fb00f0a70e180588d9  /tmp/sq-verify-002r/usr/share/setuphelfer/rescue/ui/locales/de-DE.json
+af26015aa585f61caa8a18d9851b5f0034f6572c4c9918d9401e957dc6a5afd4  /tmp/sq-verify-002r/usr/share/setuphelfer/rescue/ui/locales/en-US.json
+fd5a1737f0def2bced0bd43eb92b104a816210ac10b939110e707573b9a756b8  /tmp/sq-verify-002r/usr/share/setuphelfer/rescue/ui/locales/fr-FR.json
+1d164ba621fde8d7d2548b4fa222de180065c2245de28a9f3bdee09281c0e8cc  /tmp/sq-verify-002r/usr/share/setuphelfer/rescue/ui/locales/nl-NL.json

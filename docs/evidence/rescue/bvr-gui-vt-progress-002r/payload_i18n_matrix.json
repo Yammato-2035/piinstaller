@@ -1,0 +1,10 @@
+{
+  "locales": [
+    "de-DE",
+    "en-US",
+    "fr-FR",
+    "nl-NL"
+  ],
+  "parity": true,
+  "key_count": 43
+}

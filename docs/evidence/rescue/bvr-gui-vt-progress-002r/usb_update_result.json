@@ -1,0 +1,17 @@
+{
+  "task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002R",
+  "status": "passed",
+  "device": "/dev/sda",
+  "model": "Ultra Line",
+  "serial": "24111412110686",
+  "partition": "/dev/sda1",
+  "label": "SETUPHELFER",
+  "method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "source_worktree": "/tmp/piinstaller-vt-progress-002",
+  "source_commit": "61bac2b3",
+  "payload_version": "1.10.1.2",
+  "filesystem_squashfs_sha256": "5a7b0e8c23de04b7b5910494c51cd14b0e461d6fe61153f87796e1cc9422fad3",
+  "setup_logs_preserved": true,
+  "setup_logs_mount": "/media/volker/SETUP_LOGS2",
+  "updated_at": "2026-07-21T23:14:08Z"
+}
