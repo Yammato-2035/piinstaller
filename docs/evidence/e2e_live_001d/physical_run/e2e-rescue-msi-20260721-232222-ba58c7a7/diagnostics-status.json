@@ -1,0 +1,8 @@
+{
+  "data_received": false,
+  "diagnostics_status": "failed",
+  "checks_passed": 0,
+  "findings_count": null,
+  "remediation_available": false,
+  "http_status": 404
+}

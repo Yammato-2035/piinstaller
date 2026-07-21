@@ -1,0 +1,106 @@
+{
+  "feature": "SETUPHELFER-E2E-LIVE-001D5",
+  "schema_version": 1,
+  "started_at": "2026-07-21T23:22:22Z",
+  "completed_at": "2026-07-21T23:23:00Z",
+  "e2e_run_id": "e2e-rescue-msi-20260721-232222-ba58c7a7",
+  "correlation_id": "e53d18ff-85fa-4ac6-992b-063b7e3ec08b",
+  "rescue_session_id": "29ffeb09-7eeb-4c99-b499-670a0676bedd",
+  "payload_version": "1.10.1.0",
+  "layout_mode": "dedicated_external_lab_hdd",
+  "automation_class": "physical_full_destructive",
+  "source": "physical_msi",
+  "token_present": true,
+  "consent_effective": "granted",
+  "production_ready": false,
+  "target_type": "dedicated_external_lab_hdd",
+  "target_layout": "three_partition_e2e",
+  "target_capacity_class": "large",
+  "workflow": {
+    "success": true,
+    "status": "physical_rescue_backup_restore_e2e_passed",
+    "e2e_run_id": "e2e-rescue-msi-20260721-232222-ba58c7a7",
+    "rescue_session_id": "29ffeb09-7eeb-4c99-b499-670a0676bedd",
+    "backup": {
+      "success": true,
+      "backup_job_id": "c0e7aa0a569047c6",
+      "source_type": "synthetic_test_data",
+      "target_type": "external_file_archive",
+      "started_at": "2026-07-21T23:22:46Z",
+      "completed_at": "2026-07-21T23:22:50Z",
+      "duration_seconds": null,
+      "file_count": 162,
+      "total_bytes": 135313271,
+      "manifest_sha256": "2a4521981d39cdad184c89ec73841a3fe55695606c728e39f9499f0eecbc2769",
+      "backup_format": "tar.gz+manifest",
+      "archive_path": "/run/setuphelfer-rescue/e2e/e2e-rescue-msi-20260721-232222-ba58c7a7/backup/e2e-backup.tar.gz",
+      "manifest_entries": 0,
+      "real_operation": true
+    },
+    "verify": {
+      "success": true,
+      "started_at": "2026-07-21T23:22:51Z",
+      "completed_at": "2026-07-21T23:22:53Z",
+      "passed": true,
+      "code": "backup_recovery.ok",
+      "errors": [],
+      "details": {
+        "staging": "/tmp/setuphelfer_verify/2014",
+        "valid": true,
+        "errors": []
+      },
+      "real_operation": true,
+      "expected_file_count": 162,
+      "expected_total_bytes": 135313271
+    },
+    "restore": {
+      "success": true,
+      "restore_job_id": "33bf15e24b9a487c",
+      "started_at": "2026-07-21T23:22:55Z",
+      "completed_at": "2026-07-21T23:22:55Z",
+      "target_separate": true,
+      "target_initially_empty": true,
+      "file_count": 162,
+      "total_bytes": 135313271,
+      "manifest_sha256": "2a4521981d39cdad184c89ec73841a3fe55695606c728e39f9499f0eecbc2769",
+      "restore_dir": "/run/setuphelfer-rescue/e2e/e2e-rescue-msi-20260721-232222-ba58c7a7/restore/data",
+      "real_operation": true
+    },
+    "comparison": {
+      "file_count_match": true,
+      "total_bytes_match": true,
+      "manifest_match": true,
+      "restore_integrity_status": "passed",
+      "source_file_count": 162,
+      "restored_file_count": 162,
+      "source_total_bytes": 135313271,
+      "restored_total_bytes": 135313271,
+      "source_manifest_sha256": "2a4521981d39cdad184c89ec73841a3fe55695606c728e39f9499f0eecbc2769",
+      "restored_manifest_sha256": "2a4521981d39cdad184c89ec73841a3fe55695606c728e39f9499f0eecbc2769"
+    },
+    "telemetry": {
+      "events_recorded": 8,
+      "receipts_stored": 8,
+      "event_ids": {
+        "rescue_session_started": "c042c017-3823-49e0-b20d-a48a6ffd87ce",
+        "backup_started": "847ef057-9b55-4392-8694-70246fa645e2",
+        "backup_completed": "dd9d1a50-2e23-40df-9eab-0fa33af39d9b",
+        "verify_started": "f404d9ca-944c-4c38-a0ee-015e0948fe7a",
+        "verify_completed": "d0004d3d-86f3-453f-b0da-61af346940e4",
+        "restore_started": "11949485-ec0d-4af6-b973-cbd0a4d2dd32",
+        "restore_completed": "afeabfa1-4d0e-480b-8bdf-58ccdc15defa",
+        "rescue_session_completed": "539adcaa-da72-4d87-9adb-24c574e85837"
+      }
+    },
+    "diagnostics": {
+      "data_received": false,
+      "diagnostics_status": "failed",
+      "checks_passed": 0,
+      "findings_count": null,
+      "remediation_available": false,
+      "http_status": 404
+    },
+    "journal_dir": "/run/setuphelfer/esp-rw/setuphelfer/evidence/e2e/e2e-rescue-msi-20260721-232222-ba58c7a7"
+  },
+  "status": "physical_rescue_passed_server_verification_pending"
+}

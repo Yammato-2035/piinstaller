@@ -1,0 +1,16 @@
+{
+  "success": true,
+  "started_at": "2026-07-21T23:22:51Z",
+  "completed_at": "2026-07-21T23:22:53Z",
+  "passed": true,
+  "code": "backup_recovery.ok",
+  "errors": [],
+  "details": {
+    "staging": "/tmp/setuphelfer_verify/2014",
+    "valid": true,
+    "errors": []
+  },
+  "real_operation": true,
+  "expected_file_count": 162,
+  "expected_total_bytes": 135313271
+}

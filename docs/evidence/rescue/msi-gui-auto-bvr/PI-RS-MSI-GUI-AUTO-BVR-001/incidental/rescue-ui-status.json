@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "ui_url": "http://127.0.0.1:8765/auto-e2e-progress.html",
+  "server_started": false,
+  "browser_candidate": "",
+  "browser_started": false,
+  "display_mode": "failed",
+  "menu_visible": false,
+  "status": "failed",
+  "reason": "http_server_failed",
+  "network_required": false,
+  "telemetry_required": false,
+  "rescue_ui": {
+    "server_status": "failed",
+    "url": "http://127.0.0.1:8765/auto-e2e-progress.html",
+    "display_mode": "failed",
+    "menu_visible": false,
+    "status": "failed",
+    "reason": "http_server_failed"
+  },
+  "secrets_exposed": false
+}

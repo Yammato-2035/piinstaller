@@ -1,0 +1,15 @@
+{
+  "schema": "setuphelfer.rescue.auto-e2e-state.v1",
+  "mode": "auto_physical_e2e_locked",
+  "run_id": "",
+  "phase": "evidence_save",
+  "phase_index": 16,
+  "status": "passed",
+  "started_at": "2026-07-21T23:22:33Z",
+  "updated_at": "2026-07-21T23:23:00Z",
+  "elapsed_sec": 27,
+  "last_progress": "Evidence wird gesammelt…",
+  "cancel_requested": false,
+  "shutdown_requested": false,
+  "shutdown_deferred": false
+}
