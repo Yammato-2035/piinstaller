@@ -112,8 +112,18 @@ inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-kiosk-start" \
   "${IMG}/setuphelfer-rescue-kiosk-start"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-ui-launch" \
   "${IMG}/setuphelfer-rescue-ui-launch"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-ui-http-server" \
+  "${IMG}/setuphelfer-rescue-ui-http-server"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-ui-http-server" \
+  "${SBIN}/setuphelfer-rescue-ui-http-server"
 inject "${REPO_ROOT}/scripts/rescue-live/image/auto-e2e-progress.html" \
   "${ROOT}/usr/share/setuphelfer/rescue/ui/auto-e2e-progress.html"
+mkdir -p "${ROOT}/usr/share/setuphelfer/rescue/ui/locales"
+for loc in de-DE en-US fr-FR nl-NL; do
+  inject "${REPO_ROOT}/scripts/rescue-live/image/locales/${loc}.json" \
+    "${ROOT}/usr/share/setuphelfer/rescue/ui/locales/${loc}.json"
+done
+chmod +x "${IMG}/setuphelfer-rescue-ui-http-server" "${SBIN}/setuphelfer-rescue-ui-http-server" 2>/dev/null || true
 inject "${REPO_ROOT}/backend/api/routes/rescue.py" \
   "${BE}/api/routes/rescue.py"
 inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-tui-hold.service" \
@@ -157,6 +167,7 @@ for name in setuphelfer-rescue-tui setuphelfer-rescue-common.sh \
             setuphelfer-rescue-tui-deadline \
             setuphelfer-rescue-physical-e2e setuphelfer-rescue-physical-e2e-start-gate \
             setuphelfer-rescue-kiosk-start setuphelfer-rescue-ui-launch \
+            setuphelfer-rescue-ui-http-server \
             setuphelfer-rescue-media-check setuphelfer-rescue-live-medium-check.py; do
   if [[ -e "${SBIN}/${name}" ]] || [[ -e "${IMG}/${name}" ]] || [[ -e "${IMG}/${name}.sh" ]]; then
     src=""
@@ -182,8 +193,11 @@ chmod +x "${IMG}/setuphelfer-rescue-tui.sh" \
   "${IMG}/setuphelfer-rescue-gui-watchdog.sh" \
   "${IMG}/setuphelfer-rescue-entrypoint.sh" \
   "${IMG}/setuphelfer-rescue-kiosk-start" \
+  "${IMG}/setuphelfer-rescue-ui-launch" \
+  "${IMG}/setuphelfer-rescue-ui-http-server" \
   "${IMG}/setuphelfer-rescue-media-check" 2>/dev/null || true
-chmod +x "${SBIN}/setuphelfer-rescue-media-check" 2>/dev/null || true
+chmod +x "${SBIN}/setuphelfer-rescue-media-check" \
+  "${SBIN}/setuphelfer-rescue-ui-http-server" 2>/dev/null || true
 # Mirror executable scripts under image/ without .sh where the live image expects them.
 for pair in \
   "setuphelfer-rescue-tui.sh:setuphelfer-rescue-tui" \

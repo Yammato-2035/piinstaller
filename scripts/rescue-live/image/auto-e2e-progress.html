@@ -3,138 +3,133 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Setuphelfer – Auto Backup / Verify / Restore</title>
+  <title>Setuphelfer</title>
   <style>
     :root {
-      --bg: #0f172a;
-      --card: #1e293b;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --accent: #22c55e;
-      --warn: #f59e0b;
-      --fail: #ef4444;
-      --font: "Segoe UI", "DejaVu Sans", system-ui, sans-serif;
+      --bg: #0f172a; --card: #1e293b; --text: #f8fafc; --muted: #94a3b8;
+      --accent: #22c55e; --warn: #f59e0b; --fail: #ef4444;
+      --font: "DejaVu Sans", "Segoe UI", system-ui, sans-serif;
     }
     * { box-sizing: border-box; }
     body {
-      margin: 0;
-      min-height: 100vh;
+      margin: 0; min-height: 100vh; color: var(--text); font-family: var(--font);
       background: radial-gradient(1200px 600px at 20% 0%, #1e3a5f 0%, var(--bg) 55%);
-      color: var(--text);
-      font-family: var(--font);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 2rem;
+      display: flex; align-items: center; justify-content: center; padding: 2rem;
     }
     .card {
-      width: min(720px, 100%);
-      background: color-mix(in srgb, var(--card) 92%, black);
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 2rem 2.25rem;
+      width: min(760px, 100%); background: color-mix(in srgb, var(--card) 92%, black);
+      border: 1px solid #334155; border-radius: 16px; padding: 2rem 2.25rem;
       box-shadow: 0 24px 60px rgba(0,0,0,.35);
     }
-    h1 { margin: 0 0 .35rem; font-size: 1.75rem; letter-spacing: -.02em; }
+    h1 { margin: 0 0 .35rem; font-size: 1.75rem; }
     .brand span { color: var(--accent); }
-    .sub { color: var(--muted); margin: 0 0 1.5rem; }
-    .row { display: flex; justify-content: space-between; gap: 1rem; margin: .65rem 0; }
+    .sub { color: var(--muted); margin: 0 0 1.35rem; }
+    .row { display: flex; justify-content: space-between; gap: 1rem; margin: .55rem 0; }
     .label { color: var(--muted); }
     .value { font-weight: 600; text-align: right; word-break: break-all; }
-    .status-pill {
-      display: inline-block;
-      padding: .2rem .7rem;
-      border-radius: 999px;
-      font-size: .85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .04em;
+    .pill {
+      display: inline-block; padding: .2rem .7rem; border-radius: 999px;
+      font-size: .85rem; font-weight: 700; text-transform: uppercase;
     }
     .running, .waiting { background: #422006; color: var(--warn); }
     .passed { background: #14532d; color: var(--accent); }
     .failed, .blocked, .cancelled { background: #7f1d1d; color: #fecaca; }
-    .idle { background: #334155; color: #cbd5e1; }
-    .hint { margin-top: 1.5rem; color: var(--muted); font-size: .95rem; line-height: 1.45; }
-    .bar {
-      margin-top: 1.25rem;
-      height: 10px;
-      background: #0b1220;
-      border-radius: 999px;
-      overflow: hidden;
-    }
+    .hint { margin-top: 1.35rem; color: var(--muted); line-height: 1.45; }
+    .bar { margin-top: 1.1rem; height: 10px; background: #0b1220; border-radius: 999px; overflow: hidden; }
     .bar > i {
-      display: block;
-      height: 100%;
-      width: 8%;
+      display: block; height: 100%; width: 10%;
       background: linear-gradient(90deg, #16a34a, #4ade80);
       animation: pulse 1.4s ease-in-out infinite;
     }
-    @keyframes pulse {
-      0% { transform: translateX(-20%); }
-      50% { transform: translateX(520%); }
-      100% { transform: translateX(-20%); }
-    }
+    @keyframes pulse { 0% { transform: translateX(-30%); } 50% { transform: translateX(480%); } 100% { transform: translateX(-30%); } }
   </style>
 </head>
 <body>
   <main class="card" aria-live="polite">
-    <h1 class="brand">Setup<span>helfer</span></h1>
-    <p class="sub">Automatischer Lab-Lauf: Backup → Verify → Restore (SABRENT)</p>
-    <div class="row"><span class="label">Status</span><span class="value"><span id="status" class="status-pill idle">…</span></span></div>
-    <div class="row"><span class="label">Phase</span><span class="value" id="phase">—</span></div>
-    <div class="row"><span class="label">Fortschritt</span><span class="value" id="progress">—</span></div>
-    <div class="row"><span class="label">Run-ID</span><span class="value" id="run">—</span></div>
+    <h1 class="brand"><span id="title">Setuphelfer</span></h1>
+    <p class="sub" id="subtitle">…</p>
+    <div class="row"><span class="label" id="l_status">Status</span><span class="value"><span id="status" class="pill waiting">…</span></span></div>
+    <div class="row"><span class="label" id="l_phase">Phase</span><span class="value" id="phase">—</span></div>
+    <div class="row"><span class="label" id="l_progress">Progress</span><span class="value" id="progress">—</span></div>
+    <div class="row"><span class="label" id="l_run">Run-ID</span><span class="value" id="run">—</span></div>
+    <div class="row"><span class="label" id="l_payload">Payload</span><span class="value" id="payload">—</span></div>
     <div class="bar" id="bar"><i></i></div>
-    <p class="hint" id="hint">Keine Bedienung nötig. Der Lauf speichert Evidence auf SETUP_LOGS und fährt danach herunter.</p>
+    <p class="hint" id="hint">…</p>
   </main>
   <script>
-    const el = (id) => document.getElementById(id);
     const TERMINAL = new Set(["passed", "failed", "blocked", "cancelled"]);
+    let i18n = {
+      title: "Setuphelfer",
+      subtitle: "Automated lab run",
+      status: "Status",
+      phase: "Phase",
+      progress: "Progress",
+      run_id: "Run-ID",
+      payload: "Payload",
+      hint_running: "No input required.",
+      hint_passed: "Run passed.",
+      hint_failed: "Run ended."
+    };
+
+    function applyI18n() {
+      document.getElementById("title").textContent = i18n.title;
+      document.getElementById("subtitle").textContent = i18n.subtitle;
+      document.getElementById("l_status").textContent = i18n.status;
+      document.getElementById("l_phase").textContent = i18n.phase;
+      document.getElementById("l_progress").textContent = i18n.progress;
+      document.getElementById("l_run").textContent = i18n.run_id;
+      document.getElementById("l_payload").textContent = i18n.payload;
+      document.title = i18n.title;
+    }
+
+    async function loadLocale() {
+      let loc = "de-DE";
+      try {
+        const h = await fetch("/health.json", { cache: "no-store" });
+        if (h.ok) {
+          const hj = await h.json();
+          if (hj.locale) loc = hj.locale;
+          if (hj.payload_version) document.getElementById("payload").textContent = hj.payload_version;
+        }
+      } catch (_) {}
+      try {
+        const r = await fetch("/locales/" + loc + ".json", { cache: "no-store" });
+        if (r.ok) i18n = Object.assign(i18n, await r.json());
+        else {
+          const r2 = await fetch("/locales/en-US.json", { cache: "no-store" });
+          if (r2.ok) i18n = Object.assign(i18n, await r2.json());
+        }
+      } catch (_) {}
+      applyI18n();
+      document.documentElement.lang = loc.slice(0, 2);
+    }
 
     function paint(data) {
       const status = (data && data.status) || "waiting";
-      const pill = el("status");
+      const pill = document.getElementById("status");
       pill.textContent = status;
-      pill.className = "status-pill " + status;
-      el("phase").textContent = (data && (data.phase_label_de || data.phase)) || "—";
-      el("progress").textContent = (data && data.last_progress) || "—";
-      el("run").textContent = (data && data.run_id) || "—";
-      el("bar").style.display = TERMINAL.has(status) ? "none" : "block";
-      if (status === "passed") {
-        el("hint").textContent = "Lauf bestanden. Herunterfahren folgt automatisch.";
-      } else if (status === "failed" || status === "blocked" || status === "cancelled") {
-        el("hint").textContent = "Lauf beendet mit Status " + status + ". Evidence prüfen, Stick zurückbringen.";
-      }
+      pill.className = "pill " + status;
+      document.getElementById("phase").textContent =
+        (data && (data.phase_label || data.phase_label_de || data.phase)) || "—";
+      document.getElementById("progress").textContent = (data && data.last_progress) || "—";
+      document.getElementById("run").textContent = (data && data.run_id) || "—";
+      if (data && data.payload_version) document.getElementById("payload").textContent = data.payload_version;
+      document.getElementById("bar").style.display = TERMINAL.has(status) ? "none" : "block";
+      if (status === "passed") document.getElementById("hint").textContent = i18n.hint_passed;
+      else if (TERMINAL.has(status)) document.getElementById("hint").textContent = i18n.hint_failed;
+      else document.getElementById("hint").textContent = i18n.hint_running;
     }
 
     async function tick() {
       try {
-        let data = null;
-        try {
-          const r = await fetch("/api/rescue/auto-e2e-status", { cache: "no-store" });
-          if (r.ok) data = await r.json();
-        } catch (_) {}
-        if (!data) {
-          const r2 = await fetch("/auto-e2e-state.json", { cache: "no-store" });
-          if (r2.ok) {
-            const s = await r2.json();
-            data = {
-              status: s.status || "waiting",
-              phase: s.phase || "",
-              phase_label_de: s.phase || "",
-              last_progress: s.last_progress || "",
-              run_id: s.run_id || "",
-            };
-          }
-        }
-        if (data) paint(data);
+        const r = await fetch("/api/rescue/auto-e2e-status", { cache: "no-store" });
+        if (r.ok) paint(await r.json());
       } catch (_) {
-        paint({ status: "waiting", phase_label_de: "Warte auf Auto-E2E-State…", last_progress: "", run_id: "" });
+        paint({ status: "waiting", phase_label: i18n.subtitle, last_progress: "", run_id: "" });
       }
     }
 
-    tick();
-    setInterval(tick, 1500);
+    loadLocale().then(() => { tick(); setInterval(tick, 1500); });
   </script>
 </body>
 </html>

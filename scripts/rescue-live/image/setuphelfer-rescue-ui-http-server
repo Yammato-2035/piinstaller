@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+"""Rescue GUI local HTTP server (PI-RS-BVR-GUI-DCC-001).
+
+Serves the offline rescue UI document root and exposes:
+  GET /health.json
+  GET /auto-e2e-state.json
+  GET /api/rescue/auto-e2e-status
+
+ASCII-safe by design (no non-ASCII bytes literals).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from pathlib import Path
+from typing import Any
+from urllib.parse import urlparse
+
+
+DEFAULT_PORT = 8765
+STATE_PATH = Path("/run/setuphelfer-rescue/auto-e2e/state.json")
+RUNTIME_STATUS_PATH = Path("/run/setuphelfer/gui-http-runtime.json")
+
+PHASE_LABELS: dict[str, dict[str, str]] = {
+    "de-DE": {
+        "startup": "System wird vorbereitet",
+        "waiting": "System wird vorbereitet",
+        "device_discovery": "Testgeraet wird erkannt",
+        "sabrent_waiting": "SABRENT-HDD wird gesucht",
+        "target_validation": "Backup-Ziel wird geprueft",
+        "backup": "Backup wird erstellt",
+        "backup_create": "Backup wird erstellt",
+        "verify": "Backup wird verifiziert",
+        "backup_verify": "Backup wird verifiziert",
+        "restore_prepare": "Restore wird vorbereitet",
+        "restore": "Restore wird ausgefuehrt",
+        "restore_run": "Restore wird ausgefuehrt",
+        "manifest_compare": "Manifest wird verglichen",
+        "evidence_finalize": "Evidence wird gesichert",
+        "evidence_save": "Evidence wird gesichert",
+        "completed": "Automatischer Abschluss",
+        "shutdown": "System wird heruntergefahren",
+    },
+    "en-US": {
+        "startup": "Preparing system",
+        "waiting": "Preparing system",
+        "device_discovery": "Detecting test device",
+        "sabrent_waiting": "Searching for SABRENT HDD",
+        "target_validation": "Validating backup target",
+        "backup": "Creating backup",
+        "backup_create": "Creating backup",
+        "verify": "Verifying backup",
+        "backup_verify": "Verifying backup",
+        "restore_prepare": "Preparing restore",
+        "restore": "Running restore",
+        "restore_run": "Running restore",
+        "manifest_compare": "Comparing manifest",
+        "evidence_finalize": "Saving evidence",
+        "evidence_save": "Saving evidence",
+        "completed": "Automatic completion",
+        "shutdown": "Shutting down",
+    },
+    "fr-FR": {
+        "startup": "Preparation du systeme",
+        "waiting": "Preparation du systeme",
+        "device_discovery": "Detection du peripherique de test",
+        "sabrent_waiting": "Recherche du disque SABRENT",
+        "target_validation": "Verification de la cible de sauvegarde",
+        "backup": "Creation de la sauvegarde",
+        "backup_create": "Creation de la sauvegarde",
+        "verify": "Verification de la sauvegarde",
+        "backup_verify": "Verification de la sauvegarde",
+        "restore_prepare": "Preparation de la restauration",
+        "restore": "Restauration en cours",
+        "restore_run": "Restauration en cours",
+        "manifest_compare": "Comparaison du manifeste",
+        "evidence_finalize": "Enregistrement des preuves",
+        "evidence_save": "Enregistrement des preuves",
+        "completed": "Cloture automatique",
+        "shutdown": "Arret du systeme",
+    },
+    "nl-NL": {
+        "startup": "Systeem wordt voorbereid",
+        "waiting": "Systeem wordt voorbereid",
+        "device_discovery": "Testapparaat wordt herkend",
+        "sabrent_waiting": "SABRENT-HDD wordt gezocht",
+        "target_validation": "Backupdoel wordt gecontroleerd",
+        "backup": "Backup wordt gemaakt",
+        "backup_create": "Backup wordt gemaakt",
+        "verify": "Backup wordt geverifieerd",
+        "backup_verify": "Backup wordt geverifieerd",
+        "restore_prepare": "Restore wordt voorbereid",
+        "restore": "Restore wordt uitgevoerd",
+        "restore_run": "Restore wordt uitgevoerd",
+        "manifest_compare": "Manifest wordt vergeleken",
+        "evidence_finalize": "Evidence wordt opgeslagen",
+        "evidence_save": "Evidence wordt opgeslagen",
+        "completed": "Automatische afronding",
+        "shutdown": "Systeem wordt afgesloten",
+    },
+}
+
+
+def _read_json(path: Path) -> dict[str, Any] | None:
+    try:
+        if not path.is_file():
+            return None
+        data = json.loads(path.read_text(encoding="utf-8"))
+        return data if isinstance(data, dict) else None
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _payload_version() -> str:
+    for cand in (
+        Path("/opt/setuphelfer-rescue/config/rescue_payload_version.json"),
+        Path("/opt/setuphelfer-rescue/config/version.json"),
+    ):
+        data = _read_json(cand) or {}
+        ver = str(data.get("rescue_payload_version") or data.get("project_version") or "").strip()
+        if ver:
+            return ver
+    return os.environ.get("SETUPHELFER_RESCUE_PAYLOAD_VERSION", "").strip() or "unknown"
+
+
+def _locale() -> str:
+    env = (os.environ.get("SETUPHELFER_RESCUE_LOCALE") or "").strip()
+    if env in PHASE_LABELS:
+        return env
+    try:
+        cmdline = Path("/proc/cmdline").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        cmdline = ""
+    for token in cmdline.split():
+        if token.startswith("setuphelfer_locale="):
+            loc = token.split("=", 1)[-1].strip()
+            if loc in PHASE_LABELS:
+                return loc
+            if loc.startswith("de"):
+                return "de-DE"
+            if loc.startswith("fr"):
+                return "fr-FR"
+            if loc.startswith("nl"):
+                return "nl-NL"
+            if loc.startswith("en"):
+                return "en-US"
+    return "de-DE"
+
+
+def build_health(document_root: Path, *, index_name: str) -> dict[str, Any]:
+    index_path = document_root / index_name
+    locales_dir = document_root / "locales"
+    required_locales = ["de-DE.json", "en-US.json", "fr-FR.json", "nl-NL.json"]
+    missing = [name for name in required_locales if not (locales_dir / name).is_file()]
+    # Progress page requires locales; interactive rescue.html remains usable without them.
+    require_i18n = index_name == "auto-e2e-progress.html"
+    i18n_ok = (not missing) if require_i18n else True
+    return {
+        "schema": "setuphelfer.rescue.gui-http-health.v1",
+        "status": "ready",
+        "payload_version": _payload_version(),
+        "locale": _locale(),
+        "document_root": str(document_root),
+        "index_path": str(index_path),
+        "index_exists": index_path.is_file(),
+        "i18n_validation": "passed" if i18n_ok else "failed",
+        "i18n_required": require_i18n,
+        "missing_locales": missing,
+        "entry_point": index_name,
+    }
+
+
+def build_auto_e2e_status(state_path: Path, locale: str) -> dict[str, Any]:
+    labels = PHASE_LABELS.get(locale) or PHASE_LABELS["en-US"]
+    state = _read_json(state_path) or {}
+    phase = str(state.get("phase") or "waiting")
+    status = str(state.get("status") or "waiting")
+    return {
+        "schema": "setuphelfer.rescue.auto-e2e-gui-status.v1",
+        "active": True,
+        "status": status,
+        "phase": phase,
+        "phase_label_de": labels.get(phase, labels.get("waiting", phase)),
+        "phase_label": labels.get(phase, labels.get("waiting", phase)),
+        "last_progress": str(state.get("last_progress") or ""),
+        "run_id": str(state.get("run_id") or ""),
+        "updated_at": state.get("updated_at"),
+        "locale": locale,
+        "payload_version": _payload_version(),
+        "progress_kind": "indeterminate",
+    }
+
+
+def write_runtime_status(payload: dict[str, Any]) -> None:
+    try:
+        RUNTIME_STATUS_PATH.parent.mkdir(parents=True, exist_ok=True)
+        tmp = RUNTIME_STATUS_PATH.with_suffix(".tmp")
+        tmp.write_text(json.dumps(payload, indent=2, ensure_ascii=True) + "\n", encoding="utf-8")
+        tmp.replace(RUNTIME_STATUS_PATH)
+    except OSError:
+        # Non-root unit tests / read-only /run must not crash the HTTP server.
+        return
+
+
+class RescueUiHandler(SimpleHTTPRequestHandler):
+    document_root: Path = Path(".")
+    state_path: Path = STATE_PATH
+    index_name: str = "rescue.html"
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, directory=str(self.document_root), **kwargs)
+
+    def _send_json(self, payload: dict[str, Any], *, code: int = 200) -> None:
+        body = (json.dumps(payload, ensure_ascii=True) + "\n").encode("ascii", errors="replace")
+        self.send_response(code)
+        self.send_header("Content-Type", "application/json; charset=utf-8")
+        self.send_header("Cache-Control", "no-store")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def do_GET(self) -> None:  # noqa: N802
+        path = urlparse(self.path).path
+        if path in ("/health", "/health.json"):
+            health = build_health(self.document_root, index_name=self.index_name)
+            code = 200 if health.get("index_exists") and health.get("i18n_validation") == "passed" else 503
+            if code != 200:
+                health["status"] = "failed"
+            self._send_json(health, code=code)
+            return
+        if path in ("/auto-e2e-state.json", "/api/rescue/auto-e2e-status"):
+            self._send_json(build_auto_e2e_status(self.state_path, _locale()))
+            return
+        return super().do_GET()
+
+    def log_message(self, fmt: str, *args: Any) -> None:
+        sys.stderr.write("%s - %s\n" % (self.address_string(), fmt % args))
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(description="Setuphelfer rescue GUI HTTP server")
+    parser.add_argument("--bind", default="127.0.0.1")
+    parser.add_argument("--port", type=int, default=DEFAULT_PORT)
+    parser.add_argument("--document-root", default="/usr/share/setuphelfer/rescue/ui")
+    parser.add_argument("--state-path", default=str(STATE_PATH))
+    parser.add_argument("--index-name", default="")
+    args = parser.parse_args(argv)
+
+    root = Path(args.document_root).resolve()
+    if not root.is_dir():
+        print(json.dumps({"error": "rescue.gui.document_root_invalid", "path": str(root)}), file=sys.stderr)
+        return 2
+
+    index_name = args.index_name.strip()
+    if not index_name:
+        if (root / "auto-e2e-progress.html").is_file() and "setuphelfer_msi_e2e_auto=1" in Path(
+            "/proc/cmdline"
+        ).read_text(encoding="utf-8", errors="replace"):
+            index_name = "auto-e2e-progress.html"
+        else:
+            index_name = "rescue.html"
+    if not (root / index_name).is_file():
+        print(json.dumps({"error": "rescue.gui.index_missing", "index": index_name}), file=sys.stderr)
+        return 3
+
+    RescueUiHandler.document_root = root
+    RescueUiHandler.state_path = Path(args.state_path)
+    RescueUiHandler.index_name = index_name
+
+    try:
+        server = ThreadingHTTPServer((args.bind, args.port), RescueUiHandler)
+    except OSError as exc:
+        print(json.dumps({"error": "rescue.gui.bind_failed", "detail": str(exc)}), file=sys.stderr)
+        return 4
+
+    write_runtime_status(
+        {
+            "status": "ready",
+            "pid": os.getpid(),
+            "runtime_user": "root",
+            "bind_address": args.bind,
+            "port": args.port,
+            "document_root": str(root),
+            "index_path": str(root / index_name),
+            "health_url": f"http://{args.bind}:{args.port}/health.json",
+            "health_status": "ready",
+            "asset_validation": "passed",
+            "i18n_validation": build_health(root, index_name=index_name).get("i18n_validation"),
+            "chromium_started": False,
+            "chromium_visible": False,
+            "watchdog_state": "watching",
+            "fallback_reason": None,
+            "errors": [],
+            "warnings": [],
+        }
+    )
+    print(
+        json.dumps(
+            {
+                "status": "listening",
+                "bind": args.bind,
+                "port": args.port,
+                "document_root": str(root),
+                "index_name": index_name,
+            },
+            ensure_ascii=True,
+        ),
+        flush=True,
+    )
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        write_runtime_status({"status": "stopped", "pid": os.getpid()})
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

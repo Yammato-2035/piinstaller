@@ -1,0 +1,23 @@
+# GUI HTTP related files – PI-RS-BVR-GUI-DCC-001
+
+scripts/rescue-live/image/setuphelfer-rescue-ui-http-server
+scripts/rescue-live/image/setuphelfer-rescue-ui-launch
+scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh
+scripts/rescue-live/image/setuphelfer-rescue-kiosk-start
+scripts/rescue-live/image/auto-e2e-progress.html
+scripts/rescue-live/image/locales/de-DE.json
+scripts/rescue-live/image/locales/en-US.json
+scripts/rescue-live/image/locales/fr-FR.json
+scripts/rescue-live/image/locales/nl-NL.json
+backend/core/rescue_bvr_dcc_status.py
+backend/core/rescue_auto_e2e_gui_status.py
+backend/core/version_commit_drift.py
+backend/rescue/rescue_ui_launcher_contract.py
+backend/api/routes/dev_dashboard_readonly.py
+backend/tests/test_rescue_gui_http_server_dcc001_v1.py
+backend/tests/test_rescue_bvr_dcc_status_dcc001_v1.py
+docs/architecture/RESCUE_GUI_HTTP_RUNTIME_CONTRACT.md
+docs/architecture/VERSION_COMMIT_DRIFT_CONTRACT.md
+docs/architecture/BVR_CORE_FREEZE_PI_RS_BVR_GUI_DCC_001.md
+docs/evidence/rescue/bvr-gui-dcc-001/GUI_HTTP_ROOT_CAUSE_ANALYSIS.md
+docs/evidence/rescue/bvr-gui-dcc-001/baseline_bvr_result.json

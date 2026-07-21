@@ -1,0 +1,34 @@
+{
+  "failure_code": "http_server_failed",
+  "process_started": false,
+  "command": "python3 - PORT UI_ROOT AUTO_E2E_STATE <<'PY' (inline ThreadingHTTPServer)",
+  "runtime_user": "root",
+  "bind_address": "127.0.0.1",
+  "port": 8765,
+  "document_root": "/usr/share/setuphelfer/rescue/ui",
+  "document_root_exists": true,
+  "index_exists": true,
+  "assets_complete": true,
+  "locale_assets_complete": false,
+  "exit_code": 1,
+  "stderr_summary": "SyntaxError: bytes can only contain ASCII literal characters (U+2026 ellipsis in b'...' default JSON body)",
+  "port_conflict": false,
+  "permission_failure": false,
+  "readiness_timeout": false,
+  "start_order_race": false,
+  "stale_process_or_pid": false,
+  "payload_drift_detected": false,
+  "root_cause": "non_ascii_bytes_literal_in_inline_http_server_heredoc",
+  "secondary_causes": [
+    "misleading_msi_compat_nomodeset_status_files_not_blocking_this_gui_boot"
+  ],
+  "repair_strategy": [
+    "extract_dedicated_ui_http_server_script",
+    "ascii_safe_default_json",
+    "health_readiness_before_chromium",
+    "keep_watchdog_fallback",
+    "localize_progress_page"
+  ],
+  "confidence": "high",
+  "evidence_log": "docs/evidence/rescue/msi-gui-auto-bvr/PI-RS-MSI-GUI-AUTO-BVR-001/incidental/rescue-ui-status.json + SETUP_LOGS rescue-ui-launch.log"
+}
