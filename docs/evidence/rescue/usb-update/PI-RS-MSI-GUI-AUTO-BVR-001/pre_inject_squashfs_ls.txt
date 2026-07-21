@@ -1,0 +1,1 @@
+-rwxr-xr-x 1 volker volker 1285898240 Jul 21 15:39 /tmp/setuphelfer-efi-rw/live/filesystem.squashfs

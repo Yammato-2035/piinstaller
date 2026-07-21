@@ -1,0 +1,4 @@
+1d8f9efeecb9398db5baeb8af536873ba468710dc2076ea883060fc7876c85d3  /tmp/setuphelfer-efi-rw/boot/grub/grub.cfg
+d8deb726c47f5a690b786c13771e42ee27f82cc3438e88a6ed94a8dd854a9a98  /tmp/setuphelfer-efi-rw/live/vmlinuz
+385dd4f1395cc4f5e88b4ffa93f6dca883c4698d7f7d04c72db5b6ea99403de8  /tmp/setuphelfer-efi-rw/live/initrd.img
+bdb8a5476e2afe97e92f405cf5d73f003040141d43f205993b2c167b20a9252f  /tmp/setuphelfer-efi-rw/live/filesystem.squashfs
