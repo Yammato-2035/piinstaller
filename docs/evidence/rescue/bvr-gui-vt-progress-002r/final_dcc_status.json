@@ -1,5 +1,5 @@
 {
-  "checked_at": "2026-07-22T05:30:16Z",
+  "checked_at": "2026-07-22T05:35:40Z",
   "live_api_from_opt": {
     "status": "review_required",
     "product_version": "1.9.20.0",
@@ -118,11 +118,47 @@
     "developer_capability_required": false
   },
   "notes": [
-    "Live /opt API still prefers empty_progress() when no /run canonical file exists (phase=startup).",
-    "Worktree physical loader now sees 002 physical_msi_result.json (copied from 002r).",
-    "/opt still has older DCC-001 physical_msi_result until evidence redeploy.",
+    "Live /opt API last_run_id now matches physical run after evidence sync.",
+    "bvr/gui/progress fields still reflect empty_progress() on lab host (no /run canonical).",
     "Endstatus remains passed_with_gui_fallback; GUI not physically visible."
   ],
   "expected_for_passed": false,
-  "phase15_verdict": "passed_with_gui_fallback"
+  "phase15_verdict": "passed_with_gui_fallback",
+  "live_api_from_opt_after_evidence_sync": {
+    "status": "review_required",
+    "product_version": "1.9.20.0",
+    "payload_version": "1.10.1.2",
+    "last_run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+    "last_run_status": "passed_with_gui_fallback",
+    "bvr": {
+      "backup": "pending",
+      "verify": "pending",
+      "restore": "pending",
+      "manifest": "pending"
+    },
+    "gui": {
+      "status": "starting",
+      "error_code": null,
+      "vt": null
+    },
+    "progress": {
+      "phase": "startup",
+      "sequence": 0,
+      "terminal": false
+    },
+    "locales": [
+      "de-DE",
+      "en-US",
+      "fr-FR",
+      "nl-NL"
+    ],
+    "i18n_status": "complete",
+    "version_drift": "unknown",
+    "deploy_drift": "unknown",
+    "evidence_available": true,
+    "updated_at": "2026-07-22T05:35:40Z",
+    "next_action_key": "maintain_green",
+    "read_only": true,
+    "developer_capability_required": false
+  }
 }
