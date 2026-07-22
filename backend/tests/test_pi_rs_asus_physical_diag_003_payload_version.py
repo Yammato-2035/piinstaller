@@ -1,4 +1,4 @@
-"""Version gate for PI-RS-ASUS-DIAG-BIND-002 (superseded floor by PHYSICAL-DIAG-003)."""
+"""Version gate for PI-RS-ASUS-PHYSICAL-DIAG-003."""
 
 from __future__ import annotations
 
@@ -13,9 +13,9 @@ class VersionTests(unittest.TestCase):
     def test_versions(self) -> None:
         app = json.loads((ROOT / "config/version.json").read_text(encoding="utf-8"))
         payload = json.loads((ROOT / "config/rescue_payload_version.json").read_text(encoding="utf-8"))
-        self.assertGreaterEqual(tuple(int(x) for x in app["project_version"].split(".")), (1, 9, 21, 1))
-        self.assertGreaterEqual(tuple(int(x) for x in payload["rescue_payload_version"].split(".")), (1, 10, 1, 4))
-        self.assertTrue(payload.get("pi_rs_asus_diag_bind_002"))
+        self.assertEqual(app["project_version"], "1.9.21.2")
+        self.assertEqual(payload["rescue_payload_version"], "1.10.2.0")
+        self.assertTrue(payload.get("pi_rs_asus_physical_diag_003"))
 
 
 if __name__ == "__main__":
