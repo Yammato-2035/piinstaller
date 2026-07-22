@@ -7,7 +7,7 @@
 - Repository: `piinstaller`
 - Basiscommit: `d42bcc15` (`origin/pi-rs-asus-diag-bind-002`)
 - Feature-Branch: `pi-rs-asus-physical-diag-003`
-- HEAD: (nach Commit)
+- HEAD: `9f125576`
 - origin/main: `b8651d33` (Stand Phase 0)
 - Push: `origin/pi-rs-asus-physical-diag-003`
 - fremde Drift berührt: nein
