@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "import_status": "import_ok",
+  "reasons": [],
+  "run_id": "hw-discovery-20260723T003152Z-384c72f0",
+  "boot_id": "5c3f5c47-61a0-4cf1-b502-650e1208b51a",
+  "profile_id": "asus_rog_gabriel",
+  "terminal": true,
+  "status": "complete",
+  "msi_excluded": false,
+  "has_manifest": true,
+  "has_sha256": true,
+  "has_marker": true,
+  "copied": true,
+  "destination": "docs/evidence/rescue/asus-capture-finalize-004/physical_runs/import-gabriel-hw-discovery-20260723-003152",
+  "protected_raw_excluded": true
+}

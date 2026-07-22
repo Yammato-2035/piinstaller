@@ -1,0 +1,20 @@
+{
+  "panther_found": false,
+  "rollback_found": false,
+  "error_classes": [
+    "unknown"
+  ],
+  "file_count": 0,
+  "mounts": [
+    {
+      "source": "/dev/nvme0n1p3",
+      "mountpoint": "/run/setuphelfer/hw-discovery-mnt/ntfs-ro-0",
+      "options": "",
+      "exitcode": 1,
+      "read_only_confirmed": false,
+      "status": "ntfs_read_only_mount_blocked",
+      "error": "mount_failed"
+    }
+  ],
+  "capture_status": "partial"
+}

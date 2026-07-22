@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.1",
+  "mounts": [
+    {
+      "source": "/dev/nvme0n1p3",
+      "mountpoint": "/run/setuphelfer/hw-discovery-mnt/ntfs-ro-0",
+      "options": "",
+      "exitcode": 1,
+      "read_only_confirmed": false,
+      "status": "ntfs_read_only_mount_blocked",
+      "error": "mount_failed"
+    }
+  ],
+  "files": [],
+  "scan_status": "insufficient_evidence",
+  "error_classes": [
+    "unknown"
+  ],
+  "panther_found": false,
+  "rollback_found": false,
+  "windows_files_modified": false,
+  "write_allowed": false,
+  "capture_status": "partial"
+}

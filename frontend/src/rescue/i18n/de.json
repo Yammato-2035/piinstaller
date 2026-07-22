@@ -626,5 +626,23 @@
   },
   "operatorChecklist": {
     "title": "Operator-Checkliste (Beta)"
-  }
+  },
+  "retestWindowsMedia": "Windows-Installationsmedium",
+  "retestMediaVerified": "Installationsmedium verifiziert",
+  "retestLinuxNvmeIsolated": "Linux-NVMe isoliert",
+  "retestWindowsTargetConfirmed": "Windows-Ziel bestätigt",
+  "retestDataLossConfirmed": "Datenverlust bestätigt",
+  "retestSetupLogsSaving": "Setup-Logs werden gesichert",
+  "retestInstallAborted": "Installation abgebrochen",
+  "retestSetupPhase": "Setup-Phase",
+  "retestErrorCode": "Fehlercode",
+  "retestRollback": "Rollback",
+  "retestBiosComparison": "BIOS-Vergleich",
+  "retestBiosNotProven": "BIOS als Ursache nicht belegt",
+  "retestBiosPlausible": "BIOS als Mitursache plausibel",
+  "retestBiosStronglyImplicated": "BIOS stark als Mitursache verdächtig",
+  "retestIdenticalRetest": "identischer Retest",
+  "retestWindowsPostcheck": "Windows-Postcheck",
+  "retestLinuxStillLocked": "Linux-Installation weiterhin gesperrt",
+  "retestLinuxPlanningReady": "Linux-Planung freigegeben"
 }

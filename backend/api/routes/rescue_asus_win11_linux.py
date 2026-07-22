@@ -31,6 +31,20 @@ from core.rescue_windows11_install_diag import (
     windows_target_destructive_gate,
 )
 
+from core.rescue_windows11_controlled_retest import (
+    bios_335_update_gate,
+    build_destructive_authorization,
+    build_linux_nvme_isolation,
+    build_stage_a_preflight,
+    build_target_role_binding,
+    build_win11_retest_dcc,
+    build_windows_media_result,
+    decide_stage_a_outcome,
+    evaluate_bios_causality,
+    validate_target_role_binding,
+    windows_postcheck_to_linux_gate,
+)
+
 router = APIRouter(tags=["rescue-asus-win11-linux"])
 
 
@@ -203,4 +217,140 @@ async def post_asus_install_targets(body: dict[str, Any] = Body(...)) -> dict[st
         windows=body.get("windows_target"),
         linux=body.get("linux_target"),
         machine_profile=str(body.get("machine_profile") or "asus_rog_gabriel"),
+    )
+
+
+@router.post("/win11-retest/target-binding")
+async def post_win11_retest_target_binding(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    binding = build_target_role_binding(
+        machine_profile=str(body.get("machine_profile") or "asus_rog_gabriel"),
+        machine_fingerprint_hash=str(body.get("machine_fingerprint_hash") or ""),
+        windows_target=body.get("windows_target") or {},
+        linux_target=body.get("linux_target") or {},
+        operator_confirmed=bool(body.get("operator_confirmed")),
+        created_at=body.get("created_at"),
+    )
+    validation = validate_target_role_binding(binding)
+    return {"binding": binding, "validation": validation}
+
+
+@router.post("/win11-retest/linux-isolation")
+async def post_win11_retest_linux_isolation(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return build_linux_nvme_isolation(
+        method=str(body.get("method") or "unverified"),
+        linux_identity_hash=str(body.get("linux_identity_hash") or ""),
+        windows_identity_hash=str(body.get("windows_identity_hash") or ""),
+        verified_in_winpe=bool(body.get("verified_in_winpe")),
+        linux_writable_for_setup=bool(body.get("linux_writable_for_setup", True)),
+        notes=str(body.get("notes") or ""),
+        operator_documented=bool(body.get("operator_documented")),
+    )
+
+
+@router.post("/win11-retest/media-check")
+async def post_win11_retest_media_check(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return build_windows_media_result(
+        source=str(body.get("source") or ""),
+        architecture=str(body.get("architecture") or "x64"),
+        sha256=str(body.get("sha256") or ""),
+        efi_boot=bool(body.get("efi_boot")),
+        boot_wim=bool(body.get("boot_wim")),
+        install_wim_or_esd=bool(body.get("install_wim_or_esd")),
+        status=str(body.get("status") or "unknown_hash"),
+        operator_override=bool(body.get("operator_override")),
+    )
+
+
+@router.post("/win11-retest/stage-a-preflight")
+async def post_win11_retest_stage_a_preflight(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return build_stage_a_preflight(
+        machine_profile=str(body.get("machine_profile") or ""),
+        bios_version=str(body.get("bios_version") or ""),
+        binding=body.get("binding") or {},
+        isolation=body.get("isolation") or {},
+        media=body.get("media") or {},
+        windows_smart_critical=bool(body.get("windows_smart_critical")),
+        uefi=bool(body.get("uefi", True)),
+        tpm_ok=bool(body.get("tpm_ok", True)),
+        ram_gb=float(body.get("ram_gb") or 0),
+        collector_reachable=bool(body.get("collector_reachable")),
+        setup_logs_writable=bool(body.get("setup_logs_writable")),
+        ac_power=bool(body.get("ac_power", True)),
+    )
+
+
+@router.post("/win11-retest/destructive-auth")
+async def post_win11_retest_destructive_auth(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return build_destructive_authorization(
+        machine_fingerprint_hash=str(body.get("machine_fingerprint_hash") or ""),
+        windows_identity_hash=str(body.get("windows_identity_hash") or ""),
+        boot_id=str(body.get("boot_id") or ""),
+        preflight_id=str(body.get("preflight_id") or ""),
+        identity_phrase=str(body.get("identity_phrase") or ""),
+        destructive_phrase=str(body.get("destructive_phrase") or ""),
+        linux_offline_ack=bool(body.get("linux_offline_ack")),
+        no_backup_ack=bool(body.get("no_backup_ack")),
+        expires_at=str(body.get("expires_at") or ""),
+    )
+
+
+@router.post("/win11-retest/stage-a-decide")
+async def post_win11_retest_stage_a_decide(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return decide_stage_a_outcome(
+        install_succeeded=bool(body.get("install_succeeded")),
+        firmware_related=body.get("firmware_related"),
+        concrete_non_firmware_cause=body.get("concrete_non_firmware_cause"),
+        unclear=bool(body.get("unclear")),
+    )
+
+
+@router.post("/win11-retest/bios335-gate")
+async def post_win11_retest_bios335_gate(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return bios_335_update_gate(
+        model=str(body.get("model") or ""),
+        board=str(body.get("board") or ""),
+        installed=str(body.get("installed") or ""),
+        target=str(body.get("target") or "G513QM.335"),
+        official_ez_flash_file=bool(body.get("official_ez_flash_file")),
+        checksum_documented=bool(body.get("checksum_documented")),
+        ac_power=bool(body.get("ac_power")),
+        battery_ok=bool(body.get("battery_ok")),
+        no_running_install=bool(body.get("no_running_install", True)),
+        operator_approved=bool(body.get("operator_approved")),
+    )
+
+
+@router.post("/win11-retest/causality")
+async def post_win11_retest_causality(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return evaluate_bios_causality(
+        stage_a_result=str(body.get("stage_a_result") or ""),
+        stage_b_result=body.get("stage_b_result"),
+        same_media=bool(body.get("same_media", True)),
+        same_windows_nvme=bool(body.get("same_windows_nvme", True)),
+        same_linux_isolation=bool(body.get("same_linux_isolation", True)),
+        other_variables_changed=bool(body.get("other_variables_changed")),
+    )
+
+
+@router.post("/win11-retest/postcheck-linux-gate")
+async def post_win11_retest_postcheck_linux_gate(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return windows_postcheck_to_linux_gate(body.get("postcheck") or body)
+
+
+@router.post("/win11-retest/dcc")
+async def post_win11_retest_dcc(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return build_win11_retest_dcc(
+        bios_installed=str(body.get("bios_installed") or ""),
+        bios_update_result=body.get("bios_update_result"),
+        causality=str(body.get("causality") or "not_tested"),
+        windows_media_status=str(body.get("windows_media_status") or ""),
+        windows_target_short=str(body.get("windows_target_short") or ""),
+        linux_isolated=bool(body.get("linux_isolated")),
+        setup_phase=str(body.get("setup_phase") or ""),
+        error_code=str(body.get("error_code") or ""),
+        setupdiag=str(body.get("setupdiag") or ""),
+        install_result=str(body.get("install_result") or ""),
+        postcheck=str(body.get("postcheck") or ""),
+        linux_gate=str(body.get("linux_gate") or "blocked"),
+        endstatus=str(body.get("endstatus") or "ready_for_windows_retest_bios331"),
     )

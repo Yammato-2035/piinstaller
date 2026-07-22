@@ -1,11 +1,13 @@
 @echo off
 setlocal EnableExtensions
-REM Disk / BCD inventory only — no clean/format/convert/select destructive ops.
+REM Disk / volume inventory only — no clean/format/convert/online destructive ops.
 
 set "SCRIPT_DIR=%~dp0"
 set "TAG_NAME=SETUP_LOGS.TAG"
 set "OUT_ROOT="
-set "STAMP="
+set "RUN_DIR=%~1"
+
+if not "%RUN_DIR%"=="" goto :have_outdir
 
 for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss"') do set "STAMP=%%I"
 if "%STAMP%"=="" set "STAMP=unknown"
@@ -22,16 +24,24 @@ if "%OUT_ROOT%"=="" (
   echo [setuphelfer] ERROR: SETUP_LOGS destination not found.
   exit /b 2
 )
-
 set "RUN_DIR=%OUT_ROOT%\%STAMP%-diskinfo"
 mkdir "%RUN_DIR%" 2>nul
 
-echo list disk> "%RUN_DIR%\diskpart_list_disk.txt"
-echo list volume>> "%RUN_DIR%\diskpart_list_disk.txt"
-diskpart /s "%RUN_DIR%\diskpart_list_disk.txt" > "%RUN_DIR%\diskpart_output.txt" 2>&1
+:have_outdir
+mkdir "%RUN_DIR%" 2>nul
 
-bcdedit /enum all > "%RUN_DIR%\bcdedit_enum_all.txt" 2>&1
-pnputil /enum-devices /connected > "%RUN_DIR%\pnputil_devices.txt" 2>&1
+echo list disk> "%RUN_DIR%\diskpart_script.txt"
+echo list volume>> "%RUN_DIR%\diskpart_script.txt"
+echo list partition>> "%RUN_DIR%\diskpart_script.txt"
+diskpart /s "%RUN_DIR%\diskpart_script.txt" > "%RUN_DIR%\diskpart_output.txt" 2>&1
+
+if exist "%SCRIPT_DIR%collect-win11-disk-info.ps1" (
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%collect-win11-disk-info.ps1" -OutDir "%RUN_DIR%"
+)
+
+wmic diskdrive get Model,SerialNumber,InterfaceType,Size,Status /format:list > "%RUN_DIR%\wmic_diskdrive.txt" 2>&1
+wmic logicaldisk get DeviceID,VolumeName,FileSystem,Size,FreeSpace /format:list > "%RUN_DIR%\wmic_logicaldisk.txt" 2>&1
+mountvol > "%RUN_DIR%\mountvol.txt" 2>&1
 
 echo [setuphelfer] Disk info written to %RUN_DIR%
 echo NOTE: No partitioning commands were executed.

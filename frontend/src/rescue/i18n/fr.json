@@ -626,5 +626,23 @@
     "tui": "Passer en mode texte",
     "tuiHint": "Mode texte : entrée GRUB ou F10."
   },
-  "title": "Setuphelfer"
+  "title": "Setuphelfer",
+  "retestWindowsMedia": "Support d'installation Windows",
+  "retestMediaVerified": "Support d'installation vérifié",
+  "retestLinuxNvmeIsolated": "NVMe Linux isolé",
+  "retestWindowsTargetConfirmed": "Cible Windows confirmée",
+  "retestDataLossConfirmed": "Perte de données confirmée",
+  "retestSetupLogsSaving": "Journaux Setup en cours de sauvegarde",
+  "retestInstallAborted": "Installation interrompue",
+  "retestSetupPhase": "Phase Setup",
+  "retestErrorCode": "Code d'erreur",
+  "retestRollback": "Rollback",
+  "retestBiosComparison": "Comparaison BIOS",
+  "retestBiosNotProven": "BIOS non prouvé comme cause",
+  "retestBiosPlausible": "BIOS plausible comme co-cause",
+  "retestBiosStronglyImplicated": "BIOS fortement suspecté comme co-cause",
+  "retestIdenticalRetest": "retest identique",
+  "retestWindowsPostcheck": "Post-contrôle Windows",
+  "retestLinuxStillLocked": "Installation Linux toujours verrouillée",
+  "retestLinuxPlanningReady": "Planification Linux autorisée"
 }

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any, Mapping
 
+from core.rescue_windows11_controlled_retest import build_win11_retest_dcc
+
 SCHEMA_VERSION = 1
 
 
@@ -184,10 +186,24 @@ def _next_action(endstatus: str) -> str:
         "implemented_pending_physical_diagnosis": "Run MSI BIOS audit and ASUS read-only diagnosis",
         "diagnosis_complete_windows_fix_pending": "Authorize Windows install after cause review",
         "ready_for_windows_install": "Operator Windows 11 install on confirmed NVMe",
+        "ready_for_controlled_windows_retest_with_log_collection": "Bind NVMe roles and run Stage A under BIOS 331",
+        "ready_for_windows_retest_bios331": "Operator Stage A Windows 11 retest under BIOS G513QM.331",
+        "windows_installed_on_bios_331": "Run Windows postcheck; BIOS 335 optional maintenance later",
+        "ready_for_bios_335_controlled_update": "Operator ASUS EZ Flash to G513QM.335 then Stage B",
+        "bios_335_installed_retest_pending": "Repeat identical Windows retest under BIOS 335",
+        "windows_installed_on_bios_335": "Run Windows postcheck before Linux planning",
         "windows_installed_linux_pending": "Select Linux distro and confirm second NVMe",
         "linux_installed_postcheck_pending": "Verify dual-boot and EFI isolation",
+        "blocked_linux_nvme_isolation": "Isolate Linux NVMe before Windows Setup",
+        "blocked_install_media_corrupt": "Replace official Windows 11 media",
+        "blocked_bios_update": "Resolve BIOS 335 update gate blockers",
         "passed": "None",
         "blocked": "Resolve identity/health/media blockers",
         "failed": "Stop and investigate safety failure",
     }
     return mapping.get(endstatus, "Review DCC readiness")
+
+
+def build_win11_retest_005_dcc(**kwargs: Any) -> dict[str, Any]:
+    """Thin wrapper — canonical builder lives in controlled_retest module."""
+    return build_win11_retest_dcc(**kwargs)

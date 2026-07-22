@@ -1,5 +1,7 @@
 ## Unreleased
 
+- **PI-RS-ASUS-WIN11-RETEST-005:** Controlled Win11 retest contracts, WinPE collector (.cmd/.ps1), NVMe role/isolation gates, BIOS 331→335 causality (no auto-flash), DCC/i18n/FAQ/KB, Payload **1.10.2.3**, App remains **1.9.21.2**. Endstatus: `ready_for_windows_retest_bios331` (physical Stage A pending).
+
 - **PI-RS-ASUS-PHYSICAL-DIAG-003:** Read-only `hardware_discovery` Capture (NVMe Identity/SMART/Error-Log, Panther-Suche), GRUB/TUI-Eintrag, Payload **1.10.2.0**, App **1.9.21.2**. Stick injiziert; physischer Gabriel-Lauf ausstehend. Endstatus: `diagnosis_incomplete`.
 
 - **PI-RS-ASUS-DIAG-BIND-002:** Gabriel G513QM Binding (diagnostics-only), Import-Identitätsgate gegen MSI-Fehlzuordnung, Run-Type `hardware_discovery`, offizieller BIOS-Vergleich **335** (`update_available`, kein Flash). App **1.9.21.1**, Payload **1.10.1.4**. Endstatus: `diagnosis_incomplete`.

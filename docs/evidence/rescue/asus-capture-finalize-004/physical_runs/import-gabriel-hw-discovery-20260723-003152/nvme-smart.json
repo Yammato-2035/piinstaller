@@ -1,0 +1,90 @@
+{
+  "devices": [
+    {
+      "nvme_identity_hash": "6b45cc50d930d46e55b9d56e73b7540e03329164619069dd784a8273cb33d031",
+      "device_path": "/dev/nvme1n1",
+      "controller": "/dev/nvme1",
+      "firmware_revision": "2B2QEXM7",
+      "smart": {
+        "firmware_revision": "2B2QEXM7",
+        "critical_warning": 0,
+        "composite_temperature": 314,
+        "available_spare": 100,
+        "available_spare_threshold": 10,
+        "percentage_used": 1,
+        "data_units_read": 0,
+        "data_units_written": 0,
+        "host_read_commands": 0,
+        "host_write_commands": 0,
+        "controller_busy_time": 0,
+        "power_cycles": 0,
+        "power_on_hours": 0,
+        "unsafe_shutdowns": 901,
+        "media_errors": 0,
+        "num_err_log_entries": 0,
+        "warning_temp_time": 0,
+        "critical_comp_time": 0,
+        "temperature_sensors": {
+          "sensor_1": 314,
+          "sensor_2": 314
+        }
+      },
+      "health_label": "WARNING",
+      "health_eval": {
+        "health_status": "review_required",
+        "install_allowed": false,
+        "smart_status": "warning",
+        "media_errors": 0,
+        "critical_warning": false
+      },
+      "capture_status": "complete",
+      "resolve_status": "resolved_by_identity_hash",
+      "smartctl_present": true,
+      "error_log_entries": 64,
+      "write_allowed": false
+    },
+    {
+      "nvme_identity_hash": "ed84d453078b002bb70e496cefbb1d4c18fd3b783c0e8483703a770cb087c94a",
+      "device_path": "/dev/nvme0n1",
+      "controller": "/dev/nvme0",
+      "firmware_revision": "2B2QEXM7",
+      "smart": {
+        "firmware_revision": "2B2QEXM7",
+        "critical_warning": 0,
+        "composite_temperature": 314,
+        "available_spare": 100,
+        "available_spare_threshold": 10,
+        "percentage_used": 0,
+        "data_units_read": 0,
+        "data_units_written": 0,
+        "host_read_commands": 0,
+        "host_write_commands": 0,
+        "controller_busy_time": 743,
+        "power_cycles": 0,
+        "power_on_hours": 0,
+        "unsafe_shutdowns": 898,
+        "media_errors": 0,
+        "num_err_log_entries": 0,
+        "warning_temp_time": 0,
+        "critical_comp_time": 0,
+        "temperature_sensors": {
+          "sensor_1": 314,
+          "sensor_2": 316
+        }
+      },
+      "health_label": "WARNING",
+      "health_eval": {
+        "health_status": "review_required",
+        "install_allowed": false,
+        "smart_status": "warning",
+        "media_errors": 0,
+        "critical_warning": false
+      },
+      "capture_status": "complete",
+      "resolve_status": "resolved_by_identity_hash",
+      "smartctl_present": true,
+      "error_log_entries": 64,
+      "write_allowed": false
+    }
+  ]
+}

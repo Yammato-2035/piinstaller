@@ -2,6 +2,7 @@
 
 | Bereich | Status | Evidence |
 |---------|--------|----------|
+| PI-RS-ASUS-WIN11-RETEST-005 | GELB | Payload 1.10.2.3 ready; Stage A under BIOS 331 pending (`ready_for_windows_retest_bios331`) |
 | PI-RS-ASUS-DIAG-BIND-002 | GELB | Gabriel G513QM bound; importer fixed; BIOS 335 available; NVMe/Panther incomplete (`diagnosis_incomplete`) |
 | PI-RS-ASUS-WIN11-LINUX-001 | GELB | App 1.9.21.0 / Payload 1.10.1.3 — `implemented_pending_physical_diagnosis`; physische Läufe ausstehend |
 | Rescue Package Policy V2 | GRÜN | `docs/evidence/rescue/RESCUE_REQUIRED_PACKAGE_POLICY_V2.json` |

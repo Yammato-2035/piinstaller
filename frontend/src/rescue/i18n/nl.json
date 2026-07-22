@@ -626,5 +626,23 @@
     "tui": "Naar tekst-UI",
     "tuiHint": "Tekst-UI: GRUB of F10."
   },
-  "title": "Setuphelfer"
+  "title": "Setuphelfer",
+  "retestWindowsMedia": "Windows-installatiemedium",
+  "retestMediaVerified": "Installatiemedium geverifieerd",
+  "retestLinuxNvmeIsolated": "Linux-NVMe geïsoleerd",
+  "retestWindowsTargetConfirmed": "Windows-doel bevestigd",
+  "retestDataLossConfirmed": "Gegevensverlies bevestigd",
+  "retestSetupLogsSaving": "Setup-logs worden bewaard",
+  "retestInstallAborted": "Installatie afgebroken",
+  "retestSetupPhase": "Setup-fase",
+  "retestErrorCode": "Foutcode",
+  "retestRollback": "Rollback",
+  "retestBiosComparison": "BIOS-vergelijking",
+  "retestBiosNotProven": "BIOS niet bewezen als oorzaak",
+  "retestBiosPlausible": "BIOS plausibel als medeoorzaak",
+  "retestBiosStronglyImplicated": "BIOS sterk verdacht als medeoorzaak",
+  "retestIdenticalRetest": "identieke hertest",
+  "retestWindowsPostcheck": "Windows-postcontrole",
+  "retestLinuxStillLocked": "Linux-installatie nog geblokkeerd",
+  "retestLinuxPlanningReady": "Linux-planning vrijgegeven"
 }

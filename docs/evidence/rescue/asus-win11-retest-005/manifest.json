@@ -1,0 +1,24 @@
+{
+  "task_id": "PI-RS-ASUS-WIN11-RETEST-005",
+  "endstatus": "ready_for_windows_retest_bios331",
+  "payload_version": "1.10.2.3",
+  "app_version_unchanged": "1.9.21.2",
+  "source_diagnosis_run": "hw-discovery-20260723T003152Z-384c72f0",
+  "created_at": "2026-07-22T23:01:00Z",
+  "files": [
+    "baseline/linux_nvme_isolation.json",
+    "baseline/target_role_binding.json",
+    "bios_331/bios_331_baseline.json",
+    "bios_update_335/bios_335_update_result.json",
+    "causality/BIOS_331_335_CAUSALITY_ANALYSIS.md",
+    "causality/bios_causality_result.json",
+    "media/windows_media_result.json",
+    "postcheck/windows_postcheck_result.json",
+    "setup_331/setup_331_log_inventory.json",
+    "setup_331/setup_331_sha256sums.txt",
+    "setup_331/setupdiag_331_result.json",
+    "setup_331/windows_setup_331_result.json",
+    "setup_335/setupdiag_335_result.json",
+    "setup_335/windows_setup_335_result.json"
+  ]
+}

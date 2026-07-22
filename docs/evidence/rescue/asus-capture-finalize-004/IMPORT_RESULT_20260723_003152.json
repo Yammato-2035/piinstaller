@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-CAPTURE-FINALIZE-004",
+  "import_mode": "manual_identity_gated",
+  "auto_flow": false,
+  "gui": "not_applicable_for_text_hardware_discovery",
+  "stick": {
+    "model": "Ultra Line",
+    "device": "/dev/sda",
+    "labels": [
+      "SETUPHELFER",
+      "SETUP_LOGS"
+    ],
+    "setup_logs_mount": "/media/volker/SETUP_LOGS2"
+  },
+  "selected_run": {
+    "run_id": "hw-discovery-20260723T003152Z-384c72f0",
+    "boot_id": "5c3f5c47-61a0-4cf1-b502-650e1208b51a",
+    "payload_version": "1.10.2.2",
+    "profile_id": "asus_rog_gabriel",
+    "status": "complete",
+    "terminal": true,
+    "endstatus": "ready_for_controlled_windows_retest_with_log_collection",
+    "gui_status": "not_applicable_for_text_hardware_discovery",
+    "captures": {
+      "machine_identity": "complete",
+      "bios": "complete",
+      "nvme_identity": "complete",
+      "nvme_smart": "complete",
+      "nvme_error_logs": "complete",
+      "kernel_storage": "complete",
+      "partition_inventory": "complete",
+      "windows_setup_logs": "partial"
+    },
+    "missing_areas": [
+      "windows_setup_logs"
+    ],
+    "errors": [],
+    "warnings": [
+      "nguid_absent:6b45cc50d930",
+      "nguid_absent:ed84d453078b"
+    ]
+  },
+  "identity": {
+    "manufacturer": "ASUSTeK COMPUTER INC.",
+    "product_name": "ROG Strix G513QM_G513QM",
+    "board_name": "G513QM",
+    "bios_installed": "G513QM.331",
+    "bios_available": "G513QM.335",
+    "bios_status": "update_available",
+    "flash_performed": false
+  },
+  "nvme_smart": [
+    {
+      "identity_hash_prefix": "6b45cc50d930d46e",
+      "fw": "2B2QEXM7",
+      "health_label": "WARNING",
+      "capture_status": "complete",
+      "critical_warning": 0,
+      "media_errors": 0,
+      "unsafe_shutdowns": 901,
+      "power_on_hours": 0,
+      "available_spare": 100,
+      "percentage_used": 1,
+      "num_err_log_entries": 0,
+      "error_log_entries": 64
+    },
+    {
+      "identity_hash_prefix": "ed84d453078b002b",
+      "fw": "2B2QEXM7",
+      "health_label": "WARNING",
+      "capture_status": "complete",
+      "critical_warning": 0,
+      "media_errors": 0,
+      "unsafe_shutdowns": 898,
+      "power_on_hours": 0,
+      "available_spare": 100,
+      "percentage_used": 0,
+      "num_err_log_entries": 0,
+      "error_log_entries": 64
+    }
+  ],
+  "windows_setup_logs": {
+    "capture_status": "partial",
+    "panther_found": false,
+    "rollback_found": false,
+    "file_count": 0,
+    "mounts": [
+      {
+        "source": "/dev/nvme0n1p3",
+        "status": "ntfs_read_only_mount_blocked",
+        "error": "mount_failed"
+      }
+    ]
+  },
+  "cause": {
+    "likely_cause": "unknown",
+    "confidence": "low"
+  },
+  "excluded": {
+    "older_runs": [
+      "hw-discovery-20260722T210925Z-0ec17061",
+      "hw-discovery-20260723T000306Z-ec71f2a6",
+      "hw-discovery-20260723T000800Z-e2c6903a"
+    ],
+    "msi_path_on_stick": "setuphelfer/evidence/msi-rs011b",
+    "msi_imported": false,
+    "newest_session_fallback": false
+  },
+  "protected_raw_imported": false,
+  "raw_serials_in_import_tree": false,
+  "imported_at": "2026-07-22T22:37:49Z",
+  "diagnosis_status": "ready_for_controlled_windows_retest_with_log_collection",
+  "partition_inventory_redacted_before_git": true,
+  "note": "Full capture complete on payload 1.10.2.2; Windows NTFS mount blocked (hibernated/unclean) \u2192 panther not_found/partial; SMART WARNING due to high unsafe_shutdowns, critical_warning=0 media_errors=0."
+}
