@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
-  "generated_at": "2026-07-22T10:53:29Z",
+  "generated_at": "2026-07-22T10:54:04Z",
   "profile": "runtime-opt",
   "target": "/opt/setuphelfer",
-  "source_commit": "438c10c67ab9c54b4840bac87d121152f4dc3c90",
-  "source_commit_short": "438c10c67ab9",
+  "source_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20",
+  "source_commit_short": "146f451a40a4",
   "source_branch": "pi-opt-deploy-tauri-001",
   "source_dirty": true,
   "application_version": "1.9.20.1",

@@ -1,0 +1,326 @@
+{
+  "manifest_version": 1,
+  "schema_version": 1,
+  "generated_at": "2026-07-22T10:54:20.404531+00:00",
+  "deployment_profile": "runtime-opt",
+  "deployment_status": "deployed",
+  "project_version": "1.9.20.1",
+  "release_stage": "internal_testing",
+  "version_track": "setuphelfer_identifier_unification",
+  "git_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20",
+  "git_branch": "pi-opt-deploy-tauri-001",
+  "workspace_root": "/tmp/piinstaller-opt-deploy-tauri-001",
+  "app_edition": "unknown",
+  "source": {
+    "repository": "piinstaller",
+    "branch": "pi-opt-deploy-tauri-001",
+    "commit": "146f451a40a4e3212eb62c94b4d29f67b244df20",
+    "commit_short": "146f451a40a4",
+    "dirty": true
+  },
+  "application": {
+    "version": "1.9.20.1",
+    "runtime_path": "/opt/setuphelfer"
+  },
+  "components": {
+    "backend": {
+      "version": "1.9.20.1",
+      "source_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20"
+    },
+    "web_frontend": {
+      "version": "1.9.20.1",
+      "source_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20"
+    },
+    "tauri": {
+      "included": false,
+      "reason": "not_required_for_runtime_opt"
+    },
+    "rescue_payload": {
+      "version": "1.10.1.2",
+      "included_in_deploy": false
+    }
+  },
+  "files": [
+    {
+      "relative_path": "backend/app.py",
+      "sha256": "7b1768dcd6ff329eca4125c42467a218e9f0d6649f3ab66607430eac6f22f1a3",
+      "size_bytes": 373630,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/versioning.py",
+      "sha256": "c41ac9e96bea98f6dad4d61cc0078c5148bc95deb310d273dd883d350d6534c7",
+      "size_bytes": 3019,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/install_paths.py",
+      "sha256": "a11b313300564ed083186e43a0129b1036beebeda48f428db6d3a18fad728719",
+      "size_bytes": 4254,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/dev_dashboard.py",
+      "sha256": "01c5de56091da5c9cb84a2f7e3f36c69e67442dbecc840d6431df7d81f49a187",
+      "size_bytes": 43243,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/dev_dashboard_compact_status.py",
+      "sha256": "321f99639783139010b0d12b46245f2d0ef9e909fc5a46f0b5c0ad6c6d4f83bb",
+      "size_bytes": 9088,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/dev_dashboard_status_service.py",
+      "sha256": "8b8102083d66979e16ef344669d1be20fb1b9ab89c0cf7c75a0b9a9191c3b958",
+      "size_bytes": 3753,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/developer_capability.py",
+      "sha256": "10be38a3b2223dc0f3926cbca001ef1784b3865bfd1c393e719e1804bdd6181a",
+      "size_bytes": 12566,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/dev_control_center_summary.py",
+      "sha256": "1e3fa4ec6678915744a6166e49b91a3d5798bc3c48a0f8cda3945d4d05a45c28",
+      "size_bytes": 19114,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/runtime_governance/devserver_policy.py",
+      "sha256": "c6c9dd2651b56b8f26fc4109e943bb05e2fe86590e91a0a92e7b7fa8ddc1a631",
+      "size_bytes": 1813,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/runtime_governance/route_exposure.py",
+      "sha256": "d8e18fef431ad6230391e2cffa7fc2e4e211367906f92055b9a816cde513b10a",
+      "size_bytes": 3089,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/devserver/config.py",
+      "sha256": "01f09fbb5b6ccecc3fe8cf2ea613b1de10215e9a2de3a54a56c025d327912ac8",
+      "size_bytes": 4043,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/rescue_usb_operator_selection.py",
+      "sha256": "a657814ad5735231c07d68fea9c01d8d034cdb8014afa0aefb1ad7280294a708",
+      "size_bytes": 16161,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/rescue_fat32_esp_usb_writer.py",
+      "sha256": "bc87f07a18798d698f299c65e64188c106625d8f177ada9c45f845b80106460c",
+      "size_bytes": 56033,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/profile_deploy_manifest.py",
+      "sha256": "36fd5d676b490c9f7460c1feba1de532d9ae955d6e27d275625990daaef3417f",
+      "size_bytes": 11399,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/rescue_telemetry_ingest.py",
+      "sha256": "a320a0b8eb6c2612616afef4d506ba6fa34bc483ef52548a52983ef6a24b18da",
+      "size_bytes": 16132,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/rescue_telemetry_lan_proxy.py",
+      "sha256": "a675884ed30492766c0730e8ed3c20436769b666f9e9eb25ae2a57b3defd9904",
+      "size_bytes": 14360,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/rescue_telemetry_tasks.py",
+      "sha256": "5cbf447ca0e0fedf35e607b89d4a9ffa53bd1002636d3239853fbd338e06b6fa",
+      "size_bytes": 5538,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/core/rescue_network_telemetry_gate.py",
+      "sha256": "72da337ff2e1abe675fa19b5cb3f8d204de58fa3f5298a20967ef29909c069b5",
+      "size_bytes": 7550,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/rescue_telemetry/__init__.py",
+      "sha256": "ff9ceffdaed02de61cf9037ad881a8b10a49811bffb8af0b2423ec4ba16e1af9",
+      "size_bytes": 82,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/rescue_telemetry/routers.py",
+      "sha256": "f4e7b4debbd5bb86b7a03c442d65ab8a819d5f122d01b321608649ea18e65213",
+      "size_bytes": 3194,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "backend/tools/backup_runner.py",
+      "sha256": "e6f4f06373106689cb06d7874d8fd63398c3055d14bea0c18e5025ba223f08f0",
+      "size_bytes": 57858,
+      "kind": "backend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "packaging/helpers/setuphelfer-backup-starter.py",
+      "sha256": "81ca127229541faf07e2e74d1d8e6d48c94302a053fe85ab1e1d6bfc328165dd",
+      "size_bytes": 5088,
+      "kind": "packaging",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "config/version.json",
+      "sha256": "1ce2b8de60463d3e8bb8bdb1e3a6986cb31e5fd62e5acd69e376639f8d52138c",
+      "size_bytes": 232,
+      "kind": "config",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "frontend/package.json",
+      "sha256": "bacfc2ca60c2917816cad3089be1c808153928bf5b9873c18ef36a99708d8290",
+      "size_bytes": 2365,
+      "kind": "frontend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "frontend/src/components/ApiRuntimeConsistencyBanner.tsx",
+      "sha256": "2340121be448362bee233e3e494b34f6eeb4dd7f7123ea31c014e344c55ab02b",
+      "size_bytes": 9159,
+      "kind": "frontend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "frontend/src/components/dev-dashboard/RescueUsbOperatorToolbox.tsx",
+      "sha256": "e6954bbe37cbeef062c7d8c605bec0a5c403f23a8c8ee91bc5bd7c6ad6919b25",
+      "size_bytes": 13957,
+      "kind": "frontend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "frontend/src/lib/devDashboard/rescueUsbOperatorToolbox.ts",
+      "sha256": "23de91bf0bf98dbc87f79ea109c2cf2ec0a10e9383f20ffb9cff74a0a880ffb6",
+      "size_bytes": 2648,
+      "kind": "frontend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "frontend/src/components/dev-dashboard/DccCompactOverviewPanel.tsx",
+      "sha256": "c0aa4f5cf51bb49ef30541da27c15112f563dec967ecb0a2f785ced46de762b8",
+      "size_bytes": 7784,
+      "kind": "frontend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    },
+    {
+      "relative_path": "frontend/src/pages/DevDashboardBody.tsx",
+      "sha256": "ee762fcaffcd1cef9b98508522468867edc2b528738a84c0283f52518f539a62",
+      "size_bytes": 28045,
+      "kind": "frontend",
+      "required_runtime": true,
+      "runtime_path_hint": null
+    }
+  ],
+  "install_profile": "release",
+  "manifest_profile": "release",
+  "profile_manifest": {
+    "manifest_schema_version": 1,
+    "profile": "release",
+    "generated_at": "2026-07-22T10:54:20.404669+00:00",
+    "include": [
+      "backend/app.py",
+      "backend/core/versioning.py",
+      "backend/core/install_paths.py",
+      "config/version.json"
+    ],
+    "exclude": [
+      "node_modules/**",
+      "build/**",
+      "docs/evidence/runtime-results/**",
+      ".venv/**"
+    ],
+    "required_paths": [
+      "backend/app.py",
+      "config/version.json"
+    ],
+    "forbidden_runtime_paths": [
+      "backend/fleet",
+      "backend/dev_diagnostics",
+      "backend/rescue_remote",
+      "docs/evidence/runtime-results/rescue-remote"
+    ],
+    "required_api_paths": [],
+    "forbidden_api_paths": [
+      "/api/fleet",
+      "/api/dev-diagnostics",
+      "/api/rescue-remote",
+      "/api/dev-dashboard",
+      "/api/dev-server"
+    ],
+    "allowed_capabilities": [],
+    "forbidden_capabilities": [
+      "dev_control",
+      "dev_diagnostics",
+      "fleet_sessions",
+      "rescue_remote",
+      "remote_shell",
+      "write_runbooks"
+    ],
+    "public_exposure_allowed": false
+  },
+  "file_manifest_sha256": "f25f1419bbdb8ce034ba7fe1347c8e5748d25def503870ea4925841c5f4c3b84",
+  "manifest_sha256": "f25f1419bbdb8ce034ba7fe1347c8e5748d25def503870ea4925841c5f4c3b84"
+}
