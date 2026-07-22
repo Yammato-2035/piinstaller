@@ -4,11 +4,13 @@
 # Kann vom Backend (Deploy-Aktion) per sudo aufgerufen werden oder manuell.
 #
 # Verwendung:
-#   sudo ./scripts/deploy-to-opt.sh [QUELLVERZEICHNIS]
-#   Ohne Argument: Quellverzeichnis = Repo-Root (über diesem Skript).
-#   Mit Argument: z. B. sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller
-#   Optional: SETUPHELFER_SKIP_TAURI_BUILD=1 — überspringt npm run tauri:build
-#             (Vite-dist-Build läuft weiter; vorhandenes Tauri-Binary unter /opt bleibt).
+#   sudo ./scripts/deploy-to-opt.sh [--profile runtime-opt] [QUELLVERZEICHNIS]
+#   ./scripts/deploy-to-opt.sh --profile runtime-opt --plan
+#   sudo ./scripts/deploy-to-opt.sh --profile runtime-opt --with-tauri
+#   sudo ./scripts/deploy-to-opt.sh --skip-tauri
+# Profile: runtime-opt (Default, ohne Tauri), desktop-development, desktop-release,
+#          rescue-payload, package-release
+# Legacy: SETUPHELFER_SKIP_TAURI_BUILD=1 erzwingt Tauri-Skip.
 
 set -e
 
@@ -112,14 +114,8 @@ EOF
   ok "systemd: backend dev-workspace drop-in aktualisiert"
 }
 
-if [ "$(id -u)" -ne 0 ]; then
-  err "Dieses Skript muss mit sudo ausgeführt werden: sudo $0 [QUELLVERZEICHNIS]"
-  exit 1
-fi
-
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 DEFAULT_SOURCE="$(cd "$SCRIPT_DIR/.." && pwd)"
-SOURCE_DIR="${1:-$DEFAULT_SOURCE}"
 INSTALL_DIR="/opt/setuphelfer"
 CONFIG_DIR="/etc/setuphelfer"
 LOG_DIR="/var/log/setuphelfer"
@@ -127,9 +123,85 @@ STATE_DIR="/var/lib/setuphelfer"
 SYSTEMD_DIR="/etc/systemd/system"
 SERVICE_USER_NAME="setuphelfer"
 
+DEPLOY_PROFILE="runtime-opt"
+WITH_TAURI=0
+PLAN_ONLY=0
+SKIP_TAURI_FLAG=0
+SOURCE_DIR=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --profile) DEPLOY_PROFILE="${2:-}"; shift 2 ;;
+    --with-tauri) WITH_TAURI=1; shift ;;
+    --skip-tauri) SKIP_TAURI_FLAG=1; DEPLOY_PROFILE="runtime-opt"; shift ;;
+    --plan|--dry-run|--print-plan) PLAN_ONLY=1; shift ;;
+    -h|--help)
+      echo "Usage: sudo $0 [--profile runtime-opt] [--with-tauri|--skip-tauri] [--plan] [SOURCE_DIR]"
+      exit 0
+      ;;
+    -*)
+      err "Unbekanntes Argument: $1"
+      exit 2
+      ;;
+    *)
+      if [ -z "$SOURCE_DIR" ]; then SOURCE_DIR="$1"; else err "Zu viele Positionsargumente"; exit 2; fi
+      shift
+      ;;
+  esac
+done
+SOURCE_DIR="${SOURCE_DIR:-$DEFAULT_SOURCE}"
+
+case "$DEPLOY_PROFILE" in
+  runtime-opt|desktop-development|desktop-release|rescue-payload|package-release|runtime|opt|desktop|desktop-dev|rescue|package) ;;
+  *)
+    err "Unbekanntes Deploy-Profil: $DEPLOY_PROFILE"
+    exit 2
+    ;;
+esac
+case "$DEPLOY_PROFILE" in
+  runtime|opt) DEPLOY_PROFILE="runtime-opt" ;;
+  desktop-dev) DEPLOY_PROFILE="desktop-development" ;;
+  desktop) DEPLOY_PROFILE="desktop-release" ;;
+  rescue) DEPLOY_PROFILE="rescue-payload" ;;
+  package) DEPLOY_PROFILE="package-release" ;;
+esac
+
+if [ "$PLAN_ONLY" = "1" ]; then
+  export PYTHONPATH="${SOURCE_DIR}/backend${PYTHONPATH:+:$PYTHONPATH}"
+  python3 -c "
+from pathlib import Path
+import json, sys
+sys.path.insert(0, str(Path(r'''$SOURCE_DIR''') / 'backend'))
+from core.deploy_build_profiles import build_deploy_plan
+plan = build_deploy_plan(
+    repo_root=Path(r'''$SOURCE_DIR'''),
+    profile=r'''$DEPLOY_PROFILE''',
+    target='/opt/setuphelfer',
+    with_tauri=($WITH_TAURI == 1),
+)
+print(json.dumps(plan, indent=2, ensure_ascii=False))
+"
+  exit $?
+fi
+
+if [ "$(id -u)" -ne 0 ]; then
+  err "Dieses Skript muss mit sudo ausgeführt werden: sudo $0 [--profile runtime-opt] [QUELLVERZEICHNIS]"
+  exit 1
+fi
+
 if [ ! -f "$SOURCE_DIR/start.sh" ] || [ ! -d "$SOURCE_DIR/backend" ] || [ ! -d "$SOURCE_DIR/frontend" ]; then
   err "Kein gültiges PI-Installer-Repo unter: $SOURCE_DIR"
   exit 1
+fi
+
+DO_TAURI=0
+TAURI_SKIP_REASON="not_required_for_runtime_opt"
+case "$DEPLOY_PROFILE" in
+  desktop-development|desktop-release|package-release) DO_TAURI=1; TAURI_SKIP_REASON="" ;;
+esac
+if [ "$WITH_TAURI" = "1" ]; then DO_TAURI=1; TAURI_SKIP_REASON=""; fi
+if [ "$SKIP_TAURI_FLAG" = "1" ] || [ "${SETUPHELFER_SKIP_TAURI_BUILD:-0}" = "1" ]; then
+  DO_TAURI=0
+  TAURI_SKIP_REASON="explicit_skip_tauri"
 fi
 
 echo ""
@@ -139,7 +211,16 @@ echo -e "${CYAN}============================================${NC}"
 echo -e "  Quelle:  ${SOURCE_DIR}"
 echo -e "  Ziel:    ${INSTALL_DIR}"
 echo -e "  User:    ${SERVICE_USER_NAME}"
+echo -e "  Profil:  ${DEPLOY_PROFILE}"
 echo ""
+info "Deployment profile: $DEPLOY_PROFILE"
+info "Web frontend build: yes"
+if [ "$DO_TAURI" = "1" ]; then
+  info "Tauri build: yes"
+else
+  info "Tauri build: skipped"
+  info "Tauri skip reason: $TAURI_SKIP_REASON"
+fi
 
 # Service-User und Gruppe anlegen
 if ! getent passwd "$SERVICE_USER_NAME" >/dev/null 2>&1; then
@@ -216,15 +297,12 @@ if command -v npm >/dev/null 2>&1; then
   if npm run build 2>&1; then
     ok "frontend/dist erzeugt (vite build)"
   else
-    warn "vite build fehlgeschlagen – ohne frontend/dist/index.html startet setuphelfer.service nicht (Exit 1)."
+    err "vite build fehlgeschlagen – Deploy abgebrochen (Webfrontend erforderlich)."
+    exit 1
   fi
-  # Tauri-Build: Cargo/Rust liegen oft im Benutzer-Kontext; mit sudo ist $HOME=/root und cargo fehlt.
-  # Daher Build als der User ausführen, der sudo aufgerufen hat (der hat meist Rust).
-  # Optional: SETUPHELFER_SKIP_TAURI_BUILD=1 überspringt den langen Tauri-Rebuild und behält
-  # vorhandene Binaries unter /opt (rsync schließt target/ aus und löscht sie nicht).
-  # Vite-Produktionsbuild (frontend/dist) läuft weiterhin immer.
-  if [ "${SETUPHELFER_SKIP_TAURI_BUILD:-0}" = "1" ]; then
-    warn "Tauri-Build übersprungen (SETUPHELFER_SKIP_TAURI_BUILD=1) — vorhandenes Binary unter /opt bleibt erhalten."
+  # Tauri nur bei Desktop-/Package-Profil oder --with-tauri (DO_TAURI=1).
+  if [ "${DO_TAURI:-0}" != "1" ]; then
+    info "Tauri-Build übersprungen ($TAURI_SKIP_REASON) — vorhandenes Binary unter /opt bleibt erhalten."
   else
     BUILD_USER="${SUDO_USER:-}"
     if [ -n "$BUILD_USER" ] && su - "$BUILD_USER" -c "command -v cargo" >/dev/null 2>&1; then
@@ -233,19 +311,21 @@ if command -v npm >/dev/null 2>&1; then
       if su - "$BUILD_USER" -c "cd $INSTALL_DIR/frontend && export GDK_BACKEND=x11 && npm run tauri:build" 2>&1; then
         ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
       else
-        warn "Tauri-Build fehlgeschlagen. App-Fenster: Browser-Option oder manuell bauen (ohne sudo im Repo: npm run tauri:build, dann target/ nach /opt kopieren)."
+        err "Tauri-Build fehlgeschlagen (Profil erfordert Tauri)."
+        exit 1
       fi
-      # Frontend wieder root, finaler chown kommt unten
       chown -R root:root "$INSTALL_DIR/frontend"
     elif command -v cargo >/dev/null 2>&1; then
       info "Tauri-App bauen (kann einige Minuten dauern)..."
       if ( export GDK_BACKEND=x11; npm run tauri:build 2>&1 ); then
         ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
       else
-        warn "Tauri-Build fehlgeschlagen. App-Fenster unter /opt: Browser-Option nutzen oder später mit Ihrem User bauen."
+        err "Tauri-Build fehlgeschlagen (Profil erfordert Tauri)."
+        exit 1
       fi
     else
-      warn "Rust/Cargo nicht installiert (oder nur für einen anderen User). Tauri: Browser wählen oder als User mit Rust ausführen: sudo -u IhrUser ./scripts/deploy-to-opt.sh"
+      err "Rust/Cargo nicht verfügbar — Desktop-/Tauri-Profil kann nicht gebaut werden."
+      exit 1
     fi
   fi
 else
@@ -330,5 +410,56 @@ if [ -f "$INSTALL_DIR/scripts/install-desktop-entries.sh" ]; then
 fi
 
 echo ""
+info "Erzeuge Deploy-Manifest..."
+export SOURCE_DIR DEPLOY_PROFILE
+TAURI_INCLUDED=0; [ "${DO_TAURI:-0}" = "1" ] && TAURI_INCLUDED=1
+export TAURI_INCLUDED
+export TAURI_REASON="${TAURI_SKIP_REASON:-not_required_for_runtime_opt}"
+if PYTHONPATH="$SOURCE_DIR/backend${PYTHONPATH:+:$PYTHONPATH}" \
+  SOURCE_DIR="$SOURCE_DIR" DEPLOY_PROFILE="$DEPLOY_PROFILE" \
+  TAURI_INCLUDED="$TAURI_INCLUDED" TAURI_REASON="$TAURI_REASON" \
+  python3 -c '
+from pathlib import Path
+import json, os, subprocess, sys
+sys.path.insert(0, str(Path(os.environ["SOURCE_DIR"]) / "backend"))
+from core.deploy_manifest import build_manifest_data, workspace_manifest_path
+from core.profile_deploy_manifest import build_profile_manifest_data, manifest_sha256
+repo = Path(os.environ["SOURCE_DIR"])
+dirty = False
+try:
+    p = subprocess.run(["git","-C",str(repo),"status","--porcelain"], capture_output=True, text=True, timeout=3)
+    dirty = bool((p.stdout or "").strip())
+except Exception:
+    pass
+data = build_manifest_data(
+    repo,
+    deployment_profile=os.environ.get("DEPLOY_PROFILE","runtime-opt"),
+    tauri_included=os.environ.get("TAURI_INCLUDED")=="1",
+    tauri_skip_reason=os.environ.get("TAURI_REASON","not_required_for_runtime_opt"),
+    dirty=dirty,
+)
+pm = build_profile_manifest_data("release", repo)
+data["install_profile"] = "release"
+data["manifest_profile"] = "release"
+data["profile_manifest"] = pm
+out = workspace_manifest_path(repo)
+out.parent.mkdir(parents=True, exist_ok=True)
+out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+data["file_manifest_sha256"] = manifest_sha256(out)
+data["manifest_sha256"] = data["file_manifest_sha256"]
+out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+print(out)
+'; then
+  MANIFEST_OUT="$SOURCE_DIR/build/deploy/setuphelfer-deploy-manifest.json"
+  mkdir -p "$INSTALL_DIR/build/deploy" "$INSTALL_DIR/deploy"
+  cp -a "$MANIFEST_OUT" "$INSTALL_DIR/build/deploy/setuphelfer-deploy-manifest.json"
+  cp -a "$MANIFEST_OUT" "$INSTALL_DIR/deploy/setuphelfer-deploy-manifest.json"
+  safe_chown_tree "$INSTALL_DIR/build/deploy" || true
+  safe_chown_tree "$INSTALL_DIR/deploy" || true
+  ok "Deploy-Manifest geschrieben"
+else
+  warn "Deploy-Manifest konnte nicht erzeugt werden"
+fi
+
 ok "Deploy abgeschlossen. Setuphelfer läuft unter $INSTALL_DIR als User $SERVICE_USER_NAME."
 echo ""

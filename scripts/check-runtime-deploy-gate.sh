@@ -177,7 +177,16 @@ if [[ "$http_dd" != "200" ]]; then
   if [[ "$http_dd" == "404" ]] && command -v python3 >/dev/null 2>&1; then
   prof="$(python3 -c "import json;print(json.load(open('$tmp_api')).get('install_profile',''))" 2>/dev/null || true)"
   if [[ "$prof" == "release" || "$prof" == "production" ]]; then
-    log "check-runtime-deploy-gate: dev-dashboard 404 erwartet im Profil $prof — Profil-Gate: check-runtime-profile-deploy-gate.sh"
+    log "check-runtime-deploy-gate: release-Profil ohne Dev-Dashboard — delegiere an Profile-Gate"
+    PROFILE_GATE="$REPO_ROOT/scripts/check-runtime-profile-deploy-gate.sh"
+    if [[ -x "$PROFILE_GATE" ]]; then
+      set +e
+      "$PROFILE_GATE"
+      pec=$?
+      set -e
+      exit "$pec"
+    fi
+    log "check-runtime-deploy-gate: Profile-Gate fehlt ($PROFILE_GATE)"
   fi
   fi
   exit 20

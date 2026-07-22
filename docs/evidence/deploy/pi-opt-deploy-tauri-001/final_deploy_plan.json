@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-07-22T10:53:29Z",
+  "profile": "runtime-opt",
+  "target": "/opt/setuphelfer",
+  "source_commit": "438c10c67ab9c54b4840bac87d121152f4dc3c90",
+  "source_commit_short": "438c10c67ab9",
+  "source_branch": "pi-opt-deploy-tauri-001",
+  "source_dirty": true,
+  "application_version": "1.9.20.1",
+  "rescue_payload_version": "1.10.1.2",
+  "components": {
+    "backend": {
+      "required": true,
+      "action": "copy_or_install"
+    },
+    "web_frontend": {
+      "required": true,
+      "action": "build"
+    },
+    "tauri": {
+      "required": false,
+      "action": "skip",
+      "reason": "not_required_for_runtime_opt"
+    },
+    "rescue_payload": {
+      "required": false,
+      "action": "skip",
+      "version": "1.10.1.2"
+    },
+    "systemd": {
+      "required": true,
+      "action": "install_or_sync"
+    },
+    "deploy_manifest": {
+      "required": true,
+      "action": "generate"
+    }
+  },
+  "commands_forbidden_unless_tauri": [
+    "npm run tauri:build",
+    "tauri build",
+    "cargo build --release (src-tauri)"
+  ],
+  "services_expected": [
+    "setuphelfer-backend.service",
+    "setuphelfer.service"
+  ]
+}

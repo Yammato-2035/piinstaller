@@ -3445,5 +3445,21 @@
   "devDashboard.roadmap.legacyRsvgCompatibility": "Legacy rsvg compatibility",
   "devDashboard.roadmap.targetArchitectureNotCovered": "Target architecture not covered",
   "devDashboard.roadmap.diagnosticsLearnedFromEvidence": "Diagnostics learned from evidence",
-  "devDashboard.roadmap.rescueBuildDiagnostics": "Rescue build diagnostics"
+  "devDashboard.roadmap.rescueBuildDiagnostics": "Rescue build diagnostics",
+  "devDashboard": {
+    "deployProfile": {
+      "runtimeOpt": "Deployment profile: runtime-opt",
+      "tauriSkipped": "Tauri is not required for this profile",
+      "webBuilt": "Browser web frontend is being built",
+      "desktopBuilt": "Desktop package is being built"
+    },
+    "deploySourceCommit": "Deploy source commit",
+    "workspaceContextUnavailable": "Workspace context not available in RUNTIME_API",
+    "runtimeManifestMatch": "Runtime and manifest match",
+    "runtimeOlderThanSource": "Runtime is older than the deploy source",
+    "deployComplete": "Deploy complete",
+    "deployBlocked": "Deploy blocked",
+    "versionDomain": "Version domain",
+    "rescuePayloadVersion": "Rescue stick payload version"
+  }
 }

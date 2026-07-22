@@ -2686,7 +2686,21 @@
       "telemetry": "Telemetry",
       "title": "Windows roodding Inspect",
       "windowsHealth": "Windows health"
-    }
+    },
+    "deployProfile": {
+      "runtimeOpt": "Deploy-profiel: runtime-opt",
+      "tauriSkipped": "Tauri is niet nodig voor dit profiel",
+      "webBuilt": "Browser-webfrontend wordt gebouwd",
+      "desktopBuilt": "Desktoppakket wordt gebouwd"
+    },
+    "deploySourceCommit": "Deploy-broncommit",
+    "workspaceContextUnavailable": "Workspace-context niet beschikbaar in RUNTIME_API",
+    "runtimeManifestMatch": "Runtime en manifest komen overeen",
+    "runtimeOlderThanSource": "Runtime is ouder dan de deploy-bron",
+    "deployComplete": "Deploy voltooid",
+    "deployBlocked": "Deploy geblokkeerd",
+    "versionDomain": "Versiedomein",
+    "rescuePayloadVersion": "Rescue-stick payload-versie"
   },
   "diagnosis": {
     "codes": {

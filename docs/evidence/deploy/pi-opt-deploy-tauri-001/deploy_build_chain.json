@@ -1,0 +1,8 @@
+{
+  "entry": "scripts/deploy-to-opt.sh",
+  "tauri_command": "npm run tauri:build",
+  "web_frontend_command": "npm run build",
+  "default_profile": "runtime-opt",
+  "tauri_required_for_runtime_opt": false,
+  "opt_services_need_tauri": false
+}

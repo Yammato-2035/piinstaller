@@ -2686,7 +2686,21 @@
       "telemetry": "Telemetry",
       "title": "Windows Secours Inspect",
       "windowsHealth": "Windows health"
-    }
+    },
+    "deployProfile": {
+      "runtimeOpt": "Profil de déploiement : runtime-opt",
+      "tauriSkipped": "Tauri n’est pas requis pour ce profil",
+      "webBuilt": "Le frontend web navigateur est en cours de build",
+      "desktopBuilt": "Le paquet bureau est en cours de build"
+    },
+    "deploySourceCommit": "Commit source du déploiement",
+    "workspaceContextUnavailable": "Contexte workspace indisponible en RUNTIME_API",
+    "runtimeManifestMatch": "Runtime et manifeste correspondent",
+    "runtimeOlderThanSource": "La runtime est plus ancienne que la source déployée",
+    "deployComplete": "Déploiement terminé",
+    "deployBlocked": "Déploiement bloqué",
+    "versionDomain": "Domaine de version",
+    "rescuePayloadVersion": "Version de payload du stick de secours"
   },
   "diagnosis": {
     "codes": {

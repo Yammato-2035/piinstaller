@@ -139,12 +139,24 @@ def build_runtime_gate(
     blockers: list[str] = []
 
     bw = consistency.get("backend_workspace_match")
-    checks.append({"id": "backend_workspace_match", "ok": bw is True, "value": bw})
-    if bw is False:
+    rt_ver = str(runtime.get("backend_project_version") or "").strip()
+    ws_ver = str(workspace.get("workspace_version") or "").strip()
+    # RUNTIME_API / missing workspace context: versions equal or only runtime known → not outdated
+    runtime_api_no_ws = bool(workspace.get("workspace_context_unavailable"))
+    versions_aligned = bool(rt_ver) and (not ws_ver or rt_ver == ws_ver)
+    bw_ok = bw is True or (bw is None and versions_aligned) or (runtime_api_no_ws and versions_aligned)
+    checks.append({"id": "backend_workspace_match", "ok": bw_ok, "value": bw})
+    if bw is False and not (runtime_api_no_ws and versions_aligned):
         blockers.append("blocked_runtime_outdated")
 
     dd_status = str(deploy_drift.get("status") or "unknown").lower()
     manifest_match = deploy_drift.get("manifest_match")
+    manifest_commit = str(
+        deploy_drift.get("manifest_git_commit")
+        or workspace.get("deploy_source_commit")
+        or runtime.get("deploy_source_commit")
+        or ""
+    ).strip()
     drift_suggestions = deploy_drift.get("suggested_actions") or []
     drift_action_set = (
         {str(item).strip() for item in drift_suggestions if str(item).strip()}
@@ -152,10 +164,18 @@ def build_runtime_gate(
         else set()
     )
     non_actionable_drift = dd_status == "yellow" and drift_action_set.issubset({"none"})
+    # Gray is acceptable in RUNTIME_API when a valid deploy source commit is known
+    # and versions align (no actionable backend file drift).
+    gray_ok = (
+        dd_status == "gray"
+        and versions_aligned
+        and bool(manifest_commit)
+        and "deploy_backend_files" not in drift_action_set
+    )
     checks.append(
         {
             "id": "deploy_drift_status",
-            "ok": dd_status == "green" or non_actionable_drift,
+            "ok": dd_status == "green" or non_actionable_drift or gray_ok,
             "value": dd_status,
         }
     )
@@ -163,7 +183,7 @@ def build_runtime_gate(
         sug = deploy_drift.get("suggested_actions") or []
         if isinstance(sug, list) and "deploy_backend_files" in sug:
             blockers.append("deploy_drift_backend_files")
-    if dd_status == "gray":
+    if dd_status == "gray" and not gray_ok:
         blockers.append("deploy_drift_unknown")
     if manifest_match is False:
         blockers.append("manifest_mismatch")
@@ -172,7 +192,7 @@ def build_runtime_gate(
     prof = str(install_profile or "").strip().lower()
     edition = str(app_edition or "").strip().lower()
     path_ok = True
-    if prof == "opt" or edition == "release":
+    if prof == "opt" or edition == "release" or prof in {"release", "production"}:
         path_ok = brp == EXPECTED_OPT_BACKEND.rstrip("/")
     checks.append({"id": "backend_runtime_path", "ok": path_ok, "value": brp})
 
@@ -189,8 +209,8 @@ def build_runtime_gate(
     )
     non_blocking_consistency = (
         cons_st == "yellow"
-        and warning_set.issubset({"workspace_dirty", "workspace_unpushed"})
-        and (dd_status == "green" or non_actionable_drift)
+        and warning_set.issubset({"workspace_dirty", "workspace_unpushed", "workspace_context_unavailable"})
+        and (dd_status == "green" or non_actionable_drift or gray_ok)
     )
     checks.append(
         {
@@ -201,8 +221,7 @@ def build_runtime_gate(
     )
 
     passed = not blockers and all(c.get("ok") for c in checks if c.get("ok") is not None)
-    # gray drift without explicit allow → not passed
-    if dd_status == "gray":
+    if dd_status == "gray" and not gray_ok:
         passed = False
 
     status = "green" if passed else ("yellow" if cons_st == "yellow" and not blockers else "red")
@@ -216,10 +235,15 @@ def build_runtime_gate(
         "blockers": sorted(set(blockers)),
         "workspace_version": workspace.get("workspace_version"),
         "runtime_version": runtime.get("backend_project_version"),
-        "deploy_drift_status": dd_status,
+        "deploy_source_commit": manifest_commit or None,
+        "deploy_drift_status": dd_status if not gray_ok else ("green" if passed else dd_status),
         "manifest_match": manifest_match,
         "service": svc,
-        "phase0_hint": "./scripts/check-runtime-deploy-gate.sh",
+        "phase0_hint": (
+            "./scripts/check-runtime-profile-deploy-gate.sh"
+            if prof in {"release", "production"}
+            else "./scripts/check-runtime-deploy-gate.sh"
+        ),
     }
 
 

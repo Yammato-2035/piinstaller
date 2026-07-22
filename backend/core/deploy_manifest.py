@@ -85,6 +85,15 @@ def runtime_manifest_candidates(runtime_root: Path) -> tuple[Path, Path]:
     )
 
 
+def load_runtime_manifest(runtime_root: Path) -> dict[str, Any] | None:
+    """Liest das erste vorhandene Runtime-Deploy-Manifest unter /opt."""
+    for cand in runtime_manifest_candidates(runtime_root):
+        data, _err = _safe_read_manifest(cand)
+        if isinstance(data, dict):
+            return data
+    return None
+
+
 def validate_manifest_relative_path(rel: str) -> str:
     r = rel.replace("\\", "/").strip().lstrip("/")
     if not r or ".." in r.split("/"):
@@ -189,7 +198,14 @@ def _app_edition_safe() -> str:
         return "unknown"
 
 
-def build_manifest_data(repo_root: Path) -> dict[str, Any]:
+def build_manifest_data(
+    repo_root: Path,
+    *,
+    deployment_profile: str = "runtime-opt",
+    tauri_included: bool = False,
+    tauri_skip_reason: str = "not_required_for_runtime_opt",
+    dirty: bool | None = None,
+) -> dict[str, Any]:
     """Baut das Manifest-Dict; wirft DeployManifestError bei fehlender Pflichtdatei oder Verbots-Pfad."""
     try:
         root = repo_root.expanduser().resolve()
@@ -217,9 +233,23 @@ def build_manifest_data(repo_root: Path) -> dict[str, Any]:
         )
     pv, stage, track = _read_version_meta(root)
     commit, branch = _git_head_branch(root)
+    payload_ver = ""
+    try:
+        payload_path = root / "config" / "rescue_payload_version.json"
+        if payload_path.is_file():
+            payload_raw = json.loads(payload_path.read_text(encoding="utf-8"))
+            if isinstance(payload_raw, dict):
+                payload_ver = str(payload_raw.get("rescue_payload_version") or "").strip()
+    except (OSError, json.JSONDecodeError, TypeError):
+        payload_ver = ""
+    source_dirty = bool(dirty) if dirty is not None else False
+    short = (commit or "")[:12]
     return {
         "manifest_version": MANIFEST_VERSION,
+        "schema_version": MANIFEST_VERSION,
         "generated_at": datetime.now(tz=UTC).isoformat(),
+        "deployment_profile": deployment_profile,
+        "deployment_status": "deployed",
         "project_version": pv,
         "release_stage": stage,
         "version_track": track,
@@ -227,6 +257,29 @@ def build_manifest_data(repo_root: Path) -> dict[str, Any]:
         "git_branch": branch,
         "workspace_root": str(root),
         "app_edition": _app_edition_safe(),
+        "source": {
+            "repository": "piinstaller",
+            "branch": branch,
+            "commit": commit,
+            "commit_short": short,
+            "dirty": source_dirty,
+        },
+        "application": {
+            "version": pv,
+            "runtime_path": "/opt/setuphelfer",
+        },
+        "components": {
+            "backend": {"version": pv, "source_commit": commit},
+            "web_frontend": {"version": pv, "source_commit": commit},
+            "tauri": {
+                "included": bool(tauri_included),
+                "reason": None if tauri_included else tauri_skip_reason,
+            },
+            "rescue_payload": {
+                "version": payload_ver,
+                "included_in_deploy": False,
+            },
+        },
         "files": files_out,
     }
 

@@ -1,5 +1,6 @@
 ## Unreleased
 
+- **PI-OPT-DEPLOY-TAURI-001:** `/opt`-Deploy-Profil `runtime-opt` ohne Tauri-Vollbuild, Deploy-Manifest mit `source.commit`, RUNTIME_API-Drift ohne falsches `blocked_runtime_outdated`, App-Version **1.9.20.1** (Payload bleibt **1.10.1.2**).
 - **PI-RS-BVR-GUI-VT-PROGRESS-002 / 002R:** VT-Auswahl ohne fremdes Kill, Chromium-Health für `auto-e2e-progress.html`, kanonischer BVR-Fortschritt, Release-Status `GET /api/status/rescue-bvr`, Payload **1.10.1.2**. Physischer MSI-Lauf `e2e-rescue-msi-20260722-072255-05b6f187`: BVR passed, GUI nicht sichtbar. Status: `passed_with_gui_fallback`.
 
 # Changelog

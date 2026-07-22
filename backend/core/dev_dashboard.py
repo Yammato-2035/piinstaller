@@ -759,6 +759,19 @@ def _build_runtime_workspace_sections(
         warnings.append(f"backend_runtime_path:{exc}")
         backend_runtime_path = ""
 
+    deploy_source_commit: str | None = None
+    try:
+        from core.deploy_manifest import load_runtime_manifest
+
+        rt_manifest = load_runtime_manifest(Path("/opt/setuphelfer"))
+        if isinstance(rt_manifest, dict):
+            src = rt_manifest.get("source") if isinstance(rt_manifest.get("source"), dict) else {}
+            deploy_source_commit = str(
+                (src or {}).get("commit") or rt_manifest.get("git_commit") or ""
+            ).strip() or None
+    except Exception:
+        deploy_source_commit = None
+
     runtime: dict[str, Any] = {
         "backend_api_reachable": True,
         "backend_version": backend_version,
@@ -768,18 +781,34 @@ def _build_runtime_workspace_sections(
         "install_profile": install_profile,
         "backend_runtime_path": backend_runtime_path or None,
         "app_edition": app_edition,
+        "deploy_source_commit": deploy_source_commit,
     }
+
+    git_head = git_detail.get("git_head")
+    workspace_context_unavailable = not bool(git_head) and ws_root.resolve() == Path(
+        "/opt/setuphelfer"
+    ).resolve()
+    if not git_head and deploy_source_commit:
+        # RUNTIME_API: prefer manifest source commit over unknown workspace HEAD
+        workspace_context_unavailable = True
 
     workspace: dict[str, Any] = {
         "workspace_path": str(ws_root),
         "workspace_version": ws_pv,
         "workspace_release_stage": ws_rs,
         "workspace_version_track": ws_vt,
-        "git_head": git_detail.get("git_head"),
+        "git_head": git_head,
         "git_branch": git_detail.get("git_branch"),
         "git_dirty_count": git_detail.get("git_dirty_count"),
         "git_unpushed_count": git_detail.get("git_unpushed_count"),
+        "deploy_source_commit": deploy_source_commit,
+        "workspace_context_unavailable": workspace_context_unavailable,
     }
+    if workspace_context_unavailable:
+        cw_pre = "workspace_context_unavailable"
+    else:
+        cw_pre = ""
+
 
     fe_src = _normalize_frontend_runtime_source(frontend_runtime_source)
     fe_ver = (frontend_build_version or "").strip() or None
@@ -796,6 +825,8 @@ def _build_runtime_workspace_sections(
     }
 
     cw: list[str] = []
+    if cw_pre:
+        cw.append(cw_pre)
     if not backend_version:
         cw.append("version_unknown")
     if not ws_pv:
