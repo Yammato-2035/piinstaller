@@ -114,6 +114,8 @@ inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-entrypoint.sh"
   "${IMG}/setuphelfer-rescue-entrypoint.sh"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-asus-rog-bios-gate" \
   "${IMG}/setuphelfer-rescue-asus-rog-bios-gate"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-hardware-discovery" \
+  "${IMG}/setuphelfer-rescue-hardware-discovery"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-pi5-lab" \
   "${IMG}/setuphelfer-rescue-pi5-lab"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-deadline" \
@@ -174,6 +176,7 @@ for name in setuphelfer-rescue-tui setuphelfer-rescue-common.sh \
             setuphelfer-rescue-gui-watchdog setuphelfer-rescue-gui-watchdog.sh \
             setuphelfer-rescue-entrypoint setuphelfer-rescue-entrypoint.sh \
             setuphelfer-rescue-asus-rog-bios-gate setuphelfer-rescue-pi5-lab \
+            setuphelfer-rescue-hardware-discovery \
             setuphelfer-rescue-tui-deadline \
             setuphelfer-rescue-physical-e2e setuphelfer-rescue-physical-e2e-start-gate \
             setuphelfer-rescue-auto-physical-e2e \

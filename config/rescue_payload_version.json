@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rescue_payload_version": "1.10.1.4",
-  "previous_rescue_payload_version": "1.10.1.3",
+  "rescue_payload_version": "1.10.2.0",
+  "previous_rescue_payload_version": "1.10.1.4",
   "pi_rs_msi_fix_001": true,
   "pi_rs_msi_gui_002": true,
   "pi_rs_msi_gui_003": true,
@@ -39,5 +39,6 @@
   "pi_rs_bvr_gui_dcc_001": true,
   "pi_rs_bvr_gui_vt_progress_002": true,
   "pi_rs_asus_win11_linux_001": true,
-  "pi_rs_asus_diag_bind_002": true
+  "pi_rs_asus_diag_bind_002": true,
+  "pi_rs_asus_physical_diag_003": true
 }

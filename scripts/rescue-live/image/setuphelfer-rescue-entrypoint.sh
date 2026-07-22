@@ -41,7 +41,21 @@ if grep -Eq '(^| )setuphelfer_wifi_diag=1( |$)' /proc/cmdline 2>/dev/null \
   setuphelfer_rescue_write_boot_state "hardware_wifi_prepared"
 fi
 
+# PI-RS-ASUS-PHYSICAL-DIAG-003: read-only hardware_discovery (no MSI auto / no shutdown).
+if grep -Eq '(^| )setuphelfer_hardware_discovery=1( |$)' /proc/cmdline 2>/dev/null; then
+  setuphelfer_rescue_write_boot_state "hardware_discovery_requested"
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-hardware-discovery" ]]; then
+    # Operator must confirm Gabriel bind in TUI; here only tooling/prep marker.
+    printf '\nSetuphelfer: Hardwarediagnose (nur Lesen) — bitte im Textmenü bestätigen.\n' \
+      >/dev/tty1 2>/dev/null || true
+  fi
+fi
+
 if setuphelfer_rescue_should_start_gui; then
+  # Hardware discovery prefers TUI confirmation over kiosk GUI.
+  if grep -Eq '(^| )setuphelfer_hardware_discovery=1( |$)' /proc/cmdline 2>/dev/null; then
+    setuphelfer_rescue_write_boot_state "hardware_discovery_skip_gui"
+  else
   setuphelfer_rescue_write_boot_state "gui_requested"
   printf '\nSetuphelfer: starte grafische Oberflaeche…\n' >/dev/tty1 2>/dev/null || true
   if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-gui-watchdog" ]]; then
@@ -53,6 +67,7 @@ if setuphelfer_rescue_should_start_gui; then
   printf '\nGrafische Oberflaeche nicht verfuegbar — wechsle in den Textmodus (sichtbare Schritte)…\n' \
     >/dev/tty1 2>/dev/null || true
   sleep 1
+  fi
 fi
 
 setuphelfer_rescue_write_boot_state "text_mode_started"

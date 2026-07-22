@@ -18,6 +18,95 @@ def _tone(status: str | None) -> str:
     return "gray"
 
 
+def build_gabriel_physical_diag_dcc(
+    *,
+    binding: Mapping[str, Any] | None = None,
+    bios: Mapping[str, Any] | None = None,
+    nvme_a: Mapping[str, Any] | None = None,
+    nvme_b: Mapping[str, Any] | None = None,
+    windows: Mapping[str, Any] | None = None,
+    endstatus: str = "diagnosis_incomplete",
+) -> dict[str, Any]:
+    """DCC block for Gabriel G513QM physical diagnosis (no full serials)."""
+    b = dict(binding or {})
+    bios_d = dict(bios or {})
+    win = dict(windows or {})
+
+    def _nvme_slot(entry: Mapping[str, Any] | None, label: str) -> dict[str, Any]:
+        e = dict(entry or {})
+        tone = _tone(str(e.get("health_label") or e.get("smart_status") or "gray").lower())
+        if str(e.get("health_label") or "").upper() == "CRITICAL":
+            tone = "red"
+        elif str(e.get("health_label") or "").upper() == "WARNING":
+            tone = "yellow"
+        elif str(e.get("health_label") or "").upper() == "HEALTHY":
+            tone = "green"
+        return {
+            "label": label,
+            "identity_hash_short": str(e.get("nvme_identity_hash") or e.get("serial_hash") or "")[:12],
+            "serial_masked": e.get("serial_masked") or "",
+            "firmware": e.get("firmware_revision") or "",
+            "pci": e.get("pci_address") or "",
+            "smart": e.get("health_label") or e.get("smart_status") or "GRAY",
+            "role": e.get("intended_role") or "unassigned",
+            "write_allowed": False,
+            "tone": tone if e else "gray",
+        }
+
+    panther = win.get("panther_found")
+    if panther is True:
+        win_tone = "yellow"
+    elif panther is False:
+        win_tone = "yellow"
+    else:
+        win_tone = "gray"
+
+    overall = "yellow"
+    if endstatus.startswith("blocked_"):
+        overall = "red"
+    elif endstatus in {
+        "ready_for_controlled_windows_retest_with_log_collection",
+        "ready_for_windows_install_planning",
+        "diagnosis_complete_windows_fix_pending",
+    }:
+        overall = "green" if endstatus != "diagnosis_complete_windows_fix_pending" else "yellow"
+
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
+        "title": "Gabriel – ROG Strix G513QM",
+        "machine": {
+            "bound": bool(b.get("ok")),
+            "profile": b.get("profile") or "asus_rog_gabriel",
+            "fingerprint_consistent": bool(b.get("ok")),
+            "tone": "green" if b.get("ok") else "red",
+        },
+        "bios": {
+            "installed": bios_d.get("installed") or "G513QM.331",
+            "available": bios_d.get("official_available") or "G513QM.335",
+            "status": bios_d.get("status") or "update_available",
+            "flash_performed": False,
+            "tone": "yellow",
+        },
+        "nvme_a": _nvme_slot(nvme_a, "NVMe A"),
+        "nvme_b": _nvme_slot(nvme_b, "NVMe B"),
+        "windows": {
+            "panther_found": panther,
+            "rollback_found": win.get("rollback_found"),
+            "setup_phase": win.get("setup_phase") or "UNKNOWN",
+            "error_code": win.get("error_code") or "",
+            "likely_cause": win.get("likely_cause") or "unknown",
+            "confidence": win.get("confidence") or "low",
+            "next_step": win.get("next_step") or "controlled_hardware_discovery_on_gabriel",
+            "tone": win_tone,
+        },
+        "endstatus": endstatus,
+        "overall_tone": overall,
+        "msi_storage_map_shown": False,
+        "write_authorization": False,
+    }
+
+
 def build_rescue_installation_readiness(
     *,
     msi_bios: Mapping[str, Any] | None = None,

@@ -1,0 +1,98 @@
+#!/bin/bash
+# Read-only ASUS hardware_discovery capture (PI-RS-ASUS-PHYSICAL-DIAG-003).
+# Writes to SETUP_LOGS. Never formats disks or flashes BIOS.
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh" 2>/dev/null || true
+
+setuphelfer_rescue_ensure_state_dir 2>/dev/null || true
+if [[ -f /run/setuphelfer-rescue/environment ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source /run/setuphelfer-rescue/environment
+  set +a
+fi
+
+OPERATOR_CONFIRMED=0
+OPERATOR_PHRASE=""
+ALLOW_NON_GABRIEL=0
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --operator-confirmed) OPERATOR_CONFIRMED=1; shift ;;
+    --operator-phrase) OPERATOR_PHRASE="$2"; shift 2 ;;
+    --allow-non-gabriel-diag) ALLOW_NON_GABRIEL=1; shift ;;
+    -h|--help)
+      echo "Usage: $0 [--operator-confirmed] [--operator-phrase TEXT] [--allow-non-gabriel-diag]"
+      exit 0
+      ;;
+    *) echo "Unknown: $1" >&2; exit 2 ;;
+  esac
+done
+
+_PY="$(setuphelfer_rescue_backend_python 2>/dev/null || command -v python3)"
+_PYPATH="$(setuphelfer_rescue_backend_pythonpath 2>/dev/null || echo /opt/setuphelfer-rescue/backend)"
+
+# Resolve SETUP_LOGS evidence root
+EVIDENCE_ROOT=""
+for cand in \
+  /run/setuphelfer/esp-rw/setuphelfer/evidence \
+  /media/*/SETUP_LOGS/setuphelfer/evidence \
+  /media/*/SETUP_LOGS2/setuphelfer/evidence; do
+  for p in $cand; do
+    if [[ -d "$p" ]]; then EVIDENCE_ROOT="$p"; break 2; fi
+  done
+done
+if [[ -z "$EVIDENCE_ROOT" ]]; then
+  EVIDENCE_ROOT="/run/setuphelfer/hardware-discovery-evidence"
+  mkdir -p "$EVIDENCE_ROOT"
+fi
+
+export SETUPHELFER_HW_DISCOVERY_EVIDENCE_ROOT="$EVIDENCE_ROOT"
+export SETUPHELFER_HW_DISCOVERY_OPERATOR_CONFIRMED="$OPERATOR_CONFIRMED"
+export SETUPHELFER_HW_DISCOVERY_OPERATOR_PHRASE="$OPERATOR_PHRASE"
+export SETUPHELFER_HW_DISCOVERY_ALLOW_NON_GABRIEL="$ALLOW_NON_GABRIEL"
+
+cat <<'EOF'
+============================================================
+GERÄTEBINDUNG / HARDWARE DISCOVERY
+============================================================
+Profil: asus_rog_gabriel (nur nach Operator-Bestätigung)
+Diagnosezugriff: erlaubt nach Bindung
+Storage-Write: gesperrt
+Firmware-Write: gesperrt
+Installation: gesperrt
+Run-Type: hardware_discovery
+============================================================
+EOF
+
+PYTHONPATH="${_PYPATH}" "${_PY}" - <<'PY'
+import json
+import os
+from pathlib import Path
+
+from core.rescue_hardware_discovery_capture import run_hardware_discovery
+from core.rescue_machine_identity_profiles import GABRIEL_OPERATOR_PHRASE
+
+root = Path(os.environ["SETUPHELFER_HW_DISCOVERY_EVIDENCE_ROOT"])
+confirmed = os.environ.get("SETUPHELFER_HW_DISCOVERY_OPERATOR_CONFIRMED") == "1"
+phrase = os.environ.get("SETUPHELFER_HW_DISCOVERY_OPERATOR_PHRASE") or None
+if confirmed and not phrase:
+    phrase = GABRIEL_OPERATOR_PHRASE
+allow = os.environ.get("SETUPHELFER_HW_DISCOVERY_ALLOW_NON_GABRIEL") == "1"
+result = run_hardware_discovery(
+    evidence_root=root,
+    operator_confirmed_gabriel=confirmed,
+    operator_phrase=phrase,
+    allow_non_gabriel_diag=allow,
+)
+print(json.dumps(result, indent=2, ensure_ascii=False))
+out = Path("/run/setuphelfer-rescue")
+out.mkdir(parents=True, exist_ok=True)
+(out / "hardware-discovery-last.json").write_text(
+    json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+)
+raise SystemExit(0 if result.get("endstatus") not in {"failed", "blocked_machine_identity"} or allow else 0)
+PY
+_rc=$?
+exit "${_rc}"
