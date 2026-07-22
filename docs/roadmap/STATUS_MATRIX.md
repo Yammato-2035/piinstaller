@@ -37,3 +37,4 @@
 | PI-RS-MSI-RETEST-003 Physical Boot Retest | GRÜN | **passed** — Session `20260713_003100_boot`, Payload **1.10.0.20**, Auto-Lab-Evidence |
 | PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | GRÜN | **passed** — Late capture 153,8 s, `console_owner=tui`, `lab-auto-result` passed |
 | PI-RS-MSI-AUTO-EVIDENCE-001 Unattended MSI Lab Boot | GRÜN | Payload **1.10.0.20**; ~2,5 min Boot→Collect→Shutdown; Evidence importiert + CSE preview ok |
+| PI-RS-ASUS-PHYSICAL-DIAG-003 | GELB | Capture ready on stick 1.10.2.0; Gabriel physical run pending (`diagnosis_incomplete`) |

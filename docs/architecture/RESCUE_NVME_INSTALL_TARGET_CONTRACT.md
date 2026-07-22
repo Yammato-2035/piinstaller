@@ -15,3 +15,9 @@
 
 `healthy` | `review_required` | `unsuitable_for_install` | `unknown`  
 Install blocked on `unsuitable_for_install`.
+
+## PI-RS-ASUS-PHYSICAL-DIAG-003
+
+- `hardware_discovery` requires no BVR run_control.
+- NVMe identity: model + serial_hash + EUI/NGUID + nsid + PCI (never `/dev/nvmeXn1` alone).
+- Write authorization stays false after provisional role_binding.

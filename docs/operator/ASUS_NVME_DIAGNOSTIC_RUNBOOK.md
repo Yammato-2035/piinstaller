@@ -1,3 +1,7 @@
-# ASUS NVMe Diagnostic
+# ASUS NVMe Diagnostic Runbook
 
-nvme list/id-ctrl/id-ns/smart-log/error-log; never trust nvme0/nvme1 alone; hash serials.
+1. Boot GRUB **ASUS Hardwarediagnose (nur Lesen)**.
+2. Confirm Gabriel phrase.
+3. Capture writes under SETUP_LOGS `physical_runs/<run_id>/`.
+4. Identity: serial_hash, EUI, NGUID, PCI — not `/dev/nvme0n1`.
+5. No format/sanitize/write-zeroes.

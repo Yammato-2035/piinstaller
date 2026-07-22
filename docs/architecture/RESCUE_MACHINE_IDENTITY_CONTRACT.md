@@ -28,3 +28,9 @@ Distinguish MSI GE63 (MS-16P5) and ASUS ROG (Gabriel) before any write action.
 See `build_machine_fingerprint()` — manufacturer, product, board required; UUID/board serial hashed; GPU/storage PCI IDs optional.
 
 Gabriel bind requires G513QM + operator phrase and sets write_permissions diagnostics-only.
+
+## PI-RS-ASUS-PHYSICAL-DIAG-003
+
+- `hardware_discovery` requires no BVR run_control.
+- NVMe identity: model + serial_hash + EUI/NGUID + nsid + PCI (never `/dev/nvmeXn1` alone).
+- Write authorization stays false after provisional role_binding.

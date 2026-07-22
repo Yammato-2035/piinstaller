@@ -1,3 +1,4 @@
-# Windows Setup Log Collection
+# ASUS Windows Setup Log Collection Runbook
 
-Read-only NTFS; Panther/Rollback; WinPE collector on SETUP_LOGS.
+NTFS mount: `ro,norecover` / ntfs-3g `ro`. Hibernated → `ntfs_read_only_mount_blocked`.
+Search only Panther/Rollback/MoSetup/Setup/Minidump paths. Redact PII before publish.
