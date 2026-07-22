@@ -1,0 +1,7 @@
+{
+  "schema": "setuphelfer.rescue.discovery-observer-start.v1",
+  "boot_id": "55e3aff7-1533-4a8f-b037-aaad2f38d56c",
+  "observer_started": true,
+  "started_at": "2026-07-22T07:22:59Z",
+  "storage_mode": "persistent_setup_logs"
+}

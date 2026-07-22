@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "gui_available": false,
+  "reason": "msi_compat_nomodeset",
+  "tui_primary": true,
+  "openvt_allowed": false,
+  "chvt_allowed": false,
+  "startx_allowed": false,
+  "operator_next_action": "use_text_mode",
+  "production_ready": false
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "gui_status": "disabled_msi_compat_nomodeset",
+  "gui_reason": "msi_compat_nomodeset",
+  "openvt_attempted": false,
+  "chvt_attempted": false,
+  "startx_attempted": false,
+  "chvt_target": "none",
+  "tui_preserved": true,
+  "tui_rerendered": false,
+  "operator_next_action": "use_text_mode",
+  "production_ready": false
+}

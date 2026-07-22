@@ -1,0 +1,59 @@
+{
+  "run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+  "checked_at": "2026-07-22T05:29:50Z",
+  "progress_source_drift": {
+    "drift": false,
+    "code": null,
+    "detail": "",
+    "canonical_phase": "shutdown",
+    "auto_e2e_phase": "shutdown",
+    "canonical_sequence": 4
+  },
+  "canonical": {
+    "phase": "shutdown",
+    "status": "passed",
+    "sequence": 4,
+    "terminal": true,
+    "bvr": {
+      "backup": "pending",
+      "verify": "pending",
+      "restore": "pending",
+      "manifest": "pending"
+    },
+    "gui": {
+      "status": "starting",
+      "active_vt": null
+    }
+  },
+  "auto_e2e_state": {
+    "phase": "shutdown",
+    "status": "passed",
+    "elapsed_sec": 31
+  },
+  "physical_progress": {
+    "phase": "shutdown",
+    "status": "passed",
+    "sequence": 4
+  },
+  "expected_phase_sequence": [
+    "startup",
+    "device_discovery",
+    "target_validation",
+    "sabrent_wait",
+    "backup",
+    "verify",
+    "restore_prepare",
+    "restore",
+    "manifest_compare",
+    "evidence_finalize",
+    "completed",
+    "shutdown"
+  ],
+  "observed_gap": "sequence only reached 4; terminal bvr.* fields still pending despite successful BVR artifacts",
+  "final_sabrent_waiting": false,
+  "consistency_verdict": "passed_with_progress_warning",
+  "notes": [
+    "Terminal phases aligned (shutdown/passed); drift=false",
+    "Canonical sequence only reached 4; bvr.* still pending at terminal despite green BVR artifacts"
+  ]
+}

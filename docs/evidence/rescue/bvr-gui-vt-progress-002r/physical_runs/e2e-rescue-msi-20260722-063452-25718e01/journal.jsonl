@@ -1,0 +1,1 @@
+{"e2e_run_id":"e2e-rescue-msi-20260722-063452-25718e01","correlation_id":"3ddceb9b-5727-458b-8d2f-323ff7af4210","from_state":"initialized","to_state":"blocked","detail":{"reason":"run_control","errors":["disabled","already_consumed"]}}

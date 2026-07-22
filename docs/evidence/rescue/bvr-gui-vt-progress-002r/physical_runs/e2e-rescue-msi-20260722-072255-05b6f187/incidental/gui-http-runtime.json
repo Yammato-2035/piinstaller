@@ -1,0 +1,19 @@
+{
+  "status": "ready",
+  "pid": 2543,
+  "runtime_user": "root",
+  "bind_address": "127.0.0.1",
+  "port": 8765,
+  "document_root": "/usr/share/setuphelfer/rescue/ui",
+  "index_path": "/usr/share/setuphelfer/rescue/ui/auto-e2e-progress.html",
+  "health_url": "http://127.0.0.1:8765/health.json",
+  "health_status": "ready",
+  "asset_validation": "passed",
+  "i18n_validation": "passed",
+  "chromium_started": false,
+  "chromium_visible": false,
+  "watchdog_state": "watching",
+  "fallback_reason": null,
+  "errors": [],
+  "warnings": []
+}

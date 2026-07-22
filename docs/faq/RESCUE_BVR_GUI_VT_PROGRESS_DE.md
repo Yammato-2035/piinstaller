@@ -12,3 +12,4 @@
 10. **Welche Rescue-Infos sind im Release sichtbar?** Redigierter read-only Status ohne Secrets/Pfade.
 11. **Was bedeutet msi_compat_nomodeset?** MSI-Kompatibilitätsprofil; unter `mode=gui` bleibt GUI-Versuch erlaubt.
 12. **Wann ist der MSI-Test vollständig bestanden?** HTTP+X11+Chromium sichtbar, Fortschritt synchron, BVR grün, VT freigegeben, Auto-Shutdown.
+13. **Was ergab Retest 1.10.1.2 (002R)?** BVR auf MSI GE63 grün (`…-05b6f187`); HTTP ready und VT7 vorbereitet; Operator sah **keine** GUI → Status `passed_with_gui_fallback`, nicht `passed`.

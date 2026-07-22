@@ -1,0 +1,7 @@
+{
+  "schema": "setuphelfer.rescue.fallback-migrated.v1",
+  "boot_id": "49ea77b5-5495-46f0-8a57-4c9036ce9cdd",
+  "migrated_at": "2026-07-22T06:34:57Z",
+  "fallback_migrated": true,
+  "storage_mode": "persistent_setup_logs"
+}

@@ -1,0 +1,22 @@
+{
+  "run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+  "checked_at": "2026-07-22T05:29:50Z",
+  "operator_visible": false,
+  "operator_observation": "keine grafische Oberflaeche",
+  "http_ready": true,
+  "entry_point": "auto-e2e-progress.html",
+  "vt_selected": 7,
+  "vt_prepare": "ok_fuser_skip",
+  "openvt_start_logged": true,
+  "chromium_started": false,
+  "chromium_visible": false,
+  "xorg_log_present": false,
+  "visibility_photo": null,
+  "watchdog_unintended_fallback_proven": "inconclusive",
+  "stale_watchdog_codes_not_attributed": [
+    "openvt_console_2_not_released",
+    "msi_compat_nomodeset"
+  ],
+  "verdict": "not_visible",
+  "counts_as_passed_gui_gate": false
+}

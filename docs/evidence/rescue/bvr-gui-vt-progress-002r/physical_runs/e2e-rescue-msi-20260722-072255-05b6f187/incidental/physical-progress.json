@@ -1,0 +1,10 @@
+{
+  "phase": "shutdown",
+  "message": "Physical-E2E erfolgreich",
+  "updated_at": "2026-07-22T07:23:38Z",
+  "uptime_sec": 60,
+  "sequence": 4,
+  "status": "passed",
+  "terminal": true,
+  "canonical": true
+}

@@ -65,7 +65,11 @@
 
 - Architektur-Contracts + FAQ/KB/Operator-Docs
 - Unit-Tests: 34 focused passed
-- Deploy/USB/MSI: **ausstehend** (Operator)
+- Deploy/USB/MSI: siehe **PI-RS-BVR-GUI-VT-PROGRESS-002R**
+  - Payload 1.10.1.2 auf Ultra Line
+  - physischer Run `e2e-rescue-msi-20260722-072255-05b6f187`
+  - BVR passed, GUI nicht sichtbar
+  - Endstatus: **`passed_with_gui_fallback`**
 
 ## 12. Physischer MSI-Retest
 

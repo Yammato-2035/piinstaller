@@ -1,0 +1,128 @@
+{
+  "checked_at": "2026-07-22T05:30:16Z",
+  "live_api_from_opt": {
+    "status": "review_required",
+    "product_version": "1.9.20.0",
+    "payload_version": "1.10.1.2",
+    "last_run_id": "e2e-rescue-msi-20260722-002744-a8f0a50d",
+    "last_run_status": "passed_with_gui_fallback",
+    "bvr": {
+      "backup": "pending",
+      "verify": "pending",
+      "restore": "pending",
+      "manifest": "pending"
+    },
+    "gui": {
+      "status": "starting",
+      "error_code": null,
+      "vt": null
+    },
+    "progress": {
+      "phase": "startup",
+      "sequence": 0,
+      "terminal": false
+    },
+    "locales": [
+      "de-DE",
+      "en-US",
+      "fr-FR",
+      "nl-NL"
+    ],
+    "i18n_status": "complete",
+    "version_drift": "unknown",
+    "deploy_drift": "unknown",
+    "evidence_available": true,
+    "updated_at": "2026-07-22T05:30:16Z",
+    "next_action_key": "maintain_green",
+    "read_only": true,
+    "developer_capability_required": false
+  },
+  "worktree_loader_physical_run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+  "worktree_dcc_status_computed": {
+    "area": "rescue_stick",
+    "task_id": "PI-RS-BVR-GUI-DCC-001",
+    "workspace_path": "/tmp/piinstaller-vt-progress-002",
+    "workspace_branch": "pi-rs-bvr-gui-vt-progress-002-impl",
+    "workspace_commit": "049b1016",
+    "origin_main_commit": "b8651d33",
+    "runtime_path": "/opt/setuphelfer",
+    "runtime_commit": "61bac2b3",
+    "runtime_version": "1.9.20.0",
+    "payload_version": "1.10.1.2",
+    "payload_build_commit": "61bac2b3",
+    "usb_payload_sha256": "5a7b0e8c23de04b7b5910494c51cd14b0e461d6fe61153f87796e1cc9422fad3",
+    "last_physical_run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+    "last_physical_run_status": "passed_with_gui_fallback",
+    "bvr_core_status": "passed",
+    "gui_status": "fallback",
+    "gui_failure_code": null,
+    "watchdog_fallback_status": "available",
+    "i18n_status": "complete",
+    "i18n_missing": [],
+    "supported_locales": [
+      "de-DE",
+      "en-US",
+      "fr-FR",
+      "nl-NL"
+    ],
+    "version_drift_status": "yellow",
+    "deploy_drift_status": "green",
+    "evidence_status": "complete",
+    "traffic_lights": {
+      "bvr_core": "green",
+      "gui": "yellow",
+      "i18n": "green",
+      "version_drift": "yellow",
+      "deploy_drift": "green",
+      "evidence": "green"
+    },
+    "updated_at": "2026-07-22T05:30:16Z",
+    "next_action": "Investigate GUI fallback on latest physical run",
+    "baseline_frozen": true
+  },
+  "worktree_release_status_computed": {
+    "status": "review_required",
+    "product_version": "1.9.20.0",
+    "payload_version": "1.10.1.2",
+    "last_run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+    "last_run_status": "passed_with_gui_fallback",
+    "bvr": {
+      "backup": "pending",
+      "verify": "pending",
+      "restore": "pending",
+      "manifest": "pending"
+    },
+    "gui": {
+      "status": "starting",
+      "error_code": null,
+      "vt": null
+    },
+    "progress": {
+      "phase": "startup",
+      "sequence": 0,
+      "terminal": false
+    },
+    "locales": [
+      "de-DE",
+      "en-US",
+      "fr-FR",
+      "nl-NL"
+    ],
+    "i18n_status": "complete",
+    "version_drift": "yellow",
+    "deploy_drift": "green",
+    "evidence_available": true,
+    "updated_at": "2026-07-22T05:30:16Z",
+    "next_action_key": "maintain_green",
+    "read_only": true,
+    "developer_capability_required": false
+  },
+  "notes": [
+    "Live /opt API still prefers empty_progress() when no /run canonical file exists (phase=startup).",
+    "Worktree physical loader now sees 002 physical_msi_result.json (copied from 002r).",
+    "/opt still has older DCC-001 physical_msi_result until evidence redeploy.",
+    "Endstatus remains passed_with_gui_fallback; GUI not physically visible."
+  ],
+  "expected_for_passed": false,
+  "phase15_verdict": "passed_with_gui_fallback"
+}

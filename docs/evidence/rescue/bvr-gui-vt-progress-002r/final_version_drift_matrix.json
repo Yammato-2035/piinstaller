@@ -1,0 +1,61 @@
+{
+  "checked_at": "2026-07-22T05:30:16Z",
+  "matrix": [
+    {
+      "component": "Workspace tip",
+      "expected": "evidence tip after 61bac2b3",
+      "actual": "049b1016",
+      "status": "green"
+    },
+    {
+      "component": "Implementation commit",
+      "expected": "61bac2b3",
+      "actual": "61bac2b3 (ancestor)",
+      "status": "green"
+    },
+    {
+      "component": "Remote branch tip",
+      "expected": "contains 61bac2b3",
+      "actual": "049b1016",
+      "status": "green"
+    },
+    {
+      "component": "/opt Runtime project_version",
+      "expected": "1.10.1.2 OR frozen 1.9.20.0 with payload 1.10.1.2",
+      "actual": "1.9.20.0 (frozen in 61bac2b3)",
+      "status": "yellow",
+      "note": "intentional freeze documented"
+    },
+    {
+      "component": "/opt Runtime payload",
+      "expected": "1.10.1.2",
+      "actual": "1.10.1.2",
+      "status": "green"
+    },
+    {
+      "component": "/opt feature commit identity",
+      "expected": "61bac2b3",
+      "actual": "61bac2b3 deployed",
+      "status": "green"
+    },
+    {
+      "component": "USB payload",
+      "expected": "1.10.1.2 / SHA256 5a7b0e8c...",
+      "actual": "1.10.1.2 / 5a7b0e8c23de04b7b5910494c51cd14b0e461d6fe61153f87796e1cc9422fad3",
+      "status": "green"
+    },
+    {
+      "component": "Physical run payload",
+      "expected": "1.10.1.2",
+      "actual": "1.10.1.2",
+      "status": "green"
+    },
+    {
+      "component": "Physical run overall",
+      "expected": "passed with GUI visible",
+      "actual": "passed_with_gui_fallback",
+      "status": "yellow"
+    }
+  ],
+  "overall": "yellow"
+}

@@ -1,0 +1,12 @@
+{
+  "file_count_match": true,
+  "total_bytes_match": true,
+  "manifest_match": true,
+  "restore_integrity_status": "passed",
+  "source_file_count": 162,
+  "restored_file_count": 162,
+  "source_total_bytes": 134872183,
+  "restored_total_bytes": 134872183,
+  "source_manifest_sha256": "61d51104c5901608c958d69f2192c30cd5cad891a374d84073a40ae0b841bf4d",
+  "restored_manifest_sha256": "61d51104c5901608c958d69f2192c30cd5cad891a374d84073a40ae0b841bf4d"
+}

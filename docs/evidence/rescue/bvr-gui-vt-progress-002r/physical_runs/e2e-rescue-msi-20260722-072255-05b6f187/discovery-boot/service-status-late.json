@@ -1,0 +1,46 @@
+{
+  "schema": "setuphelfer.rescue.discovery-service-status-late.v1",
+  "boot_id": "55e3aff7-1533-4a8f-b037-aaad2f38d56c",
+  "units": [
+    {
+      "unit": "setuphelfer-rescue-auto-discovery.service",
+      "show": "Result=success\nExecMainStartTimestamp=\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=no\nInvocationID=",
+      "status_excerpt": "○ setuphelfer-rescue-auto-discovery.service - Setuphelfer Rescue auto discovery (001D7F — parallel to MSI evidence)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-auto-discovery.service; enabled; preset: enabled)\n     Active: inactive (dead)\n  Condition: start condition failed at Wed 2026-07-22 07:22:52 UTC; 46s ago\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui.service",
+      "show": "Result=success\nExecMainStartTimestamp=Wed 2026-07-22 07:22:52 UTC\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=active\nSubState=running\nConditionResult=yes\nInvocationID=b4cba916d542467c936ba1cc4cc7802a",
+      "status_excerpt": "● setuphelfer-rescue-tui.service - Setuphelfer Rescue TUI (exclusive console owner)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-tui.service; enabled; preset: enabled)\n     Active: active (running) since Wed 2026-07-22 07:22:52 UTC; 46s ago\n   Main PID: 1742 (setuphelfer-res)\n      Tasks: 2 (limit: 18794)\n     Memory: 155.5M\n        CPU: 6.942s\n     CGroup: /system.slice/setuphelfer-rescue-tui.service\n             ├─1742 /bin/bash /usr/local/sbin/setuphelfer-rescue-tui --boot-trigger\n             └─2821 python3 /usr/local/sbin/setuphelfer-rescue-auto-e2e-tui-display.py\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui-guard.service",
+      "show": "Result=success\nExecMainStartTimestamp=Wed 2026-07-22 07:23:22 UTC\nExecMainExitTimestamp=Wed 2026-07-22 07:23:22 UTC\nExecMainCode=1\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=yes\nInvocationID=4f3703900c5e4334af8031e8e91d0c4a",
+      "status_excerpt": "○ setuphelfer-rescue-tui-guard.service - Setuphelfer Rescue TUI tty1 guard (001D7D non-blocking)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-tui-guard.service; disabled; preset: enabled)\n     Active: inactive (dead) since Wed 2026-07-22 07:23:22 UTC; 15s ago\nTriggeredBy: ● setuphelfer-rescue-tui-guard.timer\n    Process: 3542 ExecStart=/usr/local/sbin/setuphelfer-rescue-tui-guard (code=exited, status=0/SUCCESS)\n   Main PID: 3542 (code=exited, status=0/SUCCESS)\n        CPU: 14ms\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui-hold.service",
+      "show": "Result=success\nExecMainStartTimestamp=\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=no\nInvocationID=",
+      "status_excerpt": "○ setuphelfer-rescue-tui-hold.service - Setuphelfer Rescue TUI discovery hold screen (001D7D)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-tui-hold.service; disabled; preset: enabled)\n     Active: inactive (dead)\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-msi-evidence.service",
+      "show": "Result=success\nExecMainStartTimestamp=Wed 2026-07-22 07:22:52 UTC\nExecMainExitTimestamp=Wed 2026-07-22 07:23:38 UTC\nExecMainCode=1\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=yes\nInvocationID=254a0931e92943a097d481aa4b1b25b9",
+      "status_excerpt": "○ setuphelfer-rescue-auto-msi-evidence.service - Setuphelfer Rescue auto MSI RS-011B evidence (MSI compat boot, late gate)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-auto-msi-evidence.service; enabled; preset: enabled)\n     Active: inactive (dead) since Wed 2026-07-22 07:23:38 UTC; 242ms ago\n    Process: 1743 ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-msi-evidence (code=exited, status=0/SUCCESS)\n   Main PID: 1743 (code=exited, status=0/SUCCESS)\n        CPU: 1.627s\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-physical-e2e.service",
+      "show": "Result=success\nExecMainStartTimestamp=Wed 2026-07-22 07:22:52 UTC\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=activating\nSubState=start\nConditionResult=yes\nInvocationID=7e2a1668bf09445d98d2f595a3583622",
+      "status_excerpt": "● setuphelfer-rescue-auto-physical-e2e.service - Setuphelfer Rescue auto physical E2E (MSI lab / cmdline)\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-auto-physical-e2e.service; enabled; preset: enabled)\n     Active: activating (start) since Wed 2026-07-22 07:22:52 UTC; 46s ago\n   Main PID: 1819 (bash)\n      Tasks: 4 (limit: 18794)\n     Memory: 139.6M\n        CPU: 11.430s\n     CGroup: /system.slice/setuphelfer-rescue-auto-physical-e2e.service\n             ├─1819 bash /usr/local/sbin/setuphelfer-rescue-auto-physical-e2e\n             ├─3677 sleep 10\n             ├─3782 bash /usr/local/sbin/setuphelfer-rescue-auto-physical-e2e\n             └─3784 bash /usr/local/sbin/setuphelfer-rescue-auto-physical-e2e\n\nJul 22 07:22:52 setuphelfer-rescue setuphelfer-rescue-physical-e2e-start-gate[1744]: {\"physical_e2e_start_allowed\": true, \"reason\": \"run_mode_allows_physical_e2e\", \"run_mode\": \"auto_physical_e2e\", \"skip_class\": \"\"}\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-shutdown.service",
+      "show": "Result=success\nExecMainStartTimestamp=\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=not-found\nActiveState=inactive\nSubState=dead\nConditionResult=no\nInvocationID=",
+      "status_excerpt": "Unit setuphelfer-rescue-auto-shutdown.service could not be found.\n"
+    },
+    {
+      "unit": "setuphelfer-rescue-lab-auto-shutdown-failsafe.service",
+      "show": "Result=success\nExecMainStartTimestamp=\nExecMainExitTimestamp=\nExecMainCode=0\nExecMainStatus=0\nLoadState=loaded\nActiveState=inactive\nSubState=dead\nConditionResult=no\nInvocationID=",
+      "status_excerpt": "○ setuphelfer-rescue-lab-auto-shutdown-failsafe.service - Setuphelfer Rescue MSI lab auto-shutdown failsafe\n     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-lab-auto-shutdown-failsafe.service; disabled; preset: enabled)\n     Active: inactive (dead)\nTriggeredBy: ● setuphelfer-rescue-lab-auto-shutdown-failsafe.timer\n"
+    }
+  ]
+}

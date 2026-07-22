@@ -1,0 +1,6 @@
+{
+  "target_type": "dedicated_external_lab_hdd",
+  "target_layout": "three_partition_e2e",
+  "target_capacity_class": "large",
+  "identity_gate": "passed"
+}

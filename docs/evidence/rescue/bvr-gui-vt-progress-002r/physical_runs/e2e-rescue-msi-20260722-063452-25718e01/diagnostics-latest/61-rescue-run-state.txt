@@ -1,0 +1,161 @@
+== /run/setuphelfer/console-ownership.json ==
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "boot_progress",
+  "lifecycle_state": "boot_progress",
+  "write_allowed_for": [
+    "boot_progress"
+  ],
+  "clear_allowed_for": [
+    "boot_progress"
+  ],
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": true,
+  "reason": "boot_progress",
+  "session_id": "20260722_063445_boot",
+  "boot_id": "49ea77b5-5495-46f0-8a57-4c9036ce9cdd",
+  "updated_at": "2026-07-22T06:34:49Z"
+}
+
+== /run/setuphelfer/console-shield.json ==
+{
+  "schema_version": 2,
+  "enabled": true,
+  "reason": "entrypoint_start",
+  "tty": "tty1",
+  "owner": "boot_progress",
+  "lifecycle_state": "boot_progress",
+  "tty1_write_allowed": true,
+  "tty1_clear_allowed": true,
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": true,
+  "write_allowed_for": [
+    "boot_progress"
+  ],
+  "clear_allowed_for": [
+    "boot_progress"
+  ],
+  "owner_since": "2026-07-22T06:34:49Z",
+  "session_id": "20260722_063445_boot",
+  "journal_to_console_blocked": true,
+  "production_ready": false
+}
+
+== /run/setuphelfer/current-session.json ==
+{
+  "schema_version": 1,
+  "session_id": "20260722_063445_boot",
+  "boot_id": "49ea77b5-5495-46f0-8a57-4c9036ce9cdd",
+  "payload_version": "1.10.1.2",
+  "session_started_at": "2026-07-22T06:34:45Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 0, "message": "Bootvorbereitung abgeschlossen \u2014 Textmen\u00fc bereit.", "updated_at": "2026-07-22T06:34:48Z"}
+
+== /run/setuphelfer-rescue/boot_state.json ==
+{
+  "schema_version": 1,
+  "phase": "gui_requested",
+  "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120",
+  "selected_mode": "gui",
+  "kiosk_requested": true,
+  "text_mode_started": false,
+  "gui_requested": true,
+  "backup_execute_allowed": false
+}
+
+== /run/setuphelfer-rescue/canonical-bvr-progress.json ==
+{
+  "schema_version": "1.0",
+  "run_id": "",
+  "sequence": 2,
+  "status": "running",
+  "phase": "sabrent_wait",
+  "phase_index": 3,
+  "phase_count": 12,
+  "phase_label_key": "bvr.phase.sabrent_wait",
+  "started_at": "2026-07-22T06:34:49Z",
+  "updated_at": "2026-07-22T06:34:50Z",
+  "phase_started_at": "2026-07-22T06:34:49Z",
+  "completed_at": null,
+  "heartbeat_age_s": 0,
+  "progress_kind": "indeterminate",
+  "progress_current": null,
+  "progress_total": null,
+  "source_component": "auto-physical-e2e",
+  "message": "Suche SABRENT-Festplatte…",
+  "bvr": {
+    "backup": "pending",
+    "verify": "pending",
+    "restore": "pending",
+    "manifest": "pending"
+  },
+  "gui": {
+    "status": "starting",
+    "active_vt": null
+  },
+  "terminal": false,
+  "warnings": [],
+  "errors": []
+}
+
+== /run/setuphelfer-rescue/host-fingerprint.json ==
+{
+  "schema_version": 1,
+  "boot_id": "49ea77b5-5495-46f0-8a57-4c9036ce9cdd",
+  "recorded_at": "2026-07-22T06:34:49Z",
+  "payload_version": "1.10.1.2",
+  "vendor": "Micro-Star International Co., Ltd.",
+  "product": "GE63 Raider RGB 8RF",
+  "board": "MS-16P5",
+  "bios": "E16P5IMS.109",
+  "uname": "Linux 6.1.0-49-amd64 x86_64",
+  "local_evidence_only": true,
+  "telemetry_auto_push": false,
+  "diagnostics_server_hop": false
+}
+
+== /run/setuphelfer-rescue/physical-progress.json ==
+{
+  "phase": "sabrent_wait",
+  "message": "Suche SABRENT-Festplatte…",
+  "updated_at": "2026-07-22T06:34:50Z",
+  "uptime_sec": 19,
+  "sequence": 2,
+  "status": "running",
+  "terminal": false,
+  "canonical": true
+}
+
+== /run/setuphelfer-rescue/setup-logs-resolution.json ==
+{
+  "resolved": true,
+  "device_path": "/dev/sdc2",
+  "filesystem_label": "SETUP_LOGS",
+  "filesystem_type": "vfat",
+  "canonical_mountpoint": "/run/setuphelfer-rescue/media/SETUP_LOGS",
+  "actual_mountpoint": "/run/setuphelfer/esp-rw",
+  "mount_source_verified": true,
+  "writable": true,
+  "resolution_status": "mounted_valid",
+  "shadow_mount_ignored": true,
+  "runtime_fallback_used": false,
+  "evidence_root": "/run/setuphelfer/esp-rw/setuphelfer/evidence"
+}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-07-22T06:34:47Z",
+  "boot_id": "49ea77b5-5495-46f0-8a57-4c9036ce9cdd",
+  "task_available": false,
+  "secrets_exposed": false
+}
+

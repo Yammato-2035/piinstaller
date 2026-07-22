@@ -1,0 +1,33 @@
+{
+  "schema_version": "1.0",
+  "run_id": "",
+  "sequence": 4,
+  "status": "failed",
+  "phase": "shutdown",
+  "phase_index": 11,
+  "phase_count": 12,
+  "phase_label_key": "bvr.phase.shutdown",
+  "started_at": "2026-07-22T06:34:49Z",
+  "updated_at": "2026-07-22T06:34:54Z",
+  "phase_started_at": "2026-07-22T06:34:54Z",
+  "completed_at": "2026-07-22T06:34:54Z",
+  "heartbeat_age_s": 0,
+  "progress_kind": "indeterminate",
+  "progress_current": null,
+  "progress_total": null,
+  "source_component": "auto-physical-e2e",
+  "message": "Physical-E2E fehlgeschlagen — siehe auto-physical-e2e.log",
+  "bvr": {
+    "backup": "pending",
+    "verify": "pending",
+    "restore": "pending",
+    "manifest": "pending"
+  },
+  "gui": {
+    "status": "starting",
+    "active_vt": null
+  },
+  "terminal": true,
+  "warnings": [],
+  "errors": []
+}

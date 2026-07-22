@@ -1,12 +1,18 @@
 {
   "task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002",
-  "status": "implemented_pending_physical_retest",
+  "ops_task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002R",
+  "status": "passed_with_gui_fallback",
   "baseline_commit": "92bfcc15",
+  "implementation_commit": "61bac2b3",
   "payload_version": "1.10.1.2",
   "root_cause_confidence": "high",
   "bvr_core_frozen": true,
   "gui_health_fixed_for_auto_e2e_url": true,
   "canonical_progress": true,
   "release_status_route": "/api/status/rescue-bvr",
-  "physical_retest": "pending"
+  "physical_retest": "completed",
+  "physical_run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+  "gui_visible": false,
+  "bvr_core_status": "passed",
+  "ops_evidence": "docs/evidence/rescue/bvr-gui-vt-progress-002r/"
 }

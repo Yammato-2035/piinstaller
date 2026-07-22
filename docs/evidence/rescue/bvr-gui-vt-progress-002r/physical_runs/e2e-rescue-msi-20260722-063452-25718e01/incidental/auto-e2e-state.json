@@ -1,0 +1,15 @@
+{
+  "schema": "setuphelfer.rescue.auto-e2e-state.v1",
+  "mode": "auto_physical_e2e_locked",
+  "run_id": "",
+  "phase": "shutdown",
+  "phase_index": 18,
+  "status": "failed",
+  "started_at": "2026-07-22T06:34:49Z",
+  "updated_at": "2026-07-22T06:34:55Z",
+  "elapsed_sec": 6,
+  "last_progress": "Physical-E2E fehlgeschlagen — siehe auto-physical-e2e.log",
+  "cancel_requested": false,
+  "shutdown_requested": false,
+  "shutdown_deferred": false
+}

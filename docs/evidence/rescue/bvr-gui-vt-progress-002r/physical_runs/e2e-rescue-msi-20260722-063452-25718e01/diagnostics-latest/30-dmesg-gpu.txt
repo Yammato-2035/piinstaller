@@ -1,0 +1,27 @@
+[    0.000000] Command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+[    0.031495] Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+[    0.393600] pci 0000:00:02.0: vgaarb: setting as boot VGA device
+[    0.393600] pci 0000:00:02.0: vgaarb: bridge control possible
+[    0.393600] pci 0000:00:02.0: vgaarb: VGA device added: decodes=io+mem,owns=io+mem,locks=none
+[    0.393600] pci 0000:01:00.0: vgaarb: bridge control possible
+[    0.393600] pci 0000:01:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.393600] vgaarb: loaded
+[    0.790155] fb0: EFI VGA frame buffer device
+[    1.283758] ACPI: bus type drm_connector registered
+[    1.948633] i915 0000:00:02.0: [drm] VT-d active for gfx access
+[    1.949158] i915 0000:00:02.0: vgaarb: deactivate vga console
+[    1.949189] i915 0000:00:02.0: [drm] Using Transparent Hugepages
+[    1.950497] i915 0000:00:02.0: vgaarb: changed VGA decodes: olddecodes=io+mem,decodes=none:owns=io+mem
+[    1.950584] i915 0000:00:02.0: firmware: direct-loading firmware i915/kbl_dmc_ver1_04.bin
+[    1.950949] i915 0000:00:02.0: [drm] Finished loading DMC firmware i915/kbl_dmc_ver1_04.bin (v1.4)
+[    2.002799] [drm] Initialized i915 1.6.0 20201103 for 0000:00:02.0 on minor 0
+[    2.007051] fbcon: i915drmfb (fb0) is primary device
+[    3.295518] i915 0000:00:02.0: [drm] fb0: i915drmfb frame buffer device
+[    8.984284] mei_hdcp 0000:00:16.0-b638ab7e-94e2-4ea2-a552-d1c54b627f04: bound 0000:00:02.0 (ops i915_hdcp_component_ops [i915])
+[    8.986963] RAPL PMU: hw unit of domain pp1-gpu 2^-14 Joules
+[    9.105758] snd_hda_intel 0000:00:1f.3: bound 0000:00:02.0 (ops i915_audio_component_bind_ops [i915])
+[    9.108711] snd_hda_intel 0000:01:00.1: Handle vga_switcheroo audio client
+[    9.139730] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input17
+[    9.140582] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input18
+[    9.141386] input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input19
+[    9.142143] input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.0/0000:01:00.1/sound/card1/input20

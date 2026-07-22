@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-07-22T05:30:16Z",
+  "payload_locales_present": [
+    "de-DE",
+    "en-US",
+    "fr-FR",
+    "nl-NL"
+  ],
+  "payload_i18n_gate": "passed_at_build",
+  "runtime_smokes": {
+    "de-DE": "full_physical_bvr_run_observed_operator_locale_default",
+    "en-US": "not_executed",
+    "fr-FR": "not_executed",
+    "nl-NL": "not_executed"
+  },
+  "gate_i_status": "incomplete"
+}

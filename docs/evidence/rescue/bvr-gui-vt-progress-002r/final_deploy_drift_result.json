@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-07-22T05:30:16Z",
+  "deploy_method": "sudo ./scripts/deploy-to-opt.sh",
+  "source_commit": "61bac2b3",
+  "backend_runtime_path": "/opt/setuphelfer/backend",
+  "services_active": true,
+  "release_status_reachable": true,
+  "developer_endpoint_protected": true,
+  "legacy_runtime_gate": "exit 20 expected (dev-dashboard 404 in release profile)",
+  "profile_note": "release profile",
+  "deploy_drift_status": "green",
+  "remaining_warnings": [
+    "project_version 1.9.20.0 frozen vs payload 1.10.1.2",
+    "live API empty_progress pollution on lab host without /run canonical file",
+    "/opt physical_msi_result still DCC-001 until evidence redeploy"
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "task_id": "PI-RS-BVR-GUI-VT-PROGRESS-002R",
+  "run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
+  "imported_at": "2026-07-22T05:29:50Z",
+  "official_import_ok": true,
+  "official_destination": "/tmp/piinstaller-vt-progress-002/docs/evidence/e2e_live_001d/physical_run/e2e-rescue-msi-20260722-072255-05b6f187",
+  "files_copied_official": [
+    "operator-decisions.jsonl",
+    "event-journal.jsonl",
+    "verify-result.json",
+    "restore-result.json",
+    "backup-summary.json",
+    "backup-result.json",
+    "restored-summary.json",
+    "diagnostics-status.json",
+    "receipts.json",
+    "e2e-result.json",
+    "send-status.json",
+    "source-summary.json",
+    "manifest-comparison.json"
+  ],
+  "missing_required": [],
+  "pack_path": "docs/evidence/rescue/bvr-gui-vt-progress-002r/physical_runs/e2e-rescue-msi-20260722-072255-05b6f187",
+  "pack_file_count": 56,
+  "evidence_import_kind": "full_official_plus_gui_incidental",
+  "overall_status": "passed_with_gui_fallback",
+  "dcc_loader_copy": "docs/evidence/rescue/bvr-gui-vt-progress-002/physical_msi_result.json"
+}

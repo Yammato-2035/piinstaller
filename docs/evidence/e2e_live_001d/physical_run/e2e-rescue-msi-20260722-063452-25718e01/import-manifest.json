@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "feature": "SETUPHELFER-E2E-LIVE-001D",
+  "imported_at": "2026-07-22T04:36:46Z",
+  "physical_e2e_run_id": "e2e-rescue-msi-20260722-063452-25718e01",
+  "source_run_dir": "/media/volker/SETUP_LOGS2/setuphelfer/evidence/e2e/e2e-rescue-msi-20260722-063452-25718e01",
+  "setup_logs_base": "/media/volker/SETUP_LOGS2",
+  "files_copied": [],
+  "missing_required": [
+    "restore-result.json",
+    "event-journal.jsonl",
+    "backup-result.json",
+    "e2e-result.json",
+    "verify-result.json",
+    "manifest-comparison.json"
+  ],
+  "import_ok": false,
+  "destination": "/tmp/piinstaller-vt-progress-002/docs/evidence/e2e_live_001d/physical_run/e2e-rescue-msi-20260722-063452-25718e01"
+}

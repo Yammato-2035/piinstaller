@@ -1,0 +1,71 @@
+===== setuphelfer-backend =====
+● setuphelfer-backend.service - Setuphelfer Rescue Backend
+     Loaded: loaded (/etc/systemd/system/setuphelfer-backend.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-22 06:34:48 UTC; 2s ago
+   Main PID: 1885 (python3)
+      Tasks: 2 (limit: 18794)
+     Memory: 68.8M
+        CPU: 1.516s
+     CGroup: /system.slice/setuphelfer-backend.service
+             └─1885 /opt/setuphelfer-rescue/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1
+
+Jul 22 06:34:48 setuphelfer-rescue start-backend-localonly.sh[1885]: Rescue temp runtime: backend http://127.0.0.1:8000/ (local-only)
+
+===== setuphelfer =====
+● setuphelfer.service - Setuphelfer Rescue Web UI
+     Loaded: loaded (/etc/systemd/system/setuphelfer.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-22 06:34:48 UTC; 2s ago
+   Main PID: 1887 (python3)
+      Tasks: 1 (limit: 18794)
+     Memory: 11.8M
+        CPU: 333ms
+     CGroup: /system.slice/setuphelfer.service
+             └─1887 python3 /opt/setuphelfer-rescue/scripts/serve-frontend-production.py --root /opt/setuphelfer-rescue/frontend/dist --host 127.0.0.1 --port 3001
+
+Jul 22 06:34:48 setuphelfer-rescue start-ui-localonly.sh[1887]: Rescue temp runtime: UI http://127.0.0.1:3001/ (local-only)
+Jul 22 06:34:48 setuphelfer-rescue start-ui-localonly.sh[1887]: Serving SPA from /opt/setuphelfer-rescue/frontend/dist at http://127.0.0.1:3001/
+
+===== setuphelfer-rescue-media-check =====
+● setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-media-check.service; enabled; preset: enabled)
+     Active: activating (start) since Wed 2026-07-22 06:34:45 UTC; 5s ago
+   Main PID: 1716 (python3)
+      Tasks: 1 (limit: 18794)
+     Memory: 460.5M
+        CPU: 462ms
+     CGroup: /system.slice/setuphelfer-rescue-media-check.service
+             └─1716 python3 /usr/local/sbin/setuphelfer-rescue-live-medium-check.py
+
+===== setuphelfer-rescue-start-assistant =====
+○ setuphelfer-rescue-start-assistant.service - Setuphelfer Rescue Start Assistant
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-start-assistant.service; enabled; preset: enabled)
+     Active: inactive (dead)
+
+===== setuphelfer-rescue-ui =====
+○ setuphelfer-rescue-ui.service - Setuphelfer Rescue React Shell (offline-first)
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-ui.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+===== NetworkManager =====
+● NetworkManager.service - Network Manager
+     Loaded: loaded (/lib/systemd/system/NetworkManager.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-22 06:34:48 UTC; 2s ago
+       Docs: man:NetworkManager(8)
+   Main PID: 1775 (NetworkManager)
+      Tasks: 4 (limit: 18794)
+     Memory: 10.9M
+        CPU: 604ms
+     CGroup: /system.slice/NetworkManager.service
+             └─1775 /usr/sbin/NetworkManager --no-daemon
+
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.7632] manager: NetworkManager state is now CONNECTED_GLOBAL
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.8976] device (wlo1): supplicant interface state: internal-starting -> disconnected
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.8977] Wi-Fi P2P device controlled by interface wlo1 created
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.8978] manager: (p2p-dev-wlo1): new 802.11 Wi-Fi P2P device (/org/freedesktop/NetworkManager/Devices/4)
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.8980] device (p2p-dev-wlo1): state change: unmanaged -> unavailable (reason 'managed', sys-iface-state: 'external')
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.8982] device (wlo1): state change: unavailable -> disconnected (reason 'supplicant-available', sys-iface-state: 'managed')
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.8985] device (p2p-dev-wlo1): state change: unavailable -> disconnected (reason 'none', sys-iface-state: 'managed')
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.9256] dhcp6 (enp5s0): activation: beginning transaction (timeout in 45 seconds)
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.9270] policy: set 'Kabelgebundene Verbindung 1' (enp5s0) as default for IPv6 routing and DNS
+Jul 22 06:34:48 setuphelfer-rescue NetworkManager[1775]: <info>  [1784702088.9427] dhcp6 (enp5s0): state changed new lease
+
