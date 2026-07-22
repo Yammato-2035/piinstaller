@@ -135,6 +135,11 @@ for loc in de-DE en-US fr-FR nl-NL; do
   inject "${REPO_ROOT}/scripts/rescue-live/image/locales/${loc}.json" \
     "${ROOT}/usr/share/setuphelfer/rescue/ui/locales/${loc}.json"
 done
+# WinPE / Windows Setup log collector (FAT32-readable copy also synced into image tree)
+inject "${REPO_ROOT}/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG" \
+  "${IMG}/SETUPHELFER_WIN_DIAG"
+inject "${REPO_ROOT}/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG" \
+  "${ROOT}/usr/share/setuphelfer/rescue/SETUPHELFER_WIN_DIAG"
 chmod +x "${IMG}/setuphelfer-rescue-ui-http-server" "${SBIN}/setuphelfer-rescue-ui-http-server" 2>/dev/null || true
 inject "${REPO_ROOT}/backend/api/routes/rescue.py" \
   "${BE}/api/routes/rescue.py"
