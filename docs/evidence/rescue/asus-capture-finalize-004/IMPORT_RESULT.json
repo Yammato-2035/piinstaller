@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-CAPTURE-FINALIZE-004",
+  "import_mode": "manual_identity_gated",
+  "auto_flow": false,
+  "gui": "not_applicable_for_text_hardware_discovery",
+  "stick": {
+    "model": "Ultra Line",
+    "device": "/dev/sda",
+    "labels": [
+      "SETUPHELFER",
+      "SETUP_LOGS"
+    ],
+    "setup_logs_mount": "/media/volker/SETUP_LOGS2"
+  },
+  "selected_run": {
+    "run_id": "hw-discovery-20260723T000800Z-e2c6903a",
+    "boot_id": "4e13e0d7-5fd4-4ef7-88cb-44d46aac8720",
+    "payload_version": "1.10.2.1",
+    "profile_id": "asus_rog_gabriel",
+    "status": "partial",
+    "terminal": true,
+    "endstatus": "diagnosis_incomplete",
+    "gui_status": "not_applicable_for_text_hardware_discovery",
+    "errors": [
+      "capture_exception:ValueError"
+    ],
+    "captures": {
+      "machine_identity": "complete",
+      "bios": "complete",
+      "nvme_identity": "complete",
+      "nvme_smart": "pending",
+      "nvme_error_logs": "pending",
+      "kernel_storage": "pending",
+      "partition_inventory": "pending",
+      "windows_setup_logs": "pending"
+    },
+    "missing_areas": [
+      "nvme_smart",
+      "nvme_error_logs",
+      "kernel_storage",
+      "partition_inventory",
+      "windows_setup_logs"
+    ]
+  },
+  "identity": {
+    "manufacturer": "ASUSTeK COMPUTER INC.",
+    "product_name": "ROG Strix G513QM_G513QM",
+    "board_name": "G513QM",
+    "bios_version": "G513QM.331"
+  },
+  "nvme": [
+    {
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "firmware_revision": "2B2QEXM7",
+      "eui64_present": true,
+      "nguid_present": false,
+      "serial_hash_prefix": "c637055cc164eacf",
+      "nvme_identity_hash_prefix": "6b45cc50d930d46e",
+      "pci_address": "0000:00:02.4"
+    },
+    {
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "firmware_revision": "2B2QEXM7",
+      "eui64_present": true,
+      "nguid_present": false,
+      "serial_hash_prefix": "84d4cc6f1c6b0cb7",
+      "nvme_identity_hash_prefix": "ed84d453078b002b",
+      "pci_address": "0000:00:02.3"
+    }
+  ],
+  "excluded": {
+    "older_nonterminal_run": "hw-discovery-20260722T210925Z-0ec17061",
+    "older_terminal_partial_same_boot_cycle": "hw-discovery-20260723T000306Z-ec71f2a6",
+    "msi_path_on_stick": "setuphelfer/evidence/msi-rs011b",
+    "msi_imported": false,
+    "newest_session_fallback": false
+  },
+  "import_gate": {
+    "ok": true,
+    "import_status": "import_ok",
+    "reasons": [],
+    "run_id": "hw-discovery-20260723T000800Z-e2c6903a",
+    "boot_id": "4e13e0d7-5fd4-4ef7-88cb-44d46aac8720",
+    "profile_id": "asus_rog_gabriel",
+    "terminal": true,
+    "status": "partial",
+    "msi_excluded": false,
+    "has_manifest": true,
+    "has_sha256": true,
+    "has_marker": true,
+    "copied": true,
+    "destination": "docs/evidence/rescue/asus-capture-finalize-004/physical_runs/import-gabriel-hw-discovery-20260723-000800",
+    "protected_raw_excluded": true
+  },
+  "protected_raw_imported": false,
+  "raw_serials_in_import_tree": false,
+  "imported_at": "2026-07-22T22:18:57Z",
+  "diagnosis_status": "diagnosis_incomplete",
+  "note": "Finalizer reached (PARTIAL.TAG, terminal=true) but capture_exception:ValueError aborted before SMART/Panther."
+}

@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.1",
+  "contract_version": 2,
+  "run_id": "hw-discovery-20260723T000800Z-e2c6903a",
+  "boot_id": "4e13e0d7-5fd4-4ef7-88cb-44d46aac8720",
+  "run_type": "hardware_discovery",
+  "payload_version": "1.10.2.1",
+  "endstatus": "diagnosis_incomplete",
+  "status": "partial",
+  "terminal": true,
+  "profile_id": "asus_rog_gabriel",
+  "files": [
+    "bios-inventory.json",
+    "bios_inventory.json",
+    "machine-binding.json",
+    "machine-identity.json",
+    "machine_binding.json",
+    "machine_identity.json",
+    "nvme-identity-redacted.json",
+    "nvme_identity_redacted.json",
+    "nvme_inventory_raw.json",
+    "protected_raw/nvme_inventory_raw.json",
+    "run-status.json",
+    "run_status.json"
+  ],
+  "tooling": {
+    "tools": {
+      "nvme": true,
+      "smartctl": true,
+      "lsblk": true,
+      "blkid": true,
+      "lspci": true,
+      "udevadm": true,
+      "journalctl": true,
+      "dmesg": true,
+      "dmidecode": true,
+      "efibootmgr": false,
+      "mokutil": true,
+      "mount": true,
+      "find": true,
+      "sha256sum": true,
+      "parted": true,
+      "sgdisk": true,
+      "fdisk": true
+    },
+    "missing": [
+      "efibootmgr"
+    ],
+    "sufficient_for_nvme_capture": true
+  },
+  "gui_status": "not_applicable_for_text_hardware_discovery",
+  "missing_areas": [
+    "nvme_smart",
+    "nvme_error_logs",
+    "kernel_storage",
+    "partition_inventory",
+    "windows_setup_logs"
+  ]
+}
