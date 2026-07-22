@@ -1,0 +1,65 @@
+{
+  "ok": true,
+  "profile": "asus_rog_gabriel",
+  "bind_result": {
+    "ok": true,
+    "identity": {
+      "schema_version": 1,
+      "contract_version": 1,
+      "machine_id": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+      "expected_profile": "asus_rog_gabriel",
+      "manufacturer": "ASUSTeK COMPUTER INC.",
+      "product_name": "ROG Strix G513QM_G513QM",
+      "product_family": "ROG Strix",
+      "board_name": "G513QM",
+      "board_vendor": "ASUSTeK COMPUTER INC.",
+      "bios_vendor": "American Megatrends International, LLC.",
+      "bios_version": "G513QM.331",
+      "bios_date": "02/24/2023",
+      "system_uuid_hash": "fd11cf4334c1081a5ef358f615417c3f",
+      "chassis_type": "10",
+      "cpu_model": "",
+      "gpu_devices": [],
+      "ram_bytes": 0,
+      "serial_masked": "…4365",
+      "serial_hash": "e254ff84e2a7f6e643cf58ebf3f2f61fca12385dd662b8beb5319aaa0cd99cde",
+      "confidence": "high",
+      "operator_confirmation_required": false,
+      "installation_writes_allowed": false,
+      "is_developer_workstation": false,
+      "is_gabriel_target": true,
+      "gabriel_bound": true,
+      "unknown_machine_blocks_install": false,
+      "write_blocked_reason": "diagnostics_only_after_gabriel_bind",
+      "profile_id": "asus_rog_gabriel",
+      "exact_model_confirmed": "ROG Strix G513QM_G513QM",
+      "binding_version": 1,
+      "write_permissions": {
+        "diagnostics": true,
+        "storage_write": false,
+        "firmware_write": false,
+        "installation": false
+      }
+    },
+    "error": null,
+    "binding": {
+      "profile_id": "asus_rog_gabriel",
+      "machine_fingerprint_hash": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+      "manufacturer": "ASUS",
+      "product_name": "ROG Strix G513QM",
+      "board_name": "G513QM",
+      "operator_confirmed": true,
+      "binding_version": 1,
+      "write_permissions": {
+        "diagnostics": true,
+        "storage_write": false,
+        "firmware_write": false,
+        "installation": false
+      }
+    }
+  },
+  "diagnostics_access": true,
+  "storage_write": false,
+  "firmware_write": false,
+  "installation": false
+}

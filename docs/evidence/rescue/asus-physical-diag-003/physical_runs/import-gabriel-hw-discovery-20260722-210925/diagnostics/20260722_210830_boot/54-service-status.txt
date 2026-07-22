@@ -1,0 +1,75 @@
+===== setuphelfer-backend =====
+● setuphelfer-backend.service - Setuphelfer Rescue Backend
+     Loaded: loaded (/etc/systemd/system/setuphelfer-backend.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-22 21:08:33 UTC; 2s ago
+   Main PID: 1782 (python3)
+      Tasks: 2 (limit: 37705)
+     Memory: 91.3M
+        CPU: 1.596s
+     CGroup: /system.slice/setuphelfer-backend.service
+             └─1782 /opt/setuphelfer-rescue/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1
+
+Jul 22 21:08:33 setuphelfer-rescue start-backend-localonly.sh[1782]: Rescue temp runtime: backend http://127.0.0.1:8000/ (local-only)
+Jul 22 21:08:35 setuphelfer-rescue start-backend-localonly.sh[1782]: INFO:app:Log-Datei: /opt/setuphelfer-rescue/logs/pi-installer.log
+Jul 22 21:08:35 setuphelfer-rescue start-backend-localonly.sh[1782]: WARNING:core.sudo_store:EncryptedSudoStore: Key konnte nicht geladen werden ([Errno 30] Read-only file system: '/root/.config'), Store deaktiviert.
+Jul 22 21:08:35 setuphelfer-rescue start-backend-localonly.sh[1782]: INFO:core.registry:Modul registriert: sabrina-tuner
+Jul 22 21:08:35 setuphelfer-rescue start-backend-localonly.sh[1782]: INFO:core.registry:Modul registriert: pi-installer
+
+===== setuphelfer =====
+● setuphelfer.service - Setuphelfer Rescue Web UI
+     Loaded: loaded (/etc/systemd/system/setuphelfer.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-22 21:08:33 UTC; 2s ago
+   Main PID: 1785 (python3)
+      Tasks: 1 (limit: 37705)
+     Memory: 11.7M
+        CPU: 114ms
+     CGroup: /system.slice/setuphelfer.service
+             └─1785 python3 /opt/setuphelfer-rescue/scripts/serve-frontend-production.py --root /opt/setuphelfer-rescue/frontend/dist --host 127.0.0.1 --port 3001
+
+Jul 22 21:08:33 setuphelfer-rescue start-ui-localonly.sh[1785]: Rescue temp runtime: UI http://127.0.0.1:3001/ (local-only)
+Jul 22 21:08:34 setuphelfer-rescue start-ui-localonly.sh[1785]: Serving SPA from /opt/setuphelfer-rescue/frontend/dist at http://127.0.0.1:3001/
+
+===== setuphelfer-rescue-media-check =====
+● setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-media-check.service; enabled; preset: enabled)
+     Active: activating (start) since Wed 2026-07-22 21:08:30 UTC; 5s ago
+   Main PID: 1628 (python3)
+      Tasks: 1 (limit: 37705)
+     Memory: 432.1M
+        CPU: 422ms
+     CGroup: /system.slice/setuphelfer-rescue-media-check.service
+             └─1628 python3 /usr/local/sbin/setuphelfer-rescue-live-medium-check.py
+
+===== setuphelfer-rescue-start-assistant =====
+○ setuphelfer-rescue-start-assistant.service - Setuphelfer Rescue Start Assistant
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-start-assistant.service; enabled; preset: enabled)
+     Active: inactive (dead)
+
+===== setuphelfer-rescue-ui =====
+○ setuphelfer-rescue-ui.service - Setuphelfer Rescue React Shell (offline-first)
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-ui.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+===== NetworkManager =====
+● NetworkManager.service - Network Manager
+     Loaded: loaded (/lib/systemd/system/NetworkManager.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-07-22 21:08:33 UTC; 2s ago
+       Docs: man:NetworkManager(8)
+   Main PID: 1680 (NetworkManager)
+      Tasks: 4 (limit: 37705)
+     Memory: 11.3M
+        CPU: 287ms
+     CGroup: /system.slice/NetworkManager.service
+             └─1680 /usr/sbin/NetworkManager --no-daemon
+
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6313] device (enp2s0): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'external')
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6318] device (lo): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'external')
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6319] device (lo): state change: secondaries -> activated (reason 'none', sys-iface-state: 'external')
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6320] device (lo): Activation: successful, device activated.
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6322] device (enp2s0): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'external')
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6323] device (enp2s0): state change: secondaries -> activated (reason 'none', sys-iface-state: 'external')
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6325] manager: NetworkManager state is now CONNECTED_LOCAL
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.6326] device (enp2s0): Activation: successful, device activated.
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.7276] device (wlp3s0): supplicant interface state: internal-starting -> disconnected
+Jul 22 21:08:34 setuphelfer-rescue NetworkManager[1680]: <info>  [1784754514.7277] device (wlp3s0): state change: unavailable -> disconnected (reason 'supplicant-available', sys-iface-state: 'managed')
+

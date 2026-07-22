@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.rescue.discovery-service-result.v1",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "completed_at": "2026-07-22T21:08:59Z",
+  "exit_code": 0,
+  "status": "rescue_auto_discovery_review_required",
+  "run_control_consumed": true,
+  "session_id": "rescue-session-20260722T210835Z-0053d087",
+  "failure_stage": "",
+  "recorded_at": "2026-07-22T21:08:59Z"
+}

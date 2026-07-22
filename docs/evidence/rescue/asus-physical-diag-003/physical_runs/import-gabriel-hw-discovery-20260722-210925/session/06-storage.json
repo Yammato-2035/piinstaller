@@ -1,0 +1,322 @@
+{
+  "schema": "setuphelfer.rescue.discovery-artifact.v1",
+  "session_id": "rescue-session-20260722T210835Z-0053d087",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "payload_version": "1.10.2.0",
+  "created_at": "2026-07-22T21:08:35Z",
+  "collector_status": "ok",
+  "warnings": [],
+  "errors": [],
+  "discovery": {
+    "schema_version": 2,
+    "read_only": true,
+    "devices": [
+      {
+        "path": "/dev/loop0",
+        "type": "loop",
+        "size": 1285947392,
+        "size_bytes": 1285947392,
+        "fstype": "squashfs",
+        "label": null,
+        "mountpoint": "/usr/lib/live/mount/rootfs/filesystem.squashfs",
+        "parent_path": null,
+        "tran": null,
+        "rm": false,
+        "model": null,
+        "role": "unknown"
+      },
+      {
+        "path": "/dev/sda",
+        "type": "disk",
+        "size": 1000204886016,
+        "size_bytes": 1000204886016,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": null,
+        "tran": "usb",
+        "rm": false,
+        "model": "SABRENT",
+        "role": "rescue_usb_target_candidate"
+      },
+      {
+        "path": "/dev/sda1",
+        "type": "part",
+        "size": 8589934592,
+        "size_bytes": 8589934592,
+        "fstype": "ext4",
+        "label": "SETUP_E2E_SOURCE",
+        "mountpoint": null,
+        "parent_path": "/dev/sda",
+        "tran": "usb",
+        "rm": false,
+        "model": null,
+        "role": "rescue_usb_target_candidate"
+      },
+      {
+        "path": "/dev/sda2",
+        "type": "part",
+        "size": 34359738368,
+        "size_bytes": 34359738368,
+        "fstype": "ext4",
+        "label": "SETUP_E2E_BACKUP",
+        "mountpoint": null,
+        "parent_path": "/dev/sda",
+        "tran": "usb",
+        "rm": false,
+        "model": null,
+        "role": "rescue_usb_target_candidate"
+      },
+      {
+        "path": "/dev/sda3",
+        "type": "part",
+        "size": 34359738368,
+        "size_bytes": 34359738368,
+        "fstype": "ext4",
+        "label": "SETUP_E2E_RSTR",
+        "mountpoint": null,
+        "parent_path": "/dev/sda",
+        "tran": "usb",
+        "rm": false,
+        "model": null,
+        "role": "rescue_usb_target_candidate"
+      },
+      {
+        "path": "/dev/sdb",
+        "type": "disk",
+        "size": 63333990400,
+        "size_bytes": 63333990400,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": null,
+        "tran": "usb",
+        "rm": true,
+        "model": "Ultra Line",
+        "role": "rescue_usb_target_candidate"
+      },
+      {
+        "path": "/dev/sdb1",
+        "type": "part",
+        "size": 4294967296,
+        "size_bytes": 4294967296,
+        "fstype": "vfat",
+        "label": "SETUPHELFER",
+        "mountpoint": "/usr/lib/live/mount/medium",
+        "parent_path": "/dev/sdb",
+        "tran": "usb",
+        "rm": true,
+        "model": null,
+        "role": "rescue_usb_stick"
+      },
+      {
+        "path": "/dev/sdb2",
+        "type": "part",
+        "size": 59037957632,
+        "size_bytes": 59037957632,
+        "fstype": "vfat",
+        "label": "SETUP_LOGS",
+        "mountpoint": "/run/setuphelfer/esp-rw",
+        "parent_path": "/dev/sdb",
+        "tran": "usb",
+        "rm": true,
+        "model": null,
+        "role": "rescue_usb_stick"
+      },
+      {
+        "path": "/dev/nvme0n1",
+        "type": "disk",
+        "size": 2000398934016,
+        "size_bytes": 2000398934016,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": null,
+        "tran": "nvme",
+        "rm": false,
+        "model": "Samsung SSD 970 EVO Plus 2TB",
+        "role": "windows_system_disk"
+      },
+      {
+        "path": "/dev/nvme0n1p1",
+        "type": "part",
+        "size": 209715200,
+        "size_bytes": 209715200,
+        "fstype": "vfat",
+        "label": null,
+        "mountpoint": null,
+        "parent_path": "/dev/nvme0n1",
+        "tran": "nvme",
+        "rm": false,
+        "model": null,
+        "role": "windows_system_disk"
+      },
+      {
+        "path": "/dev/nvme0n1p2",
+        "type": "part",
+        "size": 16777216,
+        "size_bytes": 16777216,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": "/dev/nvme0n1",
+        "tran": "nvme",
+        "rm": false,
+        "model": null,
+        "role": "unknown"
+      },
+      {
+        "path": "/dev/nvme0n1p3",
+        "type": "part",
+        "size": 2000171302912,
+        "size_bytes": 2000171302912,
+        "fstype": "ntfs",
+        "label": null,
+        "mountpoint": null,
+        "parent_path": "/dev/nvme0n1",
+        "tran": "nvme",
+        "rm": false,
+        "model": null,
+        "role": "windows_system_disk"
+      },
+      {
+        "path": "/dev/nvme1n1",
+        "type": "disk",
+        "size": 2000398934016,
+        "size_bytes": 2000398934016,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": null,
+        "tran": "nvme",
+        "rm": false,
+        "model": "Samsung SSD 970 EVO Plus 2TB",
+        "role": "linux_system_disk"
+      }
+    ],
+    "source_candidates": [
+      {
+        "path": "/dev/nvme0n1",
+        "type": "system_group",
+        "group_kind": "windows_system",
+        "label": "Windows-System",
+        "role": "windows_system_disk",
+        "size": 2000398934016,
+        "size_bytes": 2000398934016,
+        "fstype": "multi",
+        "tran": "nvme",
+        "model": "Samsung SSD 970 EVO Plus 2TB",
+        "partitions": [
+          {
+            "path": "/dev/nvme0n1p1",
+            "fstype": "vfat",
+            "label": null,
+            "size_bytes": 209715200,
+            "kind": "efi"
+          },
+          {
+            "path": "/dev/nvme0n1p2",
+            "fstype": null,
+            "label": null,
+            "size_bytes": 16777216,
+            "kind": "other"
+          },
+          {
+            "path": "/dev/nvme0n1p3",
+            "fstype": "ntfs",
+            "label": null,
+            "size_bytes": 2000171302912,
+            "kind": "windows"
+          }
+        ],
+        "tags": [
+          "efi",
+          "windows"
+        ],
+        "auto_select_score": 70,
+        "recommended": true,
+        "backup_capable": true
+      },
+      {
+        "path": "/dev/nvme0n1",
+        "type": "disk",
+        "size": 2000398934016,
+        "size_bytes": 2000398934016,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": null,
+        "tran": "nvme",
+        "rm": false,
+        "model": "Samsung SSD 970 EVO Plus 2TB",
+        "role": "windows_system_disk"
+      },
+      {
+        "path": "/dev/nvme1n1",
+        "type": "disk",
+        "size": 2000398934016,
+        "size_bytes": 2000398934016,
+        "fstype": null,
+        "label": null,
+        "mountpoint": null,
+        "parent_path": null,
+        "tran": "nvme",
+        "rm": false,
+        "model": "Samsung SSD 970 EVO Plus 2TB",
+        "role": "linux_system_disk"
+      }
+    ],
+    "system_source_candidates": [
+      {
+        "path": "/dev/nvme0n1",
+        "type": "system_group",
+        "group_kind": "windows_system",
+        "label": "Windows-System",
+        "role": "windows_system_disk",
+        "size": 2000398934016,
+        "size_bytes": 2000398934016,
+        "fstype": "multi",
+        "tran": "nvme",
+        "model": "Samsung SSD 970 EVO Plus 2TB",
+        "partitions": [
+          {
+            "path": "/dev/nvme0n1p1",
+            "fstype": "vfat",
+            "label": null,
+            "size_bytes": 209715200,
+            "kind": "efi"
+          },
+          {
+            "path": "/dev/nvme0n1p2",
+            "fstype": null,
+            "label": null,
+            "size_bytes": 16777216,
+            "kind": "other"
+          },
+          {
+            "path": "/dev/nvme0n1p3",
+            "fstype": "ntfs",
+            "label": null,
+            "size_bytes": 2000171302912,
+            "kind": "windows"
+          }
+        ],
+        "tags": [
+          "efi",
+          "windows"
+        ],
+        "auto_select_score": 70,
+        "recommended": true,
+        "backup_capable": true
+      }
+    ],
+    "target_candidates": [],
+    "blocked_devices": [
+      "/dev/nvme1n1",
+      "/dev/sda",
+      "/dev/sdb"
+    ],
+    "cloud_target_available": true,
+    "cloud_target_mode": "local_unlock_test"
+  }
+}

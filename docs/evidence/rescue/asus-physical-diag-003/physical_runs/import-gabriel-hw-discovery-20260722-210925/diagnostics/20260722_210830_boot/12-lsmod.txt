@@ -1,0 +1,146 @@
+Module                  Size  Used by
+nvme_fabrics           32768  0
+binfmt_misc            28672  1
+mt7921e                32768  0
+intel_rapl_msr         20480  0
+mt7921_common          94208  1 mt7921e
+intel_rapl_common      32768  1 intel_rapl_msr
+edac_mce_amd           40960  0
+mt76_connac_lib        73728  2 mt7921e,mt7921_common
+mt76                  106496  3 mt7921e,mt7921_common,mt76_connac_lib
+btusb                  69632  0
+kvm_amd               163840  0
+btrtl                  28672  1 btusb
+btbcm                  24576  1 btusb
+btintel                45056  1 btusb
+btmtk                  16384  1 btusb
+snd_hda_codec_realtek   180224  1
+kvm                  1146880  1 kvm_amd
+snd_hda_codec_generic    98304  1 snd_hda_codec_realtek
+snd_hda_codec_hdmi     81920  2
+bluetooth             970752  6 btrtl,btmtk,btintel,btbcm,btusb
+irqbypass              16384  1 kvm
+snd_hda_intel          61440  0
+gpu_sched              53248  0
+snd_intel_dspcfg       36864  1 snd_hda_intel
+drm_buddy              20480  0
+ghash_clmulni_intel    16384  0
+snd_intel_sdw_acpi     20480  1 snd_intel_dspcfg
+mac80211             1175552  3 mt76,mt7921_common,mt76_connac_lib
+sha256_ssse3           32768  0
+drm_display_helper    184320  0
+sha1_ssse3             32768  0
+snd_hda_codec         184320  4 snd_hda_codec_generic,snd_hda_codec_hdmi,snd_hda_intel,snd_hda_codec_realtek
+jitterentropy_rng      16384  1
+sha512_ssse3           49152  1
+cec                    61440  1 drm_display_helper
+snd_hda_core          122880  5 snd_hda_codec_generic,snd_hda_codec_hdmi,snd_hda_intel,snd_hda_codec,snd_hda_codec_realtek
+sha512_generic         16384  1 sha512_ssse3
+rc_core                69632  1 cec
+snd_pci_acp6x          20480  0
+drm_ttm_helper         16384  0
+snd_hwdep              16384  1 snd_hda_codec
+ctr                    16384  0
+ttm                    94208  1 drm_ttm_helper
+snd_pcm               159744  5 snd_hda_codec_hdmi,snd_pci_acp6x,snd_hda_intel,snd_hda_codec,snd_hda_core
+drm_kms_helper        212992  1 drm_display_helper
+snd_pci_acp5x          20480  0
+aesni_intel           393216  0
+drbg                   45056  1
+snd_timer              49152  1 snd_pcm
+snd_rn_pci_acp3x       20480  0
+ansi_cprng             16384  0
+snd                   126976  8 snd_hda_codec_generic,snd_hda_codec_hdmi,snd_hwdep,snd_hda_intel,snd_hda_codec,snd_hda_codec_realtek,snd_timer,snd_pcm
+snd_acp_config         16384  2 snd_rn_pci_acp3x,snd_pci_acp5x
+crypto_simd            16384  1 aesni_intel
+libarc4                16384  1 mac80211
+snd_soc_acpi           16384  1 snd_acp_config
+ecdh_generic           16384  1 bluetooth
+cryptd                 28672  2 crypto_simd,ghash_clmulni_intel
+i2c_algo_bit           16384  0
+ecc                    40960  1 ecdh_generic
+soundcore              16384  1 snd
+asus_nb_wmi            32768  0
+sg                     40960  0
+snd_pci_acp3x          20480  0
+rapl                   20480  0
+cfg80211             1155072  4 mt76,mac80211,mt7921_common,mt76_connac_lib
+wmi_bmof               16384  0
+ccp                   118784  1 kvm_amd
+sp5100_tco             20480  0
+ucsi_acpi              16384  0
+typec_ucsi             53248  1 ucsi_acpi
+k10temp                16384  0
+roles                  20480  1 typec_ucsi
+watchdog               45056  1 sp5100_tco
+ac                     20480  0
+typec                  94208  1 typec_ucsi
+evdev                  28672  5
+pcspkr                 16384  0
+serio_raw              20480  0
+joydev                 28672  0
+amd_pmc                28672  0
+asus_wireless          20480  0
+acpi_cpufreq           32768  0
+drm                   614400  6 gpu_sched,drm_kms_helper,drm_display_helper,drm_buddy,drm_ttm_helper,ttm
+fuse                  176128  1
+dm_mod                184320  0
+efi_pstore             16384  0
+configfs               57344  1
+efivarfs               24576  1
+ip_tables              36864  0
+x_tables               61440  1 ip_tables
+autofs4                53248  2
+squashfs               73728  1
+loop                   32768  2
+overlay               163840  1
+ext4                  991232  0
+crc16                  16384  2 bluetooth,ext4
+mbcache                16384  1 ext4
+jbd2                  167936  1 ext4
+crc32c_generic         16384  0
+nls_ascii              16384  2
+nls_cp437              20480  2
+vfat                   24576  2
+fat                    90112  1 vfat
+hid_asus               32768  0
+sd_mod                 65536  2
+asus_wmi               61440  2 asus_nb_wmi,hid_asus
+ledtrig_audio          16384  2 snd_hda_codec_generic,asus_wmi
+sparse_keymap          16384  1 asus_wmi
+platform_profile       16384  1 asus_wmi
+rfkill                 40960  4 asus_wmi,bluetooth,cfg80211
+uas                    32768  0
+usb_storage            81920  3 uas
+scsi_mod              286720  4 sd_mod,usb_storage,uas,sg
+scsi_common            16384  4 scsi_mod,usb_storage,uas,sg
+usbhid                 65536  1 hid_asus
+hid_multitouch         32768  0
+nvme                   57344  0
+nvme_core             163840  2 nvme,nvme_fabrics
+xhci_pci               24576  0
+t10_pi                 16384  2 sd_mod,nvme_core
+r8169                  98304  0
+xhci_hcd              315392  1 xhci_pci
+crc64_rocksoft         20480  1 t10_pi
+realtek                36864  1
+crc64                  20480  1 crc64_rocksoft
+hid_generic            16384  0
+mdio_devres            16384  1 r8169
+crc_t10dif             20480  1 t10_pi
+crc32_pclmul           16384  0
+crc32c_intel           24576  0
+crct10dif_generic      16384  0
+i2c_hid_acpi           16384  0
+usbcore               348160  6 xhci_hcd,usbhid,usb_storage,btusb,xhci_pci,uas
+crct10dif_pclmul       16384  1
+usb_common             16384  2 xhci_hcd,usbcore
+video                  65536  1 asus_wmi
+libphy                180224  3 r8169,mdio_devres,realtek
+i2c_hid                32768  1 i2c_hid_acpi
+crct10dif_common       16384  3 crct10dif_generic,crc_t10dif,crct10dif_pclmul
+i2c_piix4              28672  0
+battery                28672  1 asus_wmi
+button                 24576  0
+hid                   159744  5 i2c_hid,usbhid,hid_multitouch,hid_generic,hid_asus
+wmi                    36864  3 video,asus_wmi,wmi_bmof

@@ -1,0 +1,12 @@
+btrtl                  28672  1 btusb
+bluetooth             970752  6 btrtl,btmtk,btintel,btbcm,btusb
+drm_buddy              20480  0
+drm_display_helper    184320  0
+cec                    61440  1 drm_display_helper
+drm_ttm_helper         16384  0
+ttm                    94208  1 drm_ttm_helper
+drm_kms_helper        212992  1 drm_display_helper
+drm                   614400  6 gpu_sched,drm_kms_helper,drm_display_helper,drm_buddy,drm_ttm_helper,ttm
+r8169                  98304  0
+mdio_devres            16384  1 r8169
+libphy                180224  3 r8169,mdio_devres,realtek

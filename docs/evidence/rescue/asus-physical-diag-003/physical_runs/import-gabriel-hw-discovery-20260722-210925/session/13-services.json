@@ -1,0 +1,37 @@
+{
+  "schema": "setuphelfer.rescue.discovery-artifact.v1",
+  "session_id": "rescue-session-20260722T210835Z-0053d087",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "payload_version": "1.10.2.0",
+  "created_at": "2026-07-22T21:08:35Z",
+  "collector_status": "ok",
+  "warnings": [],
+  "errors": [],
+  "services": [
+    {
+      "unit": "setuphelfer-backend.service",
+      "show": "Result=success\nActiveState=active\nSubState=running"
+    },
+    {
+      "unit": "setuphelfer-rescue-tui.service",
+      "show": "Result=success\nActiveState=inactive\nSubState=dead"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-msi-evidence.service",
+      "show": "Result=success\nActiveState=inactive\nSubState=dead"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-physical-e2e.service",
+      "show": "Result=success\nActiveState=inactive\nSubState=dead"
+    },
+    {
+      "unit": "setuphelfer-rescue-auto-discovery.service",
+      "show": "Result=success\nActiveState=activating\nSubState=start"
+    },
+    {
+      "unit": "NetworkManager.service",
+      "show": "Result=success\nActiveState=active\nSubState=running"
+    }
+  ],
+  "failed_units_raw": "UNIT                                   LOAD   ACTIVE SUB    DESCRIPTION\n● setuphelfer-rescue-media-check.service loaded failed failed Setuphelfer Rescue Live Media Check\n\nLOAD   = Reflects whether the unit definition was properly loaded.\nACTIVE = The high-level unit activation state, i.e. generalization of SUB.\nSUB    = The low-level unit activation state, values depend on unit type.\n1 loaded units listed."
+}

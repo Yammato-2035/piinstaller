@@ -1,0 +1,58 @@
+{
+  "schema_version": "1.0",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "analysis_at": "2026-07-22T19:13:16Z",
+  "this_boot_gui_attempted": false,
+  "primary_blocker_this_boot": "gui_intentionally_disabled_for_hardware_discovery",
+  "layers": [
+    {
+      "id": "policy_mode_text",
+      "severity": "blocking",
+      "evidence": "cmdline setuphelfer_mode=text; boot_state selected_mode=text; gui_requested=false; text_mode_started=true",
+      "explanation": "Hardwarediagnose-Eintrag erzwingt Textmodus; Entrypoint skips GUI when hardware_discovery=1."
+    },
+    {
+      "id": "policy_hardware_discovery_skip_gui",
+      "severity": "blocking",
+      "evidence": "entrypoint: hardware_discovery_skip_gui when setuphelfer_hardware_discovery=1",
+      "explanation": "Explizite Produktentscheidung: Diagnose ohne Kiosk/GUI."
+    },
+    {
+      "id": "kernel_nomodeset",
+      "severity": "blocking_for_gui",
+      "evidence": "dmesg: Booted with the nomodeset parameter. Only the system framebuffer will be available; /proc/fb = EFI VGA; amdgpu/nouveau not bound as KMS",
+      "explanation": "nomodeset deaktiviert Kernel Mode Setting. Xorg/Chromium/amdgpu-DRM-GUI kann nicht stabil starten; nur EFI-Framebuffer (Text) bleibt."
+    },
+    {
+      "id": "nouveau_blacklist",
+      "severity": "intentional",
+      "evidence": "modprobe.blacklist=nouveau nouveau.modeset=0",
+      "explanation": "Verhindert NVIDIA-Nouveau-Konflikt auf Hybrid-GPU; GUI über proprietary NVIDIA ist im Rescue-Image nicht vorgesehen."
+    },
+    {
+      "id": "prior_boot_without_nomodeset",
+      "severity": "historical_root_cause",
+      "evidence": "Boot 20:44: Console switching to colour dummy device during amdgpu modeset; amdgpu+nouveau both loaded",
+      "explanation": "Ohne nomodeset: amdgpu reißt EFI-FB weg → schwarzes Panel bevor DRM-FB bereit ist; Dual-GPU verschärft das."
+    },
+    {
+      "id": "missing_proprietary_nvidia",
+      "severity": "not_required_for_rescue_text",
+      "evidence": "live-config: nvidia legacy ids not found; no NVIDIA proprietary stack in rescue payload",
+      "explanation": "Kein fehlender ASUS-Windows-Treiber. Rescue nutzt amdgpu KMS oder EFI-FB; proprietary NVIDIA fehlt absichtlich/optional und blockiert Text-Diagnose nicht."
+    },
+    {
+      "id": "no_xorg_log_this_boot",
+      "severity": "expected",
+      "evidence": "diagnostics 32-xorg-log: Xorg.0.log not found; no new gui-start.log at 21:08",
+      "explanation": "X wurde auf diesem Boot nicht gestartet — Folge von mode=text/nomodeset, kein separater X-Crash."
+    }
+  ],
+  "verdict": {
+    "gui_blocked": true,
+    "gui_block_is_bug": false,
+    "gui_block_is_policy_plus_display_safety": true,
+    "tui_available": true,
+    "recommendation": "Für Gabriel-Diagnose Textmodus beibehalten. Separater GUI-Lab-Eintrag nur mit getestetem amdgpu-KMS-Profil ohne nouveau, ohne nomodeset, und ohne hardware_discovery_skip_gui."
+  }
+}

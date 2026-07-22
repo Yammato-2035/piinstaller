@@ -21,7 +21,5 @@
     "gui_block_is_policy_plus_display_safety": true,
     "tui_available": true,
     "recommendation": "Für Gabriel-Diagnose Textmodus beibehalten. Separater GUI-Lab-Eintrag nur mit getestetem amdgpu-KMS-Profil ohne nouveau, ohne nomodeset, und ohne hardware_discovery_skip_gui."
-  },
-  "protected_raw_on_stick_only": true,
-  "protected_raw_path_on_stick": "setuphelfer/evidence/physical_runs/hw-discovery-20260722T210925Z-0ec17061/protected_raw"
+  }
 }

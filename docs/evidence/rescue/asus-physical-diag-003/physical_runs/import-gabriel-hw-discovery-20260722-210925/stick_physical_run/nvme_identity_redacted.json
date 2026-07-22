@@ -1,0 +1,62 @@
+{
+  "devices": [
+    {
+      "device_path": "/dev/nvme1n1",
+      "controller": "/dev/nvme1",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "serial_masked": "…125Y",
+      "serial_hash": "c637055cc164eacf318916954783d1a3abadef888e6c8e57715f67710395f6a0",
+      "firmware_revision": "2B2QEXM7",
+      "size_bytes": 2000398934016,
+      "logical_sector_size": 0,
+      "physical_sector_size": 0,
+      "eui64": "0025385a11b16304",
+      "nguid": null,
+      "pci_address": "0000:00:02.4",
+      "sysfs_path": "/sys/devices/pci0000:00/0000:00:02.4/0000:05:00.0/nvme/nvme1",
+      "namespace_id": 1,
+      "partition_table": "unknown",
+      "partitions": [],
+      "filesystems": [],
+      "smart_status": "unknown",
+      "intended_role": "unassigned",
+      "write_allowed": false,
+      "identity_key": "a24cb5c3181b63c16cfb516df294c12f88c02c09ab012e6ff293534ec833a892",
+      "health_status": "unknown",
+      "nvme_identity_hash": "6b45cc50d930d46e55b9d56e73b7540e03329164619069dd784a8273cb33d031",
+      "identity_confidence": "high",
+      "missing_identity_fields": [
+        "nguid"
+      ]
+    },
+    {
+      "device_path": "/dev/nvme0n1",
+      "controller": "/dev/nvme0",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "serial_masked": "…241F",
+      "serial_hash": "84d4cc6f1c6b0cb7a80b092f7fa2c9a18b238f3794415fc9b14883b21b4fd082",
+      "firmware_revision": "2B2QEXM7",
+      "size_bytes": 2000398934016,
+      "logical_sector_size": 0,
+      "physical_sector_size": 0,
+      "eui64": "0025385811911d10",
+      "nguid": null,
+      "pci_address": "0000:00:02.3",
+      "sysfs_path": "/sys/devices/pci0000:00/0000:00:02.3/0000:04:00.0/nvme/nvme0",
+      "namespace_id": 1,
+      "partition_table": "unknown",
+      "partitions": [],
+      "filesystems": [],
+      "smart_status": "unknown",
+      "intended_role": "unassigned",
+      "write_allowed": false,
+      "identity_key": "6508d5ca8e1d986c67f4a0ee200999652bbd4c863f41b875f601456e701dd408",
+      "health_status": "unknown",
+      "nvme_identity_hash": "ed84d453078b002bb70e496cefbb1d4c18fd3b783c0e8483703a770cb087c94a",
+      "identity_confidence": "high",
+      "missing_identity_fields": [
+        "nguid"
+      ]
+    }
+  ]
+}
