@@ -882,7 +882,7 @@ Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: New USB device found, idV
 Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: New USB device strings: Mfr=2, Product=3, SerialNumber=4
 Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: Product: Intenso Ultra Line
 Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: Manufacturer: Asolid
-Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: SerialNumber: 24111412110686
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: SerialNumber: [redacted-usb-serial]
 Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: New USB device found, idVendor=13d3, idProduct=3563, bcdDevice= 1.00
 Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: New USB device strings: Mfr=5, Product=6, SerialNumber=7
 Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: Product: Wireless_Device

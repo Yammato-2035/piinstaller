@@ -882,7 +882,7 @@
 [    2.146139] usb 2-2: New USB device strings: Mfr=2, Product=3, SerialNumber=4
 [    2.152457] usb 2-2: Product: Intenso Ultra Line
 [    2.158732] usb 2-2: Manufacturer: Asolid
-[    2.164979] usb 2-2: SerialNumber: 24111412110686
+[    2.164979] usb 2-2: SerialNumber: [redacted-usb-serial]
 [    2.174639] usb 3-4: New USB device found, idVendor=13d3, idProduct=3563, bcdDevice= 1.00
 [    2.180904] usb 3-4: New USB device strings: Mfr=5, Product=6, SerialNumber=7
 [    2.187096] usb 3-4: Product: Wireless_Device

@@ -28,7 +28,9 @@ Löschung der Remote-Branches nur nach ausdrücklicher Operatorentscheidung. Kei
 
 ## Push-Gate
 
-Push auf `origin/pi-rs-asus-capture-finalize-004` erst nach:
+Push-Gate (Stand nach Rebuild): **PASS**.
+
+Push auf `origin/pi-rs-asus-capture-finalize-004` nach:
 
 1. Historien-Rewrite / sauberem Neuaufbau ohne Rohwerte
 2. `scripts/check-sensitive-hardware-identifiers.sh` Exit 0

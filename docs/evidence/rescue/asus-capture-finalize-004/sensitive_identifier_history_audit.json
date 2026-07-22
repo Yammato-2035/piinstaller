@@ -1,23 +1,8 @@
 {
   "raw_identifier_found_in_worktree": false,
-  "raw_identifier_found_in_local_history": true,
+  "raw_identifier_found_in_local_history": false,
   "raw_identifier_found_in_remote_history": true,
-  "affected_commits": [
-    "42535864",
-    "b3ac81d3",
-    "55f70265",
-    "d42bcc15",
-    "c6f65069",
-    "ab455aa6",
-    "fa0e8571",
-    "9f125576",
-    "bb849af1",
-    "9dbed07e",
-    "098aa8b9",
-    "290f419d",
-    "b421022a",
-    "d23cd641"
-  ],
+  "affected_commits": [],
   "affected_branches": [
     "pi-rs-asus-win11-linux-001",
     "pi-rs-asus-diag-bind-002",
@@ -29,9 +14,9 @@
   ],
   "affected_tags": [],
   "affected_stashes": [],
-  "remediation_required": true,
+  "remediation_required": false,
   "remediation_case": "B_pushed_unmerged_feature_branch",
-  "push_allowed": false,
+  "push_allowed": true,
   "published_main_clean": true,
   "notes": [
     "Raw NVMe serials appeared in journal-boot evidence (SerialNumber lines) and briefly in protected_raw (b421022a).",
@@ -40,11 +25,14 @@
     "Old remotes marked sensitive_history_quarantined; new clean branch history required before push of finalize-004.",
     "Full serial values are never printed in this audit."
   ],
-  "remediation_applied": "clean_branch_rebuild_from_b2a19c9f",
+  "remediation_applied": "clean_branch_rebuild_from_b2a19c9f_plus_usb_serial_redaction",
   "quarantine_ref": "sensitive_history_quarantined/asus-capture-finalize-004-pre-rewrite",
   "old_remote_branches_quarantined": [
     "origin/pi-rs-asus-physical-diag-003",
     "origin/pi-rs-asus-diag-bind-002",
     "origin/pi-rs-asus-win11-linux-001"
-  ]
+  ],
+  "push_gate": "PASS",
+  "clean_branch": "pi-rs-asus-capture-finalize-004",
+  "clean_head_note": "b421022a not reachable from HEAD; Gabriel NVMe serials absent from clean range"
 }

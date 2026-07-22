@@ -886,7 +886,7 @@ Jul 22 21:08:26 localhost.localdomain kernel: usb 2-2: New USB device found, idV
 Jul 22 21:08:26 localhost.localdomain kernel: usb 2-2: New USB device strings: Mfr=2, Product=3, SerialNumber=4
 Jul 22 21:08:26 localhost.localdomain kernel: usb 2-2: Product: Intenso Ultra Line
 Jul 22 21:08:26 localhost.localdomain kernel: usb 2-2: Manufacturer: Asolid
-Jul 22 21:08:26 localhost.localdomain kernel: usb 2-2: SerialNumber: 24111412110686
+Jul 22 21:08:26 localhost.localdomain kernel: usb 2-2: SerialNumber: [redacted-usb-serial]
 Jul 22 21:08:26 localhost.localdomain kernel: SCSI subsystem initialized
 Jul 22 21:08:26 localhost.localdomain kernel: usb-storage 2-2:1.0: USB Mass Storage device detected
 Jul 22 21:08:26 localhost.localdomain kernel: scsi host0: usb-storage 2-2:1.0

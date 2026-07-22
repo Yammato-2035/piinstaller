@@ -886,7 +886,7 @@
 [    2.102429] usb 2-2: New USB device strings: Mfr=2, Product=3, SerialNumber=4
 [    2.108679] usb 2-2: Product: Intenso Ultra Line
 [    2.114904] usb 2-2: Manufacturer: Asolid
-[    2.121089] usb 2-2: SerialNumber: 24111412110686
+[    2.121089] usb 2-2: SerialNumber: [redacted-usb-serial]
 [    2.136717] SCSI subsystem initialized
 [    2.145905] usb-storage 2-2:1.0: USB Mass Storage device detected
 [    2.152167] scsi host0: usb-storage 2-2:1.0
