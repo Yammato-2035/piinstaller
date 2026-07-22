@@ -42,3 +42,8 @@ Details zu Version und Changelog: **[docs/developer/VERSIONING.md](docs/develope
 ## Releases & Changelog
 
 Änderungen werden in [CHANGELOG.md](CHANGELOG.md) eingetragen. Bei einem Release wird die Version in `config/version.json` erhöht und ggf. ein GitHub-Release erstellt.
+
+## Rescue dual-NVMe / BIOS audit
+
+See `docs/architecture/RESCUE_MACHINE_IDENTITY_CONTRACT.md` and operator runbooks under `docs/operator/*BIOS*` / `*WINDOWS11*` / `*LINUX_SECOND*`.
+Use deploy profile `runtime-opt` (no Tauri) after changes.

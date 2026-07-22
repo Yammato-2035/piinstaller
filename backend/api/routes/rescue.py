@@ -61,6 +61,11 @@ try:
 except ImportError:
     rescue_ui_router = None
 
+try:
+    from api.routes.rescue_asus_win11_linux import router as rescue_asus_win11_linux_router
+except ImportError:
+    rescue_asus_win11_linux_router = None
+
 router = APIRouter(prefix="/api/rescue", tags=["rescue"])
 
 
@@ -129,3 +134,5 @@ if rescue_assessment_v2_router is not None:
     router.include_router(rescue_assessment_v2_router)
 if rescue_ui_router is not None:
     router.include_router(rescue_ui_router)
+if rescue_asus_win11_linux_router is not None:
+    router.include_router(rescue_asus_win11_linux_router)

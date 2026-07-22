@@ -110,3 +110,13 @@ async def api_status_rescue_bvr():
         version_drift_status="unknown",
         deploy_drift_status="unknown",
     )
+
+
+@router.get("/api/status/rescue-installation-readiness")
+async def api_status_rescue_installation_readiness():
+    """Firmware / Win11 / Linux second-NVMe readiness for DCC (read-only)."""
+    from core.rescue_install_readiness_dcc import build_rescue_installation_readiness
+
+    return build_rescue_installation_readiness(
+        endstatus="implemented_pending_physical_diagnosis",
+    )

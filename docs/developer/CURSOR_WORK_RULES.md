@@ -300,3 +300,8 @@ Diese Datei beschreibt **Prozess- und Qualitätsregeln**. Sie ersetzt keine Code
 Cursor darf **keine** Background-Tasks, Auto-Efficiency-Ketten, Ingest-Jobs, Commit-/Push-Ketten oder spaetere Statusmeldungen ankuendigen oder starten.  
 Jeder Lauf endet **synchron** mit vollstaendigem Schlussbericht.  
 Wenn eine Aktion Operatorrechte benoetigt, wird ein **Operator-Handoff** erstellt, aber **keine** Hintergrundausfuehrung gestartet.
+
+### PI-RS-ASUS-WIN11-LINUX-001
+- No automatic BIOS flash.
+- Never trust nvme0/nvme1 alone.
+- Windows before Linux; separate write grants.
