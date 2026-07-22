@@ -7,6 +7,8 @@
 #   sudo ./scripts/deploy-to-opt.sh [QUELLVERZEICHNIS]
 #   Ohne Argument: Quellverzeichnis = Repo-Root (über diesem Skript).
 #   Mit Argument: z. B. sudo ./scripts/deploy-to-opt.sh /home/volker/piinstaller
+#   Optional: SETUPHELFER_SKIP_TAURI_BUILD=1 — überspringt npm run tauri:build
+#             (Vite-dist-Build läuft weiter; vorhandenes Tauri-Binary unter /opt bleibt).
 
 set -e
 
@@ -218,26 +220,33 @@ if command -v npm >/dev/null 2>&1; then
   fi
   # Tauri-Build: Cargo/Rust liegen oft im Benutzer-Kontext; mit sudo ist $HOME=/root und cargo fehlt.
   # Daher Build als der User ausführen, der sudo aufgerufen hat (der hat meist Rust).
-  BUILD_USER="${SUDO_USER:-}"
-  if [ -n "$BUILD_USER" ] && su - "$BUILD_USER" -c "command -v cargo" >/dev/null 2>&1; then
-    info "Tauri-App bauen als User $BUILD_USER (kann einige Minuten dauern)..."
-    chown -R "$BUILD_USER:$BUILD_USER" "$INSTALL_DIR/frontend"
-    if su - "$BUILD_USER" -c "cd $INSTALL_DIR/frontend && export GDK_BACKEND=x11 && npm run tauri:build" 2>&1; then
-      ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
-    else
-      warn "Tauri-Build fehlgeschlagen. App-Fenster: Browser-Option oder manuell bauen (ohne sudo im Repo: npm run tauri:build, dann target/ nach /opt kopieren)."
-    fi
-    # Frontend wieder root, finaler chown kommt unten
-    chown -R root:root "$INSTALL_DIR/frontend"
-  elif command -v cargo >/dev/null 2>&1; then
-    info "Tauri-App bauen (kann einige Minuten dauern)..."
-    if ( export GDK_BACKEND=x11; npm run tauri:build 2>&1 ); then
-      ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
-    else
-      warn "Tauri-Build fehlgeschlagen. App-Fenster unter /opt: Browser-Option nutzen oder später mit Ihrem User bauen."
-    fi
+  # Optional: SETUPHELFER_SKIP_TAURI_BUILD=1 überspringt den langen Tauri-Rebuild und behält
+  # vorhandene Binaries unter /opt (rsync schließt target/ aus und löscht sie nicht).
+  # Vite-Produktionsbuild (frontend/dist) läuft weiterhin immer.
+  if [ "${SETUPHELFER_SKIP_TAURI_BUILD:-0}" = "1" ]; then
+    warn "Tauri-Build übersprungen (SETUPHELFER_SKIP_TAURI_BUILD=1) — vorhandenes Binary unter /opt bleibt erhalten."
   else
-    warn "Rust/Cargo nicht installiert (oder nur für einen anderen User). Tauri: Browser wählen oder als User mit Rust ausführen: sudo -u IhrUser ./scripts/deploy-to-opt.sh"
+    BUILD_USER="${SUDO_USER:-}"
+    if [ -n "$BUILD_USER" ] && su - "$BUILD_USER" -c "command -v cargo" >/dev/null 2>&1; then
+      info "Tauri-App bauen als User $BUILD_USER (kann einige Minuten dauern)..."
+      chown -R "$BUILD_USER:$BUILD_USER" "$INSTALL_DIR/frontend"
+      if su - "$BUILD_USER" -c "cd $INSTALL_DIR/frontend && export GDK_BACKEND=x11 && npm run tauri:build" 2>&1; then
+        ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
+      else
+        warn "Tauri-Build fehlgeschlagen. App-Fenster: Browser-Option oder manuell bauen (ohne sudo im Repo: npm run tauri:build, dann target/ nach /opt kopieren)."
+      fi
+      # Frontend wieder root, finaler chown kommt unten
+      chown -R root:root "$INSTALL_DIR/frontend"
+    elif command -v cargo >/dev/null 2>&1; then
+      info "Tauri-App bauen (kann einige Minuten dauern)..."
+      if ( export GDK_BACKEND=x11; npm run tauri:build 2>&1 ); then
+        ok "Tauri-Binary erstellt (App-Fenster verfügbar)"
+      else
+        warn "Tauri-Build fehlgeschlagen. App-Fenster unter /opt: Browser-Option nutzen oder später mit Ihrem User bauen."
+      fi
+    else
+      warn "Rust/Cargo nicht installiert (oder nur für einen anderen User). Tauri: Browser wählen oder als User mit Rust ausführen: sudo -u IhrUser ./scripts/deploy-to-opt.sh"
+    fi
   fi
 else
   warn "npm nicht gefunden. Frontend später: cd $INSTALL_DIR/frontend && npm install"

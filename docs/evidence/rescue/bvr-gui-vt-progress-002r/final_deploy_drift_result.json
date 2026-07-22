@@ -1,7 +1,7 @@
 {
-  "checked_at": "2026-07-22T05:30:16Z",
-  "deploy_method": "sudo ./scripts/deploy-to-opt.sh",
-  "source_commit": "61bac2b3",
+  "checked_at": "2026-07-22T05:39:21Z",
+  "deploy_method": "sudo SETUPHELFER_SKIP_TAURI_BUILD=1 ./scripts/deploy-to-opt.sh /tmp/piinstaller-vt-progress-002",
+  "source_commit": "dac7e710",
   "backend_runtime_path": "/opt/setuphelfer/backend",
   "services_active": true,
   "release_status_reachable": true,
@@ -11,7 +11,7 @@
   "deploy_drift_status": "green",
   "remaining_warnings": [
     "project_version 1.9.20.0 frozen vs payload 1.10.1.2",
-    "live API empty_progress pollution on lab host without /run canonical file",
-    "/opt physical_msi_result still DCC-001 until evidence redeploy"
-  ]
+    "live API empty_progress pollution on lab host without /run canonical file"
+  ],
+  "skip_tauri_build": true
 }

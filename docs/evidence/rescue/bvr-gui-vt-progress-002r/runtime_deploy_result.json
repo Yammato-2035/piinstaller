@@ -1,26 +1,22 @@
 {
-  "deploy_method": "sudo ./scripts/deploy-to-opt.sh /tmp/piinstaller-vt-progress-002",
-  "source_commit_deployed": "61bac2b3",
-  "branch_tip_after": "324b2873",
+  "deploy_method": "sudo SETUPHELFER_SKIP_TAURI_BUILD=1 ./scripts/deploy-to-opt.sh /tmp/piinstaller-vt-progress-002",
+  "source_commit_deployed": "dac7e710",
+  "implementation_basis": "61bac2b3",
   "deploy_exit_code": 0,
+  "skip_tauri_build": true,
+  "skip_tauri_reason": "prevent incomplete deploy hang; preserve existing /opt Tauri binary; vite dist rebuilt",
   "runtime_project_version": "1.9.20.0",
   "runtime_payload_version": "1.10.1.2",
   "backend_runtime_path": "/opt/setuphelfer/backend",
   "install_profile": "release",
+  "profile_gate_status": "green",
   "services": {
     "setuphelfer-backend": "active",
     "setuphelfer": "active"
   },
-  "legacy_runtime_gate_exit": 20,
-  "legacy_runtime_gate_note": "dev-dashboard 404 expected in release profile",
-  "release_status_reachable": true,
-  "developer_endpoint_protected": true,
-  "developer_endpoint_code": "DEVELOPER_CAPABILITY_REQUIRED",
-  "openapi_has_release_route": true,
-  "feature_files_match_61bac2b3": true,
+  "feature_files_match_workspace": true,
+  "physical_msi_result_synced": true,
+  "last_run_id": "e2e-rescue-msi-20260722-072255-05b6f187",
   "status": "deployed",
-  "warnings": [
-    "project_version remains 1.9.20.0 as frozen in 61bac2b3; payload_version is 1.10.1.2"
-  ],
-  "updated_at": "2026-07-21T23:07:53Z"
+  "updated_at": "2026-07-22T05:39:21Z"
 }
