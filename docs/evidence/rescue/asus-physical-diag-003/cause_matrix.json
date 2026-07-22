@@ -1,0 +1,6 @@
+{
+  "likely_cause": "unknown",
+  "confidence": "low",
+  "panther_or_rollback_present": false,
+  "note": "Awaiting Gabriel hardware_discovery capture"
+}

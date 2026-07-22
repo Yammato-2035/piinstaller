@@ -1,0 +1,10 @@
+{
+  "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
+  "endstatus": "diagnosis_incomplete",
+  "reason": "capture_path_ready_awaiting_gabriel_boot",
+  "payload_version": "1.10.2.0",
+  "app_version": "1.9.21.2",
+  "profile": "asus_rog_gabriel",
+  "write_operations_allowed": false,
+  "physical_run_imported": false
+}
