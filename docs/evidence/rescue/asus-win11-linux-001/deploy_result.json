@@ -23,5 +23,8 @@
   "msi_bios_physical": false,
   "windows_install": false,
   "linux_install": false,
-  "generated_at": "2026-07-22T16:42:51Z"
+  "generated_at": "2026-07-22T16:42:51Z",
+  "source_commit": "244b1cfd11cada5d4f40d14b9375373f29933851",
+  "source_commit_short": "244b1cfd",
+  "identity_fix": "developer_asus_not_gabriel"
 }
