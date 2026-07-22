@@ -1,5 +1,6 @@
 ## Unreleased
 
+- **PI-RS-ASUS-DIAG-BIND-002:** Gabriel G513QM Binding (diagnostics-only), Import-Identitätsgate gegen MSI-Fehlzuordnung, Run-Type `hardware_discovery`, offizieller BIOS-Vergleich **335** (`update_available`, kein Flash). App **1.9.21.1**, Payload **1.10.1.4**. Endstatus: `diagnosis_incomplete`.
 - **PI-RS-ASUS-WIN11-LINUX-001:** Maschinen-/NVMe-Identität, read-only BIOS-Inventar + offizieller ASUS/MSI-Vergleich (kein Flash), Windows-11-Evidence/Preflight, WinPE-Log-Collector, Linux-Zweit-NVMe-Plan/Gates, DCC-Readiness. App **1.9.21.0**, Payload **1.10.1.3**. Endstatus: `implemented_pending_physical_diagnosis`.
 - **PI-OPT-DEPLOY-TAURI-001:** `/opt`-Deploy-Profil `runtime-opt` ohne Tauri-Vollbuild, Deploy-Manifest mit `source.commit`, RUNTIME_API-Drift ohne falsches `blocked_runtime_outdated`, App-Version **1.9.20.1** (Payload bleibt **1.10.1.2**).
 - **PI-RS-BVR-GUI-VT-PROGRESS-002 / 002R:** VT-Auswahl ohne fremdes Kill, Chromium-Health für `auto-e2e-progress.html`, kanonischer BVR-Fortschritt, Release-Status `GET /api/status/rescue-bvr`, Payload **1.10.1.2**. Physischer MSI-Lauf `e2e-rescue-msi-20260722-072255-05b6f187`: BVR passed, GUI nicht sichtbar. Status: `passed_with_gui_fallback`.

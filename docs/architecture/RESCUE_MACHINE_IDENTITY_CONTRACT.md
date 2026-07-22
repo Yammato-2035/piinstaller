@@ -21,3 +21,10 @@ Distinguish MSI GE63 (MS-16P5) and ASUS ROG (Gabriel) before any write action.
 ## API
 
 `GET /api/rescue/hardware/identity`
+
+
+## Fingerprint 1.1
+
+See `build_machine_fingerprint()` — manufacturer, product, board required; UUID/board serial hashed; GPU/storage PCI IDs optional.
+
+Gabriel bind requires G513QM + operator phrase and sets write_permissions diagnostics-only.

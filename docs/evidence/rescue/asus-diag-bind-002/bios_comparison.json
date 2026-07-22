@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "contract_version": 1,
+  "status": "update_available",
+  "vendor": "ASUS",
+  "exact_model": "ROG Strix G513QM_G513QM",
+  "board": "G513QM",
+  "installed_version": "G513QM.331",
+  "latest_official_version": "G513QM.335",
+  "release_date": "2025-12-24",
+  "official_support_url": "https://www.asus.com/supportonly/g513qm/helpdesk_bios/",
+  "download_url": "https://www.asus.com/supportonly/g513qm/helpdesk_bios/",
+  "checksum_sha256": "8183DDB74FE59EF0936A4FF2AED42A184221E81A35CA0E0AE51B7E52385B23F6",
+  "changelog": "Official ASUS EZ Flash BIOS 335 (2025-12-24). Installed stick evidence: G513QM.331. Windows MyASUS package may still list 331; EZ Flash offers 335. No automatic flash.",
+  "fetched_at": "2026-07-22T17:12:03Z",
+  "online": true,
+  "automatic_flash_allowed": false,
+  "update_plan": {
+    "status": "update_available",
+    "automatic_flash_allowed": false,
+    "recommended_method": "asus_ez_flash",
+    "requirements": [
+      "official firmware file",
+      "AC power connected",
+      "battery above required threshold",
+      "exact machine model confirmed",
+      "separate operator approval"
+    ],
+    "warnings": [
+      "Check BitLocker/device encryption recovery key if Windows present",
+      "Review Secure Boot/TPM impact before flashing"
+    ],
+    "official_source": "https://www.asus.com/supportonly/g513qm/helpdesk_bios/",
+    "vendor": "ASUS"
+  },
+  "end_state": "bios_checked"
+}

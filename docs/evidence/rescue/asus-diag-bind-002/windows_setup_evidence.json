@@ -1,0 +1,53 @@
+{
+  "status": "no_setup_logs_found",
+  "ntfs_volumes_scanned": false,
+  "reason": "No read-only NTFS mount/panther scan performed on Gabriel hardware in this capture; stick boot had auto_discovery=0 and no windows evidence collector.",
+  "panther": false,
+  "rollback": false,
+  "likely_cause": "insufficient_evidence",
+  "abort_matrix": [
+    {
+      "hypothesis": "NVMe-Hardwarefehler",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "NVMe-Firmware",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "GPT-/Partitionslayout",
+      "status": "plausible",
+      "evidence_for": "nvme0n1 shows p1-p3 (possible prior Windows setup partition attempt); nvme1n1 empty in dmesg"
+    },
+    {
+      "hypothesis": "Storage-Treiber",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "BIOS-Version",
+      "status": "plausible",
+      "evidence_for": "official ASUS EZ Flash offers 335 vs installed 331"
+    },
+    {
+      "hypothesis": "Installationsmedium",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "RAM-Instabilit\u00e4t",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "Bootloader/EFI",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "Strom/Temperatur",
+      "status": "insufficient_evidence"
+    },
+    {
+      "hypothesis": "Windows-Image",
+      "status": "insufficient_evidence"
+    }
+  ],
+  "confidence": "low"
+}

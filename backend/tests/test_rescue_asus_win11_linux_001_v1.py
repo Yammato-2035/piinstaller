@@ -74,8 +74,8 @@ class MachineIdentityTests(unittest.TestCase):
         ident = mid.build_machine_identity(
             dmi={
                 "sys_vendor": "ASUSTeK COMPUTER INC.",
-                "product_name": "ROG Strix Scar",
-                "board_name": "G533",
+                "product_name": "ROG Strix G513QM_G513QM",
+                "board_name": "G513QM",
                 "product_serial": "GABRIEL01",
             }
         )
@@ -89,11 +89,14 @@ class MachineIdentityTests(unittest.TestCase):
         ok = mid.bind_gabriel_operator_profile(
             ident,
             operator_confirmed=True,
-            exact_model_confirmed="ROG Strix Scar (Gabriel)",
+            exact_model_confirmed="ROG Strix G513QM",
             not_developer_host_ack=True,
+            operator_phrase=mid.GABRIEL_OPERATOR_PHRASE,
         )
         self.assertTrue(ok["ok"])
         self.assertEqual(ok["identity"]["expected_profile"], mid.PROFILE_ASUS_ROG_GABRIEL)
+        self.assertFalse(ok["identity"]["write_permissions"]["storage_write"])
+        self.assertFalse(ok["identity"]["write_permissions"]["installation"])
 
     def test_msi_asus_conflict(self) -> None:
         a = {"expected_profile": mid.PROFILE_MSI_GE63}

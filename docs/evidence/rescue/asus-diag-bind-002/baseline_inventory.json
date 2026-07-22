@@ -1,0 +1,7 @@
+{
+  "task_id": "PI-RS-ASUS-DIAG-BIND-002",
+  "baseline_commit": "b3ac81d3",
+  "gabriel_boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "payload_on_stick": "1.10.1.2",
+  "foreign_msi_session": "rescue-session-20260721T230213Z-bb356a62"
+}

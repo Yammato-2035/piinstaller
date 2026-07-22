@@ -1,0 +1,80 @@
+docs/evidence/rescue/asus-win11-linux-001/deploy_result.json:18:    "product": "ROG Strix G713PI_G713PI",
+docs/evidence/rescue/asus-win11-linux-001/host_readonly/dmi.txt:2:product_name=ROG Strix G713PI_G713PI
+docs/evidence/rescue/asus-win11-linux-001/host_readonly/dmi.txt:4:product_family=ROG Strix
+docs/evidence/rescue/asus-win11-linux-001/host_readonly/diagnosis_snapshot.json:12:    "product_name": "ROG Strix G713PI_G713PI",
+docs/evidence/rescue/asus-win11-linux-001/host_readonly/diagnosis_snapshot.json:13:    "product_family": "ROG Strix",
+docs/evidence/rescue/asus-win11-linux-001/host_readonly/diagnosis_snapshot.json:62:  "note": "Development ASUS ROG Strix G713PI only — NOT Gabriel's dual-NVMe laptop."
+docs/evidence/rescue/asus-win11-linux-001/ABSCHLUSSBERICHT.md:35:- Gerät: ASUS ROG Strix **G713PI**, BIOS `G713PI.334`
+docs/evidence/rescue/asus-win11-linux-001/ABSCHLUSSBERICHT.md:81:- Modell: ROG Strix G513QM / Board G513QM / BIOS G513QM.331
+docs/evidence/rescue/asus-win11-linux-001/ABSCHLUSSBERICHT.md:83:- Import: `gabriel_physical_20260722/` + discovery-boot `503549ad-…`
+docs/evidence/rescue/asus-win11-linux-001/ABSCHLUSSBERICHT.md:84:- E2E auto: blocked (`run_control_invalid`)
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/redacted/01-dmidecode.redacted.txt:8:	Version: G513QM.331
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/redacted/01-dmidecode.redacted.txt:31:	Product Name: ROG Strix G513QM_G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/redacted/01-dmidecode.redacted.txt:37:	Family: ROG Strix
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/redacted/01-dmidecode.redacted.txt:42:	Product Name: G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/e2e/root_msi-e2e-auto-result.json:4:  "code": "run_control_invalid",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/e2e/auto-physical-e2e-result.json:4:  "code": "run_control_invalid",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/auto_discovery_import.json:12:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/auto_discovery_import.json:14:  "destination": "/tmp/piinstaller-asus-win11-linux-001/docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/boot/host-fingerprint.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/boot/host-fingerprint.json:7:  "product": "ROG Strix G513QM_G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/boot/host-fingerprint.json:8:  "board": "G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/boot/host-fingerprint.json:9:  "bios": "G513QM.331",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT.md:7:- Boot-Diagnostik: `20260722_184957_boot`
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT.md:8:- Boot-ID: `503549ad-1af5-46fd-bcbb-131aaf5e7b47`
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT.md:15:| Produkt | ROG Strix G513QM_G513QM |
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT.md:16:| Board | G513QM |
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT.md:17:| BIOS | G513QM.331 |
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT.md:23:1. Auto-Discovery-Import: ok → `docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-…`
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:9:    "product": "ROG Strix G513QM_G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:10:    "board": "G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:11:    "bios": "G513QM.331",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:12:    "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:19:    "installed_version": "G513QM.331",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:54:    "code": "run_control_invalid",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:61:  "diagnostics_boot": "20260722_184957_boot",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:95:    "official ASUS BIOS latest compare for G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:100:    "auto_discovery session paired from older run rescue-session-20260721T230213Z (not Gabriel G513QM storage map); trust diagnostics 20260722_184957_boot + host-fingerprint for Gabriel identity"
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/IMPORT_SUMMARY.json:103:    "gabriel_boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/90-journal-boot.txt:71:Jul 22 18:49:53 localhost.localdomain kernel: DMI: ASUSTeK COMPUTER INC. ROG Strix G513QM_G513QM/G513QM, BIOS G513QM.331 02/24/2023
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/90-journal-boot.txt:1214:Jul 22 18:49:59 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746199.9722] NetworkManager (version 1.42.4) is starting... (boot:503549ad-1af5-46fd-bcbb-131aaf5e7b47)
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/92-dmesg-full.txt:71:[    0.000000] DMI: ASUSTeK COMPUTER INC. ROG Strix G513QM_G513QM/G513QM, BIOS G513QM.331 02/24/2023
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/00-meta.txt:8:product=ROG Strix G513QM_G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/00-meta.txt:9:board=G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/00-meta.txt:10:bios=G513QM.331
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/42-nm-journal.txt:1:Jul 22 18:49:59 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746199.9722] NetworkManager (version 1.42.4) is starting... (boot:503549ad-1af5-46fd-bcbb-131aaf5e7b47)
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/91-journal-kernel.txt:71:Jul 22 18:49:53 localhost.localdomain kernel: DMI: ASUSTeK COMPUTER INC. ROG Strix G513QM_G513QM/G513QM, BIOS G513QM.331 02/24/2023
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/01-dmidecode.txt:8:	Version: G513QM.331
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/01-dmidecode.txt:31:	Product Name: ROG Strix G513QM_G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/01-dmidecode.txt:37:	Family: ROG Strix
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/01-dmidecode.txt:42:	Product Name: G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:18:  "session_id": "20260722_184957_boot",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:19:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:44:  "session_id": "20260722_184957_boot",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:52:  "session_id": "20260722_184957_boot",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:53:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:113:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:117:  "product": "ROG Strix G513QM_G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:118:  "board": "G513QM",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:119:  "bios": "G513QM.331",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/20260722_184957_boot/61-rescue-run-state.txt:157:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/latest-00-meta.txt:8:product=ROG Strix G513QM_G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/latest-00-meta.txt:9:board=G513QM
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/diagnostics/latest-00-meta.txt:10:bios=G513QM.331
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/discovery-boot/fallback_migrated.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/discovery-boot/observer-heartbeat.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/discovery-boot/00-resolver-start.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/discovery-boot/02-observer-bootstrap.json:2:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/discovery-boot/00-observer-start.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/rescue/asus-win11-linux-001/gabriel_physical_20260722/discovery-boot/00-boot-context.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/15-privacy-summary.json:18:      "product_name": "GE63 Raider RGB 8RF",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/15-privacy-summary.json:21:      "board_name": "MS-16P5",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/15-privacy-summary.json:27:      "model_family": "GE63 Raider"
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/17-telemetry-lab-send.json:45:      "model_family": "GE63 Raider",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/17-telemetry-lab-send.json:77:    "model_family": "GE63 Raider",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/01-machine.json:11:  "product_name": "GE63 Raider RGB 8RF",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/01-machine.json:14:  "board_name": "MS-16P5",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session/01-machine.json:20:  "model_family": "GE63 Raider"
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/import-summary.json:4:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/import-summary.json:6:  "destination": "/tmp/piinstaller-asus-win11-linux-001/docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/boot/fallback_migrated.json:3:  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",

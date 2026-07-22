@@ -48,6 +48,7 @@ async def post_bind_gabriel(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
         operator_confirmed=bool(body.get("operator_confirmed")),
         exact_model_confirmed=str(body.get("exact_model_confirmed") or ""),
         not_developer_host_ack=bool(body.get("not_developer_host_ack")),
+        operator_phrase=body.get("operator_phrase"),
     )
 
 
