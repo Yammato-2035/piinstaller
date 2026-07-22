@@ -1,0 +1,17 @@
+{
+  "checked_at": "2026-07-22T10:58:11Z",
+  "application": {
+    "workspace": "1.9.20.1",
+    "runtime": "1.9.20.1",
+    "status": "green"
+  },
+  "source_commit": {
+    "runtime_manifest": "7e80319000c0",
+    "status": "green"
+  },
+  "rescue_payload": {
+    "version": "1.10.1.2",
+    "compared_to_app": false
+  },
+  "domains_separated": true
+}

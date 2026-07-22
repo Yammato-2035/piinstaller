@@ -1,22 +1,22 @@
 {
   "manifest_version": 1,
   "schema_version": 1,
-  "generated_at": "2026-07-22T10:54:20.404531+00:00",
+  "generated_at": "2026-07-22T10:57:40.130933+00:00",
   "deployment_profile": "runtime-opt",
   "deployment_status": "deployed",
   "project_version": "1.9.20.1",
   "release_stage": "internal_testing",
   "version_track": "setuphelfer_identifier_unification",
-  "git_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20",
+  "git_commit": "7e80319000c0991f6f8fe2bf9f506e69f780cd8f",
   "git_branch": "pi-opt-deploy-tauri-001",
   "workspace_root": "/tmp/piinstaller-opt-deploy-tauri-001",
   "app_edition": "unknown",
   "source": {
     "repository": "piinstaller",
     "branch": "pi-opt-deploy-tauri-001",
-    "commit": "146f451a40a4e3212eb62c94b4d29f67b244df20",
-    "commit_short": "146f451a40a4",
-    "dirty": true
+    "commit": "7e80319000c0991f6f8fe2bf9f506e69f780cd8f",
+    "commit_short": "7e80319000c0",
+    "dirty": false
   },
   "application": {
     "version": "1.9.20.1",
@@ -25,11 +25,11 @@
   "components": {
     "backend": {
       "version": "1.9.20.1",
-      "source_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20"
+      "source_commit": "7e80319000c0991f6f8fe2bf9f506e69f780cd8f"
     },
     "web_frontend": {
       "version": "1.9.20.1",
-      "source_commit": "146f451a40a4e3212eb62c94b4d29f67b244df20"
+      "source_commit": "7e80319000c0991f6f8fe2bf9f506e69f780cd8f"
     },
     "tauri": {
       "included": false,
@@ -279,7 +279,7 @@
   "profile_manifest": {
     "manifest_schema_version": 1,
     "profile": "release",
-    "generated_at": "2026-07-22T10:54:20.404669+00:00",
+    "generated_at": "2026-07-22T10:57:40.131014+00:00",
     "include": [
       "backend/app.py",
       "backend/core/versioning.py",
@@ -321,6 +321,6 @@
     ],
     "public_exposure_allowed": false
   },
-  "file_manifest_sha256": "f25f1419bbdb8ce034ba7fe1347c8e5748d25def503870ea4925841c5f4c3b84",
-  "manifest_sha256": "f25f1419bbdb8ce034ba7fe1347c8e5748d25def503870ea4925841c5f4c3b84"
+  "file_manifest_sha256": "f237e8d6bd91c501dbd93c24d52f86c22f1bb4067db6fe5ea8128a501605269c",
+  "manifest_sha256": "f237e8d6bd91c501dbd93c24d52f86c22f1bb4067db6fe5ea8128a501605269c"
 }

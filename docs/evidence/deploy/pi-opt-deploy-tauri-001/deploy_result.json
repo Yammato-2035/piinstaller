@@ -1,0 +1,21 @@
+{
+  "task_id": "PI-OPT-DEPLOY-TAURI-001",
+  "status": "deployed",
+  "profile": "runtime-opt",
+  "source_commit": "7e80319000c0991f6f8fe2bf9f506e69f780cd8f",
+  "application_version": "1.9.20.1",
+  "target": "/opt/setuphelfer",
+  "web_frontend_built": true,
+  "tauri_built": false,
+  "tauri_skip_reason": "not_required_for_runtime_opt",
+  "rescue_payload_built": false,
+  "rescue_payload_version": "1.10.1.2",
+  "manifest_valid": true,
+  "manifest_source_commit": "7e80319000c0991f6f8fe2bf9f506e69f780cd8f",
+  "runtime_commit_matches": true,
+  "runtime_version_matches": true,
+  "runtime_gate_exit_code": 0,
+  "deploy_drift": "green",
+  "blocked_runtime_outdated": false,
+  "updated_at": "2026-07-22T10:58:11Z"
+}
