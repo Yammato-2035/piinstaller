@@ -1,0 +1,37 @@
+{
+  "schema": "setuphelfer.rescue.discovery-artifact.v1",
+  "session_id": "rescue-session-20260722T210835Z-0053d087",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "payload_version": "1.10.2.0",
+  "created_at": "2026-07-22T21:08:35Z",
+  "collector_status": "ok",
+  "warnings": [],
+  "errors": [],
+  "schema_version": "network-connectivity.v2",
+  "collected_at": "2026-07-22T21:08:58+00:00",
+  "test_sequence": [
+    "lan_wlan",
+    "default_route",
+    "dns",
+    "https"
+  ],
+  "interfaces": {
+    "lan_present": false,
+    "wlan_present": true,
+    "lan_link_up": false,
+    "wlan_link_up": false,
+    "lan_connected": true,
+    "wifi_connected": false
+  },
+  "default_route": true,
+  "dns_ok": false,
+  "https_ok": false,
+  "https_test_url": "https://www.debian.org/",
+  "dns_host": "debian.org",
+  "issue_codes": [
+    "dns_failed",
+    "network_lan_up",
+    "network_wifi_blocked_by_lan_regression",
+    "network_wifi_unconnected"
+  ]
+}

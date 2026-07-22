@@ -513,6 +513,94 @@ PY
   whiptail --title "ASUS ROG — BIOS / Win11" --msgbox "$body" 22 74 3>&1 1>"$_wt" 2>&3 || true
 }
 
+_tui_run_hardware_discovery() {
+  local banner="============================================================
+GERÄTEBINDUNG
+============================================================
+Profil: asus_rog_gabriel
+Hersteller: ASUS
+Modell: ROG Strix G513QM
+Board: G513QM
+BIOS: G513QM.331 (Update 335 verfügbar, kein Flash)
+Diagnosezugriff: erlaubt nach Bestätigung
+Storage-Write: gesperrt
+Firmware-Write: gesperrt
+Installation: gesperrt
+Run-Type: hardware_discovery
+============================================================"
+  whiptail --title "Hardwarediagnose (nur Lesen)" --msgbox "$banner" 22 74 3>&1 1>"$_wt" 2>&3 || true
+  if ! whiptail --title "Gabriel-Bestätigung" --yesno \
+    "Dies ist Gabriels ASUS ROG Strix G513QM.\n\nNur lesen — keine Schreibfreigabe.\nFortfahren?" 12 70 \
+    3>&1 1>"$_wt" 2>&3; then
+    return 0
+  fi
+  local hw="${SCRIPT_DIR}/setuphelfer-rescue-hardware-discovery"
+  if [[ ! -x "$hw" ]]; then
+    hw="/usr/local/sbin/setuphelfer-rescue-hardware-discovery"
+  fi
+  if [[ -x "$hw" ]]; then
+    whiptail --title "Hardwarediagnose" --infobox \
+      "Diagnose wird finalisiert…\nStick noch nicht entfernen.\nGrafische Oberfläche für diesen Diagnosemodus deaktiviert." \
+      10 70 3>&1 1>"$_wt" 2>&3 || true
+    # Background capture with phase polling for TUI progress (text profile — no GUI).
+    "$hw" --operator-confirmed \
+      --operator-phrase "Dies ist Gabriels ASUS ROG Strix G513QM." &
+    local hw_pid=$!
+    local prog="/run/setuphelfer-rescue/hardware-discovery-progress.json"
+    local waited=0
+    while kill -0 "$hw_pid" 2>/dev/null; do
+      local phase_line="Capture läuft (nur Lesen)…"
+      if [[ -f "$prog" ]] && command -v python3 >/dev/null 2>&1; then
+        phase_line="$(python3 - <<'PY' 2>/dev/null || true
+import json
+from pathlib import Path
+p = Path("/run/setuphelfer-rescue/hardware-discovery-progress.json")
+d = json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
+print(f"{d.get('phase_label') or 'Capture'}: {d.get('phase_status') or 'running'}")
+print(d.get("stick_remove_hint") or "Stick noch nicht entfernen")
+PY
+)"
+      fi
+      whiptail --title "Hardwarediagnose — Fortschritt" --infobox "$phase_line\n\nBitte warten…" 12 70 \
+        3>&1 1>"$_wt" 2>&3 || true
+      sleep 2
+      waited=$((waited + 2))
+      if [[ "$waited" -gt 900 ]]; then
+        whiptail --title "Hardwarediagnose" --msgbox "Timeout: Capture >15 Min. Bitte Logs prüfen." 10 60 \
+          3>&1 1>"$_wt" 2>&3 || true
+        break
+      fi
+    done
+    wait "$hw_pid" || true
+  else
+    whiptail --title "Hardwarediagnose" --msgbox "Skript fehlt: setuphelfer-rescue-hardware-discovery" 10 60 \
+      3>&1 1>"$_wt" 2>&3 || true
+    return 0
+  fi
+  local last="${SETUPHELFER_RESCUE_STATE_DIR}/../hardware-discovery-last.json"
+  [[ -f /run/setuphelfer-rescue/hardware-discovery-last.json ]] && last=/run/setuphelfer-rescue/hardware-discovery-last.json
+  local body="Hardwarediagnose beendet (write_allowed=false).\n"
+  if [[ -f "$last" ]] && command -v python3 >/dev/null 2>&1; then
+    body="$(python3 - <<PY
+import json
+from pathlib import Path
+d = json.loads(Path("${last}").read_text(encoding="utf-8"))
+print("\\n".join([
+    "Run-ID: " + str(d.get("run_id")),
+    "Boot-ID: " + str(d.get("boot_id")),
+    "Status: " + str(d.get("status")) + " terminal=" + str(d.get("terminal")),
+    "Endstatus: " + str(d.get("endstatus")),
+    "NVMe count: " + str(d.get("device_count")),
+    "GUI: " + str(d.get("gui_status") or "not_applicable_for_text_hardware_discovery"),
+    "Schreibzugriffe: gesperrt",
+    str(d.get("stick_remove_hint") or "Diagnose abgeschlossen – Stick kann nach dem Herunterfahren entfernt werden."),
+]))
+PY
+)"
+  fi
+  whiptail --title "Hardwarediagnose — Ergebnis" --msgbox "$body" 18 74 3>&1 1>"$_wt" 2>&3 || true
+}
+
 _tui_run_pi5_lab() {
   if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-pi5-lab" ]]; then
     "${SCRIPT_DIR}/setuphelfer-rescue-pi5-lab" || true
@@ -566,11 +654,12 @@ _tui_main_menu() {
   fi
   while true; do
     choice="$(_tui_whiptail --title "Setuphelfer Rettungsstick - Textmodus" --menu \
-      "Sicherer Textmodus (kein Backup/Restore/Wipe ohne Freigabe)" 24 78 12 \
+      "Sicherer Textmodus (kein Backup/Restore/Wipe ohne Freigabe)" 24 78 13 \
       "detect" "System erkennen" \
       "wifi" "Hardware/WLAN prüfen" \
       "plan" "Backup-Plan erstellen (dry-run)" \
       "e2e" "E2E Backup-/Restore-Test" \
+      "hwdisc" "Hardwarediagnose (nur Lesen / Gabriel)" \
       "asus" "ASUS ROG: BIOS/Win11-Checkliste${asus_hint:+ ($asus_hint)}" \
       "pi5" "Raspberry Pi 5: USB-Boot / Install-Lab${pi_hint:+ ($pi_hint)}" \
       "evidence" "Evidence auf Stick speichern" \
@@ -587,6 +676,7 @@ _tui_main_menu() {
       e2e)
         if _tui_input_diag_active; then _tui_diag_blocked_action; else _tui_run_physical_e2e; fi
         ;;
+      hwdisc) _tui_run_hardware_discovery ;;
       asus) _tui_run_asus_rog_gate ;;
       pi5) _tui_run_pi5_lab ;;
       evidence) _tui_collect_evidence ;;

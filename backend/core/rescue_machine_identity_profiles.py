@@ -112,25 +112,32 @@ def is_known_developer_asus(dmi: Mapping[str, str]) -> bool:
     return any(b in product for b in KNOWN_DEVELOPER_ASUS_BOARD_NAMES)
 
 
+GABRIEL_OPERATOR_PHRASE = "Dies ist Gabriels ASUS ROG Strix G513QM."
+
+
 def bind_gabriel_operator_profile(
     identity: Mapping[str, Any],
     *,
     operator_confirmed: bool,
     exact_model_confirmed: str,
     not_developer_host_ack: bool,
+    operator_phrase: str | None = None,
 ) -> dict[str, Any]:
-    """Promote a generic asus_rog identity to asus_rog_gabriel only with operator proof."""
+    """Promote a G513QM asus_rog identity to asus_rog_gabriel only with operator proof."""
     base = dict(identity)
-    if is_known_developer_asus(
-        {
-            "board_name": str(base.get("board_name") or ""),
-            "product_name": str(base.get("product_name") or ""),
-        }
-    ):
+    board = str(base.get("board_name") or "")
+    product = str(base.get("product_name") or "")
+    if is_known_developer_asus({"board_name": board, "product_name": product}):
         return {
             "ok": False,
             "identity": base,
             "error": "developer_asus_cannot_bind_as_gabriel",
+        }
+    if "G513QM" not in board.upper() and "G513QM" not in product.upper():
+        return {
+            "ok": False,
+            "identity": base,
+            "error": "not_g513qm_gabriel_candidate",
         }
     if not operator_confirmed or not not_developer_host_ack or not exact_model_confirmed.strip():
         return {
@@ -138,16 +145,48 @@ def bind_gabriel_operator_profile(
             "identity": base,
             "error": "gabriel_bind_requirements_missing",
         }
+    if operator_phrase is not None and operator_phrase.strip() != GABRIEL_OPERATOR_PHRASE:
+        return {
+            "ok": False,
+            "identity": base,
+            "error": "operator_phrase_mismatch",
+        }
     if str(base.get("expected_profile") or "") not in {PROFILE_ASUS_ROG, PROFILE_ASUS_ROG_GABRIEL}:
         return {"ok": False, "identity": base, "error": "not_asus_rog_family"}
+    if str(base.get("confidence") or "") not in {"high", "medium"}:
+        return {"ok": False, "identity": base, "error": "confidence_too_low"}
     base["expected_profile"] = PROFILE_ASUS_ROG_GABRIEL
+    base["profile_id"] = PROFILE_ASUS_ROG_GABRIEL
     base["confidence"] = "high"
     base["gabriel_bound"] = True
+    base["is_gabriel_target"] = True
     base["exact_model_confirmed"] = exact_model_confirmed.strip()
     base["operator_confirmation_required"] = False
     base["unknown_machine_blocks_install"] = False
-    base["write_blocked_reason"] = None
-    return {"ok": True, "identity": base, "error": None}
+    base["binding_version"] = 1
+    base["write_permissions"] = {
+        "diagnostics": True,
+        "storage_write": False,
+        "firmware_write": False,
+        "installation": False,
+    }
+    base["write_blocked_reason"] = "diagnostics_only_after_gabriel_bind"
+    base["installation_writes_allowed"] = False
+    return {
+        "ok": True,
+        "identity": base,
+        "error": None,
+        "binding": {
+            "profile_id": PROFILE_ASUS_ROG_GABRIEL,
+            "machine_fingerprint_hash": base.get("machine_id"),
+            "manufacturer": "ASUS",
+            "product_name": "ROG Strix G513QM",
+            "board_name": "G513QM",
+            "operator_confirmed": True,
+            "binding_version": 1,
+            "write_permissions": base["write_permissions"],
+        },
+    }
 
 
 def build_machine_identity(

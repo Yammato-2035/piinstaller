@@ -1,0 +1,22 @@
+{
+  "gabriel_profile": {
+    "manufacturer": "ASUS",
+    "product_name": "ROG Strix G513QM",
+    "board_name": "G513QM",
+    "bios_version": "G513QM.331",
+    "boot_marker": "20260722_184957_boot",
+    "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47"
+  },
+  "foreign_sessions": [
+    {
+      "session_id": "rescue-session-20260721T230213Z-bb356a62",
+      "manufacturer": "Micro-Star International Co., Ltd.",
+      "product_name": "GE63 Raider RGB 8RF",
+      "board_name": "MS-16P5",
+      "reason": "machine_identity_mismatch",
+      "boot_id_mismatch": true,
+      "action": "excluded_from_gabriel_result",
+      "preserved_at": "docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47/session (legacy import; do not use for Gabriel)"
+    }
+  ]
+}

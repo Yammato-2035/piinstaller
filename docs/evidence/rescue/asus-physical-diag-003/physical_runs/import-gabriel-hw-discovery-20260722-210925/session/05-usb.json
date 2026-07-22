@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.rescue.discovery-artifact.v1",
+  "session_id": "rescue-session-20260722T210835Z-0053d087",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "payload_version": "1.10.2.0",
+  "created_at": "2026-07-22T21:08:35Z",
+  "collector_status": "ok",
+  "warnings": [],
+  "errors": [],
+  "lsusb_redacted": "Bus 004 Device 002: ID 152d:1561 JMicron Technology Corp. / JMicron USA Technology Corp. JMS561U two ports SATA 6Gb/s bridge\nBus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub\nBus 003 Device 002: ID 13d3:3563 IMC Networks Wireless_Device\nBus 003 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub\nBus 002 Device 002: ID 24a9:205a Asolid Intenso Ultra Line\nBus 002 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub\nBus 001 Device 002: ID 0b05:1866 ASUSTek Computer, Inc. N-KEY Device\nBus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub"
+}

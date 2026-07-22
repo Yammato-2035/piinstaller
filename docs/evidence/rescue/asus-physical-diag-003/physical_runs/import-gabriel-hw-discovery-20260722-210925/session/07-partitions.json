@@ -1,0 +1,11 @@
+{
+  "schema": "setuphelfer.rescue.discovery-artifact.v1",
+  "session_id": "rescue-session-20260722T210835Z-0053d087",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "payload_version": "1.10.2.0",
+  "created_at": "2026-07-22T21:08:35Z",
+  "collector_status": "ok",
+  "warnings": [],
+  "errors": [],
+  "partitions": []
+}

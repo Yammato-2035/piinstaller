@@ -1,0 +1,111 @@
+[    0.000000] Command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+[    0.003672] ACPI: SSDT 0x00000000ECE2D000 002555 (v01 _ASUS_ Nv18dGPU 00000001 INTL 20190509)
+[    0.011422] Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+[    0.284767] pci 0000:01:00.0: BAR 0 [mem 0xfb000000-0xfbffffff]
+[    0.285325] pci 0000:00:01.1:   bridge window [mem 0xfb000000-0xfc0fffff]
+[    0.299130] pci 0000:01:00.0: vgaarb: setting as boot VGA device
+[    0.299130] pci 0000:01:00.0: vgaarb: bridge control possible
+[    0.299130] pci 0000:01:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.299130] pci 0000:06:00.0: vgaarb: setting as boot VGA device (overriding previous)
+[    0.299130] pci 0000:06:00.0: vgaarb: bridge control possible
+[    0.299130] pci 0000:06:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.299130] vgaarb: loaded
+[    0.308460] pci 0000:00:01.1:   bridge window [mem 0xfb000000-0xfc0fffff]
+[    0.308561] pci_bus 0000:01: resource 1 [mem 0xfb000000-0xfc0fffff]
+[    0.606366] fb0: EFI VGA frame buffer device
+[    1.182733] ACPI: video: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+[    5.122794] ACPI: bus type drm_connector registered
+[    5.734721] snd_hda_intel 0000:01:00.1: Handle vga_switcheroo audio client
+[    5.749209] snd_hda_intel 0000:06:00.1: Handle vga_switcheroo audio client
+[    5.789243] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input18
+[    5.796046] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input19
+[    5.802763] input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input20
+[    5.809449] input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input21
+[    6.978046] [drm] amdgpu kernel modesetting enabled.
+[    6.983921] amdgpu: vga_switcheroo: detected switching method \_SB_.PCI0.GP17.VGA_.ATPX handle
+[    7.008471] amdgpu: Virtual CRAT table created for CPU
+[    7.014437] amdgpu: Topology: Add CPU node
+[    7.020856] amdgpu 0000:06:00.0: enabling device (0006 -> 0007)
+[    7.026786] [drm] initializing kernel modesetting (RENOIR 0x1002:0x1638 0x1043:0x104C 0xC4).
+[    7.033045] [drm] register mmio base: 0xFC500000
+[    7.038919] [drm] register mmio size: 524288
+[    7.045899] [drm] add ip block number 0 <soc15_common>
+[    7.051681] [drm] add ip block number 1 <gmc_v9_0>
+[    7.057399] [drm] add ip block number 2 <vega10_ih>
+[    7.063014] [drm] add ip block number 3 <psp>
+[    7.068570] [drm] add ip block number 4 <smu>
+[    7.074061] [drm] add ip block number 5 <dm>
+[    7.079470] [drm] add ip block number 6 <gfx_v9_0>
+[    7.084802] [drm] add ip block number 7 <sdma_v4_0>
+[    7.090057] [drm] add ip block number 8 <vcn_v2_0>
+[    7.095270] [drm] add ip block number 9 <jpeg_v2_0>
+[    7.100440] amdgpu 0000:06:00.0: amdgpu: Fetched VBIOS from VFCT
+[    7.105582] amdgpu: ATOM BIOS: 113-CEZANNE-017
+[    7.115333] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_sdma.bin
+[    7.120507] [drm] VCN decode is enabled in VM mode
+[    7.125627] [drm] VCN encode is enabled in VM mode
+[    7.130702] [drm] JPEG decode is enabled in VM mode
+[    7.135978] amdgpu 0000:06:00.0: amdgpu: Trusted Memory Zone (TMZ) feature enabled
+[    7.135988] amdgpu 0000:06:00.0: amdgpu: MODE2 reset
+[    7.136644] [drm] vm size is 262144 GB, 4 levels, block size is 9-bit, fragment size is 9-bit
+[    7.136652] amdgpu 0000:06:00.0: amdgpu: VRAM: 512M 0x000000F400000000 - 0x000000F41FFFFFFF (512M used)
+[    7.136657] amdgpu 0000:06:00.0: amdgpu: GART: 1024M 0x0000000000000000 - 0x000000003FFFFFFF
+[    7.136661] amdgpu 0000:06:00.0: amdgpu: AGP: 267419648M 0x000000F800000000 - 0x0000FFFFFFFFFFFF
+[    7.136668] [drm] Detected VRAM RAM=512M, BAR=512M
+[    7.136671] [drm] RAM width 128bits DDR4
+[    7.136719] [drm] amdgpu: 512M of VRAM memory ready
+[    7.136722] [drm] amdgpu: 15754M of GTT memory ready.
+[    7.136731] [drm] GART: num cpu pages 262144, num gpu pages 262144
+[    7.136811] [drm] PCIE GART of 1024M enabled.
+[    7.136814] [drm] PTB located at 0x000000F41FC00000
+[    7.140521] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_asd.bin
+[    7.140604] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ta.bin
+[    7.140610] amdgpu 0000:06:00.0: amdgpu: PSP runtime database doesn't exist
+[    7.140614] amdgpu 0000:06:00.0: amdgpu: PSP runtime database doesn't exist
+[    7.145651] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_dmcub.bin
+[    7.145657] [drm] Loading DMUB firmware via PSP: version=0x01010024
+[    7.149658] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_pfp.bin
+[    7.151237] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_me.bin
+[    7.151951] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ce.bin
+[    7.152028] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_rlc.bin
+[    7.154017] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_mec.bin
+[    7.167092] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_vcn.bin
+[    7.167099] [drm] Found VCN firmware Version ENC: 1.19 DEC: 5 VEP: 0 Revision: 0
+[    7.167109] amdgpu 0000:06:00.0: amdgpu: Will use PSP to load VCN firmware
+[    7.872173] amdgpu 0000:06:00.0: amdgpu: reserve 0x400000 from 0xf41f800000 for PSP TMR
+[    7.954622] amdgpu 0000:06:00.0: amdgpu: RAS: optional ras ta ucode is not available
+[    7.963121] amdgpu 0000:06:00.0: amdgpu: RAP: optional rap ta ucode is not available
+[    7.963126] amdgpu 0000:06:00.0: amdgpu: SECUREDISPLAY: securedisplay ta ucode is not available
+[    7.963309] amdgpu 0000:06:00.0: amdgpu: SMU is initialized successfully!
+[    7.964328] [drm] Display Core initialized with v3.2.207!
+[    7.964855] [drm] DMUB hardware initialized: version=0x01010024
+[    7.976771] snd_hda_intel 0000:06:00.1: bound 0000:06:00.0 (ops amdgpu_dm_audio_component_bind_ops [amdgpu])
+[    8.085070] [drm] kiq ring mec 2 pipe 1 q 0
+[    8.088454] [drm] VCN decode and encode initialized successfully(under DPG Mode).
+[    8.088470] [drm] JPEG decode initialized successfully.
+[    8.089794] kfd kfd: amdgpu: Allocated 3969056 bytes on gart
+[    8.089855] amdgpu: sdma_bitmap: 3
+[    8.089875] amdgpu: SRAT table not found
+[    8.089878] amdgpu: Virtual CRAT table created for GPU
+[    8.090436] amdgpu: Topology: Add dGPU node [0x1638:0x1002]
+[    8.090442] kfd kfd: amdgpu: added device 1002:1638
+[    8.090505] amdgpu 0000:06:00.0: amdgpu: SE 1, SH per SE 1, CU per SH 8, active_cu_number 8
+[    8.090575] amdgpu 0000:06:00.0: amdgpu: ring gfx uses VM inv eng 0 on hub 0
+[    8.090579] amdgpu 0000:06:00.0: amdgpu: ring comp_1.0.0 uses VM inv eng 1 on hub 0
+[    8.090583] amdgpu 0000:06:00.0: amdgpu: ring comp_1.1.0 uses VM inv eng 4 on hub 0
+[    8.090587] amdgpu 0000:06:00.0: amdgpu: ring comp_1.2.0 uses VM inv eng 5 on hub 0
+[    8.090590] amdgpu 0000:06:00.0: amdgpu: ring comp_1.3.0 uses VM inv eng 6 on hub 0
+[    8.090594] amdgpu 0000:06:00.0: amdgpu: ring comp_1.0.1 uses VM inv eng 7 on hub 0
+[    8.090597] amdgpu 0000:06:00.0: amdgpu: ring comp_1.1.1 uses VM inv eng 8 on hub 0
+[    8.090601] amdgpu 0000:06:00.0: amdgpu: ring comp_1.2.1 uses VM inv eng 9 on hub 0
+[    8.090604] amdgpu 0000:06:00.0: amdgpu: ring comp_1.3.1 uses VM inv eng 10 on hub 0
+[    8.090608] amdgpu 0000:06:00.0: amdgpu: ring kiq_2.1.0 uses VM inv eng 11 on hub 0
+[    8.090612] amdgpu 0000:06:00.0: amdgpu: ring sdma0 uses VM inv eng 0 on hub 1
+[    8.090615] amdgpu 0000:06:00.0: amdgpu: ring vcn_dec uses VM inv eng 1 on hub 1
+[    8.090619] amdgpu 0000:06:00.0: amdgpu: ring vcn_enc0 uses VM inv eng 4 on hub 1
+[    8.090623] amdgpu 0000:06:00.0: amdgpu: ring vcn_enc1 uses VM inv eng 5 on hub 1
+[    8.090626] amdgpu 0000:06:00.0: amdgpu: ring jpeg_dec uses VM inv eng 6 on hub 1
+[    8.093671] [drm] Initialized amdgpu 3.49.0 20150101 for 0000:06:00.0 on minor 0
+[    8.097868] fbcon: amdgpudrmfb (fb0) is primary device
+[    8.097989] [drm] DSC precompute is not needed.
+[    8.144133] amdgpu 0000:06:00.0: [drm] fb0: amdgpudrmfb frame buffer device

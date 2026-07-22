@@ -1,0 +1,36 @@
+{
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "expected_manufacturer": "ASUSTeK COMPUTER INC.",
+  "expected_board": "G513QM",
+  "expected_product": "ROG Strix G513QM_G513QM",
+  "conflicts": [
+    {
+      "session_id": "rescue-session-20260721T230213Z-bb356a62",
+      "boot_id_matched": false,
+      "reason": "boot_id_mismatch",
+      "manufacturer": "Micro-Star International Co., Ltd.",
+      "product_name": "GE63 Raider RGB 8RF",
+      "board_name": "MS-16P5",
+      "action": "excluded_from_result"
+    },
+    {
+      "session_id": "rescue-session-20260721T224641Z-b30cb179",
+      "boot_id_matched": false,
+      "reason": "boot_id_mismatch",
+      "manufacturer": "Micro-Star International Co., Ltd.",
+      "product_name": "GE63 Raider RGB 8RF",
+      "board_name": "MS-16P5",
+      "action": "excluded_from_result"
+    },
+    {
+      "session_id": "rescue-session-20260721T224507Z-d55abba6",
+      "boot_id_matched": false,
+      "reason": "boot_id_mismatch",
+      "manufacturer": "Micro-Star International Co., Ltd.",
+      "product_name": "GE63 Raider RGB 8RF",
+      "board_name": "MS-16P5",
+      "action": "excluded_from_result"
+    }
+  ],
+  "session_imported": false
+}

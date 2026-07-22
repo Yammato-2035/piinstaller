@@ -75,3 +75,11 @@
 - Physische Gabriel-ASUS-Diagnose (read-only)
 - Payload Live-Build/USB-Update 1.10.1.3
 - Danach Windows-/Linux-Operatorläufe gemäß Reihenfolge
+
+## Stick-Import Gabriel 2026-07-22
+
+- Modell: ROG Strix G513QM / Board G513QM / BIOS G513QM.331
+- Dual-NVMe erkannt (lspci)
+- Import: `gabriel_physical_20260722/` + discovery-boot `503549ad-…`
+- E2E auto: blocked (`run_control_invalid`)
+- Status Diagnose: `diagnosis_incomplete`

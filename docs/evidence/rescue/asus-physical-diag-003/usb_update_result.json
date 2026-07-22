@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
+  "stick_model": "Ultra Line",
+  "device": "/dev/sda",
+  "labels": ["SETUPHELFER", "SETUP_LOGS"],
+  "payload_version": "1.10.2.0",
+  "filesystem_squashfs_sha256": "5c1ebd83d756250bf60cbc237bf1f9091d099fb96571ed784e43e53f1e96190f",
+  "update_method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "grub_hardware_discovery_entry": true,
+  "bios_flash": false,
+  "storage_write_on_internal_nvme": false
+}

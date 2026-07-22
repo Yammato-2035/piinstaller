@@ -1,0 +1,16 @@
+{
+  "run_id": "import-gabriel-20260722-204422-early-blackscreen",
+  "files": [
+    "PHYSICAL_DIAGNOSIS_RESULT.md",
+    "blackscreen_root_cause.json",
+    "cause_matrix.json",
+    "diagnostics/20260722_204422_early/00-meta.txt",
+    "diagnostics/20260722_204422_early/03-early-fast.txt",
+    "import_result.json",
+    "machine_binding.json",
+    "machine_identity.json",
+    "nvme_smart.json",
+    "windows_setup_error_summary.json"
+  ],
+  "endstatus": "diagnosis_incomplete"
+}

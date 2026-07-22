@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0",
+  "run_type": "hardware_discovery",
+  "profile_id": "asus_rog_gabriel",
+  "machine_fingerprint_hash": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "run_id": "hw-discovery-20260722T210925Z-0ec17061",
+  "payload_version": "1.10.2.0",
+  "started_at": "2026-07-22T21:09:25Z",
+  "completed_at": null,
+  "status": "running",
+  "write_operations_allowed": false,
+  "bvr_run_control_required": false,
+  "captures": {
+    "machine_identity": "pending",
+    "nvme_inventory": "pending",
+    "nvme_health": "pending",
+    "kernel_storage": "pending",
+    "partition_inventory": "pending",
+    "windows_setup_logs": "pending",
+    "bios_inventory": "pending"
+  },
+  "warnings": [],
+  "errors": [],
+  "run_control_eval": {
+    "status": "discovery_complete",
+    "declared_run_type": "hardware_discovery",
+    "missing_fields": [],
+    "run_control_invalid_correct": false
+  }
+}

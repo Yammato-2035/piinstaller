@@ -10,6 +10,8 @@ from typing import Any
 
 from core.rescue_payload_version import rescue_payload_version
 from core.rescue_setup_logs_resolver import select_setup_logs_for_import
+from core.rescue_evidence_import_identity import select_compatible_session
+from core.rescue_run_type_contract import evaluate_run_control
 
 
 def _utc_now() -> str:
@@ -184,21 +186,51 @@ def import_auto_discovery_evidence(
 
     session_id = None
     session_imported = False
+    identity_conflicts: list[dict[str, Any]] = []
+    host_fp = setup_logs_base / "setuphelfer" / "evidence" / "boot" / "host-fingerprint.json"
+    expected_manufacturer = None
+    expected_board = None
+    expected_product = None
+    if host_fp.is_file():
+        try:
+            fp = json.loads(host_fp.read_text(encoding="utf-8"))
+            expected_manufacturer = str(fp.get("vendor") or "")
+            expected_board = str(fp.get("board") or "")
+            expected_product = str(fp.get("product") or "")
+        except json.JSONDecodeError:
+            pass
     if sessions_root.is_dir():
-        for session in sorted(sessions_root.iterdir(), key=lambda p: p.stat().st_mtime, reverse=True):
-            if not session.is_dir():
-                continue
-            meta = session / "00-session.json"
-            if meta.is_file():
-                try:
-                    data = json.loads(meta.read_text(encoding="utf-8"))
-                    if str(data.get("boot_id") or "") == boot_id or not session_id:
-                        session_id = session.name
-                        _copy_tree(session, dest / "session")
-                        session_imported = True
-                        break
-                except json.JSONDecodeError:
-                    continue
+        selected = select_compatible_session(
+            sessions_root,
+            boot_id=boot_id,
+            expected_manufacturer=expected_manufacturer,
+            expected_board=expected_board,
+            expected_product=expected_product,
+        )
+        identity_conflicts = list(selected.get("conflicts") or [])
+        if selected.get("ok") and selected.get("session_dir"):
+            session_path = Path(str(selected["session_dir"]))
+            session_id = str(selected.get("session_id") or session_path.name)
+            _copy_tree(session_path, dest / "session")
+            session_imported = True
+        else:
+            # Persist conflict report — never attach foreign newest session.
+            (dest / "identity_conflicts.json").write_text(
+                json.dumps(
+                    {
+                        "boot_id": boot_id,
+                        "expected_manufacturer": expected_manufacturer,
+                        "expected_board": expected_board,
+                        "expected_product": expected_product,
+                        "conflicts": identity_conflicts,
+                        "session_imported": False,
+                    },
+                    indent=2,
+                    ensure_ascii=False,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
 
     def _has(*names: str) -> bool:
         return any((boot_dir / n).is_file() for n in names)
@@ -278,12 +310,30 @@ def import_auto_discovery_evidence(
         },
         "import": {
             "mode": "auto-discovery",
+            "run_type": "hardware_discovery",
             "explicit_root_used": False,
             "mount_source_verified": True,
             "discovery_boot_imported": True,
             "session_imported": session_imported,
+            "identity_conflicts": identity_conflicts,
+            "identity_gate": "boot_id_and_manufacturer_required",
         },
     }
+    # Classify run-control expectation for discovery boots
+    run_type_eval = evaluate_run_control(
+        declared_run_type="hardware_discovery",
+        artifact={
+            "boot_id": boot_id,
+            "machine_fingerprint_hash": expected_board or boot_id,
+            "payload_version": payload_version,
+            "run_control": summary.get("run_control"),
+        },
+    )
+    summary["run_type_evaluation"] = run_type_eval
+    if identity_conflicts and not session_imported:
+        summary["import_status"] = "identity_conflict_session_excluded"
+    else:
+        summary["import_status"] = "import_ok" if summary.get("import_ok") else "failed"
     acceptance = build_acceptance_from_import(summary)
     (repo_root / "docs/evidence/e2e_live_001d/RESCUE_AUTO_DISCOVERY_ACCEPTANCE.json").write_text(
         json.dumps(acceptance, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"

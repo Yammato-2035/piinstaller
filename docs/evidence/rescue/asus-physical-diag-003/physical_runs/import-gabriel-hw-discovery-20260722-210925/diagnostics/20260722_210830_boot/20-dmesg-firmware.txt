@@ -1,0 +1,31 @@
+[    0.062113] Spectre V2 : Enabling Restricted Speculation for firmware calls
+[    0.062121] Speculative Return Stack Overflow: IBPB-extending microcode not applied!
+[    0.062128] Speculative Return Stack Overflow: Mitigation: safe RET, no microcode
+[    0.062130] Transient Scheduler Attacks: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.269110] ACPI: [Firmware Bug]: BIOS _OSI(Linux) query ignored
+[    0.280902] acpi PNP0A08:00: [Firmware Info]: MMCONFIG for domain 0000 [bus 00-7f] only partially covers this bridge
+[    0.632725] microcode: CPU0: patch_level=0x0a50000b
+[    0.632812] microcode: CPU1: patch_level=0x0a50000b
+[    0.632894] microcode: CPU2: patch_level=0x0a50000b
+[    0.632982] microcode: CPU3: patch_level=0x0a50000b
+[    0.633071] microcode: CPU4: patch_level=0x0a50000b
+[    0.633156] microcode: CPU5: patch_level=0x0a50000b
+[    0.633246] microcode: CPU6: patch_level=0x0a50000b
+[    0.633330] microcode: CPU7: patch_level=0x0a50000b
+[    0.633423] microcode: CPU8: patch_level=0x0a50000b
+[    0.633508] microcode: CPU9: patch_level=0x0a50000b
+[    0.633602] microcode: CPU10: patch_level=0x0a50000b
+[    0.633690] microcode: CPU11: patch_level=0x0a50000b
+[    0.633787] microcode: CPU12: patch_level=0x0a50000b
+[    0.633879] microcode: CPU13: patch_level=0x0a50000b
+[    0.633974] microcode: CPU14: patch_level=0x0a50000b
+[    0.634064] microcode: CPU15: patch_level=0x0a50000b
+[    0.634149] microcode: Microcode Update Driver: v2.2.
+[    7.018570] platform regulatory.0: firmware: direct-loading firmware regulatory.db
+[    7.066669] platform regulatory.0: firmware: direct-loading firmware regulatory.db.p7s
+[    7.197559] r8169 0000:02:00.0: firmware: direct-loading firmware rtl_nic/rtl8168h-2.fw
+[    7.493467] bluetooth hci0: firmware: direct-loading firmware mediatek/BT_RAM_CODE_MT7961_1_2_hdr.bin
+[    7.660284] mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_MT7961_patch_mcu_1_2_hdr.bin
+[    7.960383] mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_RAM_CODE_MT7961_1.bin
+[    7.960447] mt7921e 0000:03:00.0: WM Firmware Version: ____010000, Build Time: 20230117170942
+[    8.007541] mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_RAM_CODE_MT7961_1.bin

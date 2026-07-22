@@ -1,0 +1,8 @@
+{
+  "drift": false,
+  "code": null,
+  "detail": "",
+  "canonical_phase": "shutdown",
+  "auto_e2e_phase": "shutdown",
+  "canonical_sequence": 4
+}

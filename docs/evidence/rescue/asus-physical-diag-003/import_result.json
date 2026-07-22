@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0",
+  "imported_at": "2026-07-22T19:13:16Z",
+  "status": "imported_hw_discovery_partial_capture",
+  "endstatus": "diagnosis_incomplete",
+  "run_id": "import-gabriel-hw-discovery-20260722-210925",
+  "stick_run_id": "hw-discovery-20260722T210925Z-0ec17061",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "fingerprint_match": true,
+  "msi_excluded": true,
+  "newest_session_fallback": false,
+  "payload_version": "1.10.2.0",
+  "gabriel_bound": true,
+  "nvme_devices_identified": 2,
+  "hw_discovery_status_on_stick": "running",
+  "captures_incomplete": true,
+  "note": "run_status remained running; NVMe identity present; SMART/windows/kernel captures not finalized on stick",
+  "gui_analysis": {
+    "gui_blocked": true,
+    "gui_block_is_bug": false,
+    "gui_block_is_policy_plus_display_safety": true,
+    "tui_available": true,
+    "recommendation": "Für Gabriel-Diagnose Textmodus beibehalten. Separater GUI-Lab-Eintrag nur mit getestetem amdgpu-KMS-Profil ohne nouveau, ohne nomodeset, und ohne hardware_discovery_skip_gui."
+  },
+  "protected_raw_on_stick_only": true,
+  "protected_raw_path_on_stick": "setuphelfer/evidence/physical_runs/hw-discovery-20260722T210925Z-0ec17061/protected_raw"
+}

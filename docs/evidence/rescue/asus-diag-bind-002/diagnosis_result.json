@@ -1,0 +1,40 @@
+{
+  "task_id": "PI-RS-ASUS-DIAG-BIND-002",
+  "endstatus": "diagnosis_incomplete",
+  "machine_bound": true,
+  "importer_root_cause": "session selected with (boot_id match OR first/newest session) \u2014 foreign MSI session attached",
+  "importer_fix": "require boot_id match AND manufacturer/board compatibility; no newest-session fallback",
+  "run_control_analysis": {
+    "declared_run_type": "hardware_discovery",
+    "msi_e2e_blocked": true,
+    "run_control_invalid_for_full_e2e": true,
+    "run_control_invalid_for_hardware_discovery": false,
+    "evaluation": {
+      "status": "discovery_complete",
+      "declared_run_type": "hardware_discovery",
+      "missing_fields": [],
+      "run_control_invalid_correct": false,
+      "note": "MSI auto-e2e flags on ASUS hardware_discovery boot; e2e blocked is expected",
+      "recommended_run_type": "hardware_discovery"
+    }
+  },
+  "bios": {
+    "installed": "G513QM.331",
+    "latest_official_ez_flash": "G513QM.335",
+    "status": "update_available",
+    "flash_performed": false
+  },
+  "nvme": {
+    "identity_complete": false,
+    "smart_complete": false
+  },
+  "windows_setup_evidence": "no_setup_logs_found",
+  "write_permissions": {
+    "diagnostics": true,
+    "storage_write": false,
+    "firmware_write": false,
+    "installation": false
+  },
+  "next_action": "Controlled Gabriel hardware_discovery retest with nvme-cli/smart + read-only Panther scan + WinPE log collector",
+  "generated_at": "2026-07-22T17:12:03Z"
+}

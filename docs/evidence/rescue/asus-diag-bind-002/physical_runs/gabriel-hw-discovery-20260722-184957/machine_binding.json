@@ -1,0 +1,79 @@
+{
+  "ok": true,
+  "identity": {
+    "schema_version": 1,
+    "contract_version": 1,
+    "machine_id": "893fdf10f38e314ea0d03e2a629cf7673991226d7f12132a88f9e221c8123ac8",
+    "expected_profile": "asus_rog_gabriel",
+    "manufacturer": "ASUSTeK COMPUTER INC.",
+    "product_name": "ROG Strix G513QM_G513QM",
+    "product_family": "ROG Strix",
+    "board_name": "G513QM",
+    "board_vendor": "",
+    "bios_vendor": "American Megatrends International, LLC.",
+    "bios_version": "G513QM.331",
+    "bios_date": "",
+    "system_uuid_hash": "",
+    "chassis_type": "",
+    "cpu_model": "x86_64",
+    "gpu_devices": [],
+    "ram_bytes": 0,
+    "serial_masked": "",
+    "serial_hash": "",
+    "confidence": "high",
+    "operator_confirmation_required": false,
+    "installation_writes_allowed": false,
+    "is_developer_workstation": false,
+    "is_gabriel_target": true,
+    "gabriel_bound": true,
+    "unknown_machine_blocks_install": false,
+    "write_blocked_reason": "diagnostics_only_after_gabriel_bind",
+    "profile_id": "asus_rog_gabriel",
+    "exact_model_confirmed": "ROG Strix G513QM",
+    "binding_version": 1,
+    "write_permissions": {
+      "diagnostics": true,
+      "storage_write": false,
+      "firmware_write": false,
+      "installation": false
+    }
+  },
+  "error": null,
+  "binding": {
+    "profile_id": "asus_rog_gabriel",
+    "machine_fingerprint_hash": "8b56f2b05081977d9def8342114f2b0bf2fc8f2fc9565b00f3ca2f3a8ae50cf2",
+    "manufacturer": "ASUS",
+    "product_name": "ROG Strix G513QM",
+    "board_name": "G513QM",
+    "operator_confirmed": true,
+    "binding_version": 1,
+    "write_permissions": {
+      "diagnostics": true,
+      "storage_write": false,
+      "firmware_write": false,
+      "installation": false
+    },
+    "confirmed_at": "2026-07-22T17:12:03Z"
+  },
+  "fingerprint": {
+    "schema_version": "1.1",
+    "contract_version": 1,
+    "manufacturer": "ASUSTeK COMPUTER INC.",
+    "product_name": "ROG Strix G513QM_G513QM",
+    "board_name": "G513QM",
+    "product_family": "ROG Strix",
+    "bios_vendor": "American Megatrends International, LLC.",
+    "bios_version": "G513QM.331",
+    "system_uuid_hash": "",
+    "board_serial_hash": "",
+    "cpu_signature": "amd64-unknown-from-discovery",
+    "gpu_pci_ids": [],
+    "storage_controller_pci_ids": [
+      "144d:a808",
+      "144d:a808"
+    ],
+    "fingerprint_hash": "8b56f2b05081977d9def8342114f2b0bf2fc8f2fc9565b00f3ca2f3a8ae50cf2",
+    "confidence": "medium",
+    "required_fields_present": true
+  }
+}

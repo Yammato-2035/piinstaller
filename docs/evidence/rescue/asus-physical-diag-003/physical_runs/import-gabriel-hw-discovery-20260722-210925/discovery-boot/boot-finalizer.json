@@ -1,0 +1,15 @@
+{
+  "schema": "setuphelfer.rescue.discovery-boot-finalizer.v1",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "completed_at": "2026-07-22T21:09:00Z",
+  "terminal": true,
+  "status": "archived_for_gui_backup_verify",
+  "observability_complete": true,
+  "run_control_consumed": true,
+  "shutdown_safe": true,
+  "missing": [],
+  "notes": [
+    "run_control_already_consumed"
+  ],
+  "recorded_at": "2026-07-22T21:09:00Z"
+}

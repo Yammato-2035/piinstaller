@@ -1,0 +1,35 @@
+{
+  "schema_version": "1.0",
+  "imported_at": "2026-07-22T18:31:21Z",
+  "status": "imported_partial_no_new_hardware_discovery",
+  "endstatus": "diagnosis_incomplete",
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "fingerprint_match": true,
+  "msi_excluded": true,
+  "newest_session_fallback": false,
+  "hardware_discovery_artifacts_found": [],
+  "post_inject_boot_evidence": false,
+  "payload_on_esp_now": "1.10.2.0",
+  "payload_on_last_boot": "1.10.1.2",
+  "run_type_declared_for_import": "hardware_discovery",
+  "source": {
+    "diagnostics": "/media/volker/SETUP_LOGS2/setuphelfer/diagnostics/20260722_184957_boot",
+    "discovery_boot": "/media/volker/SETUP_LOGS2/setuphelfer/evidence/discovery-boot/503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+    "boot_fingerprint": "/media/volker/SETUP_LOGS2/setuphelfer/evidence/boot/host-fingerprint.json"
+  },
+  "no_tui": {
+    "text_mode_started": false,
+    "gui_requested": true,
+    "selected_mode": "gui",
+    "cmdline_flags": {
+      "msi_lab_auto": true,
+      "msi_e2e_auto": true,
+      "hardware_discovery": false,
+      "auto_shutdown": true,
+      "mode_gui": true
+    },
+    "grub_default_index": 0,
+    "grub_default_entry": "Setuphelfer Lab-Auto (GUI, Physical E2E)",
+    "explanation": "Newest stick boot used Lab-Auto GUI/MSI cmdline; TUI was not started. No files newer than inject 1.10.2.0 — no successful post-inject hardware_discovery boot evidence."
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "status": "unknown",
+  "reason": "smart_not_captured_on_gabriel_boot",
+  "devices": [
+    {
+      "temp_id": "nvme_a",
+      "health_status": "unknown"
+    },
+    {
+      "temp_id": "nvme_b",
+      "health_status": "unknown"
+    }
+  ],
+  "install_blocked": true,
+  "block_reason": "incomplete_nvme_identity_and_smart"
+}

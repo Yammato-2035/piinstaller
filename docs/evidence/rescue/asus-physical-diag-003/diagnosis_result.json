@@ -1,0 +1,10 @@
+{
+  "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
+  "endstatus": "diagnosis_incomplete",
+  "reason": "hw_discovery_partial_missing_smart_windows_finalizer",
+  "imported_run_id": "import-gabriel-hw-discovery-20260722-210925",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "gabriel_bound": true,
+  "nvme_identity": "captured",
+  "gui_blocked_reason": "policy_text_mode_plus_nomodeset"
+}

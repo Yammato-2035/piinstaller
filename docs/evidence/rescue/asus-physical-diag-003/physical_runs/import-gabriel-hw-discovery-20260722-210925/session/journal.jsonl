@@ -1,0 +1,5 @@
+{"event": "session_created", "session_id": "rescue-session-20260722T210835Z-0053d087", "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e", "run_mode": "interactive", "timestamp": "2026-07-22T21:08:35Z"}
+{"event": "state_update", "phase": "session_created", "fields": ["last_completed_module", "last_heartbeat_at"], "timestamp": "2026-07-22T21:08:35Z"}
+{"event": "state_update", "phase": "discovery_starting", "fields": ["current_phase", "current_warning"], "timestamp": "2026-07-22T21:08:35Z"}
+{"event": "state_update", "phase": "setup_logs_waiting", "fields": ["current_phase"], "timestamp": "2026-07-22T21:08:35Z"}
+{"event": "state_update", "phase": "setup_logs_ready", "fields": ["current_phase"], "timestamp": "2026-07-22T21:08:35Z"}

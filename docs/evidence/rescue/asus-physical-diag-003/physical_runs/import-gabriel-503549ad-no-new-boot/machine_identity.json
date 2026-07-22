@@ -1,0 +1,9 @@
+{
+  "vendor": "ASUSTeK COMPUTER INC.",
+  "product_name": "ROG Strix G513QM_G513QM",
+  "board_name": "G513QM",
+  "bios_version": "G513QM.331",
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "payload_version_on_boot": "1.10.1.2",
+  "uname": "Linux 6.1.0-49-amd64 x86_64"
+}

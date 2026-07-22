@@ -1,0 +1,86 @@
+== /run/setuphelfer/console-ownership.json ==
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "boot_progress",
+  "lifecycle_state": "boot_progress",
+  "write_allowed_for": [
+    "boot_progress"
+  ],
+  "clear_allowed_for": [
+    "boot_progress"
+  ],
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": true,
+  "reason": "boot_progress",
+  "session_id": "20260722_210830_boot",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "updated_at": "2026-07-22T21:08:31Z"
+}
+
+== /run/setuphelfer/console-shield.json ==
+{
+  "schema_version": 2,
+  "enabled": true,
+  "reason": "early_boot_progress",
+  "tty": "tty1",
+  "owner": "boot_progress",
+  "lifecycle_state": "boot_progress",
+  "tty1_write_allowed": true,
+  "tty1_clear_allowed": true,
+  "boot_progress_write_allowed": true,
+  "boot_progress_clear_allowed": true,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": true,
+  "write_allowed_for": [
+    "boot_progress"
+  ],
+  "clear_allowed_for": [
+    "boot_progress"
+  ],
+  "owner_since": "2026-07-22T21:08:31Z",
+  "session_id": "20260722_210830_boot",
+  "journal_to_console_blocked": true,
+  "production_ready": false
+}
+
+== /run/setuphelfer/current-session.json ==
+{
+  "schema_version": 1,
+  "session_id": "20260722_210830_boot",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "payload_version": "1.10.2.0",
+  "session_started_at": "2026-07-22T21:08:30Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 0, "message": "Bootvorbereitung abgeschlossen \u2014 Textmen\u00fc bereit.", "updated_at": "2026-07-22T21:08:33Z"}
+
+== /run/setuphelfer-rescue/setup-logs-resolution.json ==
+{
+  "resolved": true,
+  "device_path": "/dev/sdb2",
+  "filesystem_label": "SETUP_LOGS",
+  "filesystem_type": "vfat",
+  "canonical_mountpoint": "/run/setuphelfer-rescue/media/SETUP_LOGS",
+  "actual_mountpoint": "/run/setuphelfer/esp-rw",
+  "mount_source_verified": true,
+  "writable": true,
+  "resolution_status": "mounted_valid",
+  "shadow_mount_ignored": true,
+  "runtime_fallback_used": false,
+  "evidence_root": "/run/setuphelfer/esp-rw/setuphelfer/evidence"
+}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-07-22T21:08:33Z",
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "task_available": false,
+  "secrets_exposed": false
+}
+

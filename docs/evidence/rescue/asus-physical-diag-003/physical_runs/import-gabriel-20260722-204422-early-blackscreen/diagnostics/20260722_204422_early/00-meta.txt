@@ -1,0 +1,10 @@
+stamp_utc=20260722_204422
+phase=early
+persistent_to_stick=true
+esp_base=/run/setuphelfer/esp-rw
+uptime=245.49 3896.48
+cmdline=BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_hardware_discovery=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_msi_lab_auto=0 setuphelfer_auto_shutdown=0
+uname=Linux localhost.localdomain 6.1.0-49-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.174-1 (2026-05-26) x86_64 GNU/Linux
+product=ROG Strix G513QM_G513QM
+board=G513QM
+bios=G513QM.331

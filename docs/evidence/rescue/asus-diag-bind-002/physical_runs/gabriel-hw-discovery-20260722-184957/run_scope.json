@@ -1,0 +1,13 @@
+{
+  "run_type": "hardware_discovery",
+  "machine_profile": "asus_rog_gabriel",
+  "machine_fingerprint_hash": "8b56f2b05081977d9def8342114f2b0bf2fc8f2fc9565b00f3ca2f3a8ae50cf2",
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "run_id": "gabriel-hw-discovery-20260722-184957",
+  "capture_started_at": "2026-07-22T18:49:56Z",
+  "capture_completed_at": "2026-07-22T18:50:06Z",
+  "payload_version": "1.10.1.2",
+  "source_device": "SETUP_LOGS",
+  "storage_map_id": null,
+  "import_status": "import_ok_partial_identity"
+}

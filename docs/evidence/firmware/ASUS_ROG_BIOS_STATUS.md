@@ -1,21 +1,17 @@
 # ASUS ROG BIOS Status
 
-## Gabriel (Zielgerät dieses Auftrags)
+## Gabriel — ROG Strix G513QM (PI-RS-ASUS-DIAG-BIND-002)
 
-- Status: `pending_physical_diagnosis`
-- Exact model: pending (noch kein physischer Lauf auf Gabriels Laptop)
-- Installed BIOS: pending
-- Latest official: unknown until model confirmed on Gabriel's machine
-- Flashed: false
+- Status: **`update_available`**
+- Exact model: ROG Strix G513QM_G513QM
+- Board: G513QM
+- Installed: **G513QM.331** (DMI date 2023-02-24)
+- Latest official (ASUS EZ Flash): **G513QM.335** (2025-12-24)
+- Official URL: https://www.asus.com/supportonly/g513qm/helpdesk_bios/
+- EZ Flash SHA-256: `8183DDB74FE59EF0936A4FF2AED42A184221E81A35CA0E0AE51B7E52385B23F6`
+- Flashed: **false**
+- Binding: `asus_rog_gabriel` (diagnostics only)
 
-## Development-Host (Volker) — NICHT Gabriels Laptop
+## Development-Host (Volker G713PI)
 
-Während Deploy-Verify wurde der Development-Rechner erkannt (ASUS ROG, BIOS u. a. `G713PI.*`).
-
-- Rolle: `developer_workstation`
-- `is_gabriel_asus_rog`: false
-- Keine Rollenbindung der NVMe als Windows/Linux-Installationsziele
-- Keine Partitionierung / kein BIOS-Flash
-- Snapshot: `docs/evidence/rescue/asus-win11-linux-001/host_readonly/diagnosis_snapshot.json`
-
-Dieser Host-Stand ersetzt **nicht** den ASUS-Diagnoselauf auf Gabriels Gerät.
+- Nicht Gabriels Gerät — separat dokumentiert unter host_readonly

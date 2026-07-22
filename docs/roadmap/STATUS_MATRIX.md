@@ -2,6 +2,7 @@
 
 | Bereich | Status | Evidence |
 |---------|--------|----------|
+| PI-RS-ASUS-DIAG-BIND-002 | GELB | Gabriel G513QM bound; importer fixed; BIOS 335 available; NVMe/Panther incomplete (`diagnosis_incomplete`) |
 | PI-RS-ASUS-WIN11-LINUX-001 | GELB | App 1.9.21.0 / Payload 1.10.1.3 — `implemented_pending_physical_diagnosis`; physische Läufe ausstehend |
 | Rescue Package Policy V2 | GRÜN | `docs/evidence/rescue/RESCUE_REQUIRED_PACKAGE_POLICY_V2.json` |
 | System Assessment V2 | GRÜN | `backend/core/rescue_system_assessment_v2.py` + Tests |
@@ -36,3 +37,4 @@
 | PI-RS-MSI-RETEST-003 Physical Boot Retest | GRÜN | **passed** — Session `20260713_003100_boot`, Payload **1.10.0.20**, Auto-Lab-Evidence |
 | PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | GRÜN | **passed** — Late capture 153,8 s, `console_owner=tui`, `lab-auto-result` passed |
 | PI-RS-MSI-AUTO-EVIDENCE-001 Unattended MSI Lab Boot | GRÜN | Payload **1.10.0.20**; ~2,5 min Boot→Collect→Shutdown; Evidence importiert + CSE preview ok |
+| PI-RS-ASUS-PHYSICAL-DIAG-003 | GELB | Capture ready on stick 1.10.2.0; Gabriel physical run pending (`diagnosis_incomplete`) |

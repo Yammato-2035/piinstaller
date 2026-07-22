@@ -1,0 +1,1283 @@
+Jul 22 18:49:53 localhost.localdomain kernel: Linux version 6.1.0-49-amd64 (debian-kernel@lists.debian.org) (gcc-12 (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #1 SMP PREEMPT_DYNAMIC Debian 6.1.174-1 (2026-05-26)
+Jul 22 18:49:53 localhost.localdomain kernel: Command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-provided physical RAM map:
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x0000000000000000-0x000000000009ffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000000a0000-0x00000000000fffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x0000000000100000-0x0000000009d1efff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x0000000009d1f000-0x000000000a000fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x000000000a001000-0x000000000a1fffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x000000000a200000-0x000000000a20efff] ACPI NVS
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x000000000a20f000-0x00000000eb8f7fff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000eb8f8000-0x00000000ece0cfff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ece0d000-0x00000000ece70fff] ACPI data
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ece71000-0x00000000ed165fff] ACPI NVS
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ed166000-0x00000000ed9fefff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ed9ff000-0x00000000eeffffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ef000000-0x00000000f7ffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fd000000-0x00000000fdffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fe700000-0x00000000fe70ffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000feb80000-0x00000000fec01fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fec10000-0x00000000fec10fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fed00000-0x00000000fed00fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fed40000-0x00000000fed44fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fed80000-0x00000000fed80fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fedc4000-0x00000000fedc9fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fedcc000-0x00000000fedcefff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000fedd5000-0x00000000fedd5fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ff000000-0x00000000ffffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x0000000100000000-0x00000007ee33ffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: BIOS-e820: [mem 0x00000007ee340000-0x000000080fffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: NX (Execute Disable) protection: active
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xe7a49018-0xe7a57057] usable ==> usable
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xe7a49018-0xe7a57057] usable ==> usable
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xe7a35018-0xe7a42857] usable ==> usable
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xe7a35018-0xe7a42857] usable ==> usable
+Jul 22 18:49:53 localhost.localdomain kernel: extended physical RAM map:
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x0000000000000000-0x000000000009ffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000000a0000-0x00000000000fffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x0000000000100000-0x0000000009d1efff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x0000000009d1f000-0x000000000a000fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x000000000a001000-0x000000000a1fffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x000000000a200000-0x000000000a20efff] ACPI NVS
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x000000000a20f000-0x00000000e7a35017] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000e7a35018-0x00000000e7a42857] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000e7a42858-0x00000000e7a49017] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000e7a49018-0x00000000e7a57057] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000e7a57058-0x00000000eb8f7fff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000eb8f8000-0x00000000ece0cfff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ece0d000-0x00000000ece70fff] ACPI data
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ece71000-0x00000000ed165fff] ACPI NVS
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ed166000-0x00000000ed9fefff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ed9ff000-0x00000000eeffffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ef000000-0x00000000f7ffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fd000000-0x00000000fdffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fe700000-0x00000000fe70ffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000feb80000-0x00000000fec01fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fec10000-0x00000000fec10fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fed00000-0x00000000fed00fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fed40000-0x00000000fed44fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fed80000-0x00000000fed80fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fedc4000-0x00000000fedc9fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fedcc000-0x00000000fedcefff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000fedd5000-0x00000000fedd5fff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ff000000-0x00000000ffffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x0000000100000000-0x00000007ee33ffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: reserve setup_data: [mem 0x00000007ee340000-0x000000080fffffff] reserved
+Jul 22 18:49:53 localhost.localdomain kernel: efi: EFI v2.70 by American Megatrends
+Jul 22 18:49:53 localhost.localdomain kernel: efi: ACPI=0xece70000 ACPI 2.0=0xece70014 TPMFinalLog=0xed11d000 SMBIOS=0xed819000 SMBIOS 3.0=0xed818000 MEMATTR=0xe7a77018 ESRT=0xea32a218 INITRD=0xe7a6ab98 RNG=0xece20018 TPMEventLog=0xece16018 
+Jul 22 18:49:53 localhost.localdomain kernel: random: crng init done
+Jul 22 18:49:53 localhost.localdomain kernel: secureboot: Secure boot disabled
+Jul 22 18:49:53 localhost.localdomain kernel: SMBIOS 3.3.0 present.
+Jul 22 18:49:53 localhost.localdomain kernel: DMI: ASUSTeK COMPUTER INC. ROG Strix G513QM_G513QM/G513QM, BIOS G513QM.331 02/24/2023
+Jul 22 18:49:53 localhost.localdomain kernel: tsc: Fast TSC calibration using PIT
+Jul 22 18:49:53 localhost.localdomain kernel: tsc: Detected 3293.770 MHz processor
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0x00000000-0x00000fff] usable ==> reserved
+Jul 22 18:49:53 localhost.localdomain kernel: e820: remove [mem 0x000a0000-0x000fffff] usable
+Jul 22 18:49:53 localhost.localdomain kernel: last_pfn = 0x7ee340 max_arch_pfn = 0x400000000
+Jul 22 18:49:53 localhost.localdomain kernel: x86/PAT: Configuration [0-7]: WB  WC  UC- UC  WB  WP  UC- WT  
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xf0000000-0xffffffff] usable ==> reserved
+Jul 22 18:49:53 localhost.localdomain kernel: last_pfn = 0xef000 max_arch_pfn = 0x400000000
+Jul 22 18:49:53 localhost.localdomain kernel: esrt: Reserving ESRT space from 0x00000000ea32a218 to 0x00000000ea32a250.
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xea32a000-0xea32afff] usable ==> reserved
+Jul 22 18:49:53 localhost.localdomain kernel: Using GB pages for direct mapping
+Jul 22 18:49:53 localhost.localdomain kernel: RAMDISK: [mem 0xe0f74000-0xe3459fff]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Early table checksum verification disabled
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: RSDP 0x00000000ECE70014 000024 (v02 _ASUS_)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: XSDT 0x00000000ECE6F728 00010C (v01 _ASUS_ Notebook 01072009 AMI  01000013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: FACP 0x00000000ECE60000 000114 (v06 _ASUS_ Notebook 01072009 AMI  00010013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: DSDT 0x00000000ECE53000 00C384 (v02 _ASUS_ Notebook 01072009 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: FACS 0x00000000ED11B000 000040
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: MSDM 0x00000000ECE6E000 000055 (v03 _ASUS_ Notebook 01072009 ASUS 00000001)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE66000 007229 (v02 AMD    AmdTable 00000002 MSFT 04000000)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: IVRS 0x00000000ECE65000 0001A4 (v02 AMD    AmdTable 00000001 AMD  00000000)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE61000 003A21 (v01 AMD    AMD AOD  00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: FIDT 0x00000000ECE52000 00009C (v01 _ASUS_ Notebook 01072009 AMI  00010013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: MCFG 0x00000000ECE51000 00003C (v01 _ASUS_ Notebook 01072009 MSFT 00010013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: HPET 0x00000000ECE50000 000038 (v01 _ASUS_ Notebook 01072009 AMI  00000005)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: VFCT 0x00000000ECE42000 00D884 (v01 _ASUS_ Notebook 00000001 AMD  31504F47)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: TPM2 0x00000000ECE40000 00004C (v04 _ASUS_ Notebook 00000001 AMI  00000000)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE3A000 005354 (v02 AMD    AmdTable 00000001 AMD  00000001)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: CRAT 0x00000000ECE39000 000EE8 (v01 AMD    AmdTable 00000001 AMD  00000001)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: CDIT 0x00000000ECE38000 000029 (v01 AMD    AmdTable 00000001 AMD  00000001)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE37000 000149 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE36000 0005AF (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE34000 001486 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE32000 0014F5 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE2D000 002555 (v01 _ASUS_ Nv18dGPU 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE29000 0036E3 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: BGRT 0x00000000ECE41000 000038 (v01 _ASUS_ Notebook 01072009 AMI  00010013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: WSMT 0x00000000ECE31000 000028 (v01 _ASUS_ Notebook 01072009 AMI  00010013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: APIC 0x00000000ECE30000 0000DE (v03 _ASUS_ Notebook 01072009 AMI  00010013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE28000 00008D (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE27000 000917 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE25000 001126 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE24000 000241 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE23000 0008CE (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE22000 000787 (v01 AMD    AmdTable 00000001 INTL 20190509)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: FPDT 0x00000000ECE21000 000044 (v01 _ASUS_ A M I    01072009 AMI  01000013)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving FACP table memory at [mem 0xece60000-0xece60113]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving DSDT table memory at [mem 0xece53000-0xece5f383]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving FACS table memory at [mem 0xed11b000-0xed11b03f]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving MSDM table memory at [mem 0xece6e000-0xece6e054]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece66000-0xece6d228]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving IVRS table memory at [mem 0xece65000-0xece651a3]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece61000-0xece64a20]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving FIDT table memory at [mem 0xece52000-0xece5209b]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving MCFG table memory at [mem 0xece51000-0xece5103b]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving HPET table memory at [mem 0xece50000-0xece50037]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving VFCT table memory at [mem 0xece42000-0xece4f883]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving TPM2 table memory at [mem 0xece40000-0xece4004b]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece3a000-0xece3f353]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving CRAT table memory at [mem 0xece39000-0xece39ee7]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving CDIT table memory at [mem 0xece38000-0xece38028]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece37000-0xece37148]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece36000-0xece365ae]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece34000-0xece35485]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece32000-0xece334f4]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece2d000-0xece2f554]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece29000-0xece2c6e2]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving BGRT table memory at [mem 0xece41000-0xece41037]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving WSMT table memory at [mem 0xece31000-0xece31027]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving APIC table memory at [mem 0xece30000-0xece300dd]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece28000-0xece2808c]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece27000-0xece27916]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece25000-0xece26125]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece24000-0xece24240]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece23000-0xece238cd]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving SSDT table memory at [mem 0xece22000-0xece22786]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Reserving FPDT table memory at [mem 0xece21000-0xece21043]
+Jul 22 18:49:53 localhost.localdomain kernel: No NUMA configuration found
+Jul 22 18:49:53 localhost.localdomain kernel: Faking a node at [mem 0x0000000000000000-0x00000007ee33ffff]
+Jul 22 18:49:53 localhost.localdomain kernel: NODE_DATA(0) allocated [mem 0x7ee315000-0x7ee33ffff]
+Jul 22 18:49:53 localhost.localdomain kernel: Zone ranges:
+Jul 22 18:49:53 localhost.localdomain kernel:   DMA      [mem 0x0000000000001000-0x0000000000ffffff]
+Jul 22 18:49:53 localhost.localdomain kernel:   DMA32    [mem 0x0000000001000000-0x00000000ffffffff]
+Jul 22 18:49:53 localhost.localdomain kernel:   Normal   [mem 0x0000000100000000-0x00000007ee33ffff]
+Jul 22 18:49:53 localhost.localdomain kernel:   Device   empty
+Jul 22 18:49:53 localhost.localdomain kernel: Movable zone start for each node
+Jul 22 18:49:53 localhost.localdomain kernel: Early memory node ranges
+Jul 22 18:49:53 localhost.localdomain kernel:   node   0: [mem 0x0000000000001000-0x000000000009ffff]
+Jul 22 18:49:53 localhost.localdomain kernel:   node   0: [mem 0x0000000000100000-0x0000000009d1efff]
+Jul 22 18:49:53 localhost.localdomain kernel:   node   0: [mem 0x000000000a001000-0x000000000a1fffff]
+Jul 22 18:49:53 localhost.localdomain kernel:   node   0: [mem 0x000000000a20f000-0x00000000eb8f7fff]
+Jul 22 18:49:53 localhost.localdomain kernel:   node   0: [mem 0x00000000ed9ff000-0x00000000eeffffff]
+Jul 22 18:49:53 localhost.localdomain kernel:   node   0: [mem 0x0000000100000000-0x00000007ee33ffff]
+Jul 22 18:49:53 localhost.localdomain kernel: Initmem setup node 0 [mem 0x0000000000001000-0x00000007ee33ffff]
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone DMA: 1 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone DMA: 96 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone DMA32: 738 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone DMA32: 15 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone DMA32: 8455 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone Normal: 4096 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: On node 0, zone Normal: 7360 pages in unavailable ranges
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM-Timer IO Port: 0x808
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: LAPIC_NMI (acpi_id[0xff] high edge lint[0x1])
+Jul 22 18:49:53 localhost.localdomain kernel: IOAPIC[0]: apic_id 33, version 33, address 0xfec00000, GSI 0-23
+Jul 22 18:49:53 localhost.localdomain kernel: IOAPIC[1]: apic_id 34, version 33, address 0xfec01000, GSI 24-55
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 dfl dfl)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 low level)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Using ACPI (MADT) for SMP configuration information
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: HPET id: 0x10228201 base: 0xfed00000
+Jul 22 18:49:53 localhost.localdomain kernel: e820: update [mem 0xe545a000-0xe54b8fff] usable ==> reserved
+Jul 22 18:49:53 localhost.localdomain kernel: smpboot: Allowing 16 CPUs, 0 hotplug CPUs
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0x00000000-0x00000fff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0x000a0000-0x000fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0x09d1f000-0x0a000fff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0x0a200000-0x0a20efff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0xe545a000-0xe54b8fff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0xea32a000-0xea32afff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0xeb8f8000-0xed9fefff]
+Jul 22 18:49:53 localhost.localdomain kernel: PM: hibernation: Registered nosave memory: [mem 0xef000000-0xffffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: [mem 0xf8000000-0xfcffffff] available for PCI devices
+Jul 22 18:49:53 localhost.localdomain kernel: Booting paravirtualized kernel on bare hardware
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: refined-jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645519600211568 ns
+Jul 22 18:49:53 localhost.localdomain kernel: setup_percpu: NR_CPUS:8192 nr_cpumask_bits:16 nr_cpu_ids:16 nr_node_ids:1
+Jul 22 18:49:53 localhost.localdomain kernel: percpu: Embedded 62 pages/cpu s217088 r8192 d28672 u262144
+Jul 22 18:49:53 localhost.localdomain kernel: pcpu-alloc: s217088 r8192 d28672 u262144 alloc=1*2097152
+Jul 22 18:49:53 localhost.localdomain kernel: pcpu-alloc: [0] 00 01 02 03 04 05 06 07 [0] 08 09 10 11 12 13 14 15 
+Jul 22 18:49:53 localhost.localdomain kernel: Fallback order for Node 0: 0 
+Jul 22 18:49:53 localhost.localdomain kernel: Built 1 zonelists, mobility grouping on.  Total pages: 8107914
+Jul 22 18:49:53 localhost.localdomain kernel: Policy zone: Normal
+Jul 22 18:49:53 localhost.localdomain kernel: Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120
+Jul 22 18:49:53 localhost.localdomain kernel: Unknown kernel command line parameters "components boot=live setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 setuphelfer_msi_lab_auto=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=1 setuphelfer_auto_shutdown=1 setuphelfer_msi_lab_late_sec=120", will be passed to user space.
+Jul 22 18:49:53 localhost.localdomain kernel: Dentry cache hash table entries: 4194304 (order: 13, 33554432 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: Inode-cache hash table entries: 2097152 (order: 12, 16777216 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: mem auto-init: stack:all(zero), heap alloc:on, heap free:off
+Jul 22 18:49:53 localhost.localdomain kernel: software IO TLB: area num 16.
+Jul 22 18:49:53 localhost.localdomain kernel: Memory: 3814268K/32947100K available (14343K kernel code, 2338K rwdata, 9116K rodata, 2820K init, 17356K bss, 818668K reserved, 0K cma-reserved)
+Jul 22 18:49:53 localhost.localdomain kernel: SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=16, Nodes=1
+Jul 22 18:49:53 localhost.localdomain kernel: ftrace: allocating 40432 entries in 158 pages
+Jul 22 18:49:53 localhost.localdomain kernel: ftrace: allocated 158 pages with 5 groups
+Jul 22 18:49:53 localhost.localdomain kernel: Dynamic Preempt: voluntary
+Jul 22 18:49:53 localhost.localdomain kernel: rcu: Preemptible hierarchical RCU implementation.
+Jul 22 18:49:53 localhost.localdomain kernel: rcu:         RCU restricting CPUs from NR_CPUS=8192 to nr_cpu_ids=16.
+Jul 22 18:49:53 localhost.localdomain kernel:         Trampoline variant of Tasks RCU enabled.
+Jul 22 18:49:53 localhost.localdomain kernel:         Rude variant of Tasks RCU enabled.
+Jul 22 18:49:53 localhost.localdomain kernel:         Tracing variant of Tasks RCU enabled.
+Jul 22 18:49:53 localhost.localdomain kernel: rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+Jul 22 18:49:53 localhost.localdomain kernel: rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=16
+Jul 22 18:49:53 localhost.localdomain kernel: NR_IRQS: 524544, nr_irqs: 1096, preallocated irqs: 16
+Jul 22 18:49:53 localhost.localdomain kernel: rcu: srcu_init: Setting srcu_struct sizes based on contention.
+Jul 22 18:49:53 localhost.localdomain kernel: Console: colour dummy device 80x25
+Jul 22 18:49:53 localhost.localdomain kernel: printk: console [tty0] enabled
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Core revision 20220331
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: hpet: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 133484873504 ns
+Jul 22 18:49:53 localhost.localdomain kernel: APIC: Switch to symmetric I/O mode setup
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: ivrs, add hid:AMDI0020, uid:\_SB.FUR0, rdevid:160
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: ivrs, add hid:AMDI0020, uid:\_SB.FUR1, rdevid:160
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: ivrs, add hid:AMDI0020, uid:\_SB.FUR2, rdevid:160
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: ivrs, add hid:AMDI0020, uid:\_SB.FUR3, rdevid:160
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: Using global IVHD EFR:0x206d73ef22254ade, EFR2:0x0
+Jul 22 18:49:53 localhost.localdomain kernel: Switched APIC routing to physical flat.
+Jul 22 18:49:53 localhost.localdomain kernel: ..TIMER: vector=0x30 apic1=0 pin1=2 apic2=-1 pin2=-1
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: tsc-early: mask: 0xffffffffffffffff max_cycles: 0x2f7a4f052b3, max_idle_ns: 440795256437 ns
+Jul 22 18:49:53 localhost.localdomain kernel: Calibrating delay loop (skipped), value calculated using timer frequency.. 6587.54 BogoMIPS (lpj=13175080)
+Jul 22 18:49:53 localhost.localdomain kernel: x86/cpu: User Mode Instruction Prevention (UMIP) activated
+Jul 22 18:49:53 localhost.localdomain kernel: LVT offset 1 assigned for vector 0xf9
+Jul 22 18:49:53 localhost.localdomain kernel: LVT offset 2 assigned for vector 0xf4
+Jul 22 18:49:53 localhost.localdomain kernel: process: using mwait in idle threads
+Jul 22 18:49:53 localhost.localdomain kernel: Last level iTLB entries: 4KB 512, 2MB 512, 4MB 256
+Jul 22 18:49:53 localhost.localdomain kernel: Last level dTLB entries: 4KB 2048, 2MB 2048, 4MB 1024, 1GB 0
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V1 : Mitigation: usercopy/swapgs barriers and __user pointer sanitization
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V2 : Mitigation: Retpolines
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V2 : Spectre v2 / SpectreRSB: Filling RSB on context switch and VMEXIT
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V2 : Enabling Restricted Speculation for firmware calls
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V2 : mitigation: Enabling conditional Indirect Branch Prediction Barrier
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V2 : User space: Mitigation: STIBP always-on protection
+Jul 22 18:49:53 localhost.localdomain kernel: Speculative Store Bypass: Mitigation: Speculative Store Bypass disabled via prctl
+Jul 22 18:49:53 localhost.localdomain kernel: Speculative Return Stack Overflow: IBPB-extending microcode not applied!
+Jul 22 18:49:53 localhost.localdomain kernel: Speculative Return Stack Overflow: WARNING: See https://kernel.org/doc/html/latest/admin-guide/hw-vuln/srso.html for mitigation options.
+Jul 22 18:49:53 localhost.localdomain kernel: active return thunk: srso_alias_return_thunk
+Jul 22 18:49:53 localhost.localdomain kernel: Speculative Return Stack Overflow: Mitigation: safe RET, no microcode
+Jul 22 18:49:53 localhost.localdomain kernel: Transient Scheduler Attacks: Vulnerable: Clear CPU buffers attempted, no microcode
+Jul 22 18:49:53 localhost.localdomain kernel: VMSCAPE: Mitigation: IBPB before exit to userspace
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: Supporting XSAVE feature 0x001: 'x87 floating point registers'
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: Supporting XSAVE feature 0x002: 'SSE registers'
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: Supporting XSAVE feature 0x004: 'AVX registers'
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: Supporting XSAVE feature 0x200: 'Protection Keys User registers'
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: xstate_offset[2]:  576, xstate_sizes[2]:  256
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: xstate_offset[9]:  832, xstate_sizes[9]:    8
+Jul 22 18:49:53 localhost.localdomain kernel: x86/fpu: Enabled xstate features 0x207, context size is 840 bytes, using 'compacted' format.
+Jul 22 18:49:53 localhost.localdomain kernel: Freeing SMP alternatives memory: 36K
+Jul 22 18:49:53 localhost.localdomain kernel: pid_max: default: 32768 minimum: 301
+Jul 22 18:49:53 localhost.localdomain kernel: LSM: Security Framework initializing
+Jul 22 18:49:53 localhost.localdomain kernel: landlock: Up and running.
+Jul 22 18:49:53 localhost.localdomain kernel: Yama: disabled by default; enable with sysctl kernel.yama.*
+Jul 22 18:49:53 localhost.localdomain kernel: AppArmor: AppArmor initialized
+Jul 22 18:49:53 localhost.localdomain kernel: TOMOYO Linux initialized
+Jul 22 18:49:53 localhost.localdomain kernel: LSM support for eBPF active
+Jul 22 18:49:53 localhost.localdomain kernel: Mount-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: Mountpoint-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: smpboot: CPU0: AMD Ryzen 9 5900HX with Radeon Graphics (family: 0x19, model: 0x50, stepping: 0x0)
+Jul 22 18:49:53 localhost.localdomain kernel: cblist_init_generic: Setting adjustable number of callback queues.
+Jul 22 18:49:53 localhost.localdomain kernel: cblist_init_generic: Setting shift to 4 and lim to 1.
+Jul 22 18:49:53 localhost.localdomain kernel: cblist_init_generic: Setting adjustable number of callback queues.
+Jul 22 18:49:53 localhost.localdomain kernel: cblist_init_generic: Setting shift to 4 and lim to 1.
+Jul 22 18:49:53 localhost.localdomain kernel: cblist_init_generic: Setting adjustable number of callback queues.
+Jul 22 18:49:53 localhost.localdomain kernel: cblist_init_generic: Setting shift to 4 and lim to 1.
+Jul 22 18:49:53 localhost.localdomain kernel: Performance Events: Fam17h+ core perfctr, AMD PMU driver.
+Jul 22 18:49:53 localhost.localdomain kernel: ... version:                0
+Jul 22 18:49:53 localhost.localdomain kernel: ... bit width:              48
+Jul 22 18:49:53 localhost.localdomain kernel: ... generic registers:      6
+Jul 22 18:49:53 localhost.localdomain kernel: ... value mask:             0000ffffffffffff
+Jul 22 18:49:53 localhost.localdomain kernel: ... max period:             00007fffffffffff
+Jul 22 18:49:53 localhost.localdomain kernel: ... fixed-purpose events:   0
+Jul 22 18:49:53 localhost.localdomain kernel: ... event mask:             000000000000003f
+Jul 22 18:49:53 localhost.localdomain kernel: signal: max sigframe size: 3376
+Jul 22 18:49:53 localhost.localdomain kernel: rcu: Hierarchical SRCU implementation.
+Jul 22 18:49:53 localhost.localdomain kernel: rcu:         Max phase no-delay instances is 1000.
+Jul 22 18:49:53 localhost.localdomain kernel: NMI watchdog: Enabled. Permanently consumes one hw-PMU counter.
+Jul 22 18:49:53 localhost.localdomain kernel: smp: Bringing up secondary CPUs ...
+Jul 22 18:49:53 localhost.localdomain kernel: x86: Booting SMP configuration:
+Jul 22 18:49:53 localhost.localdomain kernel: .... node  #0, CPUs:        #1
+Jul 22 18:49:53 localhost.localdomain kernel: Spectre V2 : Update user space SMT mitigation: STIBP always-on
+Jul 22 18:49:53 localhost.localdomain kernel:   #2  #3  #4  #5  #6  #7  #8  #9 #10 #11 #12 #13 #14 #15
+Jul 22 18:49:53 localhost.localdomain kernel: smp: Brought up 1 node, 16 CPUs
+Jul 22 18:49:53 localhost.localdomain kernel: smpboot: Max logical packages: 1
+Jul 22 18:49:53 localhost.localdomain kernel: smpboot: Total of 16 processors activated (105400.64 BogoMIPS)
+Jul 22 18:49:53 localhost.localdomain kernel: node 0 deferred pages initialised in 24ms
+Jul 22 18:49:53 localhost.localdomain kernel: devtmpfs: initialized
+Jul 22 18:49:53 localhost.localdomain kernel: x86/mm: Memory block size: 128MB
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Registering ACPI NVS region [mem 0x0a200000-0x0a20efff] (61440 bytes)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Registering ACPI NVS region [mem 0xece71000-0xed165fff] (3100672 bytes)
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 7645041785100000 ns
+Jul 22 18:49:53 localhost.localdomain kernel: futex hash table entries: 4096 (order: 6, 262144 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: pinctrl core: initialized pinctrl subsystem
+Jul 22 18:49:53 localhost.localdomain kernel: NET: Registered PF_NETLINK/PF_ROUTE protocol family
+Jul 22 18:49:53 localhost.localdomain kernel: DMA: preallocated 4096 KiB GFP_KERNEL pool for atomic allocations
+Jul 22 18:49:53 localhost.localdomain kernel: DMA: preallocated 4096 KiB GFP_KERNEL|GFP_DMA pool for atomic allocations
+Jul 22 18:49:53 localhost.localdomain kernel: DMA: preallocated 4096 KiB GFP_KERNEL|GFP_DMA32 pool for atomic allocations
+Jul 22 18:49:53 localhost.localdomain kernel: audit: initializing netlink subsys (disabled)
+Jul 22 18:49:53 localhost.localdomain kernel: audit: type=2000 audit(1784746188.208:1): state=initialized audit_enabled=0 res=1
+Jul 22 18:49:53 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'fair_share'
+Jul 22 18:49:53 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'bang_bang'
+Jul 22 18:49:53 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'step_wise'
+Jul 22 18:49:53 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'user_space'
+Jul 22 18:49:53 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'power_allocator'
+Jul 22 18:49:53 localhost.localdomain kernel: cpuidle: using governor ladder
+Jul 22 18:49:53 localhost.localdomain kernel: cpuidle: using governor menu
+Jul 22 18:49:53 localhost.localdomain kernel: efi: Freeing EFI boot services memory: 90640K
+Jul 22 18:49:53 localhost.localdomain kernel: acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: MMCONFIG for domain 0000 [bus 00-7f] at [mem 0xf0000000-0xf7ffffff] (base 0xf0000000)
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: MMCONFIG at [mem 0xf0000000-0xf7ffffff] reserved in E820
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: Using configuration type 1 for base access
+Jul 22 18:49:53 localhost.localdomain kernel: kprobes: kprobe jump-optimization is enabled. All kprobes are optimized if possible.
+Jul 22 18:49:53 localhost.localdomain kernel: HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+Jul 22 18:49:53 localhost.localdomain kernel: HugeTLB: 16380 KiB vmemmap can be freed for a 1.00 GiB page
+Jul 22 18:49:53 localhost.localdomain kernel: HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+Jul 22 18:49:53 localhost.localdomain kernel: HugeTLB: 28 KiB vmemmap can be freed for a 2.00 MiB page
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Added _OSI(Module Device)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Added _OSI(Processor Device)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Added _OSI(Processor Aggregator Device)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: 16 ACPI AML tables successfully acquired and loaded
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: [Firmware Bug]: BIOS _OSI(Linux) query ignored
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Interpreter enabled
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: (supports S0 S4 S5)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Using IOAPIC for interrupt routing
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: Using host bridge windows from ACPI; if necessary, use "pci=nocrs" and report a bug
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: Ignoring E820 reservations for host bridge windows
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: Enabled 2 GPEs in block 00 to 1F
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [P0U0]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [P3U0]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [P0U1]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [P3U1]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [M237]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [P1NV]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [P0NV]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PM: Power Resource [PRWL]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI Root Bridge [PCI0] (domain 0000 [bus 00-ff])
+Jul 22 18:49:53 localhost.localdomain kernel: acpi PNP0A08:00: _OSC: OS supports [ExtendedConfig ASPM ClockPM Segments MSI HPX-Type3]
+Jul 22 18:49:53 localhost.localdomain kernel: acpi PNP0A08:00: _OSC: platform does not support [SHPCHotplug LTR]
+Jul 22 18:49:53 localhost.localdomain kernel: acpi PNP0A08:00: _OSC: OS now controls [PCIeHotplug PME PCIeCapability]
+Jul 22 18:49:53 localhost.localdomain kernel: acpi PNP0A08:00: [Firmware Info]: MMCONFIG for domain 0000 [bus 00-7f] only partially covers this bridge
+Jul 22 18:49:53 localhost.localdomain kernel: PCI host bridge to bus 0000:00
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [io  0x0000-0x03af window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [io  0x03e0-0x0cf7 window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [io  0x03b0-0x03df window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [io  0x0d00-0xffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [mem 0x000a0000-0x000dffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [mem 0xf0000000-0xfcffffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [mem 0x810000000-0xffffffffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: root bus resource [bus 00-ff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:00.0: [1022:1630] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:00.2: [1022:1631] type 00 class 0x080600
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.0: [1022:1632] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1: [1022:1633] type 01 class 0x060400
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.0: [1022:1632] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1: [1022:1634] type 01 class 0x060400
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2: [1022:1634] type 01 class 0x060400
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3: [1022:1634] type 01 class 0x060400
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4: [1022:1634] type 01 class 0x060400
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.0: [1022:1632] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1: [1022:1635] type 01 class 0x060400
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:14.0: [1022:790b] type 00 class 0x0c0500
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:14.3: [1022:790e] type 00 class 0x060100
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.0: [1022:166a] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.1: [1022:166b] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.2: [1022:166c] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.3: [1022:166d] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.4: [1022:166e] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.5: [1022:166f] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.6: [1022:1670] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.7: [1022:1671] type 00 class 0x060000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: [10de:2520] type 00 class 0x030000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: BAR 0 [mem 0xfb000000-0xfbffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: BAR 1 [mem 0xfc00000000-0xfdffffffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: BAR 3 [mem 0xfe00000000-0xfe01ffffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: BAR 5 [io  0xf000-0xf07f]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: ROM [mem 0xfc000000-0xfc07ffff pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: PME# supported from D0 D3hot
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: 63.008 Gb/s available PCIe bandwidth, limited by 8.0 GT/s PCIe x8 link at 0000:00:01.1 (capable of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.1: [10de:228e] type 00 class 0x040300
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.1: BAR 0 [mem 0xfc080000-0xfc083fff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1: PCI bridge to [bus 01]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1:   bridge window [io  0xf000-0xffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1:   bridge window [mem 0xfb000000-0xfc0fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1:   bridge window [mem 0xfc00000000-0xfe01ffffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: [10ec:8168] type 00 class 0x020000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: BAR 0 [io  0xe000-0xe0ff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: BAR 2 [mem 0xfc804000-0xfc804fff 64bit]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: BAR 4 [mem 0xfc800000-0xfc803fff 64bit]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: supports D1 D2
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1: PCI bridge to [bus 02]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1:   bridge window [io  0xe000-0xefff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1:   bridge window [mem 0xfc800000-0xfc8fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: [14c3:7961] type 00 class 0x028000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: BAR 0 [mem 0xfe20300000-0xfe203fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: BAR 2 [mem 0xfe20400000-0xfe20403fff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: BAR 4 [mem 0xfe20404000-0xfe20404fff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: supports D1 D2
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: PME# supported from D0 D1 D2 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2: PCI bridge to [bus 03]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2:   bridge window [mem 0xfe20300000-0xfe204fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:04:00.0: [144d:a808] type 00 class 0x010802
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:04:00.0: BAR 0 [mem 0xfc700000-0xfc703fff 64bit]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3: PCI bridge to [bus 04]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3:   bridge window [mem 0xfc700000-0xfc7fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:05:00.0: [144d:a808] type 00 class 0x010802
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:05:00.0: BAR 0 [mem 0xfc600000-0xfc603fff 64bit]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4: PCI bridge to [bus 05]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4:   bridge window [mem 0xfc600000-0xfc6fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: [1002:1638] type 00 class 0x030000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: BAR 0 [mem 0xfe10000000-0xfe1fffffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: BAR 2 [mem 0xfe20000000-0xfe201fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: BAR 4 [io  0xd000-0xd0ff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: BAR 5 [mem 0xfc500000-0xfc57ffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: BAR 0: assigned to efifb
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: PME# supported from D1 D2 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: 126.016 Gb/s available PCIe bandwidth, limited by 8.0 GT/s PCIe x16 link at 0000:00:08.1 (capable of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.1: [1002:1637] type 00 class 0x040300
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.1: BAR 0 [mem 0xfc5c8000-0xfc5cbfff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.1: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.1: PME# supported from D1 D2 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.2: [1022:15df] type 00 class 0x108000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.2: BAR 2 [mem 0xfc400000-0xfc4fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.2: BAR 5 [mem 0xfc5cc000-0xfc5cdfff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.2: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.3: [1022:1639] type 00 class 0x0c0330
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.3: BAR 0 [mem 0xfc300000-0xfc3fffff 64bit]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.3: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.3: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.4: [1022:1639] type 00 class 0x0c0330
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.4: BAR 0 [mem 0xfc200000-0xfc2fffff 64bit]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.4: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.4: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.5: [1022:15e2] type 00 class 0x048000
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.5: BAR 0 [mem 0xfc580000-0xfc5bffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.5: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.5: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.6: [1022:15e3] type 00 class 0x040300
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.6: BAR 0 [mem 0xfc5c0000-0xfc5c7fff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.6: enabling Extended Tags
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.6: PME# supported from D0 D3hot D3cold
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1: PCI bridge to [bus 06]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1:   bridge window [io  0xd000-0xdfff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1:   bridge window [mem 0xfc200000-0xfc5fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1:   bridge window [mem 0xfe10000000-0xfe201fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKA configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKB configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKC configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKD configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKE configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKF configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKG configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: PCI: Interrupt link LNKH configured for IRQ 0
+Jul 22 18:49:53 localhost.localdomain kernel: Low-power S0 idle used by default for system suspend
+Jul 22 18:49:53 localhost.localdomain kernel: iommu: Default domain type: Translated 
+Jul 22 18:49:53 localhost.localdomain kernel: iommu: DMA domain TLB invalidation policy: lazy mode 
+Jul 22 18:49:53 localhost.localdomain kernel: pps_core: LinuxPPS API ver. 1 registered
+Jul 22 18:49:53 localhost.localdomain kernel: pps_core: Software ver. 5.3.6 - Copyright 2005-2007 Rodolfo Giometti <giometti@linux.it>
+Jul 22 18:49:53 localhost.localdomain kernel: PTP clock support registered
+Jul 22 18:49:53 localhost.localdomain kernel: EDAC MC: Ver: 3.0.0
+Jul 22 18:49:53 localhost.localdomain kernel: Registered efivars operations
+Jul 22 18:49:53 localhost.localdomain kernel: NetLabel: Initializing
+Jul 22 18:49:53 localhost.localdomain kernel: NetLabel:  domain hash size = 128
+Jul 22 18:49:53 localhost.localdomain kernel: NetLabel:  protocols = UNLABELED CIPSOv4 CALIPSO
+Jul 22 18:49:53 localhost.localdomain kernel: NetLabel:  unlabeled traffic allowed by default
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: Using ACPI for IRQ routing
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: pci_cache_line_size set to 64 bytes
+Jul 22 18:49:53 localhost.localdomain kernel: resource: Expanded resource Reserved due to conflict with PCI Bus 0000:00
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0x09d1f000-0x0bffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0x0a200000-0x0bffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0xe545a000-0xe7ffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0xe7a35018-0xe7ffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0xe7a49018-0xe7ffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0xea32a000-0xebffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0xeb8f8000-0xebffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0xef000000-0xefffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: e820: reserve RAM buffer [mem 0x7ee340000-0x7efffffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: vgaarb: setting as boot VGA device
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: vgaarb: bridge control possible
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: vgaarb: setting as boot VGA device (overriding previous)
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: vgaarb: bridge control possible
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+Jul 22 18:49:53 localhost.localdomain kernel: vgaarb: loaded
+Jul 22 18:49:53 localhost.localdomain kernel: hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+Jul 22 18:49:53 localhost.localdomain kernel: hpet0: 3 comparators, 32-bit 14.318180 MHz counter
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: Switched to clocksource tsc-early
+Jul 22 18:49:53 localhost.localdomain kernel: VFS: Disk quotas dquot_6.6.0
+Jul 22 18:49:53 localhost.localdomain kernel: VFS: Dquot-cache hash table entries: 512 (order 0, 4096 bytes)
+Jul 22 18:49:53 localhost.localdomain kernel: AppArmor: AppArmor Filesystem Enabled
+Jul 22 18:49:53 localhost.localdomain kernel: pnp: PnP ACPI init
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:00: [mem 0xf0000000-0xf7ffffff] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x04d0-0x04d1] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x040b] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x04d6] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0c00-0x0c01] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0c14] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0c50-0x0c51] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0c52] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0c6c] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0c6f] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0cd8-0x0cdf] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0800-0x089f] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0b00-0x0b0f] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0b20-0x0b3f] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0900-0x090f] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [io  0x0910-0x091f] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfec00000-0xfec00fff] could not be reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfec01000-0xfec01fff] could not be reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfedc0000-0xfedc0fff] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfee00000-0xfee00fff] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfed80000-0xfed8ffff] could not be reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfec10000-0xfec10fff] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xff000000-0xffffffff] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: system 00:03: [mem 0xfe700000-0xfe70ffff] has been reserved
+Jul 22 18:49:53 localhost.localdomain kernel: pnp: PnP ACPI: found 4 devices
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: acpi_pm: mask: 0xffffff max_cycles: 0xffffff, max_idle_ns: 2085701024 ns
+Jul 22 18:49:53 localhost.localdomain kernel: NET: Registered PF_INET protocol family
+Jul 22 18:49:53 localhost.localdomain kernel: IP idents hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: tcp_listen_portaddr_hash hash table entries: 16384 (order: 6, 262144 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: Table-perturb hash table entries: 65536 (order: 6, 262144 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: TCP established hash table entries: 262144 (order: 9, 2097152 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: TCP bind hash table entries: 65536 (order: 9, 2097152 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: TCP: Hash tables configured (established 262144 bind 65536)
+Jul 22 18:49:53 localhost.localdomain kernel: MPTCP token hash table entries: 32768 (order: 8, 786432 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: UDP hash table entries: 16384 (order: 7, 524288 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: UDP-Lite hash table entries: 16384 (order: 7, 524288 bytes, linear)
+Jul 22 18:49:53 localhost.localdomain kernel: NET: Registered PF_UNIX/PF_LOCAL protocol family
+Jul 22 18:49:53 localhost.localdomain kernel: NET: Registered PF_XDP protocol family
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1: PCI bridge to [bus 01]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1:   bridge window [io  0xf000-0xffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1:   bridge window [mem 0xfb000000-0xfc0fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1:   bridge window [mem 0xfc00000000-0xfe01ffffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1: PCI bridge to [bus 02]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1:   bridge window [io  0xe000-0xefff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1:   bridge window [mem 0xfc800000-0xfc8fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2: PCI bridge to [bus 03]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2:   bridge window [mem 0xfe20300000-0xfe204fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3: PCI bridge to [bus 04]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3:   bridge window [mem 0xfc700000-0xfc7fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4: PCI bridge to [bus 05]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4:   bridge window [mem 0xfc600000-0xfc6fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1: PCI bridge to [bus 06]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1:   bridge window [io  0xd000-0xdfff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1:   bridge window [mem 0xfc200000-0xfc5fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1:   bridge window [mem 0xfe10000000-0xfe201fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 4 [io  0x0000-0x03af window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 5 [io  0x03e0-0x0cf7 window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 6 [io  0x03b0-0x03df window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 7 [io  0x0d00-0xffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 8 [mem 0x000a0000-0x000dffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 9 [mem 0xf0000000-0xfcffffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:00: resource 10 [mem 0x810000000-0xffffffffff window]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:01: resource 0 [io  0xf000-0xffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:01: resource 1 [mem 0xfb000000-0xfc0fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:01: resource 2 [mem 0xfc00000000-0xfe01ffffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:02: resource 0 [io  0xe000-0xefff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:02: resource 1 [mem 0xfc800000-0xfc8fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:03: resource 2 [mem 0xfe20300000-0xfe204fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:04: resource 1 [mem 0xfc700000-0xfc7fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:05: resource 1 [mem 0xfc600000-0xfc6fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:06: resource 0 [io  0xd000-0xdfff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:06: resource 1 [mem 0xfc200000-0xfc5fffff]
+Jul 22 18:49:53 localhost.localdomain kernel: pci_bus 0000:06: resource 2 [mem 0xfe10000000-0xfe201fffff 64bit pref]
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.1: extending delay after power-on from D3hot to 20 msec
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.1: D0 power state depends on 0000:01:00.0
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.1: D0 power state depends on 0000:06:00.0
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.3: extending delay after power-on from D3hot to 20 msec
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.4: extending delay after power-on from D3hot to 20 msec
+Jul 22 18:49:53 localhost.localdomain kernel: PCI: CLS 64 bytes, default 64
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:00.2: AMD-Vi: IOMMU performance counters supported
+Jul 22 18:49:53 localhost.localdomain kernel: Trying to unpack rootfs image as initramfs...
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.0: Adding to iommu group 0
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:01.1: Adding to iommu group 1
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.0: Adding to iommu group 2
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.1: Adding to iommu group 3
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.2: Adding to iommu group 4
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.3: Adding to iommu group 5
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:02.4: Adding to iommu group 6
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.0: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:08.1: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:14.0: Adding to iommu group 8
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:14.3: Adding to iommu group 8
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.0: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.1: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.2: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.3: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.4: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.5: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.6: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:18.7: Adding to iommu group 9
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.0: Adding to iommu group 10
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:01:00.1: Adding to iommu group 10
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:02:00.0: Adding to iommu group 11
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:03:00.0: Adding to iommu group 12
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:04:00.0: Adding to iommu group 13
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:05:00.0: Adding to iommu group 14
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.0: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.1: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.2: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.3: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.4: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.5: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:06:00.6: Adding to iommu group 7
+Jul 22 18:49:53 localhost.localdomain kernel: pci 0000:00:00.2: AMD-Vi: Found IOMMU cap 0x40
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: Extended features (0x206d73ef22254ade, 0x0): PPR X2APIC NX GT IA GA PC GA_vAPIC
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: Interrupt remapping enabled
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: X2APIC enabled
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: Virtual APIC enabled
+Jul 22 18:49:53 localhost.localdomain kernel: PCI-DMA: Using software bounce buffering for IO (SWIOTLB)
+Jul 22 18:49:53 localhost.localdomain kernel: software IO TLB: mapped [mem 0x00000000dcf74000-0x00000000e0f74000] (64MB)
+Jul 22 18:49:53 localhost.localdomain kernel: LVT offset 0 assigned for vector 0x400
+Jul 22 18:49:53 localhost.localdomain kernel: perf: AMD IBS detected (0x000003ff)
+Jul 22 18:49:53 localhost.localdomain kernel: amd_uncore: 4  amd_df counters detected
+Jul 22 18:49:53 localhost.localdomain kernel: amd_uncore: 6  amd_l3 counters detected
+Jul 22 18:49:53 localhost.localdomain kernel: perf/amd_iommu: Detected AMD IOMMU #0 (2 banks, 4 counters/bank).
+Jul 22 18:49:53 localhost.localdomain kernel: Initialise system trusted keyrings
+Jul 22 18:49:53 localhost.localdomain kernel: Key type blacklist registered
+Jul 22 18:49:53 localhost.localdomain kernel: workingset: timestamp_bits=36 max_order=23 bucket_order=0
+Jul 22 18:49:53 localhost.localdomain kernel: zbud: loaded
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Platform Keyring initialized
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Machine keyring initialized
+Jul 22 18:49:53 localhost.localdomain kernel: Key type asymmetric registered
+Jul 22 18:49:53 localhost.localdomain kernel: Asymmetric key parser 'x509' registered
+Jul 22 18:49:53 localhost.localdomain kernel: Freeing initrd memory: 37784K
+Jul 22 18:49:53 localhost.localdomain kernel: alg: self-tests for CTR-KDF (hmac(sha256)) passed
+Jul 22 18:49:53 localhost.localdomain kernel: Block layer SCSI generic (bsg) driver version 0.4 loaded (major 248)
+Jul 22 18:49:53 localhost.localdomain kernel: io scheduler mq-deadline registered
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:01.1: PME: Signaling with IRQ 36
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:01.1: pciehp: Slot #0 AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surprise+ Interlock- NoCompl+ IbPresDis- LLActRep+
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:02.1: PME: Signaling with IRQ 37
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:02.2: PME: Signaling with IRQ 38
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:02.3: PME: Signaling with IRQ 39
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:02.4: PME: Signaling with IRQ 40
+Jul 22 18:49:53 localhost.localdomain kernel: pcieport 0000:00:08.1: PME: Signaling with IRQ 41
+Jul 22 18:49:53 localhost.localdomain kernel: shpchp: Standard Hot Plug PCI Controller Driver version: 0.4
+Jul 22 18:49:53 localhost.localdomain kernel: Estimated ratio of average max frequency by base frequency (times 1024): 1270
+Jul 22 18:49:53 localhost.localdomain kernel: Monitor-Mwait will be used to enter C-1 state
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P000: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P001: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P002: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P003: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P004: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P005: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P006: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P007: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P008: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P009: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P00A: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P00B: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P00C: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P00D: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P00E: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: \_SB_.PLTF.P00F: Found 3 idle states
+Jul 22 18:49:53 localhost.localdomain kernel: thermal LNXTHERM:00: registered as thermal_zone0
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: thermal: Thermal Zone [TZ01] (70 C)
+Jul 22 18:49:53 localhost.localdomain kernel: Serial: 8250/16550 driver, 4 ports, IRQ sharing enabled
+Jul 22 18:49:53 localhost.localdomain kernel: Linux agpgart interface v0.103
+Jul 22 18:49:53 localhost.localdomain kernel: tpm_crb MSFT0101:00: Disabling hwrng
+Jul 22 18:49:53 localhost.localdomain kernel: AMD-Vi: AMD IOMMUv2 loaded and initialized
+Jul 22 18:49:53 localhost.localdomain kernel: i8042: PNP: PS/2 Controller [PNP030b:PS2K] at 0x60,0x64 irq 1
+Jul 22 18:49:53 localhost.localdomain kernel: i8042: PNP: PS/2 appears to have AUX port disabled, if this is incorrect please boot with i8042.nopnp
+Jul 22 18:49:53 localhost.localdomain kernel: serio: i8042 KBD port at 0x60,0x64 irq 1
+Jul 22 18:49:53 localhost.localdomain kernel: mousedev: PS/2 mouse device common for all mice
+Jul 22 18:49:53 localhost.localdomain kernel: rtc_cmos 00:01: RTC can wake from S4
+Jul 22 18:49:53 localhost.localdomain kernel: rtc_cmos 00:01: registered as rtc0
+Jul 22 18:49:53 localhost.localdomain kernel: rtc_cmos 00:01: setting system clock to 2026-07-22T18:49:48 UTC (1784746188)
+Jul 22 18:49:53 localhost.localdomain kernel: rtc_cmos 00:01: alarms up to one month, y3k, 114 bytes nvram
+Jul 22 18:49:53 localhost.localdomain kernel: ledtrig-cpu: registered to indicate activity on CPUs
+Jul 22 18:49:53 localhost.localdomain kernel: efifb: probing for efifb
+Jul 22 18:49:53 localhost.localdomain kernel: efifb: framebuffer at 0xfe10000000, using 8100k, total 8100k
+Jul 22 18:49:53 localhost.localdomain kernel: efifb: mode is 1920x1080x32, linelength=7680, pages=1
+Jul 22 18:49:53 localhost.localdomain kernel: efifb: scrolling: redraw
+Jul 22 18:49:53 localhost.localdomain kernel: efifb: Truecolor: size=8:8:8:8, shift=24:16:8:0
+Jul 22 18:49:53 localhost.localdomain kernel: Console: switching to colour frame buffer device 240x67
+Jul 22 18:49:53 localhost.localdomain kernel: fb0: EFI VGA frame buffer device
+Jul 22 18:49:53 localhost.localdomain kernel: NET: Registered PF_INET6 protocol family
+Jul 22 18:49:53 localhost.localdomain kernel: Segment Routing with IPv6
+Jul 22 18:49:53 localhost.localdomain kernel: In-situ OAM (IOAM) with IPv6
+Jul 22 18:49:53 localhost.localdomain kernel: mip6: Mobile IPv6
+Jul 22 18:49:53 localhost.localdomain kernel: NET: Registered PF_PACKET protocol family
+Jul 22 18:49:53 localhost.localdomain kernel: mpls_gso: MPLS GSO support
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU0: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU1: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU2: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU3: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU4: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU5: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU6: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU7: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU8: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU9: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU10: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU11: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU12: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU13: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU14: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: CPU15: patch_level=0x0a50000b
+Jul 22 18:49:53 localhost.localdomain kernel: microcode: Microcode Update Driver: v2.2.
+Jul 22 18:49:53 localhost.localdomain kernel: resctrl: L3 allocation detected
+Jul 22 18:49:53 localhost.localdomain kernel: resctrl: MB allocation detected
+Jul 22 18:49:53 localhost.localdomain kernel: resctrl: L3 monitoring detected
+Jul 22 18:49:53 localhost.localdomain kernel: IPI shorthand broadcast: enabled
+Jul 22 18:49:53 localhost.localdomain kernel: sched_clock: Marking stable (620788535, 350409)->(627114546, -5975602)
+Jul 22 18:49:53 localhost.localdomain kernel: registered taskstats version 1
+Jul 22 18:49:53 localhost.localdomain kernel: Loading compiled-in X.509 certificates
+Jul 22 18:49:53 localhost.localdomain kernel: Loaded X.509 cert 'Build time autogenerated kernel key: a2979d73d51aeb5e4ae3501de80a514e006a53f0'
+Jul 22 18:49:53 localhost.localdomain kernel: zswap: loaded using pool lzo/zbud
+Jul 22 18:49:53 localhost.localdomain kernel: Key type .fscrypt registered
+Jul 22 18:49:53 localhost.localdomain kernel: Key type fscrypt-provisioning registered
+Jul 22 18:49:53 localhost.localdomain kernel: Key type encrypted registered
+Jul 22 18:49:53 localhost.localdomain kernel: AppArmor: AppArmor sha1 policy hashing enabled
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loading X.509 certificate: UEFI:db
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loaded X.509 cert ': 4238256238813fab4f31de855fe58652'
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loading X.509 certificate: UEFI:db
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loaded X.509 cert 'Microsoft Corporation UEFI CA 2011: 13adbf4309bd82709c8cd54f316ed522988a1bd4'
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loading X.509 certificate: UEFI:db
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loaded X.509 cert 'Microsoft Windows Production PCA 2011: a92902398e16c49778cd90f99e4f9ae17c55af53'
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loading X.509 certificate: UEFI:db
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loaded X.509 cert 'Microsoft Corporation: Windows UEFI CA 2023: aefc5fbbbe055d8f8daa585473499417ab5a5272'
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loading X.509 certificate: UEFI:db
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loaded X.509 cert 'Microsoft Option ROM UEFI CA 2023: 514fbf937fa46fb57bf07af8bed84b3b864b1711'
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loading X.509 certificate: UEFI:db
+Jul 22 18:49:53 localhost.localdomain kernel: integrity: Loaded X.509 cert 'Microsoft UEFI CA 2023: 81aa6b3244c935bce0d6628af39827421e32497d'
+Jul 22 18:49:53 localhost.localdomain kernel: ima: Allocated hash algorithm: sha256
+Jul 22 18:49:53 localhost.localdomain kernel: atkbd serio0: Failed to deactivate keyboard on isa0060/serio0
+Jul 22 18:49:53 localhost.localdomain kernel: ima: No architecture policies found
+Jul 22 18:49:53 localhost.localdomain kernel: evm: Initialising EVM extended attributes:
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.selinux
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.SMACK64 (disabled)
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.SMACK64EXEC (disabled)
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.SMACK64TRANSMUTE (disabled)
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.SMACK64MMAP (disabled)
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.apparmor
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.ima
+Jul 22 18:49:53 localhost.localdomain kernel: evm: security.capability
+Jul 22 18:49:53 localhost.localdomain kernel: evm: HMAC attrs: 0x1
+Jul 22 18:49:53 localhost.localdomain kernel: clk: Disabling unused clocks
+Jul 22 18:49:53 localhost.localdomain kernel: Freeing unused decrypted memory: 2036K
+Jul 22 18:49:53 localhost.localdomain kernel: Freeing unused kernel image (initmem) memory: 2820K
+Jul 22 18:49:53 localhost.localdomain kernel: Write protecting the kernel read-only data: 26624k
+Jul 22 18:49:53 localhost.localdomain kernel: Freeing unused kernel image (text/rodata gap) memory: 2040K
+Jul 22 18:49:53 localhost.localdomain kernel: Freeing unused kernel image (rodata/data gap) memory: 1124K
+Jul 22 18:49:53 localhost.localdomain kernel: x86/mm: Checked W+X mappings: passed, no W+X pages found.
+Jul 22 18:49:53 localhost.localdomain kernel: Run /init as init process
+Jul 22 18:49:53 localhost.localdomain kernel:   with arguments:
+Jul 22 18:49:53 localhost.localdomain kernel:     /init
+Jul 22 18:49:53 localhost.localdomain kernel:     components
+Jul 22 18:49:53 localhost.localdomain kernel:   with environment:
+Jul 22 18:49:53 localhost.localdomain kernel:     HOME=/
+Jul 22 18:49:53 localhost.localdomain kernel:     TERM=linux
+Jul 22 18:49:53 localhost.localdomain kernel:     boot=live
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_rescue=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_start_assistant=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_telemetry_opt_in=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_mode=gui
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_kiosk=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_gui_watchdog=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_msi_lab_auto=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_auto_discovery=0
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_msi_e2e_auto=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_auto_shutdown=1
+Jul 22 18:49:53 localhost.localdomain kernel:     setuphelfer_msi_lab_late_sec=120
+Jul 22 18:49:53 localhost.localdomain kernel: input: Lid Switch as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:24/PNP0C0D:00/input/input1
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: button: Lid Switch [LID0]
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: battery: Slot [BAT0] (battery present)
+Jul 22 18:49:53 localhost.localdomain kernel: input: Power Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0C:00/input/input2
+Jul 22 18:49:53 localhost.localdomain kernel: hid: raw HID events driver (C) Jiri Kosina
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: button: Power Button [PWRB]
+Jul 22 18:49:53 localhost.localdomain kernel: input: Sleep Button as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0C0E:00/input/input3
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: button: Sleep Button [SLPB]
+Jul 22 18:49:53 localhost.localdomain kernel: piix4_smbus 0000:00:14.0: SMBus Host Controller at 0xb00, revision 0
+Jul 22 18:49:53 localhost.localdomain kernel: piix4_smbus 0000:00:14.0: Using register 0x02 for SMBus port selection
+Jul 22 18:49:53 localhost.localdomain kernel: piix4_smbus 0000:00:14.0: Auxiliary SMBus Host Controller at 0xb20
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: video: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+Jul 22 18:49:53 localhost.localdomain kernel: atkbd serio0: Failed to enable keyboard on isa0060/serio0
+Jul 22 18:49:53 localhost.localdomain kernel: input: Video Bus as /devices/LNXSYSTM:00/LNXSYBUS:00/PNP0A08:00/device:06/LNXVIDEO:00/input/input4
+Jul 22 18:49:53 localhost.localdomain kernel: input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUE120A:00 04F3:319B Mouse as /devices/platform/AMDI0010:00/i2c-0/i2c-ASUE120A:00/0018:04F3:319B.0001/input/input5
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: bus type USB registered
+Jul 22 18:49:53 localhost.localdomain kernel: usbcore: registered new interface driver usbfs
+Jul 22 18:49:53 localhost.localdomain kernel: usbcore: registered new interface driver hub
+Jul 22 18:49:53 localhost.localdomain kernel: tsc: Refined TSC clocksource calibration: 3293.755 MHz
+Jul 22 18:49:53 localhost.localdomain kernel: usbcore: registered new device driver usb
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: tsc: mask: 0xffffffffffffffff max_cycles: 0x2f7a414317d, max_idle_ns: 440795349291 ns
+Jul 22 18:49:53 localhost.localdomain kernel: clocksource: Switched to clocksource tsc
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUE120A:00 04F3:319B Touchpad as /devices/platform/AMDI0010:00/i2c-0/i2c-ASUE120A:00/0018:04F3:319B.0001/input/input6
+Jul 22 18:49:53 localhost.localdomain kernel: hid-generic 0018:04F3:319B.0001: input,hidraw0: I2C HID v1.00 Mouse [ASUE120A:00 04F3:319B] on i2c-ASUE120A:00
+Jul 22 18:49:53 localhost.localdomain kernel: r8169 0000:02:00.0 eth0: RTL8168h/8111h, 04:42:1a:cf:2b:97, XID 541, IRQ 43
+Jul 22 18:49:53 localhost.localdomain kernel: r8169 0000:02:00.0 eth0: jumbo features [frames: 9194 bytes, tx checksumming: ko]
+Jul 22 18:49:53 localhost.localdomain kernel: nvme 0000:04:00.0: platform quirk: setting simple suspend
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme0: pci function 0000:04:00.0
+Jul 22 18:49:53 localhost.localdomain kernel: nvme 0000:05:00.0: platform quirk: setting simple suspend
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme1: pci function 0000:05:00.0
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: new USB bus registered, assigned bus number 1
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme0: missing or invalid SUBNQN field.
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: hcc params 0x0268ffe5 hci version 0x110 quirks 0x0000020000000410
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme1: missing or invalid SUBNQN field.
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme1: Shutdown timeout set to 8 seconds
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme0: Shutdown timeout set to 8 seconds
+Jul 22 18:49:53 localhost.localdomain kernel: r8169 0000:02:00.0 enp2s0: renamed from eth0
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme1: 16/0/0 default/read/poll queues
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: new USB bus registered, assigned bus number 2
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: Host supports USB 3.1 Enhanced SuperSpeed
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb1: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.01
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Jul 22 18:49:53 localhost.localdomain kernel:  nvme1n1:
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb1: Product: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb1: Manufacturer: Linux 6.1.0-49-amd64 xhci-hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb1: SerialNumber: 0000:06:00.3
+Jul 22 18:49:53 localhost.localdomain kernel: hub 1-0:1.0: USB hub found
+Jul 22 18:49:53 localhost.localdomain kernel: hub 1-0:1.0: 4 ports detected
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb2: We don't know the algorithms for LPM for this host, disabling LPM.
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb2: New USB device found, idVendor=1d6b, idProduct=0003, bcdDevice= 6.01
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUE120A:00 04F3:319B Mouse as /devices/platform/AMDI0010:00/i2c-0/i2c-ASUE120A:00/0018:04F3:319B.0001/input/input7
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUE120A:00 04F3:319B Touchpad as /devices/platform/AMDI0010:00/i2c-0/i2c-ASUE120A:00/0018:04F3:319B.0001/input/input8
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb2: Product: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: hid-multitouch 0018:04F3:319B.0001: input,hidraw0: I2C HID v1.00 Mouse [ASUE120A:00 04F3:319B] on i2c-ASUE120A:00
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb2: Manufacturer: Linux 6.1.0-49-amd64 xhci-hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb2: SerialNumber: 0000:06:00.3
+Jul 22 18:49:53 localhost.localdomain kernel: hub 2-0:1.0: USB hub found
+Jul 22 18:49:53 localhost.localdomain kernel: hub 2-0:1.0: 2 ports detected
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.4: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: nvme nvme0: 16/0/0 default/read/poll queues
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.4: new USB bus registered, assigned bus number 3
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.4: hcc params 0x0268ffe5 hci version 0x110 quirks 0x0000020000000410
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.4: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.4: new USB bus registered, assigned bus number 4
+Jul 22 18:49:53 localhost.localdomain kernel: xhci_hcd 0000:06:00.4: Host supports USB 3.1 Enhanced SuperSpeed
+Jul 22 18:49:53 localhost.localdomain kernel:  nvme0n1: p1 p2 p3
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb3: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.01
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb3: Product: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb3: Manufacturer: Linux 6.1.0-49-amd64 xhci-hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb3: SerialNumber: 0000:06:00.4
+Jul 22 18:49:53 localhost.localdomain kernel: hub 3-0:1.0: USB hub found
+Jul 22 18:49:53 localhost.localdomain kernel: hub 3-0:1.0: 4 ports detected
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb4: We don't know the algorithms for LPM for this host, disabling LPM.
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb4: New USB device found, idVendor=1d6b, idProduct=0003, bcdDevice= 6.01
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb4: Product: xHCI Host Controller
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb4: Manufacturer: Linux 6.1.0-49-amd64 xhci-hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb usb4: SerialNumber: 0000:06:00.4
+Jul 22 18:49:53 localhost.localdomain kernel: hub 4-0:1.0: USB hub found
+Jul 22 18:49:53 localhost.localdomain kernel: hub 4-0:1.0: 2 ports detected
+Jul 22 18:49:53 localhost.localdomain kernel: usb 1-3: new full-speed USB device number 2 using xhci_hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: new high-speed USB device number 2 using xhci_hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb 1-3: New USB device found, idVendor=0b05, idProduct=1866, bcdDevice=40.23
+Jul 22 18:49:53 localhost.localdomain kernel: usb 1-3: New USB device strings: Mfr=1, Product=2, SerialNumber=0
+Jul 22 18:49:53 localhost.localdomain kernel: usb 1-3: Product: N-KEY Device
+Jul 22 18:49:53 localhost.localdomain kernel: usb 1-3: Manufacturer: ASUSTek Computer Inc.
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUSTek Computer Inc. N-KEY Device as /devices/pci0000:00/0000:00:08.1/0000:06:00.3/usb1/1-3/1-3:1.0/0003:0B05:1866.0002/input/input9
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUSTek Computer Inc. N-KEY Device Keyboard as /devices/pci0000:00/0000:00:08.1/0000:06:00.3/usb1/1-3/1-3:1.0/0003:0B05:1866.0002/input/input10
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: new SuperSpeed USB device number 2 using xhci_hcd
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: New USB device found, idVendor=24a9, idProduct=205a, bcdDevice= 1.10
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: New USB device strings: Mfr=2, Product=3, SerialNumber=4
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: Product: Intenso Ultra Line
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: Manufacturer: Asolid
+Jul 22 18:49:53 localhost.localdomain kernel: usb 2-2: SerialNumber: 24111412110686
+Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: New USB device found, idVendor=13d3, idProduct=3563, bcdDevice= 1.00
+Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: New USB device strings: Mfr=5, Product=6, SerialNumber=7
+Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: Product: Wireless_Device
+Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: Manufacturer: MediaTek Inc.
+Jul 22 18:49:53 localhost.localdomain kernel: usb 3-4: SerialNumber: 000000000
+Jul 22 18:49:53 localhost.localdomain kernel: SCSI subsystem initialized
+Jul 22 18:49:53 localhost.localdomain kernel: usb-storage 2-2:1.0: USB Mass Storage device detected
+Jul 22 18:49:53 localhost.localdomain kernel: scsi host0: usb-storage 2-2:1.0
+Jul 22 18:49:53 localhost.localdomain kernel: usbcore: registered new interface driver usb-storage
+Jul 22 18:49:53 localhost.localdomain kernel: usbcore: registered new interface driver uas
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUSTek Computer Inc. N-KEY Device as /devices/pci0000:00/0000:00:08.1/0000:06:00.3/usb1/1-3/1-3:1.0/0003:0B05:1866.0002/input/input11
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUSTek Computer Inc. N-KEY Device as /devices/pci0000:00/0000:00:08.1/0000:06:00.3/usb1/1-3/1-3:1.0/0003:0B05:1866.0002/input/input12
+Jul 22 18:49:53 localhost.localdomain kernel: hid-generic 0003:0B05:1866.0002: input,hiddev0,hidraw1: USB HID v1.10 Keyboard [ASUSTek Computer Inc. N-KEY Device] on usb-0000:06:00.3-3/input0
+Jul 22 18:49:53 localhost.localdomain kernel: usbcore: registered new interface driver usbhid
+Jul 22 18:49:53 localhost.localdomain kernel: usbhid: USB HID core driver
+Jul 22 18:49:53 localhost.localdomain kernel: asus_wmi: ASUS WMI generic driver loaded
+Jul 22 18:49:53 localhost.localdomain kernel: asus 0003:0B05:1866.0002: Fixing up Asus N-KEY keyb report descriptor
+Jul 22 18:49:53 localhost.localdomain kernel: asus 0003:0B05:1866.0002: Asus initialise N-KEY Device
+Jul 22 18:49:53 localhost.localdomain kernel: input: ASUSTek Computer Inc. N-KEY Device as /devices/pci0000:00/0000:00:08.1/0000:06:00.3/usb1/1-3/1-3:1.0/0003:0B05:1866.0002/input/input13
+Jul 22 18:49:53 localhost.localdomain kernel: asus 0003:0B05:1866.0002: input,hiddev0,hidraw1: USB HID v1.10 Keyboard [ASUSTek Computer Inc. N-KEY Device] on usb-0000:06:00.3-3/input0
+Jul 22 18:49:53 localhost.localdomain kernel: scsi 0:0:0:0: Direct-Access     Intenso  Ultra Line            PQ: 0 ANSI: 6
+Jul 22 18:49:53 localhost.localdomain kernel: sd 0:0:0:0: [sda] 123699200 512-byte logical blocks: (63.3 GB/59.0 GiB)
+Jul 22 18:49:53 localhost.localdomain kernel: sd 0:0:0:0: [sda] Write Protect is off
+Jul 22 18:49:53 localhost.localdomain kernel: sd 0:0:0:0: [sda] Mode Sense: 23 00 00 00
+Jul 22 18:49:53 localhost.localdomain kernel: sd 0:0:0:0: [sda] Write cache: disabled, read cache: enabled, doesn't support DPO or FUA
+Jul 22 18:49:53 localhost.localdomain kernel:  sda: sda1 sda2
+Jul 22 18:49:53 localhost.localdomain kernel: sd 0:0:0:0: [sda] Attached SCSI removable disk
+Jul 22 18:49:53 localhost.localdomain kernel: loop: module loaded
+Jul 22 18:49:53 localhost.localdomain kernel: loop0: detected capacity change from 0 to 2511552
+Jul 22 18:49:53 localhost.localdomain kernel: squashfs: version 4.0 (2009/01/31) Phillip Lougher
+Jul 22 18:49:53 localhost.localdomain kernel: Not activating Mandatory Access Control as /sbin/tomoyo-init does not exist.
+Jul 22 18:49:53 localhost.localdomain systemd[1]: Inserted module 'autofs4'
+Jul 22 18:49:53 localhost.localdomain systemd-gpt-auto-generator[543]: EFI loader partition unknown, exiting.
+Jul 22 18:49:53 localhost.localdomain systemd-gpt-auto-generator[543]: (The boot loader did not set EFI variable LoaderDevicePartUUID.)
+Jul 22 18:49:53 localhost.localdomain kernel: device-mapper: core: CONFIG_IMA_DISABLE_HTABLE is disabled. Duplicate IMA measurements will not be recorded in the IMA log.
+Jul 22 18:49:53 localhost.localdomain kernel: device-mapper: uevent: version 1.0.3
+Jul 22 18:49:53 localhost.localdomain kernel: pstore: Using crash dump compression: deflate
+Jul 22 18:49:53 localhost.localdomain kernel: device-mapper: ioctl: 4.47.0-ioctl (2022-07-28) initialised: dm-devel@redhat.com
+Jul 22 18:49:53 localhost.localdomain kernel: pstore: Registered efi as persistent store backend
+Jul 22 18:49:53 localhost.localdomain kernel: fuse: init (API version 7.38)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: bus type drm_connector registered
+Jul 22 18:49:53 localhost.localdomain systemd-journald[579]: Journal started
+Jul 22 18:49:53 localhost.localdomain systemd-journald[579]: Runtime Journal (/run/log/journal/e473cc4103814b86892b5d2f4dc550a0) is 8.0M, max 315.0M, 307.0M free.
+Jul 22 18:49:53 localhost.localdomain systemd-journald[579]: Time spent on flushing to /var/log/journal/e473cc4103814b86892b5d2f4dc550a0 is 3.760ms for 928 entries.
+Jul 22 18:49:53 localhost.localdomain systemd-journald[579]: System Journal (/var/log/journal/e473cc4103814b86892b5d2f4dc550a0) is 8.0M, max 1.5G, 1.5G free.
+Jul 22 18:49:53 localhost.localdomain systemd-journald[579]: Received client request to flush runtime journal.
+Jul 22 18:49:53 localhost.localdomain systemd-udevd[600]: Using default interface naming scheme 'v252'.
+Jul 22 18:49:53 localhost.localdomain kernel: input: Asus Wireless Radio Control as /devices/LNXSYSTM:00/LNXSYBUS:00/ATK4002:00/input/input14
+Jul 22 18:49:53 localhost.localdomain udevadm[654]: systemd-udev-settle.service is deprecated. Please fix setuphelfer-rescue-boot-diagnostics-early.service not to pull it in.
+Jul 22 18:49:53 localhost.localdomain kernel: input: PC Speaker as /devices/platform/pcspkr/input/input15
+Jul 22 18:49:53 localhost.localdomain kernel: sp5100_tco: SP5100/SB800 TCO WatchDog Timer Driver
+Jul 22 18:49:53 localhost.localdomain kernel: sp5100-tco sp5100-tco: Using 0xfeb00000 for watchdog MMIO address
+Jul 22 18:49:53 localhost.localdomain kernel: ccp 0000:06:00.2: enabling device (0000 -> 0002)
+Jul 22 18:49:53 localhost.localdomain kernel: ccp 0000:06:00.2: ccp: unable to access the device: you might be running a broken BIOS.
+Jul 22 18:49:53 localhost.localdomain kernel: sp5100-tco sp5100-tco: initialized. heartbeat=60 sec (nowayout=0)
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: AC: AC Adapter [ADP0] (on-line)
+Jul 22 18:49:53 localhost.localdomain kernel: ccp 0000:06:00.2: tee enabled
+Jul 22 18:49:53 localhost.localdomain kernel: ccp 0000:06:00.2: psp enabled
+Jul 22 18:49:53 localhost.localdomain kernel: RAPL PMU: API unit is 2^-32 Joules, 1 fixed counters, 163840 ms ovfl timer
+Jul 22 18:49:53 localhost.localdomain kernel: asus_wmi: Initialization: 0x1
+Jul 22 18:49:53 localhost.localdomain kernel: RAPL PMU: hw unit of domain package 2^-16 Joules
+Jul 22 18:49:53 localhost.localdomain kernel: asus_wmi: SFUN value: 0x1821
+Jul 22 18:49:53 localhost.localdomain kernel: asus-nb-wmi asus-nb-wmi: Detected ATK, not ASUSWMI, use DSTS
+Jul 22 18:49:53 localhost.localdomain kernel: asus-nb-wmi asus-nb-wmi: Detected ATK, enable event queue
+Jul 22 18:49:53 localhost.localdomain kernel: sd 0:0:0:0: Attached scsi generic sg0 type 0
+Jul 22 18:49:53 localhost.localdomain kernel: asus-nb-wmi asus-nb-wmi: Using throttle_thermal_policy for platform_profile support
+Jul 22 18:49:53 localhost.localdomain kernel: input: Asus WMI hotkeys as /devices/platform/asus-nb-wmi/input/input16
+Jul 22 18:49:53 localhost.localdomain kernel: ACPI: battery: new extension: ASUS Battery Extension
+Jul 22 18:49:53 localhost.localdomain kernel: cryptd: max_cpu_qlen set to 1000
+Jul 22 18:49:53 localhost.localdomain kernel: cfg80211: Loading compiled-in X.509 certificates for regulatory database
+Jul 22 18:49:53 localhost.localdomain kernel: cfg80211: Loaded X.509 cert 'benh@debian.org: 577e021cb980e0e820821ba7b54b4961b8b4fadf'
+Jul 22 18:49:53 localhost.localdomain kernel: cfg80211: Loaded X.509 cert 'romain.perier@gmail.com: 3abbc6ec146e09d1b6016ab9d6cf71dd233f0328'
+Jul 22 18:49:53 localhost.localdomain kernel: cfg80211: Loaded X.509 cert 'sforshee: 00b28ddf47aef9cea7'
+Jul 22 18:49:53 localhost.localdomain kernel: cfg80211: Loaded X.509 cert 'wens: 61c038651aabdcf94bd0ac7ff06c7248db18c600'
+Jul 22 18:49:53 localhost.localdomain kernel: snd_rn_pci_acp3x 0000:06:00.5: enabling device (0000 -> 0002)
+Jul 22 18:49:53 localhost.localdomain kernel: platform regulatory.0: firmware: direct-loading firmware regulatory.db
+Jul 22 18:49:53 localhost.localdomain kernel: AVX2 version of gcm_enc/dec engaged.
+Jul 22 18:49:53 localhost.localdomain kernel: AES CTR mode by8 optimization enabled
+Jul 22 18:49:53 localhost.localdomain kernel: alg: No test for fips(ansi_cprng) (fips_ansi_cprng)
+Jul 22 18:49:53 localhost.localdomain kernel: platform regulatory.0: firmware: direct-loading firmware regulatory.db.p7s
+Jul 22 18:49:53 localhost.localdomain systemd-networkd[608]: lo: Link UP
+Jul 22 18:49:53 localhost.localdomain systemd-networkd[608]: lo: Gained carrier
+Jul 22 18:49:53 localhost.localdomain systemd-networkd[608]: Enumeration completed
+Jul 22 18:49:53 localhost.localdomain systemd-networkd[608]: enp2s0: Configuring with /etc/systemd/network/20-wired.network.
+Jul 22 18:49:53 localhost.localdomain kernel: snd_hda_intel 0000:01:00.1: enabling device (0000 -> 0002)
+Jul 22 18:49:53 localhost.localdomain kernel: r8169 0000:02:00.0: firmware: direct-loading firmware rtl_nic/rtl8168h-2.fw
+Jul 22 18:49:53 localhost.localdomain kernel: snd_hda_intel 0000:01:00.1: Disabling MSI
+Jul 22 18:49:53 localhost.localdomain kernel: snd_hda_intel 0000:01:00.1: Handle vga_switcheroo audio client
+Jul 22 18:49:53 localhost.localdomain kernel: snd_hda_intel 0000:06:00.1: enabling device (0000 -> 0002)
+Jul 22 18:49:53 localhost.localdomain kernel: snd_hda_intel 0000:06:00.1: Handle vga_switcheroo audio client
+Jul 22 18:49:53 localhost.localdomain kernel: Generic FE-GE Realtek PHY r8169-0-200:00: attached PHY driver (mii_bus:phy_addr=r8169-0-200:00, irq=MAC)
+Jul 22 18:49:53 localhost.localdomain kernel: input: HD-Audio Generic HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:08.1/0000:06:00.1/sound/card1/input17
+Jul 22 18:49:53 localhost.localdomain kernel: input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input18
+Jul 22 18:49:53 localhost.localdomain kernel: input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input19
+Jul 22 18:49:53 localhost.localdomain kernel: input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input20
+Jul 22 18:49:53 localhost.localdomain kernel: input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input21
+Jul 22 18:49:53 localhost.localdomain kernel: snd_hda_codec_realtek hdaudioC2D0: autoconfig for ALC285: line_outs=1 (0x17/0x0/0x0/0x0/0x0) type:speaker
+Jul 22 18:49:54 setuphelfer-rescue kernel: snd_hda_codec_realtek hdaudioC2D0:    speaker_outs=0 (0x0/0x0/0x0/0x0/0x0)
+Jul 22 18:49:54 setuphelfer-rescue kernel: snd_hda_codec_realtek hdaudioC2D0:    hp_outs=1 (0x21/0x0/0x0/0x0/0x0)
+Jul 22 18:49:54 setuphelfer-rescue kernel: snd_hda_codec_realtek hdaudioC2D0:    mono: mono_out=0x0
+Jul 22 18:49:54 setuphelfer-rescue kernel: snd_hda_codec_realtek hdaudioC2D0:    inputs:
+Jul 22 18:49:54 setuphelfer-rescue kernel: snd_hda_codec_realtek hdaudioC2D0:      Mic=0x12
+Jul 22 18:49:54 setuphelfer-rescue kernel: Bluetooth: Core ver 2.22
+Jul 22 18:49:54 setuphelfer-rescue kernel: NET: Registered PF_BLUETOOTH protocol family
+Jul 22 18:49:54 setuphelfer-rescue kernel: Bluetooth: HCI device and connection manager initialized
+Jul 22 18:49:54 setuphelfer-rescue kernel: Bluetooth: HCI socket layer initialized
+Jul 22 18:49:54 setuphelfer-rescue kernel: Bluetooth: L2CAP socket layer initialized
+Jul 22 18:49:54 setuphelfer-rescue kernel: Bluetooth: SCO socket layer initialized
+Jul 22 18:49:54 setuphelfer-rescue kernel: SVM: TSC scaling supported
+Jul 22 18:49:54 setuphelfer-rescue kernel: kvm: Nested Virtualization enabled
+Jul 22 18:49:54 setuphelfer-rescue kernel: r8169 0000:02:00.0 enp2s0: Link is Down
+Jul 22 18:49:54 setuphelfer-rescue kernel: SVM: kvm: Nested Paging enabled
+Jul 22 18:49:54 setuphelfer-rescue kernel: usbcore: registered new interface driver btusb
+Jul 22 18:49:54 setuphelfer-rescue kernel: SVM: Virtual VMLOAD VMSAVE supported
+Jul 22 18:49:54 setuphelfer-rescue kernel: SVM: Virtual GIF supported
+Jul 22 18:49:54 setuphelfer-rescue kernel: SVM: LBR virtualization supported
+Jul 22 18:49:54 setuphelfer-rescue kernel: MCE: In-kernel MCE decoding enabled.
+Jul 22 18:49:54 setuphelfer-rescue kernel: bluetooth hci0: firmware: direct-loading firmware mediatek/BT_RAM_CODE_MT7961_1_2_hdr.bin
+Jul 22 18:49:54 setuphelfer-rescue kernel: intel_rapl_common: Found RAPL domain package
+Jul 22 18:49:54 setuphelfer-rescue kernel: intel_rapl_common: Found RAPL domain core
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: enabling device (0000 -> 0002)
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: ASIC revision: 79610010
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_MT7961_patch_mcu_1_2_hdr.bin
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: HW/SW Version: 0x8a108a10, Build Time: 20230117170855a
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_RAM_CODE_MT7961_1.bin
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: WM Firmware Version: ____010000, Build Time: 20230117170942
+Jul 22 18:49:54 setuphelfer-rescue kernel: mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_RAM_CODE_MT7961_1.bin
+Jul 22 18:49:53 setuphelfer-rescue systemd-networkd[608]: enp2s0: Link UP
+Jul 22 18:49:54 setuphelfer-rescue sudo[1001]:     root : /etc/sudoers is owned by uid 1000, should be 0 ; PWD=/ ; USER=user ;
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/lib (owned by user) → /var/lib/systemd (owned by root) during canonicalization of /var/lib/systemd.
+Jul 22 18:49:54 setuphelfer-rescue sudo[1002]:     root : /etc/sudoers is owned by uid 1000, should be 0 ; PWD=/ ; USER=user ;
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/lib (owned by user) → /var/lib/systemd (owned by root) during canonicalization of /var/lib/systemd.
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/log (owned by user) → /var/log/journal (owned by root) during canonicalization of /var/log/journal/e473cc4103814b86892b5d2f4dc550a0.
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/log (owned by user) → /var/log/journal (owned by root) during canonicalization of /var/log/journal/e473cc4103814b86892b5d2f4dc550a0.
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: perl: warning: Setting locale failed.
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: perl: warning: Please check that your locale settings:
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]:         LANGUAGE = "de_DE:de",
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]:         LC_ALL = (unset),
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]:         LANG = "de_DE.UTF-8"
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]:     are supported and installed on your system.
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: perl: warning: Falling back to the standard locale ("C").
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: WARNING: Unknown X keysym "dead_belowmacron"
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: WARNING: Unknown X keysym "dead_belowmacron"
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: WARNING: Unknown X keysym "dead_belowmacron"
+Jul 22 18:49:54 setuphelfer-rescue console-setup.sh[909]: WARNING: Unknown X keysym "dead_belowmacron"
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/log (owned by user) → /var/log/journal (owned by root) during canonicalization of /var/log/journal/e473cc4103814b86892b5d2f4dc550a0.
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/log (owned by user) → /var/log/journal (owned by root) during canonicalization of /var/log/journal/e473cc4103814b86892b5d2f4dc550a0/system.journal.
+Jul 22 18:49:54 setuphelfer-rescue systemd-tmpfiles[859]: Detected unsafe path transition /var/log (owned by user) → /var/log/journal (owned by root) during canonicalization of /var/log/journal/e473cc4103814b86892b5d2f4dc550a0/system.journal.
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: live-config: debconf hostnameDevice "eth0" does not exist.
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: Device "eth0" does not exist.
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: Device "eth0" does not exist.
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]:  user-setup sudosudo: /etc/sudo.conf is owned by uid 1000, should be 0
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: /etc/sudo.conf is owned by uid 1000, should be 0
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: /etc/sudoers is owned by uid 1000, should be 0
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: no valid sudoers sources found, quitting
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: error initializing audit plugin sudoers_audit
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: /etc/sudo.conf is owned by uid 1000, should be 0
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: /etc/sudo.conf is owned by uid 1000, should be 0
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: /etc/sudoers is owned by uid 1000, should be 0
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: no valid sudoers sources found, quitting
+Jul 22 18:49:54 setuphelfer-rescue live-config[910]: sudo: error initializing audit plugin sudoers_audit
+Jul 22 18:49:54 setuphelfer-rescue kernel: input: HD-Audio Generic Headphone as /devices/pci0000:00/0000:00:08.1/0000:06:00.6/sound/card2/input22
+Jul 22 18:49:54 setuphelfer-rescue kernel: [drm] amdgpu kernel modesetting enabled.
+Jul 22 18:49:54 setuphelfer-rescue kernel: amdgpu: vga_switcheroo: detected switching method \_SB_.PCI0.GP17.VGA_.ATPX handle
+Jul 22 18:49:54 setuphelfer-rescue kernel: ATPX version 1, functions 0x00000001
+Jul 22 18:49:54 setuphelfer-rescue kernel: ATPX Hybrid Graphics
+Jul 22 18:49:54 setuphelfer-rescue kernel: amdgpu: Virtual CRAT table created for CPU
+Jul 22 18:49:54 setuphelfer-rescue kernel: amdgpu: Topology: Add CPU node
+Jul 22 18:49:54 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: enabling device (0006 -> 0007)
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] initializing kernel modesetting (RENOIR 0x1002:0x1638 0x1043:0x104C 0xC4).
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] register mmio base: 0xFC500000
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] register mmio size: 524288
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 0 <soc15_common>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 1 <gmc_v9_0>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 2 <vega10_ih>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 3 <psp>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 4 <smu>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 5 <dm>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 6 <gfx_v9_0>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 7 <sdma_v4_0>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 8 <vcn_v2_0>
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] add ip block number 9 <jpeg_v2_0>
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: Fetched VBIOS from VFCT
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu: ATOM BIOS: 113-CEZANNE-017
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_sdma.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] VCN decode is enabled in VM mode
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] VCN encode is enabled in VM mode
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] JPEG decode is enabled in VM mode
+Jul 22 18:49:56 setuphelfer-rescue kernel: Console: switching to colour dummy device 80x25
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: Trusted Memory Zone (TMZ) feature enabled
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: MODE2 reset
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] vm size is 262144 GB, 4 levels, block size is 9-bit, fragment size is 9-bit
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: VRAM: 512M 0x000000F400000000 - 0x000000F41FFFFFFF (512M used)
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: GART: 1024M 0x0000000000000000 - 0x000000003FFFFFFF
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: AGP: 267419648M 0x000000F800000000 - 0x0000FFFFFFFFFFFF
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] Detected VRAM RAM=512M, BAR=512M
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] RAM width 128bits DDR4
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] amdgpu: 512M of VRAM memory ready
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] amdgpu: 15754M of GTT memory ready.
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] GART: num cpu pages 262144, num gpu pages 262144
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] PCIE GART of 1024M enabled.
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] PTB located at 0x000000F41FC00000
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_asd.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ta.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: PSP runtime database doesn't exist
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: PSP runtime database doesn't exist
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_dmcub.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] Loading DMUB firmware via PSP: version=0x01010024
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_pfp.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_me.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ce.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_rlc.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_mec.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_vcn.bin
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] Found VCN firmware Version ENC: 1.19 DEC: 5 VEP: 0 Revision: 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: Will use PSP to load VCN firmware
+Jul 22 18:49:56 setuphelfer-rescue kernel: mt7921e 0000:03:00.0 wlp3s0: renamed from wlan0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: reserve 0x400000 from 0xf41f800000 for PSP TMR
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: RAS: optional ras ta ucode is not available
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: RAP: optional rap ta ucode is not available
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: SECUREDISPLAY: securedisplay ta ucode is not available
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: SMU is initialized successfully!
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] Display Core initialized with v3.2.207!
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] DMUB hardware initialized: version=0x01010024
+Jul 22 18:49:56 setuphelfer-rescue kernel: snd_hda_intel 0000:06:00.1: bound 0000:06:00.0 (ops amdgpu_dm_audio_component_bind_ops [amdgpu])
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] kiq ring mec 2 pipe 1 q 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] VCN decode and encode initialized successfully(under DPG Mode).
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] JPEG decode initialized successfully.
+Jul 22 18:49:56 setuphelfer-rescue kernel: kfd kfd: amdgpu: Allocated 3969056 bytes on gart
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu: sdma_bitmap: 3
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu: SRAT table not found
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu: Virtual CRAT table created for GPU
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu: Topology: Add dGPU node [0x1638:0x1002]
+Jul 22 18:49:56 setuphelfer-rescue kernel: kfd kfd: amdgpu: added device 1002:1638
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: SE 1, SH per SE 1, CU per SH 8, active_cu_number 8
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring gfx uses VM inv eng 0 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.0.0 uses VM inv eng 1 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.1.0 uses VM inv eng 4 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.2.0 uses VM inv eng 5 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.3.0 uses VM inv eng 6 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.0.1 uses VM inv eng 7 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.1.1 uses VM inv eng 8 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.2.1 uses VM inv eng 9 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring comp_1.3.1 uses VM inv eng 10 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring kiq_2.1.0 uses VM inv eng 11 on hub 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring sdma0 uses VM inv eng 0 on hub 1
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring vcn_dec uses VM inv eng 1 on hub 1
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring vcn_enc0 uses VM inv eng 4 on hub 1
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring vcn_enc1 uses VM inv eng 5 on hub 1
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: amdgpu: ring jpeg_dec uses VM inv eng 6 on hub 1
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] Initialized amdgpu 3.49.0 20150101 for 0000:06:00.0 on minor 0
+Jul 22 18:49:56 setuphelfer-rescue kernel: fbcon: amdgpudrmfb (fb0) is primary device
+Jul 22 18:49:56 setuphelfer-rescue kernel: [drm] DSC precompute is not needed.
+Jul 22 18:49:56 setuphelfer-rescue kernel: Console: switching to colour frame buffer device 240x67
+Jul 22 18:49:56 setuphelfer-rescue kernel: amdgpu 0000:06:00.0: [drm] fb0: amdgpudrmfb frame buffer device
+Jul 22 18:49:55 setuphelfer-rescue systemd-networkd[608]: wlan0: Interface name change detected, renamed to wlp3s0.
+Jul 22 18:49:56 setuphelfer-rescue kernel: FAT-fs (sda2): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+Jul 22 18:49:56 setuphelfer-rescue live-config[910]:  locales tzdata
+Jul 22 18:49:56 setuphelfer-rescue live-config[910]: Current default time zone: 'Etc/UTC'
+Jul 22 18:49:56 setuphelfer-rescue live-config[910]: Local time is now:      Wed Jul 22 18:49:56 UTC 2026.
+Jul 22 18:49:56 setuphelfer-rescue live-config[910]: Universal Time is now:  Wed Jul 22 18:49:56 UTC 2026.
+Jul 22 18:49:56 setuphelfer-rescue setuphelfer-rescue-boot-diagnostics[1267]: setuphelfer-rescue-boot-diagnostics: phase=early dest=/run/setuphelfer/esp-rw/setuphelfer/diagnostics/20260722_184956_early persistent=true
+Jul 22 18:49:57 setuphelfer-rescue live-config[910]:  xinit keyboard-configuration util-linux login xserver-xorgls: Zugriff auf '/usr/lib/nvidia/legacy-*/nvidia.ids' nicht möglich: Datei oder Verzeichnis nicht gefunden
+Jul 22 18:49:57 setuphelfer-rescue live-config[910]: .
+Jul 22 18:49:57 setuphelfer-rescue cron[1583]: (CRON) INFO (pidfile fd = 3)
+Jul 22 18:49:57 setuphelfer-rescue cron[1583]: (*system*) WRONG FILE OWNER (/etc/crontab)
+Jul 22 18:49:57 setuphelfer-rescue cron[1583]: (*system*e2scrub_all) WRONG FILE OWNER (/etc/cron.d/e2scrub_all)
+Jul 22 18:49:57 setuphelfer-rescue cron[1583]: (CRON) INFO (Running @reboot jobs)
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Found user 'avahi' (UID 102) and group 'avahi' (GID 109).
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Successfully dropped root privileges.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: avahi-daemon 0.8 starting up.
+Jul 22 18:49:57 setuphelfer-rescue setuphelfer-rescue-evidence-spool-sync[1599]: {"written": true, "path": "/run/setuphelfer/setuphelfer/evidence/boot/events.jsonl", "category": "boot", "best_effort": true, "error": null}
+Jul 22 18:49:57 setuphelfer-rescue systemd-logind[1614]: New seat seat0.
+Jul 22 18:49:57 setuphelfer-rescue systemd-logind[1614]: Watching system buttons on /dev/input/event0 (Lid Switch)
+Jul 22 18:49:57 setuphelfer-rescue systemd-logind[1614]: Watching system buttons on /dev/input/event1 (Power Button)
+Jul 22 18:49:57 setuphelfer-rescue systemd-logind[1614]: Watching system buttons on /dev/input/event2 (Sleep Button)
+Jul 22 18:49:57 setuphelfer-rescue systemd-logind[1614]: Watching system buttons on /dev/input/event7 (Asus Keyboard)
+Jul 22 18:49:57 setuphelfer-rescue systemd-logind[1614]: Watching system buttons on /dev/input/event4 (AT Translated Set 2 keyboard)
+Jul 22 18:49:57 setuphelfer-rescue polkitd[1588]: Started polkitd version 122
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Successfully called chroot().
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Successfully dropped remaining capabilities.
+Jul 22 18:49:57 setuphelfer-rescue dbus-daemon[1584]: [system] Successfully activated service 'org.freedesktop.systemd1'
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: No service file found in /etc/avahi/services.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Joining mDNS multicast group on interface lo.IPv6 with address ::1.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: New relevant interface lo.IPv6 for mDNS.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Joining mDNS multicast group on interface lo.IPv4 with address 127.0.0.1.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: New relevant interface lo.IPv4 for mDNS.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Network interface enumeration completed.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Registering new address record for ::1 on lo.*.
+Jul 22 18:49:57 setuphelfer-rescue avahi-daemon[1582]: Registering new address record for 127.0.0.1 on lo.IPv4.
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: smartd 7.3 2022-02-28 r5338 [x86_64-linux-6.1.0-49-amd64] (local build)
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Copyright (C) 2002-22, Bruce Allen, Christian Franke, www.smartmontools.org
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Opened configuration file /etc/smartd.conf
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Drive: DEVICESCAN, implied '-a' Directive on line 21 of file /etc/smartd.conf
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Configuration file /etc/smartd.conf was parsed, found DEVICESCAN, scanning devices
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme0, opened
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme0, Samsung SSD 970 EVO Plus 2TB, S/N:[redacted-nvme-serial], FW:2B2QEXM7, 2.00 TB
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme0, is SMART capable. Adding to "monitor" list.
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme1, opened
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme1, Samsung SSD 970 EVO Plus 2TB, S/N:[redacted-nvme-serial], FW:2B2QEXM7, 2.00 TB
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme1, is SMART capable. Adding to "monitor" list.
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Monitoring 0 ATA/SATA, 0 SCSI/SAS and 2 NVMe devices
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme0, state written to /var/lib/smartmontools/smartd.Samsung_SSD_970_EVO_Plus_2TB-[redacted-nvme-serial].nvme.state
+Jul 22 18:49:57 setuphelfer-rescue smartd[1613]: Device: /dev/nvme1, state written to /var/lib/smartmontools/smartd.Samsung_SSD_970_EVO_Plus_2TB-[redacted-nvme-serial].nvme.state
+Jul 22 18:49:57 setuphelfer-rescue kernel: Bluetooth: hci0: Device setup in 3355331 usecs
+Jul 22 18:49:57 setuphelfer-rescue kernel: Bluetooth: hci0: HCI Enhanced Setup Synchronous Connection command is advertised, but not supported.
+Jul 22 18:49:58 setuphelfer-rescue avahi-daemon[1582]: Server startup complete. Host name is setuphelfer-rescue.local. Local service cookie is 3527604718.
+Jul 22 18:49:58 setuphelfer-rescue polkitd[1588]: Loading rules from directory /etc/polkit-1/rules.d
+Jul 22 18:49:58 setuphelfer-rescue polkitd[1588]: Loading rules from directory /usr/share/polkit-1/rules.d
+Jul 22 18:49:58 setuphelfer-rescue polkitd[1588]: Error opening rules directory: Error opening directory “/usr/share/polkit-1/rules.d”: Permission denied (g-file-error-quark, 2)
+Jul 22 18:49:58 setuphelfer-rescue polkitd[1588]: Finished loading, compiling and executing 0 rules
+Jul 22 18:49:58 setuphelfer-rescue polkitd[1588]: Acquired the name org.freedesktop.PolicyKit1 on the system bus
+Jul 22 18:49:58 setuphelfer-rescue wpa_supplicant[1653]: Successfully initialized wpa_supplicant
+Jul 22 18:49:58 setuphelfer-rescue ModemManager[1691]: <info>  ModemManager (version 1.20.4) starting in system bus...
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]: Traceback (most recent call last):
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:   File "<stdin>", line 2, in <module>
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:   File "/usr/lib/python3.11/json/__init__.py", line 293, in load
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:     return loads(fp.read(),
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:            ^^^^^^^^^^^^^^^^
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:   File "/usr/lib/python3.11/json/__init__.py", line 346, in loads
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:     return _default_decoder.decode(s)
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:   File "/usr/lib/python3.11/json/decoder.py", line 337, in decode
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:     obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:   File "/usr/lib/python3.11/json/decoder.py", line 355, in raw_decode
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]:     raise JSONDecodeError("Expecting value", s, err.value) from None
+Jul 22 18:49:59 setuphelfer-rescue setuphelfer-rescue-boot-progress[1709]: json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+Jul 22 18:49:59 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746199.9722] NetworkManager (version 1.42.4) is starting... (boot:503549ad-1af5-46fd-bcbb-131aaf5e7b47)
+Jul 22 18:49:59 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746199.9723] Read config: /etc/NetworkManager/NetworkManager.conf (lib: no-mac-addr-change.conf)
+Jul 22 18:49:59 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746199.9732] bus-manager: acquired D-Bus service "org.freedesktop.NetworkManager"
+Jul 22 18:50:00 setuphelfer-rescue kernel: NET: Registered PF_QIPCRTR protocol family
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0220] manager[0x55de16524000]: monitoring kernel firmware directory '/lib/firmware'.
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0220] monitoring ifupdown state file '/run/network/ifstate'.
+Jul 22 18:50:00 setuphelfer-rescue dbus-daemon[1584]: [system] Activating via systemd: service name='org.freedesktop.hostname1' unit='dbus-org.freedesktop.hostname1.service' requested by ':1.8' (uid=0 pid=1650 comm="/usr/sbin/NetworkManager --no-daemon")
+Jul 22 18:50:00 setuphelfer-rescue dbus-daemon[1584]: [system] Successfully activated service 'org.freedesktop.hostname1'
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0651] hostname: hostname: using hostnamed
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0651] hostname: static hostname changed from (none) to "setuphelfer-rescue"
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0659] dns-mgr: init: dns=default,systemd-resolved rc-manager=symlink (auto)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0668] rfkill1: found Wi-Fi radio killswitch (at /sys/devices/pci0000:00/0000:00:02.2/0000:03:00.0/ieee80211/phy0/rfkill1) (driver mt7921e)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0670] manager[0x55de16524000]: rfkill: Wi-Fi hardware radio set enabled
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0670] manager[0x55de16524000]: rfkill: WWAN hardware radio set enabled
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.0739] Loaded device plugin: NMAtmManager (/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-adsl.so)
+Jul 22 18:50:00 setuphelfer-rescue start-backend-localonly.sh[1760]: Rescue temp runtime: backend http://127.0.0.1:8000/ (local-only)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1166] Loaded device plugin: NMBluezManager (/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-bluetooth.so)
+Jul 22 18:50:00 setuphelfer-rescue start-ui-localonly.sh[1762]: Rescue temp runtime: UI http://127.0.0.1:3001/ (local-only)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1255] Loaded device plugin: NMTeamFactory (/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-team.so)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1705] Loaded device plugin: NMWifiFactory (/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-wifi.so)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1940] Loaded device plugin: NMWwanFactory (/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-device-plugin-wwan.so)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1942] manager: rfkill: Wi-Fi enabled by radio killswitch; enabled by state file
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1943] manager: rfkill: WWAN enabled by radio killswitch; enabled by state file
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1943] manager: Networking is enabled by state file
+Jul 22 18:50:00 setuphelfer-rescue dbus-daemon[1584]: [system] Activating via systemd: service name='org.freedesktop.nm_dispatcher' unit='dbus-org.freedesktop.nm-dispatcher.service' requested by ':1.8' (uid=0 pid=1650 comm="/usr/sbin/NetworkManager --no-daemon")
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <warn>  [1784746200.1950] settings: could not load plugin 'ifupdown' from file '/usr/lib/x86_64-linux-gnu/NetworkManager/1.42.4/libnm-settings-plugin-ifupdown.so': file must be owned by root
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1950] settings: Loaded settings plugin: keyfile (internal)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1982] dhcp: init: Using DHCP client 'internal'
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.1983] manager: (lo): new Loopback device (/org/freedesktop/NetworkManager/Devices/1)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2016] device (lo): state change: unmanaged -> unavailable (reason 'connection-assumed', sys-iface-state: 'external')
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2019] device (lo): state change: unavailable -> disconnected (reason 'connection-assumed', sys-iface-state: 'external')
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2023] device (lo): Activation: starting connection 'lo' (a0b49aa8-168c-4fb9-8575-a7e3296b1a23)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2027] manager: (enp2s0): new Ethernet device (/org/freedesktop/NetworkManager/Devices/2)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2416] settings: (enp2s0): created default wired connection 'Kabelgebundene Verbindung 1'
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2416] device (enp2s0): state change: unmanaged -> unavailable (reason 'managed', sys-iface-state: 'external')
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2427] device (wlp3s0): driver supports Access Point (AP) mode
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2430] manager: (wlp3s0): new 802.11 Wi-Fi device (/org/freedesktop/NetworkManager/Devices/3)
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.2431] device (wlp3s0): state change: unmanaged -> unavailable (reason 'managed', sys-iface-state: 'external')
+Jul 22 18:50:00 setuphelfer-rescue systemd-gpt-auto-generator[1780]: EFI loader partition unknown, exiting.
+Jul 22 18:50:00 setuphelfer-rescue systemd-gpt-auto-generator[1780]: (The boot loader did not set EFI variable LoaderDevicePartUUID.)
+Jul 22 18:50:00 setuphelfer-rescue dbus-daemon[1584]: [system] Successfully activated service 'org.freedesktop.nm_dispatcher'
+Jul 22 18:50:00 setuphelfer-rescue nm-dispatcher[1771]: req:1 'hostname': find-scripts: Cannot execute '/etc/NetworkManager/dispatcher.d/01-ifupdown': not owned by root.
+Jul 22 18:50:00 setuphelfer-rescue nm-dispatcher[1771]: req:2 'connectivity-change': find-scripts: Cannot execute '/etc/NetworkManager/dispatcher.d/01-ifupdown': not owned by root.
+Jul 22 18:50:00 setuphelfer-rescue start-ui-localonly.sh[1762]: Serving SPA from /opt/setuphelfer-rescue/frontend/dist at http://127.0.0.1:3001/
+Jul 22 18:50:00 setuphelfer-rescue setuphelfer-rescue-physical-e2e-start-gate[1810]: {"physical_e2e_start_allowed": true, "reason": "run_mode_allows_physical_e2e", "run_mode": "auto_physical_e2e", "skip_class": ""}
+Jul 22 18:50:00 setuphelfer-rescue systemd-networkd[608]: wlp3s0: Link UP
+Jul 22 18:50:00 setuphelfer-rescue systemd-networkd[608]: wlp3s0: Link DOWN
+Jul 22 18:50:00 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746200.9910] device (wlp3s0): set-hw-addr: set MAC address to 92:52:E6:32:80:DA (scanning)
+Jul 22 18:50:01 setuphelfer-rescue systemd-networkd[608]: wlp3s0: Link UP
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0412] device (lo): state change: disconnected -> prepare (reason 'none', sys-iface-state: 'external')
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0413] device (lo): state change: prepare -> config (reason 'none', sys-iface-state: 'external')
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0414] device (lo): state change: config -> ip-config (reason 'none', sys-iface-state: 'external')
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0417] device (lo): state change: ip-config -> ip-check (reason 'none', sys-iface-state: 'external')
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0421] modem-manager: ModemManager available
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0423] device (lo): state change: ip-check -> secondaries (reason 'none', sys-iface-state: 'external')
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0424] device (lo): state change: secondaries -> activated (reason 'none', sys-iface-state: 'external')
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.0425] device (lo): Activation: successful, device activated.
+Jul 22 18:50:01 setuphelfer-rescue nm-dispatcher[1771]: req:4 'up' [lo]: find-scripts: Cannot execute '/etc/NetworkManager/dispatcher.d/01-ifupdown': not owned by root.
+Jul 22 18:50:01 setuphelfer-rescue wpa_supplicant[1653]: dbus: fill_dict_with_properties dbus_interface=fi.w1.wpa_supplicant1.Interface.P2PDevice dbus_property=P2PDeviceConfig getter failed
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.1221] device (wlp3s0): supplicant interface state: internal-starting -> disconnected
+Jul 22 18:50:01 setuphelfer-rescue NetworkManager[1650]: <info>  [1784746201.1222] device (wlp3s0): state change: unavailable -> disconnected (reason 'supplicant-available', sys-iface-state: 'managed')
+Jul 22 18:50:01 setuphelfer-rescue cron[1583]: (*system*) WRONG FILE OWNER (/etc/crontab)
+Jul 22 18:50:01 setuphelfer-rescue cron[1583]: (*system*e2scrub_all) WRONG FILE OWNER (/etc/cron.d/e2scrub_all)
+Jul 22 18:50:01 setuphelfer-rescue wpa_supplicant[1653]: wlp3s0: CTRL-EVENT-REGDOM-CHANGE init=BEACON_HINT type=UNKNOWN
+Jul 22 18:50:02 setuphelfer-rescue start-backend-localonly.sh[1760]: INFO:app:Log-Datei: /opt/setuphelfer-rescue/logs/pi-installer.log
+Jul 22 18:50:02 setuphelfer-rescue start-backend-localonly.sh[1760]: WARNING:core.sudo_store:EncryptedSudoStore: Key konnte nicht geladen werden ([Errno 30] Read-only file system: '/root/.config'), Store deaktiviert.
+Jul 22 18:50:02 setuphelfer-rescue start-backend-localonly.sh[1760]: INFO:core.registry:Modul registriert: sabrina-tuner
+Jul 22 18:50:02 setuphelfer-rescue start-backend-localonly.sh[1760]: INFO:core.registry:Modul registriert: pi-installer
+Jul 22 18:50:02 setuphelfer-rescue ModemManager[1691]: <info>  [base-manager] couldn't check support for device '/sys/devices/pci0000:00/0000:00:02.1/0000:02:00.0': not supported by any plugin
+Jul 22 18:50:02 setuphelfer-rescue ModemManager[1691]: <info>  [base-manager] couldn't check support for device '/sys/devices/pci0000:00/0000:00:02.2/0000:03:00.0': not supported by any plugin

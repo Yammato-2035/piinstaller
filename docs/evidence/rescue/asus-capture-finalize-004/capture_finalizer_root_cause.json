@@ -1,0 +1,46 @@
+{
+  "boot_id": "c8c60116-e18c-4091-ade0-b517276ed96e",
+  "run_id": "hw-discovery-20260722T210925Z-0ec17061",
+  "observed_status": "running",
+  "terminal": false,
+  "last_successful_capture_step": "nvme_identity",
+  "files_present": [
+    "run_status.json",
+    "machine_identity.json",
+    "machine_binding.json",
+    "bios_inventory.json",
+    "nvme_identity_redacted.json",
+    "nvme_inventory_raw.json",
+    "protected_raw/nvme_inventory_raw.json"
+  ],
+  "files_missing": [
+    "nvme_smart.json",
+    "nvme_error_logs.json",
+    "windows_setup_evidence_inventory.json",
+    "manifest.json",
+    "sha256sums.txt",
+    "COMPLETED.TAG",
+    "PARTIAL.TAG"
+  ],
+  "primary_cause": "capture_interrupted_before_smart_without_finally_finalizer",
+  "secondary_causes": [
+    "run_status_not_updated_until_end",
+    "no_completion_marker_contract",
+    "tui_showed_generic_infobox_without_phase_progress"
+  ],
+  "smart_started": false,
+  "panther_started": false,
+  "finalizer_reached": false,
+  "gui_status": "not_applicable_for_text_hardware_discovery",
+  "confidence": "high",
+  "answers": {
+    "smart_never_started_or_not_imported": "never_started_on_device",
+    "panther_never_started": true,
+    "waiting_for_input": false,
+    "ntfs_or_mount_block": "not_reached",
+    "timeout": "possible_external_shutdown_or_kill_after_identity",
+    "finalizer_skipped_by_shutdown": "likely_process_exit_without_finally",
+    "background_after_tui": "unknown",
+    "running_never_replaced": true
+  }
+}

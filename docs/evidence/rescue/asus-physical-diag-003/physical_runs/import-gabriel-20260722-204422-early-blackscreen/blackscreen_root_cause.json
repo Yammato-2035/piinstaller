@@ -1,0 +1,24 @@
+{
+  "boot_confirmed": true,
+  "profile_match": true,
+  "cmdline_hardware_discovery": true,
+  "auto_shutdown_flag": true,
+  "msi_lab_disabled": true,
+  "black_screen_mechanism": "amdgpu_modeset_switched_console_to_dummy_device",
+  "dummy_console_line_present": true,
+  "dual_gpu_drivers_loaded": {
+    "amdgpu": true,
+    "nouveau": true
+  },
+  "systemd_issues": {
+    "journald_start_timeout": true,
+    "udev_settle_failed": true,
+    "default_target": "graphical.target initializing"
+  },
+  "capture_status": "early_only_no_full_boot_snapshot",
+  "hardware_discovery_completed": false,
+  "tui_started": false,
+  "gui_started": false,
+  "operator_observed_shutdown": true,
+  "note": "auto_shutdown=0 on cmdline; shutdown likely power-button/hang/watchdog residual, not MSI lab auto-shutdown. Black screen explained by amdgpu taking console to dummy FB while nouveau also loaded (discovery GRUB lacked nouveau blacklist)."
+}

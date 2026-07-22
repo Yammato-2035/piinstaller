@@ -1,0 +1,87 @@
+=== loaded net/gpu modules ===
+amdgpu               9633792  1
+btrtl                  28672  1 btusb
+bluetooth             970752  6 btrtl,btmtk,btintel,btbcm,btusb
+gpu_sched              53248  1 amdgpu
+drm_buddy              20480  1 amdgpu
+nouveau              2433024  1
+mxm_wmi                16384  1 nouveau
+i2c_algo_bit           16384  2 amdgpu,nouveau
+drm_ttm_helper         16384  2 amdgpu,nouveau
+ttm                    94208  3 amdgpu,drm_ttm_helper,nouveau
+drm_display_helper    184320  2 amdgpu,nouveau
+drm_kms_helper        212992  3 drm_display_helper,amdgpu,nouveau
+drm                   614400  9 gpu_sched,drm_kms_helper,drm_display_helper,drm_buddy,amdgpu,drm_ttm_helper,ttm,nouveau
+r8169                  98304  0
+mdio_devres            16384  1 r8169
+cec                    61440  1 drm_display_helper
+libphy                180224  3 r8169,mdio_devres,realtek
+video                  65536  3 asus_wmi,amdgpu,nouveau
+button                 24576  1 nouveau
+wmi                    36864  5 video,asus_wmi,wmi_bmof,mxm_wmi,nouveau
+
+=== systemd default target / current ===
+graphical.target
+initializing
+
+=== dmesg tail ===
+[  126.721094] [drm] add ip block number 0 <soc15_common>
+[  126.726875] [drm] add ip block number 1 <gmc_v9_0>
+[  126.732586] [drm] add ip block number 2 <vega10_ih>
+[  126.738292] [drm] add ip block number 3 <psp>
+[  126.743929] [drm] add ip block number 4 <smu>
+[  126.749547] [drm] add ip block number 5 <dm>
+[  126.755087] [drm] add ip block number 6 <gfx_v9_0>
+[  126.760551] [drm] add ip block number 7 <sdma_v4_0>
+[  126.765921] [drm] add ip block number 8 <vcn_v2_0>
+[  126.771208] [drm] add ip block number 9 <jpeg_v2_0>
+[  126.776440] amdgpu 0000:06:00.0: amdgpu: Fetched VBIOS from VFCT
+[  126.781652] amdgpu: ATOM BIOS: 113-CEZANNE-017
+[  126.791269] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_sdma.bin
+[  126.796557] [drm] VCN decode is enabled in VM mode
+[  126.801816] [drm] VCN encode is enabled in VM mode
+[  126.807014] [drm] JPEG decode is enabled in VM mode
+[  126.812367] Console: switching to colour dummy device 80x25
+[  126.812425] amdgpu 0000:06:00.0: amdgpu: Trusted Memory Zone (TMZ) feature enabled
+[  126.812435] amdgpu 0000:06:00.0: amdgpu: MODE2 reset
+[  126.812511] [drm] vm size is 262144 GB, 4 levels, block size is 9-bit, fragment size is 9-bit
+[  126.812518] amdgpu 0000:06:00.0: amdgpu: VRAM: 512M 0x000000F400000000 - 0x000000F41FFFFFFF (512M used)
+[  126.812523] amdgpu 0000:06:00.0: amdgpu: GART: 1024M 0x0000000000000000 - 0x000000003FFFFFFF
+[  126.812527] amdgpu 0000:06:00.0: amdgpu: AGP: 267419648M 0x000000F800000000 - 0x0000FFFFFFFFFFFF
+[  126.812537] [drm] Detected VRAM RAM=512M, BAR=512M
+[  126.812541] [drm] RAM width 128bits DDR4
+[  126.812576] [drm] amdgpu: 512M of VRAM memory ready
+[  126.812579] [drm] amdgpu: 15754M of GTT memory ready.
+[  126.812589] [drm] GART: num cpu pages 262144, num gpu pages 262144
+[  126.812670] [drm] PCIE GART of 1024M enabled.
+[  126.812673] [drm] PTB located at 0x000000F41FC00000
+[  126.816681] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_asd.bin
+[  126.816765] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ta.bin
+[  126.816771] amdgpu 0000:06:00.0: amdgpu: PSP runtime database doesn't exist
+[  126.816775] amdgpu 0000:06:00.0: amdgpu: PSP runtime database doesn't exist
+[  126.821755] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_dmcub.bin
+[  126.821762] [drm] Loading DMUB firmware via PSP: version=0x01010024
+[  126.825549] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_pfp.bin
+[  126.827214] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_me.bin
+[  126.827998] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ce.bin
+[  126.828085] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_rlc.bin
+[  126.830190] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_mec.bin
+[  126.843488] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_vcn.bin
+[  126.843495] [drm] Found VCN firmware Version ENC: 1.19 DEC: 5 VEP: 0 Revision: 0
+[  126.843505] amdgpu 0000:06:00.0: amdgpu: Will use PSP to load VCN firmware
+[  127.160377] mt7921e 0000:03:00.0 wlp3s0: renamed from wlan0
+[  127.546881] amdgpu 0000:06:00.0: amdgpu: reserve 0x400000 from 0xf41f800000 for PSP TMR
+[  127.631431] amdgpu 0000:06:00.0: amdgpu: RAS: optional ras ta ucode is not available
+[  127.639963] amdgpu 0000:06:00.0: amdgpu: RAP: optional rap ta ucode is not available
+[  127.639970] amdgpu 0000:06:00.0: amdgpu: SECUREDISPLAY: securedisplay ta ucode is not available
+[  127.641854] amdgpu 0000:06:00.0: amdgpu: SMU is initialized successfully!
+[  127.642065] [drm] Display Core initialized with v3.2.207!
+[  127.642591] [drm] DMUB hardware initialized: version=0x01010024
+[  129.270053] Bluetooth: hci0: Device setup in 3414297 usecs
+[  129.270078] Bluetooth: hci0: HCI Enhanced Setup Synchronous Connection command is advertised, but not supported.
+[  129.287647] r8169 0000:02:00.0 enp2s0: Link is Up - 1Gbps/Full - flow control rx/tx
+[  129.287702] IPv6: ADDRCONF(NETDEV_CHANGE): enp2s0: link becomes ready
+[  136.411357] FAT-fs (sdb2): Volume was not properly unmounted. Some data may be corrupt. Please run fsck.
+[  215.064126] systemd[1]: systemd-journald.service: start operation timed out. Terminating.
+[  245.329950] systemd[1]: systemd-udev-settle.service: Failed with result 'exit-code'.
+[  245.330396] systemd[1]: Failed to start systemd-udev-settle.service - Wait for udev To Complete Device Initialization.

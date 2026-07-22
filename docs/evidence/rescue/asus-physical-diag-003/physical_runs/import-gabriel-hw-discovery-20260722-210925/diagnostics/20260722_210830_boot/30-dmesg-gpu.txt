@@ -1,0 +1,24 @@
+[    0.000000] Command line: BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_hardware_discovery=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_msi_lab_auto=0 setuphelfer_auto_shutdown=0 nomodeset modprobe.blacklist=nouveau nouveau.modeset=0
+[    0.003608] ACPI: SSDT 0x00000000ECE2D000 002555 (v01 _ASUS_ Nv18dGPU 00000001 INTL 20190509)
+[    0.011331] Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_hardware_discovery=1 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_msi_lab_auto=0 setuphelfer_auto_shutdown=0 nomodeset modprobe.blacklist=nouveau nouveau.modeset=0
+[    0.011446] Booted with the nomodeset parameter. Only the system framebuffer will be available
+[    0.283397] pci 0000:01:00.0: BAR 0 [mem 0xfb000000-0xfbffffff]
+[    0.283961] pci 0000:00:01.1:   bridge window [mem 0xfb000000-0xfc0fffff]
+[    0.297726] pci 0000:01:00.0: vgaarb: setting as boot VGA device
+[    0.297726] pci 0000:01:00.0: vgaarb: bridge control possible
+[    0.297726] pci 0000:01:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.297726] pci 0000:06:00.0: vgaarb: setting as boot VGA device (overriding previous)
+[    0.297726] pci 0000:06:00.0: vgaarb: bridge control possible
+[    0.297726] pci 0000:06:00.0: vgaarb: VGA device added: decodes=io+mem,owns=none,locks=none
+[    0.297726] vgaarb: loaded
+[    0.308217] pci 0000:00:01.1:   bridge window [mem 0xfb000000-0xfc0fffff]
+[    0.308321] pci_bus 0000:01: resource 1 [mem 0xfb000000-0xfc0fffff]
+[    0.618876] fb0: EFI VGA frame buffer device
+[    1.173148] ACPI: video: Video Device [VGA] (multi-head: yes  rom: no  post: no)
+[    6.597275] ACPI: bus type drm_connector registered
+[    7.249886] snd_hda_intel 0000:01:00.1: Handle vga_switcheroo audio client
+[    7.263286] snd_hda_intel 0000:06:00.1: Handle vga_switcheroo audio client
+[    7.341874] input: HDA NVidia HDMI/DP,pcm=3 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input18
+[    7.348600] input: HDA NVidia HDMI/DP,pcm=7 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input19
+[    7.358166] input: HDA NVidia HDMI/DP,pcm=8 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input20
+[    7.370004] input: HDA NVidia HDMI/DP,pcm=9 as /devices/pci0000:00/0000:00:01.1/0000:01:00.1/sound/card0/input21

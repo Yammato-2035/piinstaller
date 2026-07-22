@@ -1,0 +1,8 @@
+lo               UNKNOWN        00:00:00:00:00:00 <LOOPBACK,UP,LOWER_UP> 
+enp2s0           DOWN           04:42:1a:cf:2b:97 <NO-CARRIER,BROADCAST,MULTICAST,UP> 
+wlp3s0           UNKNOWN        90:e8:68:51:fb:85 <BROADCAST,MULTICAST,UP> 
+---addr---
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+enp2s0           DOWN           
+wlp3s0           DOWN           
+---route---

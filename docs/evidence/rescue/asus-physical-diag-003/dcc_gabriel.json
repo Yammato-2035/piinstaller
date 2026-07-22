@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
+  "title": "Gabriel – ROG Strix G513QM",
+  "machine": {
+    "bound": true,
+    "profile": "asus_rog_gabriel",
+    "fingerprint_consistent": true,
+    "tone": "green"
+  },
+  "bios": {
+    "installed": "G513QM.331",
+    "available": "G513QM.335",
+    "status": "update_available",
+    "flash_performed": false,
+    "tone": "yellow"
+  },
+  "nvme_a": {
+    "label": "NVMe A",
+    "identity_hash_short": "",
+    "serial_masked": "",
+    "firmware": "",
+    "pci": "0000:04:00.0",
+    "smart": "GRAY",
+    "role": "unassigned",
+    "write_allowed": false,
+    "tone": "gray"
+  },
+  "nvme_b": {
+    "label": "NVMe B",
+    "identity_hash_short": "",
+    "serial_masked": "",
+    "firmware": "",
+    "pci": "0000:05:00.0",
+    "smart": "GRAY",
+    "role": "unassigned",
+    "write_allowed": false,
+    "tone": "gray"
+  },
+  "windows": {
+    "panther_found": false,
+    "rollback_found": false,
+    "setup_phase": "UNKNOWN",
+    "error_code": "",
+    "likely_cause": "unknown",
+    "confidence": "low",
+    "next_step": "controlled_hardware_discovery_on_gabriel",
+    "tone": "yellow"
+  },
+  "endstatus": "diagnosis_incomplete",
+  "overall_tone": "yellow",
+  "msi_storage_map_shown": false,
+  "write_authorization": false
+}
