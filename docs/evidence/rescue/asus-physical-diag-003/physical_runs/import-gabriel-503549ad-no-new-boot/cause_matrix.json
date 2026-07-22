@@ -1,0 +1,6 @@
+{
+  "likely_cause": "unknown",
+  "confidence": "low",
+  "panther_or_rollback_present": false,
+  "blocking_reason": "no_new_hardware_discovery_capture"
+}

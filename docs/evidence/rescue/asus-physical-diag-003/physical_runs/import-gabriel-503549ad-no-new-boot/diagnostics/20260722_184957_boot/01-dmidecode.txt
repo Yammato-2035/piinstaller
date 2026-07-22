@@ -1,0 +1,90 @@
+# dmidecode 3.4
+Getting SMBIOS data from sysfs.
+SMBIOS 3.3.0 present.
+
+Handle 0x0000, DMI type 0, 26 bytes
+BIOS Information
+	Vendor: American Megatrends International, LLC.
+	Version: G513QM.331
+	Release Date: 02/24/2023
+	Address: 0xF0000
+	Runtime Size: 64 kB
+	ROM Size: 16 MB
+	Characteristics:
+		PCI is supported
+		BIOS is upgradeable
+		BIOS shadowing is allowed
+		Boot from CD is supported
+		Selectable boot is supported
+		BIOS ROM is socketed
+		EDD is supported
+		ACPI is supported
+		BIOS boot specification is supported
+		Targeted content distribution is supported
+		UEFI is supported
+	BIOS Revision: 5.19
+	Firmware Revision: 0.80
+
+Handle 0x0001, DMI type 1, 27 bytes
+System Information
+	Manufacturer: ASUSTeK COMPUTER INC.
+	Product Name: ROG Strix G513QM_G513QM
+	Version: 1.0
+	Serial Number: M9NRKD010334365
+	UUID: 5e35d3fa-be5f-384a-a5f1-e777b3d1919a
+	Wake-up Type: Power Switch
+	SKU Number:  
+	Family: ROG Strix
+
+Handle 0x0002, DMI type 2, 15 bytes
+Base Board Information
+	Manufacturer: ASUSTeK COMPUTER INC.
+	Product Name: G513QM
+	Version: 1.0
+	Serial Number: I019MC00R7   
+	Asset Tag: ATN12345678901234567
+	Features:
+		Board is a hosting board
+		Board is replaceable
+	Location In Chassis: Default string
+	Chassis Handle: 0x0003
+	Type: Motherboard
+	Contained Object Handles: 0
+
+Handle 0x0004, DMI type 10, 6 bytes
+On Board Device Information
+	Type: Video
+	Status: Enabled
+	Description:    To Be Filled By O.E.M.
+
+Handle 0x0006, DMI type 12, 5 bytes
+System Configuration Options
+	Option 1: Default string
+
+Handle 0x0007, DMI type 32, 20 bytes
+System Boot Information
+	Status: No errors detected
+
+Handle 0x0032, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: Onboard LAN Brodcom
+	Type: Ethernet
+	Status: Disabled
+	Type Instance: 1
+	Bus Address: 0000:00:00.3
+
+Handle 0x0033, DMI type 41, 11 bytes
+Onboard Device
+	Reference Designation: HD Audio Controller
+	Type: Sound
+	Status: Enabled
+	Type Instance: 1
+	Bus Address: 0000:06:00.6
+
+Handle 0x0034, DMI type 13, 22 bytes
+BIOS Language Information
+	Language Description Format: Long
+	Installable Languages: 1
+		en|US|iso8859-1
+	Currently Installed Language: en|US|iso8859-1
+

@@ -1,0 +1,14 @@
+{
+  "resolved": true,
+  "device_path": "/dev/sda2",
+  "filesystem_label": "SETUP_LOGS",
+  "filesystem_type": "vfat",
+  "canonical_mountpoint": "/run/setuphelfer-rescue/media/SETUP_LOGS",
+  "actual_mountpoint": "/run/setuphelfer/esp-rw",
+  "mount_source_verified": true,
+  "writable": true,
+  "resolution_status": "mounted_valid",
+  "shadow_mount_ignored": true,
+  "runtime_fallback_used": false,
+  "evidence_root": "/run/setuphelfer/esp-rw/setuphelfer/evidence"
+}

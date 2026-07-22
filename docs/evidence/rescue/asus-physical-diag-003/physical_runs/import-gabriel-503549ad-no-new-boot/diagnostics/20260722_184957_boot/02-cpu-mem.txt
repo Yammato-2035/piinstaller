@@ -1,0 +1,45 @@
+model name	: AMD Ryzen 9 5900HX with Radeon Graphics
+16
+              gesamt       benutzt     frei      gemns.  Puffer/Cache verfügbar
+Speicher:       30Gi       676Mi        30Gi        17Mi       334Mi        30Gi
+Swap:             0B          0B          0B
+MemTotal:       32264912 kB
+MemFree:        31622096 kB
+MemAvailable:   31571908 kB
+Buffers:            6816 kB
+Cached:           303860 kB
+SwapCached:            0 kB
+Active:            71844 kB
+Inactive:         317380 kB
+Active(anon):       8432 kB
+Inactive(anon):    88444 kB
+Active(file):      63412 kB
+Inactive(file):   228936 kB
+Unevictable:           0 kB
+Mlocked:               0 kB
+SwapTotal:             0 kB
+SwapFree:              0 kB
+Zswap:                 0 kB
+Zswapped:              0 kB
+Dirty:                 4 kB
+Writeback:             0 kB
+AnonPages:         79124 kB
+Mapped:            38908 kB
+Shmem:             17820 kB
+KReclaimable:      31348 kB
+Slab:              94124 kB
+SReclaimable:      31348 kB
+SUnreclaim:        62776 kB
+KernelStack:        5232 kB
+PageTables:         5136 kB
+SecPageTables:         0 kB
+NFS_Unstable:          0 kB
+Bounce:                0 kB
+WritebackTmp:          0 kB
+CommitLimit:    16132456 kB
+Committed_AS:     266124 kB
+VmallocTotal:   34359738367 kB
+VmallocUsed:       47152 kB
+VmallocChunk:          0 kB
+Percpu:             9024 kB
+HardwareCorrupted:     0 kB

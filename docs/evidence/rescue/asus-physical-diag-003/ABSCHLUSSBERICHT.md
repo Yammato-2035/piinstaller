@@ -91,3 +91,10 @@ Vorwissen unvollständig; efibootmgr ggf. nicht im Image — soft-fail dokumenti
 - BIOS-Update erforderlich: nein (nur optional nach Changelog)
 - Windows-Installationsfreigabe: nein
 - Linux weiterhin gesperrt: ja
+
+## Import-Nachtrag (Stick zurück, keine TUI)
+
+- Importstatus: `imported_partial_no_new_hardware_discovery`
+- Boot-ID: `503549ad-1af5-46fd-bcbb-131aaf5e7b47`
+- Kein Post-Inject-Boot; GRUB-Default auf Hardwarediagnose gesetzt
+- Endstatus unverändert: `diagnosis_incomplete`

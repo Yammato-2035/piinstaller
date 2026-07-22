@@ -2,20 +2,20 @@
 
 ## Status
 
-`diagnosis_incomplete` — Capture-Pfad und Stick bereit; **Gabriel-Boot mit hardware_discovery noch nicht importiert**.
+`diagnosis_incomplete`
 
-## Binding (Soll)
+## Import (Stick zurück)
 
-- Profil `asus_rog_gabriel`, Board G513QM, BIOS 331 / verfügbar 335, Flash nicht durchgeführt.
+- Boot-ID: `503549ad-1af5-46fd-bcbb-131aaf5e7b47` (älterer Gabriel-Boot)
+- Fingerprint: ASUS ROG Strix G513QM / G513QM — match
+- MSI: ausgeschlossen
+- hardware_discovery Capture: **fehlt** (kein Post-Inject-Boot)
+- Keine TUI: letzter Boot war Lab-Auto GUI/MSI mit Auto-Shutdown
 
-## NVMe
+## NVMe / Windows
 
-Noch keine Serienhashes/EUI/NGUID/SMART vom neuen Lauf. Vorwissen: zwei Samsung-Controller `0000:04:00.0` / `0000:05:00.0`.
+Weiterhin ohne Serienhash/EUI/NGUID/SMART/Panther aus vollständigem Capture.
 
-## Windows
+## Stick-Korrektur
 
-Panther/Rollback: nicht gescannt auf aktuellem physischen Abschluss.
-
-## Nächster Schritt
-
-Operator: siehe `OPERATOR_HANDOFF.md`.
+GRUB-Default → **ASUS Hardwarediagnose (nur Lesen)** für nächsten Boot.

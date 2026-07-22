@@ -1,0 +1,6 @@
+{
+  "panther_found": false,
+  "rollback_found": false,
+  "scan_performed": false,
+  "reason": "hardware_discovery_capture_missing"
+}

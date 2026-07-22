@@ -1,0 +1,15 @@
+{
+  "text_mode_started": false,
+  "gui_requested": true,
+  "selected_mode": "gui",
+  "cmdline_flags": {
+    "msi_lab_auto": true,
+    "msi_e2e_auto": true,
+    "hardware_discovery": false,
+    "auto_shutdown": true,
+    "mode_gui": true
+  },
+  "grub_default_index": 0,
+  "grub_default_entry": "Setuphelfer Lab-Auto (GUI, Physical E2E)",
+  "explanation": "Newest stick boot used Lab-Auto GUI/MSI cmdline; TUI was not started. No files newer than inject 1.10.2.0 — no successful post-inject hardware_discovery boot evidence."
+}

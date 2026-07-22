@@ -1,10 +1,8 @@
 {
   "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
   "endstatus": "diagnosis_incomplete",
-  "reason": "capture_path_ready_awaiting_gabriel_boot",
-  "payload_version": "1.10.2.0",
-  "app_version": "1.9.21.2",
-  "profile": "asus_rog_gabriel",
-  "write_operations_allowed": false,
-  "physical_run_imported": false
+  "reason": "no_post_inject_hardware_discovery_boot",
+  "imported_run_id": "import-gabriel-503549ad-no-new-boot",
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "no_tui": true
 }

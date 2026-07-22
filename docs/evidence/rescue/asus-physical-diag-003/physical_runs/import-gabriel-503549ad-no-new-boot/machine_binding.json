@@ -1,0 +1,21 @@
+{
+  "ok": true,
+  "profile": "asus_rog_gabriel",
+  "manufacturer": "ASUSTeK COMPUTER INC.",
+  "product": "ROG Strix G513QM_G513QM",
+  "board": "G513QM",
+  "bios": "G513QM.331",
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "operator_phrase_required_for_full_bind": true,
+  "storage_write": false,
+  "firmware_write": false,
+  "installation": false,
+  "compat": {
+    "ok": true,
+    "reasons": [],
+    "session_vendor": "ASUSTeK COMPUTER INC.",
+    "session_product": "ROG Strix G513QM_G513QM",
+    "session_board": "G513QM",
+    "action": "import"
+  }
+}
