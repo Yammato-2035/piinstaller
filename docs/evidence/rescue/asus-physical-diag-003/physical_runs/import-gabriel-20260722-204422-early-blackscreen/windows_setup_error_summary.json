@@ -1,0 +1,5 @@
+{
+  "panther_found": false,
+  "scan_performed": false,
+  "reason": "boot_aborted_before_tui"
+}

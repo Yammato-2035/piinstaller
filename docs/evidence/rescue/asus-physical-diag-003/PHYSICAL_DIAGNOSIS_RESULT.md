@@ -4,18 +4,15 @@
 
 `diagnosis_incomplete`
 
-## Import (Stick zurück)
+## Letzter Import
 
-- Boot-ID: `503549ad-1af5-46fd-bcbb-131aaf5e7b47` (älterer Gabriel-Boot)
-- Fingerprint: ASUS ROG Strix G513QM / G513QM — match
-- MSI: ausgeschlossen
-- hardware_discovery Capture: **fehlt** (kein Post-Inject-Boot)
-- Keine TUI: letzter Boot war Lab-Auto GUI/MSI mit Auto-Shutdown
+- Run: `import-gabriel-20260722-204422-early-blackscreen`
+- Cmdline: `hardware_discovery` korrekt (MSI aus, auto_shutdown=0)
+- Identity: G513QM ✓
+- TUI/GUI: nein — Konsole auf **dummy device** nach amdgpu-Modeset
+- Capture: nur early; kein NVMe/Panther
 
-## NVMe / Windows
+## Stick-Fix nach Import
 
-Weiterhin ohne Serienhash/EUI/NGUID/SMART/Panther aus vollständigem Capture.
-
-## Stick-Korrektur
-
-GRUB-Default → **ASUS Hardwarediagnose (nur Lesen)** für nächsten Boot.
+GRUB Hardwarediagnose jetzt mit:
+`setuphelfer_mode=text nomodeset modprobe.blacklist=nouveau nouveau.modeset=0`

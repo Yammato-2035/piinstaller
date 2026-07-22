@@ -1,8 +1,7 @@
 {
   "task_id": "PI-RS-ASUS-PHYSICAL-DIAG-003",
   "endstatus": "diagnosis_incomplete",
-  "reason": "no_post_inject_hardware_discovery_boot",
-  "imported_run_id": "import-gabriel-503549ad-no-new-boot",
-  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
-  "no_tui": true
+  "reason": "blackscreen_early_boot_no_tui_no_capture",
+  "imported_run_id": "import-gabriel-20260722-204422-early-blackscreen",
+  "display_root_cause": "amdgpu_console_to_dummy_device"
 }

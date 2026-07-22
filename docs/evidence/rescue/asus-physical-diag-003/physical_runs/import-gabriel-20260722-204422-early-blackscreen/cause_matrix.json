@@ -1,0 +1,6 @@
+{
+  "likely_cause": "rescue_display_console_lost_on_amdgpu_modeset",
+  "confidence": "medium",
+  "windows_abort_cause": "unknown",
+  "windows_confidence": "low"
+}
