@@ -1,0 +1,55 @@
+{
+  "import_ok": true,
+  "mode": "auto-discovery",
+  "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "session_id": "rescue-session-20260721T230213Z-bb356a62",
+  "destination": "/tmp/piinstaller-asus-win11-linux-001/docs/evidence/e2e_live_001d/physical_discovery_runs/503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+  "files_copied_boot": 9,
+  "discovery_boot_imported": true,
+  "session_imported": true,
+  "payload_version": "1.10.1.3",
+  "observability": {
+    "start_gate_audit_present": false,
+    "start_gate_missing_detected": false,
+    "service_start_audit_present": false,
+    "orchestrator_exit_present": false,
+    "late_journal_present": false,
+    "boot_finalizer_present": false,
+    "session_present": true,
+    "resolver_started": true
+  },
+  "boot_observer": {
+    "started_before_discovery": true,
+    "boot_directory_created": true,
+    "start_gate_missing_detected": false,
+    "run_control_consumed": true,
+    "partition_resolved": true
+  },
+  "tui_guard": {
+    "bare_tty_visible": false,
+    "hold_unit_used": true,
+    "inline_hold_used": false,
+    "guard_completed": true
+  },
+  "run_control": {
+    "consumed": true,
+    "enabled": false,
+    "terminal_status": "archived_for_gui_backup_verify"
+  },
+  "setup_logs_resolution": {
+    "resolver_started": true,
+    "partition_resolved": true,
+    "mount_source_verified": true,
+    "canonical_mount_used": true,
+    "shadow_mount_ignored": true,
+    "runtime_fallback_used": false,
+    "fallback_migrated": true
+  },
+  "import": {
+    "mode": "auto-discovery",
+    "explicit_root_used": false,
+    "mount_source_verified": true,
+    "discovery_boot_imported": true,
+    "session_imported": true
+  }
+}

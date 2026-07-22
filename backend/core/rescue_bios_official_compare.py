@@ -41,14 +41,25 @@ OFFICIAL_BIOS_CATALOG: dict[str, dict[str, Any]] = {
     },
     "asus_rog_gabriel_pending": {
         "vendor": "ASUS",
-        "exact_model": "ASUS ROG (Gabriel — exact SKU pending physical identity)",
-        "board": "",
+        "exact_model": "ROG Strix G513QM_G513QM (Gabriel — physical identity captured)",
+        "board": "G513QM",
         "latest_version": None,
         "release_date": None,
-        "support_url": "https://www.asus.com/support/",
+        "support_url": "https://www.asus.com/support/Download-Center/",
         "download_url": None,
         "checksum_sha256": None,
-        "notes": "Exact model must be confirmed on Gabriel's hardware before recommending BIOS.",
+        "notes": "Installed on stick run: G513QM.331 (2023-02-24). Compare latest on official ASUS Support only; no flash.",
+    },
+    "asus_g513qm": {
+        "vendor": "ASUS",
+        "exact_model": "ROG Strix G513QM_G513QM",
+        "board": "G513QM",
+        "latest_version": None,
+        "release_date": None,
+        "support_url": "https://www.asus.com/support/Download-Center/",
+        "download_url": None,
+        "checksum_sha256": None,
+        "notes": "Catalog seed after Gabriel stick import 2026-07-22. latest_version must be filled from ASUS Support.",
     },
     "asus_rog_generic_pending": {
         "vendor": "ASUS",
@@ -106,8 +117,14 @@ def resolve_catalog_key(machine: Mapping[str, Any]) -> str | None:
     product = str(machine.get("product_name") or "")
     if profile == "msi_ge63" or "16P5" in board.upper() or "GE63" in product.upper():
         return "msi_ge63_ms16p5"
-    if profile in {"asus_rog_gabriel", "asus_rog"}:
-        return "asus_rog_gabriel_pending" if profile == "asus_rog_gabriel" else "asus_rog_generic_pending"
+    if profile == "asus_rog_gabriel":
+        return "asus_rog_gabriel_pending"
+    if profile == "asus_rog":
+        board = str(machine.get("board_name") or "").upper()
+        product = str(machine.get("product_name") or "").upper()
+        if "G513QM" in board or "G513QM" in product:
+            return "asus_g513qm"
+        return "asus_rog_generic_pending"
     return None
 
 

@@ -1,0 +1,12 @@
+{
+  "feature": "SETUPHELFER-E2E-LIVE-001D5",
+  "status": "blocked",
+  "code": "run_control_invalid",
+  "errors": [
+    "disabled",
+    "already_consumed"
+  ],
+  "automation_class": "blocked",
+  "production_ready": false,
+  "e2e_run_id": "e2e-rescue-msi-20260722-185003-06bf2dea"
+}

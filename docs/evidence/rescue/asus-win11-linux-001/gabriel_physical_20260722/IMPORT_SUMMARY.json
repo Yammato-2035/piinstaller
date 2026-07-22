@@ -1,0 +1,99 @@
+{
+  "task_id": "PI-RS-ASUS-WIN11-LINUX-001",
+  "import_kind": "gabriel_asus_rog_physical_readonly",
+  "imported_at": "2026-07-22T16:52:58Z",
+  "setup_logs_mount": "/media/volker/SETUP_LOGS2",
+  "machine": {
+    "role": "gabriel_asus_rog_candidate",
+    "vendor": "ASUSTeK COMPUTER INC.",
+    "product": "ROG Strix G513QM_G513QM",
+    "board": "G513QM",
+    "bios": "G513QM.331",
+    "boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+    "payload_version_on_stick": "1.10.1.2",
+    "is_developer_g713pi": false,
+    "gabriel_bound": false,
+    "note": "Exact SKU captured from stick; operator bind still required for install writes"
+  },
+  "bios": {
+    "installed_version": "G513QM.331",
+    "release_date_from_dmi": "02/24/2023",
+    "flashed": false,
+    "status": "captured_pending_official_compare"
+  },
+  "storage": {
+    "nvme_controllers_lspci": [
+      "04:00.0 Non-Volatile memory controller [0108]: Samsung Electronics Co Ltd NVMe SSD Controller SM981/PM981/PM983 [144d:a808]",
+      "\tKernel driver in use: nvme",
+      "\tKernel modules: nvme",
+      "05:00.0 Non-Volatile memory controller [0108]: Samsung Electronics Co Ltd NVMe SSD Controller SM981/PM981/PM983 [144d:a808]",
+      "\tKernel driver in use: nvme",
+      "\tKernel modules: nvme"
+    ],
+    "dual_nvme_detected": true,
+    "dmesg_nvme_sample": [
+      "[    1.382821] nvme 0000:04:00.0: platform quirk: setting simple suspend",
+      "[    1.389327] nvme nvme0: pci function 0000:04:00.0",
+      "[    1.395783] nvme 0000:05:00.0: platform quirk: setting simple suspend",
+      "[    1.402704] nvme nvme1: pci function 0000:05:00.0",
+      "[    1.415958] nvme nvme0: missing or invalid SUBNQN field.",
+      "[    1.425344] nvme nvme1: missing or invalid SUBNQN field.",
+      "[    1.425509] nvme nvme1: Shutdown timeout set to 8 seconds",
+      "[    1.428596] nvme nvme0: Shutdown timeout set to 8 seconds",
+      "[    1.460494] nvme nvme1: 16/0/0 default/read/poll queues",
+      "[    1.494739]  nvme1n1:",
+      "[    1.615314] nvme nvme0: 16/0/0 default/read/poll queues",
+      "[    1.654945]  nvme0n1: p1 p2 p3"
+    ],
+    "roles_confirmed": false,
+    "write_performed": false
+  },
+  "e2e": {
+    "run_id": "e2e-rescue-msi-20260722-185003-06bf2dea",
+    "status": "blocked",
+    "code": "run_control_invalid",
+    "errors": [
+      "disabled",
+      "already_consumed"
+    ],
+    "note": "MSI auto-e2e path fired on ASUS stick boot; diagnostics still valuable"
+  },
+  "diagnostics_boot": "20260722_184957_boot",
+  "files_copied_diagnostics": [
+    "00-meta.txt",
+    "01-dmidecode.txt",
+    "02-cpu-mem.txt",
+    "10-lspci.txt",
+    "11-lsusb.txt",
+    "12-lsmod.txt",
+    "13-loaded-modules-net-gpu.txt",
+    "20-dmesg-firmware.txt",
+    "21-firmware-present.txt",
+    "30-dmesg-gpu.txt",
+    "31-drm-status.txt",
+    "32-xorg-log.txt",
+    "40-net-links.txt",
+    "41-wifi.txt",
+    "42-nm-journal.txt",
+    "50-systemd-jobs.txt",
+    "51-systemd-failed.txt",
+    "52-systemd-blame.txt",
+    "53-systemd-critical-chain.txt",
+    "54-service-status.txt",
+    "60-ps.txt",
+    "61-rescue-run-state.txt",
+    "90-journal-boot.txt",
+    "91-journal-kernel.txt",
+    "92-dmesg-full.txt"
+  ],
+  "serials_redacted": true,
+  "diagnosis_status": "diagnosis_incomplete",
+  "missing_for_complete_diagnosis": [
+    "nvme list / smart-log with serial hashes",
+    "windows setup panther/rollback evidence",
+    "windows install media check",
+    "official ASUS BIOS latest compare for G513QM",
+    "operator gabriel bind",
+    "RAM smoke status"
+  ]
+}

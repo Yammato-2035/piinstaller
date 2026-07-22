@@ -1,0 +1,10 @@
+{
+  "phase": "shutdown",
+  "message": "Physical-E2E fehlgeschlagen — siehe auto-physical-e2e.log",
+  "updated_at": "2026-07-22T18:50:05Z",
+  "uptime_sec": 17,
+  "sequence": 4,
+  "status": "failed",
+  "terminal": true,
+  "canonical": true
+}
