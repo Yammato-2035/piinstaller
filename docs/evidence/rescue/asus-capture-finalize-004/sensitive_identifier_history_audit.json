@@ -39,5 +39,12 @@
     "origin/main does not contain the raw identifiers.",
     "Old remotes marked sensitive_history_quarantined; new clean branch history required before push of finalize-004.",
     "Full serial values are never printed in this audit."
+  ],
+  "remediation_applied": "clean_branch_rebuild_from_b2a19c9f",
+  "quarantine_ref": "sensitive_history_quarantined/asus-capture-finalize-004-pre-rewrite",
+  "old_remote_branches_quarantined": [
+    "origin/pi-rs-asus-physical-diag-003",
+    "origin/pi-rs-asus-diag-bind-002",
+    "origin/pi-rs-asus-win11-linux-001"
   ]
 }
