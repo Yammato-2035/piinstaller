@@ -7,8 +7,8 @@
 - Repository: `Yammato-2035/piinstaller`
 - Basis: `origin/pi-rs-asus-capture-finalize-004` @ `da4aec72`
 - Feature-Branch: `pi-rs-asus-win11-retest-005`
-- HEAD: `9589c21c`
-- Push: vorgesehen nach Feature-Commit
+- HEAD: `ae519226`
+- Push: pending
 - fremde Drift: Hauptworkspace bleibt dirty auf anderem Branch
 
 ## 2. Maschine und NVMe
