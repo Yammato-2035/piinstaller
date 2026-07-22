@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-CAPTURE-FINALIZE-004",
+  "stick_model": "Ultra Line",
+  "device": "/dev/sda",
+  "labels": [
+    "SETUPHELFER",
+    "SETUP_LOGS"
+  ],
+  "payload_version_before": "1.10.2.1",
+  "payload_version_after": "1.10.2.2",
+  "filesystem_squashfs_sha256_before": "7817a515cb93d747029d48edcd399aa62163931349de70d029fb62d365d26357",
+  "filesystem_squashfs_sha256_after": "5bb44211b1152f7f2a51076614401f88404a87e8a2bcac97e6153c9b2cb0e857",
+  "update_method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "fix": "coerce_int for nvme-cli hex/list SMART fields; per-drive SMART isolation; capture-exception.txt",
+  "physical_retest_required": true,
+  "bios_flash": false,
+  "storage_write_on_internal_nvme": false
+}
