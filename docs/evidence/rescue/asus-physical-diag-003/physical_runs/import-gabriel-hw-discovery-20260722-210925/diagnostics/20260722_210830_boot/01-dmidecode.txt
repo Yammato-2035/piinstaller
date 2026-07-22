@@ -30,8 +30,8 @@ System Information
 	Manufacturer: ASUSTeK COMPUTER INC.
 	Product Name: ROG Strix G513QM_G513QM
 	Version: 1.0
-	Serial Number: M9NRKD010334365
-	UUID: 5e35d3fa-be5f-384a-a5f1-e777b3d1919a
+	Serial Number: [REDACTED]
+	UUID: [REDACTED]
 	Wake-up Type: Power Switch
 	SKU Number:  
 	Family: ROG Strix
@@ -41,7 +41,7 @@ Base Board Information
 	Manufacturer: ASUSTeK COMPUTER INC.
 	Product Name: G513QM
 	Version: 1.0
-	Serial Number: I019MC00R7   
+	Serial Number: [REDACTED]
 	Asset Tag: ATN12345678901234567
 	Features:
 		Board is a hosting board
