@@ -1,0 +1,87 @@
+
+[0;36m============================================[0m
+[0;36m  PI-Installer → /opt installieren/aktualisieren[0m
+[0;36m============================================[0m
+  Quelle:  /tmp/piinstaller-asus-win11-retest-005
+  Ziel:    /opt/setuphelfer
+  User:    setuphelfer
+  Profil:  runtime-opt
+
+[0;36m[INFO][0m Deployment profile: runtime-opt
+[0;36m[INFO][0m Web frontend build: yes
+[0;36m[INFO][0m Tauri build: skipped
+[0;36m[INFO][0m Tauri skip reason: not_required_for_runtime_opt
+[0;32m[OK][0m Service-User setuphelfer existiert bereits
+[0;36m[INFO][0m Kopiere Dateien nach /opt/setuphelfer...
+[0;32m[OK][0m Dateien kopiert
+[0;36m[INFO][0m Deploy-Verifikation (post-rsync): kritische Backend-Dateien und Routen…
+verify-deploy-to-opt: phase=post_rsync ok=True
+[0;32m[OK][0m Deploy-Verifikation (post-rsync) bestanden
+[0;36m[INFO][0m Backend Virtual Environment...
+WARNING: The directory '/opt/setuphelfer/.pip-cache' or its parent directory is not owned or is not writable by the current user. The cache has been disabled. Check the permissions and owner of that directory. If executing pip with sudo, you should use sudo's -H flag.
+[0;32m[OK][0m Backend-Dependencies installiert
+[0;36m[INFO][0m Frontend Dependencies...
+[0;32m[OK][0m Frontend-Dependencies installiert
+[0;36m[INFO][0m Frontend Produktions-Build (dist/)...
+
+> pi-installer-frontend@1.9.21.2 prebuild
+> node sync-version.js
+
+
+> pi-installer-frontend@1.9.21.2 build
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 6 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2769 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                     0.76 kB │ gzip:   0.45 kB
+dist/assets/cloud-D0Irq4uu.png                    176.34 kB
+dist/assets/backup-Cvy3szEI.png                   177.42 kB
+dist/assets/security-DQIps6Yu.png                 181.65 kB
+dist/assets/docker-Bouj5Ypp.png                   184.57 kB
+dist/assets/start-BiHirY5B.png                    188.74 kB
+dist/assets/debug-ByhlNQ8G.png                    202.46 kB
+dist/assets/network-DiowLT9I.png                  243.25 kB
+dist/assets/install-B3H7y0T1.png                  249.39 kB
+dist/assets/warning-Bcjgl66I.png                  292.36 kB
+dist/assets/tutorial-Rvi9XONP.png                 300.07 kB
+dist/assets/index-CURGmvMX.css                    125.46 kB │ gzip:  20.21 kB
+dist/assets/tauri-screenshots-stub-c6IcRXg-.js      0.17 kB │ gzip:   0.15 kB
+dist/assets/index-B-QoaW0n.js                   3,113.66 kB │ gzip: 802.26 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.38s
+[0;32m[OK][0m frontend/dist erzeugt (vite build)
+[0;36m[INFO][0m Tauri-Build übersprungen (not_required_for_runtime_opt) — vorhandenes Binary unter /opt bleibt erhalten.
+[0;36m[INFO][0m Systemd-Services aus Vorlagen schreiben (Backend + Web-UI)...
+[0;32m[OK][0m systemd: setuphelfer-backend.service + setuphelfer.service
+[1;33m[WARN][0m Backend-Workspace-Drop-in nur für /home-Workspaces vorgesehen; übersprungen: /tmp/piinstaller-asus-win11-retest-005
+[0;36m[INFO][0m Starte setuphelfer-backend neu...
+[0;36m[INFO][0m Starte setuphelfer (Web-UI) neu...
+[0;32m[OK][0m Services gestartet (setuphelfer-backend, setuphelfer)
+[0;36m[INFO][0m Warte auf /api/version (max. 15×2s)…
+[0;32m[OK][0m Backend-API antwortet wieder auf /api/version (Versuch 2/15)
+[0;36m[INFO][0m Deploy-Verifikation (post-restart): kritische Backend-Dateien und Routen…
+verify-deploy-to-opt: phase=post_restart ok=True
+[0;32m[OK][0m Deploy-Verifikation (post-restart) bestanden
+[0;36m[INFO][0m Startmenü-Einträge anlegen...
+Startmenü-Einträge angelegt:
+  /usr/share/applications/setuphelfer.desktop
+  /usr/share/applications/setuphelfer-browser.desktop
+  → SetupHelfer unter Anwendungen / Startmenü.
+[0;32m[OK][0m SetupHelfer erscheint im Startmenü
+
+[0;36m[INFO][0m Erzeuge Deploy-Manifest...
+/tmp/piinstaller-asus-win11-retest-005/build/deploy/setuphelfer-deploy-manifest.json
+[0;32m[OK][0m Deploy-Manifest geschrieben
+[0;32m[OK][0m Deploy abgeschlossen. Setuphelfer läuft unter /opt/setuphelfer als User setuphelfer.
+

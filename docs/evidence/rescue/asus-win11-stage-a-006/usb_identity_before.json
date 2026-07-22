@@ -1,0 +1,58 @@
+{
+  "captured_at": "2026-07-22T23:11:41Z",
+  "selected": {
+    "name": "sda",
+    "path": "/dev/sda",
+    "size": "59G",
+    "model": "Ultra Line",
+    "serial": "[REDACTED]",
+    "tran": "usb",
+    "type": "disk",
+    "fstype": null,
+    "label": null,
+    "uuid": null,
+    "mountpoints": [
+      null
+    ],
+    "children": [
+      {
+        "name": "sda1",
+        "path": "/dev/sda1",
+        "size": "4G",
+        "model": null,
+        "serial": null,
+        "tran": null,
+        "type": "part",
+        "fstype": "vfat",
+        "label": "SETUPHELFER",
+        "uuid": "9BB9-A4A6",
+        "mountpoints": [
+          null
+        ]
+      },
+      {
+        "name": "sda2",
+        "path": "/dev/sda2",
+        "size": "55G",
+        "model": null,
+        "serial": null,
+        "tran": null,
+        "type": "part",
+        "fstype": "vfat",
+        "label": "SETUP_LOGS",
+        "uuid": "9BC7-3950",
+        "mountpoints": [
+          "/media/volker/SETUP_LOGS2"
+        ]
+      }
+    ],
+    "serial_masked": "\u20260686"
+  },
+  "selection_rule": "usb + model Ultra Line + SETUPHELFER + SETUP_LOGS",
+  "excluded": [
+    "internal nvme",
+    "SABRENT",
+    "windows install media ambiguity"
+  ],
+  "ok": true
+}

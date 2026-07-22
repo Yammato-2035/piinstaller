@@ -1,0 +1,9 @@
+{
+  "payload_version": "1.10.2.3",
+  "sha256_match": true,
+  "winpe_collector_present": true,
+  "destructive_cmds_absent": true,
+  "locales_ok": true,
+  "retest_005_flag": true,
+  "sha256": "0e7314f2dcea857fd7a604aa0f099a037d4f4ebe892dbb9d608a03afa455f8e0"
+}

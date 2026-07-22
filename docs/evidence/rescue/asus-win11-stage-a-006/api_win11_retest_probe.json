@@ -1,0 +1,38 @@
+{
+  "target-binding": {
+    "status": 200,
+    "binding_ok": true
+  },
+  "linux-isolation": {
+    "status": 200,
+    "ok": false,
+    "status_field": "blocked_linux_nvme_isolation"
+  },
+  "media-check": {
+    "status": 200,
+    "media_status": "unknown_hash",
+    "allowed": false
+  },
+  "stage-a-preflight": {
+    "status": 200,
+    "preflight_status": "blocked"
+  },
+  "destructive-auth": {
+    "status": 200,
+    "ok": true,
+    "write_allowed": false
+  },
+  "stage-a-decide": {
+    "status": 200,
+    "endstatus": "ready_for_bios_335_controlled_update"
+  },
+  "postcheck-linux-gate": {
+    "status": 200,
+    "linux_gate": "blocked"
+  },
+  "dcc": {
+    "status": 200,
+    "overall": "yellow",
+    "endstatus": "ready_for_windows_retest_bios331"
+  }
+}

@@ -1,0 +1,6 @@
+payload 1.10.2.3 contents (verified)
+- rescue_windows11_controlled_retest.py
+- SETUPHELFER_WIN_DIAG (cmd+ps1+boot-info)
+- locales de-DE/en-US/fr-FR/nl-NL with retest keys
+- hardware_discovery / asus gabriel path retained
+- pi_rs_asus_win11_retest_005 flag

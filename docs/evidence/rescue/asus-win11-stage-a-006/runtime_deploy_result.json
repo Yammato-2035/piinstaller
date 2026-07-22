@@ -1,0 +1,11 @@
+{
+  "before": "1.9.21.0",
+  "after": "1.9.21.2",
+  "deploy_commit": "9e4c487c",
+  "profile": "runtime-opt",
+  "tauri": "skipped",
+  "runtime_gate": "OK",
+  "backend_runtime_path": "/opt/setuphelfer/backend",
+  "api_win11_retest_probed": true,
+  "status": "runtime_ready_for_stage_a"
+}

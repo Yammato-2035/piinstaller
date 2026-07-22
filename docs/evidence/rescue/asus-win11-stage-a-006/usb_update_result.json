@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-WIN11-STAGE-A-006",
+  "stick_model": "Ultra Line",
+  "device": "/dev/sda",
+  "labels": [
+    "SETUPHELFER",
+    "SETUP_LOGS"
+  ],
+  "payload_version_before": "1.10.2.2",
+  "payload_version_after": "1.10.2.3",
+  "filesystem_squashfs_sha256_before": "5bb44211b1152f7f2a51076614401f88404a87e8a2bcac97e6153c9b2cb0e857",
+  "filesystem_squashfs_sha256_after": "0e7314f2dcea857fd7a604aa0f099a037d4f4ebe892dbb9d608a03afa455f8e0",
+  "update_method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "winpe_collector_on_setup_logs": true,
+  "setup_logs_path": "/media/volker/SETUP_LOGS2/SETUPHELFER_WIN_DIAG",
+  "bios_flash": false,
+  "storage_write_on_internal_nvme": false,
+  "verify": {
+    "payload_version": "1.10.2.3",
+    "sha256_match": true,
+    "winpe_collector_present": true,
+    "destructive_cmds_absent": true,
+    "locales_ok": true,
+    "retest_005_flag": true
+  },
+  "status": "usb_update_verified"
+}

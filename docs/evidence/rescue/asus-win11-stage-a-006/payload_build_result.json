@@ -1,0 +1,17 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-WIN11-STAGE-A-006",
+  "payload_version": "1.10.2.3",
+  "application_version": "1.9.21.2",
+  "source_commit_impl": "9e4c487c",
+  "source_commit_inject_fix": "700674d5",
+  "build_mode": "payload_repack_via_stick_inject",
+  "update_method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "build_id": "inject-20260722T231209Z",
+  "build_timestamp": "2026-07-22T23:14:34Z",
+  "sha256": "0e7314f2dcea857fd7a604aa0f099a037d4f4ebe892dbb9d608a03afa455f8e0",
+  "sha256_before": "5bb44211b1152f7f2a51076614401f88404a87e8a2bcac97e6153c9b2cb0e857",
+  "pi_rs_asus_win11_retest_005": true,
+  "winpe_collector": true,
+  "status": "payload_ready_for_usb"
+}

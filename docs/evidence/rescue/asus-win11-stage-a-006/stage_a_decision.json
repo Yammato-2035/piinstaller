@@ -1,0 +1,5 @@
+{
+  "endstatus": "ready_for_windows_retest_bios331",
+  "reason": "runtime_payload_stick_ready_physical_stage_a_pending",
+  "bios_335_justified": false
+}

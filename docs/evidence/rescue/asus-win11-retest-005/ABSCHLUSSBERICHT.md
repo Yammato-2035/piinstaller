@@ -102,3 +102,7 @@ Endstatus: **ready_for_windows_retest_bios331**
 - Sensitive-Identifier-Gate: PASS
 - Payload: **1.10.2.3** (Collector-Erweiterung); Stick-Inject ausstehend nach Payload-Build
 - App-Version: unverändert **1.9.21.2**
+
+## Nachtrag STAGE-A-006
+
+Runtime `/opt` **1.9.21.2**, Stick Payload **1.10.2.3** verifiziert. Physischer Stage-A-Installationslauf weiterhin ausstehend. Siehe `docs/evidence/rescue/asus-win11-stage-a-006/`.

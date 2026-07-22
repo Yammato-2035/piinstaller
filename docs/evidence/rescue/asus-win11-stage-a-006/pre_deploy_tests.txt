@@ -1,0 +1,62 @@
+=== git diff --check ===
+exit=0
+
+=== unittest suite ===
+test_331_firmware_fail (backend.tests.test_rescue_asus_win11_retest_005_v1.CausalityTests.test_331_firmware_fail) ... ok
+test_331_success (backend.tests.test_rescue_asus_win11_retest_005_v1.CausalityTests.test_331_success) ... ok
+test_ab_constants_ok_strongly_implicated (backend.tests.test_rescue_asus_win11_retest_005_v1.CausalityTests.test_ab_constants_ok_strongly_implicated) ... ok
+test_changed_media_inconclusive (backend.tests.test_rescue_asus_win11_retest_005_v1.CausalityTests.test_changed_media_inconclusive) ... ok
+test_changed_nvme_inconclusive (backend.tests.test_rescue_asus_win11_retest_005_v1.CausalityTests.test_changed_nvme_inconclusive) ... ok
+test_same_failure_both (backend.tests.test_rescue_asus_win11_retest_005_v1.CausalityTests.test_same_failure_both) ... ok
+test_isolation_confirmed (backend.tests.test_rescue_asus_win11_retest_005_v1.IsolationTests.test_isolation_confirmed) ... ok
+test_isolation_unverified_blocks (backend.tests.test_rescue_asus_win11_retest_005_v1.IsolationTests.test_isolation_unverified_blocks) ... ok
+test_four_locales (backend.tests.test_rescue_asus_win11_retest_005_v1.LocaleAndPayloadTests.test_four_locales) ... ok
+test_payload_flag (backend.tests.test_rescue_asus_win11_retest_005_v1.LocaleAndPayloadTests.test_payload_flag) ... ok
+test_bios335_g513qm_ready (backend.tests.test_rescue_asus_win11_retest_005_v1.MediaAndBiosTests.test_bios335_g513qm_ready) ... ok
+test_bios335_wrong_model_blocked (backend.tests.test_rescue_asus_win11_retest_005_v1.MediaAndBiosTests.test_bios335_wrong_model_blocked) ... ok
+test_bios_331_baseline (backend.tests.test_rescue_asus_win11_retest_005_v1.MediaAndBiosTests.test_bios_331_baseline) ... ok
+test_corrupt_media_blocks (backend.tests.test_rescue_asus_win11_retest_005_v1.MediaAndBiosTests.test_corrupt_media_blocks) ... ok
+test_dcc_no_fake_green_on_started (backend.tests.test_rescue_asus_win11_retest_005_v1.PostcheckAndDccTests.test_dcc_no_fake_green_on_started) ... ok
+test_dcc_wrapper (backend.tests.test_rescue_asus_win11_retest_005_v1.PostcheckAndDccTests.test_dcc_wrapper) ... ok
+test_destructive_phrases (backend.tests.test_rescue_asus_win11_retest_005_v1.PostcheckAndDccTests.test_destructive_phrases) ... ok
+test_linux_locked_until_postcheck (backend.tests.test_rescue_asus_win11_retest_005_v1.PostcheckAndDccTests.test_linux_locked_until_postcheck) ... ok
+test_postcheck_passes (backend.tests.test_rescue_asus_win11_retest_005_v1.PostcheckAndDccTests.test_postcheck_passes) ... ok
+test_same_hash_rejected (backend.tests.test_rescue_asus_win11_retest_005_v1.TargetBindingTests.test_same_hash_rejected) ... ok
+test_windows_linux_different (backend.tests.test_rescue_asus_win11_retest_005_v1.TargetBindingTests.test_windows_linux_different) ... ok
+test_required_files (backend.tests.test_rescue_asus_win11_retest_005_v1.WinpeCollectorTests.test_required_files) ... ok
+test_payload_bumped_with_flag (backend.tests.test_pi_rs_asus_win11_retest_005_payload_version.PayloadVersionRetest005.test_payload_bumped_with_flag) ... ok
+test_versions (backend.tests.test_pi_rs_asus_capture_finalize_004_payload_version.VersionTests.test_versions) ... ok
+test_versions (backend.tests.test_pi_rs_asus_physical_diag_003_payload_version.VersionTests.test_versions) ... ok
+test_versions (backend.tests.test_pi_rs_asus_diag_bind_002_payload_version.VersionTests.test_versions) ... ok
+test_app_version (backend.tests.test_pi_rs_asus_win11_linux_001_payload_version.PayloadVersionTests.test_app_version) ... ok
+test_payload_version (backend.tests.test_pi_rs_asus_win11_linux_001_payload_version.PayloadVersionTests.test_payload_version) ... ok
+test_msi_catalog_compare (backend.tests.test_rescue_asus_win11_linux_001_v1.BiosCompareTests.test_msi_catalog_compare) ... ok
+test_no_flash_in_firmware_inventory (backend.tests.test_rescue_asus_win11_linux_001_v1.BiosCompareTests.test_no_flash_in_firmware_inventory) ... ok
+test_offline (backend.tests.test_rescue_asus_win11_linux_001_v1.BiosCompareTests.test_offline) ... ok
+test_rejects_third_party_url (backend.tests.test_rescue_asus_win11_linux_001_v1.BiosCompareTests.test_rejects_third_party_url) ... ok
+test_plan_not_green (backend.tests.test_rescue_asus_win11_linux_001_v1.DccReadinessTests.test_plan_not_green) ... ok
+test_unknown_grayish (backend.tests.test_rescue_asus_win11_linux_001_v1.DccReadinessTests.test_unknown_grayish) ... ok
+test_distro_missing (backend.tests.test_rescue_asus_win11_linux_001_v1.LinuxPlanGateTests.test_distro_missing) ... ok
+test_execute_requires_dual_confirm (backend.tests.test_rescue_asus_win11_linux_001_v1.LinuxPlanGateTests.test_execute_requires_dual_confirm) ... ok
+test_plan_own_efi_and_windows_protected (backend.tests.test_rescue_asus_win11_linux_001_v1.LinuxPlanGateTests.test_plan_own_efi_and_windows_protected) ... ok
+test_serial_change_emergency (backend.tests.test_rescue_asus_win11_linux_001_v1.LinuxPlanGateTests.test_serial_change_emergency) ... ok
+test_asus_rog_generic_not_gabriel (backend.tests.test_rescue_asus_win11_linux_001_v1.MachineIdentityTests.test_asus_rog_generic_not_gabriel) ... ok
+test_developer_g713pi_not_gabriel (backend.tests.test_rescue_asus_win11_linux_001_v1.MachineIdentityTests.test_developer_g713pi_not_gabriel) ... ok
+test_gabriel_bind_requires_operator (backend.tests.test_rescue_asus_win11_linux_001_v1.MachineIdentityTests.test_gabriel_bind_requires_operator) ... ok
+test_msi_asus_conflict (backend.tests.test_rescue_asus_win11_linux_001_v1.MachineIdentityTests.test_msi_asus_conflict) ... ok
+test_msi_ge63_high (backend.tests.test_rescue_asus_win11_linux_001_v1.MachineIdentityTests.test_msi_ge63_high) ... ok
+test_unknown_blocks_install (backend.tests.test_rescue_asus_win11_linux_001_v1.MachineIdentityTests.test_unknown_blocks_install) ... ok
+test_critical_smart_blocks (backend.tests.test_rescue_asus_win11_linux_001_v1.NvmeIdentityTests.test_critical_smart_blocks) ... ok
+test_role_stable_across_device_rename (backend.tests.test_rescue_asus_win11_linux_001_v1.NvmeIdentityTests.test_role_stable_across_device_rename) ... ok
+test_same_serial_rejected (backend.tests.test_rescue_asus_win11_linux_001_v1.NvmeIdentityTests.test_same_serial_rejected) ... ok
+test_app_and_payload_may_differ (backend.tests.test_rescue_asus_win11_linux_001_v1.VersionDomainTests.test_app_and_payload_may_differ) ... ok
+test_media_corrupt_blocks (backend.tests.test_rescue_asus_win11_linux_001_v1.WindowsEvidenceTests.test_media_corrupt_blocks) ... ok
+test_panther_scan_and_classify (backend.tests.test_rescue_asus_win11_linux_001_v1.WindowsEvidenceTests.test_panther_scan_and_classify) ... ok
+test_postcheck_enables_linux_gate (backend.tests.test_rescue_asus_win11_linux_001_v1.WindowsEvidenceTests.test_postcheck_enables_linux_gate) ... ok
+test_preflight_write_false (backend.tests.test_rescue_asus_win11_linux_001_v1.WindowsEvidenceTests.test_preflight_write_false) ... ok
+test_collector_files_exist (backend.tests.test_rescue_asus_win11_linux_001_v1.WinpeCollectorPresenceTests.test_collector_files_exist) ... ok
+
+----------------------------------------------------------------------
+Ran 53 tests in 0.005s
+
+OK

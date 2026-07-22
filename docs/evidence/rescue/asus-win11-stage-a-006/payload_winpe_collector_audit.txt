@@ -1,0 +1,44 @@
+collector_dir=/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG
+insgesamt 44
+drwxrwxr-x 2 volker volker 4096 Jul 23 00:56 .
+drwxrwxr-x 3 volker volker 4096 Jul 23 01:12 ..
+-rw-rw-r-- 1 volker volker 1003 Jul 23 00:56 collect-win11-boot-info.cmd
+-rw-rw-r-- 1 volker volker 1742 Jul 23 00:56 collect-win11-disk-info.cmd
+-rw-rw-r-- 1 volker volker 1605 Jul 23 00:56 collect-win11-disk-info.ps1
+-rw-rw-r-- 1 volker volker 5121 Jul 23 00:56 collect-win11-setup-logs.cmd
+-rw-rw-r-- 1 volker volker 3241 Jul 23 00:56 collect-win11-setup-logs.ps1
+-rw-rw-r-- 1 volker volker 1529 Jul 23 00:57 README_DE.txt
+-rw-rw-r-- 1 volker volker 1271 Jul 23 00:57 README_EN.txt
+-rw-rw-r-- 1 volker volker   11 Jul 23 00:52 SETUP_LOGS.TAG
+=== destructive pattern scan ===
+NO_DESTRUCTIVE_MATCH
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-disk-info.cmd:6:set "TAG_NAME=SETUP_LOGS.TAG"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-disk-info.cmd:20:    if /I "%%B"=="SETUP_LOGS" if not "%%A"=="" set "OUT_ROOT=%%A\setuphelfer-win11-logs"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-disk-info.cmd:24:  echo [setuphelfer] ERROR: SETUP_LOGS destination not found.
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/SETUP_LOGS.TAG:1:SETUP_LOGS
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:7:set "TAG_NAME=SETUP_LOGS.TAG"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:17:echo [setuphelfer] Searching for SETUP_LOGS destination...
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:25:REM Match volume label SETUP_LOGS via wmic if available
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:27:  if /I "%%B"=="SETUP_LOGS" if not "%%A"=="" (
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:40:  echo [setuphelfer] ERROR: SETUP_LOGS.TAG / label SETUP_LOGS not found.
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:41:  echo Place the rescue SETUP_LOGS partition or copy SETUP_LOGS.TAG to the target volume.
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:86:call :copy_tree "X:\Windows\Panther" "%RUN_DIR%\from_X_Windows_Panther"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:87:call :copy_tree "X:\$WINDOWS.~BT\Sources\Panther" "%RUN_DIR%\from_X_WINDOWS_BT_Panther"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:93:  call :copy_tree "%%D:\$WINDOWS.~BT\Sources\Panther" "%RUN_DIR%\from_%%D_WINDOWS_BT_Panther"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:94:  call :copy_tree "%%D:\$WINDOWS.~BT\Sources\Rollback" "%RUN_DIR%\from_%%D_WINDOWS_BT_Rollback"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:95:  call :copy_tree "%%D:\Windows\Panther" "%RUN_DIR%\from_%%D_Windows_Panther"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:96:  call :copy_tree "%%D:\Windows\Panther\NewOS" "%RUN_DIR%\from_%%D_Windows_Panther_NewOS"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:97:  call :copy_tree "%%D:\Windows\Panther\UnattendGC" "%RUN_DIR%\from_%%D_Windows_Panther_UnattendGC"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:102:  call :copy_tree "%%D:\Windows\Logs\SetupDiag" "%RUN_DIR%\from_%%D_SetupDiag"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:106:  call :copy_one "%%D:\SetupDiagResults.log" "%RUN_DIR%\from_%%D_SetupDiagResults.log"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:107:  call :copy_one "%%D:\SetupDiagResults.xml" "%RUN_DIR%\from_%%D_SetupDiagResults.xml"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.cmd:108:  call :copy_one "%%D:\Windows\Panther\Setup.etl" "%RUN_DIR%\from_%%D_Setup.etl"
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/README_DE.txt:17:  4. Zielvolumen mit Label SETUP_LOGS bzw. Datei SETUP_LOGS.TAG wird
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/README_DE.txt:23:  - Panther / Rollback / SetupDiag / DISM / CBS / setupapi
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/README_DE.txt:31:  - Roh-Identifier nur lokal auf SETUP_LOGS; Git-Import nur redaktiert.
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.ps1:29:Copy-TreeSafe "X:\Windows\Panther" (Join-Path $OutDir "from_X_Windows_Panther")
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.ps1:30:Copy-TreeSafe "X:\`$WINDOWS.~BT\Sources\Panther" (Join-Path $OutDir "from_X_WINDOWS_BT_Panther")
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.ps1:39:    Copy-TreeSafe "$root\`$WINDOWS.~BT\Sources\Panther" (Join-Path $OutDir "from_${L}_WINDOWS_BT_Panther")
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.ps1:40:    Copy-TreeSafe "$root\`$WINDOWS.~BT\Sources\Rollback" (Join-Path $OutDir "from_${L}_WINDOWS_BT_Rollback")
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.ps1:41:    Copy-TreeSafe "$root\Windows\Panther" (Join-Path $OutDir "from_${L}_Windows_Panther")
+/tmp/tmp.nWAZwsMuTk/r/opt/setuphelfer-rescue/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG/collect-win11-setup-logs.ps1:42:    Copy-TreeSafe "$root\Windows\Panther\NewOS" (Join-Path $OutDir "from_${L}_Windows_Panther_NewOS")

@@ -1,0 +1,9 @@
+{
+  "installed_version": "G513QM.331",
+  "bios_date": "2023-02-24",
+  "flash_performed": false,
+  "uefi_mode": true,
+  "secure_boot": "pending_operator",
+  "tpm": "pending_operator",
+  "created_at": "2026-07-22T23:14:34Z"
+}

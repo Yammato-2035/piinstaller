@@ -1,0 +1,30 @@
+{
+  "machine_profile": "asus_rog_gabriel",
+  "machine_fingerprint_hash": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+  "windows_target": {
+    "nvme_identity_hash": "6b45cc50d930d46e55b9d56e73b7540e03329164619069dd784a8273cb33d031",
+    "serial_hash": "c637055cc164eacf318916954783d1a3abadef888e6c8e57715f67710395f6a0",
+    "eui": "0025385a11b16304",
+    "pci_path": "0000:00:02.4",
+    "serial_masked": "\u2026125Y",
+    "model": "Samsung SSD 970 EVO Plus 2TB",
+    "firmware": "2B2QEXM7",
+    "confirmed": false,
+    "write_allowed": false
+  },
+  "linux_target": {
+    "nvme_identity_hash": "ed84d453078b002bb70e496cefbb1d4c18fd3b783c0e8483703a770cb087c94a",
+    "serial_hash": "84d4cc6f1c6b0cb7a80b092f7fa2c9a18b238f3794415fc9b14883b21b4fd082",
+    "eui": "0025385811911d10",
+    "pci_path": "0000:00:02.3",
+    "serial_masked": "\u2026241F",
+    "model": "Samsung SSD 970 EVO Plus 2TB",
+    "firmware": "2B2QEXM7",
+    "confirmed": false,
+    "write_allowed": false
+  },
+  "same_device": false,
+  "operator_confirmed": false,
+  "note": "provisional from hw-discovery-20260723T003152Z-384c72f0 \u2014 operator must confirm before Stage A",
+  "created_at": "2026-07-22T23:14:34Z"
+}

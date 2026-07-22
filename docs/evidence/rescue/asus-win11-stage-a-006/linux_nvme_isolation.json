@@ -1,0 +1,9 @@
+{
+  "method": "unverified",
+  "ok": false,
+  "status": "pending_operator",
+  "linux_target_visible_to_setup": null,
+  "verified": false,
+  "preferred": "physical_removal",
+  "created_at": "2026-07-22T23:14:34Z"
+}
