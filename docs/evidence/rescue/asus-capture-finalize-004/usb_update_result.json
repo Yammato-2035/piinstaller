@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-CAPTURE-FINALIZE-004",
+  "stick_model": "Ultra Line",
+  "device": "/dev/sda",
+  "labels": [
+    "SETUPHELFER",
+    "SETUP_LOGS"
+  ],
+  "payload_version_before": "1.10.2.0",
+  "payload_version_after": "1.10.2.1",
+  "filesystem_squashfs_sha256_before": "5c1ebd83d756250bf60cbc237bf1f9091d099fb96571ed784e43e53f1e96190f",
+  "filesystem_squashfs_sha256_after": "7817a515cb93d747029d48edcd399aa62163931349de70d029fb62d365d26357",
+  "update_method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "finalizer_present_in_squash": true,
+  "grub_hardware_discovery_entry": true,
+  "nomodeset_on_hardware_discovery": true,
+  "bios_flash": false,
+  "storage_write_on_internal_nvme": false,
+  "physical_retest_required": true
+}
