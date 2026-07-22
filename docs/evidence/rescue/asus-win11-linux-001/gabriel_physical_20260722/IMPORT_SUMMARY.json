@@ -95,5 +95,13 @@
     "official ASUS BIOS latest compare for G513QM",
     "operator gabriel bind",
     "RAM smoke status"
-  ]
+  ],
+  "warnings": [
+    "auto_discovery session paired from older run rescue-session-20260721T230213Z (not Gabriel G513QM storage map); trust diagnostics 20260722_184957_boot + host-fingerprint for Gabriel identity"
+  ],
+  "session_pairing": {
+    "gabriel_boot_id": "503549ad-1af5-46fd-bcbb-131aaf5e7b47",
+    "imported_session_id": "rescue-session-20260721T230213Z-bb356a62",
+    "session_is_gabriel": false
+  }
 }
