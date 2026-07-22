@@ -11,9 +11,11 @@ Distinguish MSI GE63 (MS-16P5) and ASUS ROG (Gabriel) before any write action.
 
 - Read DMI from `/sys/class/dmi/id/*` (and optional dmidecode on live).
 - Public/DCC status: serial masked (`…XXXX`) + `serial_hash` only.
-- Profiles: `msi_ge63`, `asus_rog_gabriel`, `unknown`.
+- Profiles: `msi_ge63`, `asus_rog` (generic), `asus_rog_gabriel` (nur nach Operator-Bind), `unknown`.
+- `asus_rog_gabriel` wird **niemals** allein aus DMI gesetzt.
+- Bekannter Development-Host (`G713PI` / Volker) ist `is_developer_workstation=true` und darf nicht als Gabriel gebunden werden.
 - `unknown` or `confidence=low` → diagnosis only; no install, no partition, no safe BIOS recommendation.
-- ASUS exact SKU is completed after physical diagnosis.
+- ASUS exact SKU for Gabriel is completed after physical diagnosis + `POST /api/rescue/hardware/bind-gabriel`.
 - Operator confirmation always required for writes.
 
 ## API

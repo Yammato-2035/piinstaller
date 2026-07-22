@@ -131,7 +131,9 @@ def linux_install_preflight(
     win_hash = str(windows_target.get("serial_hash") or "")
     lin_hash = str(linux_target.get("serial_hash") or "")
     checks = {
-        "machine_asus_rog": machine.get("expected_profile") == "asus_rog_gabriel",
+        "machine_asus_rog_gabriel": machine.get("expected_profile") == "asus_rog_gabriel"
+        and bool(machine.get("gabriel_bound")),
+        "not_developer_host": not bool(machine.get("is_developer_workstation")),
         "windows_postcheck": windows_postcheck_ok,
         "targets_distinct": bool(win_hash and lin_hash and win_hash != lin_hash),
         "iso_ok": iso.get("install_allowed") is True,

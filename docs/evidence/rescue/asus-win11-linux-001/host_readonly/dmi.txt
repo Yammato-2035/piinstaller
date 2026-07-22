@@ -1,0 +1,9 @@
+sys_vendor=ASUSTeK COMPUTER INC.
+product_name=ROG Strix G713PI_G713PI
+product_version=1.0
+product_family=ROG Strix
+board_vendor=ASUSTeK COMPUTER INC.
+board_name=G713PI
+bios_vendor=American Megatrends International, LLC.
+bios_version=G713PI.334
+bios_date=09/03/2024

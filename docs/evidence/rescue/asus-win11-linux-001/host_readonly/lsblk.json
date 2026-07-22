@@ -1,0 +1,144 @@
+{
+   "blockdevices": [
+      {
+         "name": "sda",
+         "size": "59G",
+         "type": "disk",
+         "model": "Ultra Line",
+         "serial": "24111412110686",
+         "tran": "usb",
+         "fstype": null,
+         "label": null,
+         "mountpoint": null,
+         "children": [
+            {
+               "name": "sda1",
+               "size": "4G",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": null,
+               "fstype": "vfat",
+               "label": "SETUPHELFER",
+               "mountpoint": null
+            },{
+               "name": "sda2",
+               "size": "55G",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": null,
+               "fstype": "vfat",
+               "label": "SETUP_LOGS",
+               "mountpoint": "/media/volker/SETUP_LOGS2"
+            }
+         ]
+      },{
+         "name": "nvme1n1",
+         "size": "1,8T",
+         "type": "disk",
+         "model": "Samsung SSD 980 PRO 2TB",
+         "serial": "S736NL0X905338X",
+         "tran": "nvme",
+         "fstype": null,
+         "label": null,
+         "mountpoint": null,
+         "children": [
+            {
+               "name": "nvme1n1p1",
+               "size": "512M",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "vfat",
+               "label": null,
+               "mountpoint": "/boot/efi"
+            },{
+               "name": "nvme1n1p2",
+               "size": "1,8T",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "ext4",
+               "label": null,
+               "mountpoint": "/"
+            }
+         ]
+      },{
+         "name": "nvme0n1",
+         "size": "1,8T",
+         "type": "disk",
+         "model": "Samsung SSD 980 PRO 2TB",
+         "serial": "S736NL0X905337T",
+         "tran": "nvme",
+         "fstype": null,
+         "label": null,
+         "mountpoint": null,
+         "children": [
+            {
+               "name": "nvme0n1p1",
+               "size": "757M",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "ntfs",
+               "label": null,
+               "mountpoint": null
+            },{
+               "name": "nvme0n1p2",
+               "size": "512,1M",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "vfat",
+               "label": null,
+               "mountpoint": null
+            },{
+               "name": "nvme0n1p3",
+               "size": "16M",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": null,
+               "label": null,
+               "mountpoint": null
+            },{
+               "name": "nvme0n1p4",
+               "size": "928,8G",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "ntfs",
+               "label": null,
+               "mountpoint": null
+            },{
+               "name": "nvme0n1p5",
+               "size": "924M",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "ntfs",
+               "label": null,
+               "mountpoint": null
+            },{
+               "name": "nvme0n1p6",
+               "size": "931G",
+               "type": "part",
+               "model": null,
+               "serial": null,
+               "tran": "nvme",
+               "fstype": "ntfs",
+               "label": null,
+               "mountpoint": null
+            }
+         ]
+      }
+   ]
+}

@@ -36,7 +36,7 @@ class MachineIdentityTests(unittest.TestCase):
         self.assertNotIn("SECRETSERIAL9999", str(ident))
         self.assertTrue(ident["serial_masked"].endswith("9999"))
 
-    def test_asus_rog_medium(self) -> None:
+    def test_asus_rog_generic_not_gabriel(self) -> None:
         ident = mid.build_machine_identity(
             dmi={
                 "sys_vendor": "ASUSTeK COMPUTER INC.",
@@ -45,18 +45,65 @@ class MachineIdentityTests(unittest.TestCase):
                 "product_serial": "ABCD1234",
             }
         )
-        self.assertEqual(ident["expected_profile"], mid.PROFILE_ASUS_ROG_GABRIEL)
-        self.assertIn(ident["confidence"], {"medium", "low"})
+        self.assertEqual(ident["expected_profile"], mid.PROFILE_ASUS_ROG)
+        self.assertFalse(ident["is_gabriel_target"])
+        self.assertFalse(ident["gabriel_bound"])
+
+    def test_developer_g713pi_not_gabriel(self) -> None:
+        ident = mid.build_machine_identity(
+            dmi={
+                "sys_vendor": "ASUSTeK COMPUTER INC.",
+                "product_name": "ROG Strix G713PI_G713PI",
+                "board_name": "G713PI",
+                "bios_version": "G713PI.334",
+                "product_serial": "DEVHOST01",
+            }
+        )
+        self.assertEqual(ident["expected_profile"], mid.PROFILE_ASUS_ROG)
+        self.assertTrue(ident["is_developer_workstation"])
+        bind = mid.bind_gabriel_operator_profile(
+            ident,
+            operator_confirmed=True,
+            exact_model_confirmed="whatever",
+            not_developer_host_ack=True,
+        )
+        self.assertFalse(bind["ok"])
+        self.assertEqual(bind["error"], "developer_asus_cannot_bind_as_gabriel")
+
+    def test_gabriel_bind_requires_operator(self) -> None:
+        ident = mid.build_machine_identity(
+            dmi={
+                "sys_vendor": "ASUSTeK COMPUTER INC.",
+                "product_name": "ROG Strix Scar",
+                "board_name": "G533",
+                "product_serial": "GABRIEL01",
+            }
+        )
+        fail = mid.bind_gabriel_operator_profile(
+            ident,
+            operator_confirmed=False,
+            exact_model_confirmed="",
+            not_developer_host_ack=False,
+        )
+        self.assertFalse(fail["ok"])
+        ok = mid.bind_gabriel_operator_profile(
+            ident,
+            operator_confirmed=True,
+            exact_model_confirmed="ROG Strix Scar (Gabriel)",
+            not_developer_host_ack=True,
+        )
+        self.assertTrue(ok["ok"])
+        self.assertEqual(ok["identity"]["expected_profile"], mid.PROFILE_ASUS_ROG_GABRIEL)
+
+    def test_msi_asus_conflict(self) -> None:
+        a = {"expected_profile": mid.PROFILE_MSI_GE63}
+        b = {"expected_profile": mid.PROFILE_ASUS_ROG}
+        self.assertTrue(mid.profiles_conflict(a, b))
 
     def test_unknown_blocks_install(self) -> None:
         ident = mid.build_machine_identity(dmi={"sys_vendor": "Generic", "product_name": "PC"})
         self.assertEqual(ident["expected_profile"], mid.PROFILE_UNKNOWN)
         self.assertTrue(ident["unknown_machine_blocks_install"])
-
-    def test_msi_asus_conflict(self) -> None:
-        a = {"expected_profile": mid.PROFILE_MSI_GE63}
-        b = {"expected_profile": mid.PROFILE_ASUS_ROG_GABRIEL}
-        self.assertTrue(mid.profiles_conflict(a, b))
 
 
 class NvmeIdentityTests(unittest.TestCase):

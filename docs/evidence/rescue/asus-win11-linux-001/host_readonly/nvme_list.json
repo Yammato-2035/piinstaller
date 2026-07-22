@@ -1,0 +1,28 @@
+{
+  "Devices":[
+    {
+      "NameSpace":1,
+      "DevicePath":"/dev/nvme1n1",
+      "GenericPath":"/dev/ng1n1",
+      "Firmware":"5B2QGXA7",
+      "ModelNumber":"Samsung SSD 980 PRO 2TB",
+      "SerialNumber":"S736NL0X905338X",
+      "UsedBytes":1094182637568,
+      "MaximumLBA":3907029168,
+      "PhysicalSize":2000398934016,
+      "SectorSize":512
+    },
+    {
+      "NameSpace":1,
+      "DevicePath":"/dev/nvme0n1",
+      "GenericPath":"/dev/ng0n1",
+      "Firmware":"5B2QGXA7",
+      "ModelNumber":"Samsung SSD 980 PRO 2TB",
+      "SerialNumber":"S736NL0X905337T",
+      "UsedBytes":656068435968,
+      "MaximumLBA":3907029168,
+      "PhysicalSize":2000398934016,
+      "SectorSize":512
+    }
+  ]
+}

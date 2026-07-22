@@ -15,7 +15,7 @@ from core.rescue_linux_second_nvme import (
     linux_install_execute_gate,
     linux_install_preflight,
 )
-from core.rescue_machine_identity_profiles import build_machine_identity
+from core.rescue_machine_identity_profiles import bind_gabriel_operator_profile, build_machine_identity
 from core.rescue_nvme_install_target import (
     build_asus_install_targets_manifest,
     evaluate_nvme_health,
@@ -37,6 +37,18 @@ router = APIRouter(tags=["rescue-asus-win11-linux"])
 @router.get("/hardware/identity")
 async def get_hardware_identity() -> dict[str, Any]:
     return build_machine_identity()
+
+
+@router.post("/hardware/bind-gabriel")
+async def post_bind_gabriel(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    """Operator-only bind of Gabriel's ASUS ROG. Rejects known developer hosts."""
+    identity = body.get("machine") or build_machine_identity()
+    return bind_gabriel_operator_profile(
+        identity,
+        operator_confirmed=bool(body.get("operator_confirmed")),
+        exact_model_confirmed=str(body.get("exact_model_confirmed") or ""),
+        not_developer_host_ack=bool(body.get("not_developer_host_ack")),
+    )
 
 
 @router.get("/hardware/inventory")

@@ -48,7 +48,18 @@ OFFICIAL_BIOS_CATALOG: dict[str, dict[str, Any]] = {
         "support_url": "https://www.asus.com/support/",
         "download_url": None,
         "checksum_sha256": None,
-        "notes": "Exact model must be confirmed on hardware before recommending BIOS.",
+        "notes": "Exact model must be confirmed on Gabriel's hardware before recommending BIOS.",
+    },
+    "asus_rog_generic_pending": {
+        "vendor": "ASUS",
+        "exact_model": "ASUS ROG (generic — not Gabriel bind)",
+        "board": "",
+        "latest_version": None,
+        "release_date": None,
+        "support_url": "https://www.asus.com/support/",
+        "download_url": None,
+        "checksum_sha256": None,
+        "notes": "Generic ROG detection only. Developer hosts must not be treated as Gabriel.",
     },
 }
 
@@ -95,8 +106,8 @@ def resolve_catalog_key(machine: Mapping[str, Any]) -> str | None:
     product = str(machine.get("product_name") or "")
     if profile == "msi_ge63" or "16P5" in board.upper() or "GE63" in product.upper():
         return "msi_ge63_ms16p5"
-    if profile == "asus_rog_gabriel":
-        return "asus_rog_gabriel_pending"
+    if profile in {"asus_rog_gabriel", "asus_rog"}:
+        return "asus_rog_gabriel_pending" if profile == "asus_rog_gabriel" else "asus_rog_generic_pending"
     return None
 
 

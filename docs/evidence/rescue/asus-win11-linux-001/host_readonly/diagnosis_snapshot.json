@@ -1,0 +1,63 @@
+{
+  "machine_role": "developer_workstation",
+  "owner": "volker",
+  "is_gabriel_asus_rog": false,
+  "gabriel_target_status": "pending_physical_diagnosis",
+  "identity": {
+    "schema_version": 1,
+    "contract_version": 1,
+    "machine_id": "61c0a38284ea8ee911950720b064c8f268317b99a08f87695a969e58650bd71f",
+    "expected_profile": "asus_rog",
+    "manufacturer": "ASUSTeK COMPUTER INC.",
+    "product_name": "ROG Strix G713PI_G713PI",
+    "product_family": "ROG Strix",
+    "board_name": "G713PI",
+    "board_vendor": "ASUSTeK COMPUTER INC.",
+    "bios_vendor": "American Megatrends International, LLC.",
+    "bios_version": "G713PI.334",
+    "bios_date": "09/03/2024",
+    "system_uuid_hash": "",
+    "chassis_type": "10",
+    "cpu_model": "x86_64",
+    "gpu_devices": [],
+    "ram_bytes": 0,
+    "serial_masked": "",
+    "serial_hash": "",
+    "confidence": "medium",
+    "operator_confirmation_required": true,
+    "installation_writes_allowed": false,
+    "is_developer_workstation": true,
+    "is_gabriel_target": false,
+    "gabriel_bound": false,
+    "unknown_machine_blocks_install": false,
+    "write_blocked_reason": "developer_workstation_not_gabriel_target"
+  },
+  "bios_compare": {
+    "status": "unknown",
+    "installed_version": "G713PI.334",
+    "latest_official_version": null,
+    "exact_model": "ASUS ROG (generic — not Gabriel bind)",
+    "automatic_flash_allowed": false,
+    "end_state": "bios_checked"
+  },
+  "nvme_count": 2,
+  "nvme_devices_redacted": [
+    {
+      "model": "Samsung SSD 980 PRO 2TB",
+      "serial_masked": "…338X",
+      "size_bytes": 2000398934016,
+      "device_path": "/dev/nvme1n1",
+      "health_status": "unknown"
+    },
+    {
+      "model": "Samsung SSD 980 PRO 2TB",
+      "serial_masked": "…337T",
+      "size_bytes": 2000398934016,
+      "device_path": "/dev/nvme0n1",
+      "health_status": "unknown"
+    }
+  ],
+  "roles_confirmed": false,
+  "writes_performed": false,
+  "note": "Development ASUS ROG Strix G713PI only — NOT Gabriel's dual-NVMe laptop."
+}
