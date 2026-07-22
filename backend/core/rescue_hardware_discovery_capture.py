@@ -11,6 +11,7 @@ import json
 import os
 import re
 import subprocess
+import traceback
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
@@ -133,18 +134,54 @@ def redact_text(text: str, secrets: Sequence[str]) -> str:
     return out
 
 
+def coerce_int(value: Any, default: int = 0) -> int:
+    """Best-effort int for nvme-cli JSON (decimal, 0x-hex, single-element lists)."""
+    if value is None or value is False:
+        return default
+    if value is True:
+        return 1
+    if isinstance(value, int):
+        return int(value)
+    if isinstance(value, float):
+        try:
+            return int(value)
+        except (TypeError, ValueError, OverflowError):
+            return default
+    if isinstance(value, (list, tuple)):
+        if not value:
+            return default
+        return coerce_int(value[0], default=default)
+    if isinstance(value, Mapping):
+        for key in ("value", "raw", "normalized", "critical_warning", "media_errors"):
+            if key in value:
+                return coerce_int(value.get(key), default=default)
+        return default
+    text = str(value).strip()
+    if not text:
+        return default
+    try:
+        if text.lower().startswith("0x"):
+            return int(text, 16)
+        return int(text, 10)
+    except (TypeError, ValueError):
+        try:
+            return int(float(text))
+        except (TypeError, ValueError, OverflowError):
+            return default
+
+
 def classify_smart_health(smart: Mapping[str, Any], *, kernel_critical: bool = False) -> str:
     if not smart:
         return "UNKNOWN"
     if "critical_warning" not in smart and "media_errors" not in smart:
         return "UNKNOWN"
-    cw = int(smart.get("critical_warning") or 0)
-    media = int(smart.get("media_errors") or smart.get("media_and_data_integrity_errors") or 0)
+    cw = coerce_int(smart.get("critical_warning"))
+    media = coerce_int(smart.get("media_errors") or smart.get("media_and_data_integrity_errors"))
     if cw != 0 or media > 0 or kernel_critical:
         return "CRITICAL"
-    unsafe = int(smart.get("unsafe_shutdowns") or 0)
-    warn_temp = int(smart.get("warning_temp_time") or 0)
-    err_entries = int(smart.get("num_err_log_entries") or 0)
+    unsafe = coerce_int(smart.get("unsafe_shutdowns"))
+    warn_temp = coerce_int(smart.get("warning_temp_time"))
+    err_entries = coerce_int(smart.get("num_err_log_entries"))
     if unsafe > 50 or warn_temp > 0 or err_entries > 0:
         return "WARNING"
     return "HEALTHY"
@@ -249,14 +286,14 @@ def collect_nvme_inventory(*, run: RunFn | None = None) -> dict[str, Any]:
         nsid = 1
         nm = re.search(r"n(\d+)$", ns_path)
         if nm:
-            nsid = int(nm.group(1))
+            nsid = coerce_int(nm.group(1), default=1)
 
         ctrl_json = None
         ns_json = None
         serial = str(dev.get("SerialNumber") or "")
         model = str(dev.get("ModelNumber") or dev.get("Model") or "")
         fw = str(dev.get("Firmware") or "")
-        size = int(dev.get("PhysicalSize") or 0)
+        size = coerce_int(dev.get("PhysicalSize"))
 
         if ctrl:
             rc, out, err = run(["nvme", "id-ctrl", ctrl, "-o", "json"], 30.0)
@@ -268,8 +305,8 @@ def collect_nvme_inventory(*, run: RunFn | None = None) -> dict[str, Any]:
                 fw = fw or str(ctrl_json.get("fr") or "").strip()
                 if not size:
                     try:
-                        size = int(ctrl_json.get("tnvmcap") or 0)
-                    except (TypeError, ValueError):
+                        size = coerce_int(ctrl_json.get("tnvmcap"))
+                    except Exception:  # noqa: BLE001
                         size = 0
 
         rc, out, err = run(["nvme", "id-ns", ns_path, "-o", "json"], 30.0)
@@ -395,26 +432,26 @@ def _smart_field_bundle(smart: Mapping[str, Any] | None, firmware: Any) -> dict[
     smart = smart if isinstance(smart, dict) else {}
     return {
         "firmware_revision": firmware,
-        "critical_warning": smart.get("critical_warning"),
-        "composite_temperature": smart.get("temperature"),
-        "available_spare": smart.get("avail_spare"),
-        "available_spare_threshold": smart.get("spare_thresh"),
-        "percentage_used": smart.get("percent_used"),
-        "data_units_read": smart.get("data_units_read"),
-        "data_units_written": smart.get("data_units_written"),
-        "host_read_commands": smart.get("host_read_commands"),
-        "host_write_commands": smart.get("host_write_commands"),
-        "controller_busy_time": smart.get("controller_busy_time"),
-        "power_cycles": smart.get("power_cycles"),
-        "power_on_hours": smart.get("power_on_hours"),
-        "unsafe_shutdowns": smart.get("unsafe_shutdowns"),
-        "media_errors": smart.get("media_errors"),
-        "num_err_log_entries": smart.get("num_err_log_entries"),
-        "warning_temp_time": smart.get("warning_temp_time"),
-        "critical_comp_time": smart.get("critical_comp_time"),
+        "critical_warning": coerce_int(smart.get("critical_warning")) if "critical_warning" in smart else None,
+        "composite_temperature": coerce_int(smart.get("temperature")) if "temperature" in smart else None,
+        "available_spare": coerce_int(smart.get("avail_spare")) if "avail_spare" in smart else None,
+        "available_spare_threshold": coerce_int(smart.get("spare_thresh")) if "spare_thresh" in smart else None,
+        "percentage_used": coerce_int(smart.get("percent_used")) if "percent_used" in smart else None,
+        "data_units_read": coerce_int(smart.get("data_units_read")) if "data_units_read" in smart else None,
+        "data_units_written": coerce_int(smart.get("data_units_written")) if "data_units_written" in smart else None,
+        "host_read_commands": coerce_int(smart.get("host_read_commands")) if "host_read_commands" in smart else None,
+        "host_write_commands": coerce_int(smart.get("host_write_commands")) if "host_write_commands" in smart else None,
+        "controller_busy_time": coerce_int(smart.get("controller_busy_time")) if "controller_busy_time" in smart else None,
+        "power_cycles": coerce_int(smart.get("power_cycles")) if "power_cycles" in smart else None,
+        "power_on_hours": coerce_int(smart.get("power_on_hours")) if "power_on_hours" in smart else None,
+        "unsafe_shutdowns": coerce_int(smart.get("unsafe_shutdowns")) if "unsafe_shutdowns" in smart else None,
+        "media_errors": coerce_int(smart.get("media_errors")) if "media_errors" in smart else None,
+        "num_err_log_entries": coerce_int(smart.get("num_err_log_entries")) if "num_err_log_entries" in smart else None,
+        "warning_temp_time": coerce_int(smart.get("warning_temp_time")) if "warning_temp_time" in smart else None,
+        "critical_comp_time": coerce_int(smart.get("critical_comp_time")) if "critical_comp_time" in smart else None,
         "temperature_sensors": {
-            "sensor_1": smart.get("temperature_sensor_1"),
-            "sensor_2": smart.get("temperature_sensor_2"),
+            "sensor_1": coerce_int(smart.get("temperature_sensor_1")) if "temperature_sensor_1" in smart else None,
+            "sensor_2": coerce_int(smart.get("temperature_sensor_2")) if "temperature_sensor_2" in smart else None,
         },
     }
 
@@ -427,94 +464,107 @@ def collect_nvme_health(*, inventory: Mapping[str, Any], run: RunFn | None = Non
 
     for entry in inventory.get("devices_redacted") or []:
         identity_hash = str(entry.get("nvme_identity_hash") or "")
-        resolved = resolve_live_nvme_paths_by_identity_hash(identity_hash=identity_hash, run=run)
-        if resolved.get("ok"):
-            ctrl = str(resolved.get("controller") or "")
-            ns = str(resolved.get("device_path") or "")
-            resolve_status = str(resolved.get("reason") or "resolved_by_identity_hash")
-        else:
-            # Fall back to inventory paths when live re-scan cannot match (tests / transient sysfs).
-            ctrl = str(entry.get("controller") or "")
-            ns = str(entry.get("device_path") or "")
-            resolve_status = f"fallback_entry_paths:{resolved.get('reason')}"
-        smart: Any = {}
-        err_log: Any = None
-        smartctl: Any = None
-        capture_status = "failed"
+        try:
+            resolved = resolve_live_nvme_paths_by_identity_hash(identity_hash=identity_hash, run=run)
+            if resolved.get("ok"):
+                ctrl = str(resolved.get("controller") or "")
+                ns = str(resolved.get("device_path") or "")
+                resolve_status = str(resolved.get("reason") or "resolved_by_identity_hash")
+            else:
+                # Fall back to inventory paths when live re-scan cannot match (tests / transient sysfs).
+                ctrl = str(entry.get("controller") or "")
+                ns = str(entry.get("device_path") or "")
+                resolve_status = f"fallback_entry_paths:{resolved.get('reason')}"
+            smart: Any = {}
+            err_log: Any = None
+            smartctl: Any = None
+            capture_status = "failed"
 
-        if not ctrl and not ns:
+            if not ctrl and not ns:
+                devices_out.append(
+                    {
+                        "nvme_identity_hash": identity_hash,
+                        "device_path": ns,
+                        "controller": ctrl,
+                        "firmware_revision": entry.get("firmware_revision"),
+                        "smart": _smart_field_bundle(None, entry.get("firmware_revision")),
+                        "health_label": "UNKNOWN",
+                        "capture_status": "failed",
+                        "resolve_status": resolve_status,
+                        "write_allowed": False,
+                    }
+                )
+                continue
+
+            if ctrl:
+                rc, out, err = run(["nvme", "smart-log", ctrl, "-o", "json"], 30.0)
+                smart = _parse_json(out) if rc == 0 else {}
+                smart_raw.append(
+                    {
+                        "path": ctrl,
+                        "nvme_identity_hash": identity_hash,
+                        "rc": rc,
+                        "smart": smart,
+                        "stderr": err[:500] if err else "",
+                    }
+                )
+                rc_e, out_e, err_e = run(["nvme", "error-log", ctrl, "--log-entries=64", "-o", "json"], 60.0)
+                err_log = _parse_json(out_e) if rc_e == 0 else {"rc": rc_e, "error": err_e or out_e}
+                error_raw.append({"path": ctrl, "nvme_identity_hash": identity_hash, "error_log": err_log})
+            if ns:
+                rc, out, err = run(["smartctl", "-x", "-j", ns], 60.0)
+                smartctl = _parse_json(out) if rc == 0 else {"rc": rc, "error": err or out[:500]}
+
+            if isinstance(smart, dict) and smart:
+                capture_status = "complete"
+            elif isinstance(smartctl, dict) and "error" not in smartctl:
+                capture_status = "partial"
+            elif ctrl or ns:
+                capture_status = "failed"
+
+            health_label = classify_smart_health(smart if isinstance(smart, dict) else {})
+            eval_in = {
+                **entry,
+                "smart_status": health_label.lower(),
+                "critical_warning": coerce_int((smart or {}).get("critical_warning")) if isinstance(smart, dict) else 0,
+                "media_errors": coerce_int((smart or {}).get("media_errors")) if isinstance(smart, dict) else 0,
+            }
+            health = evaluate_nvme_health(eval_in)
+            entries = err_log.get("errors") or err_log.get("Entries") if isinstance(err_log, dict) else None
             devices_out.append(
                 {
                     "nvme_identity_hash": identity_hash,
                     "device_path": ns,
                     "controller": ctrl,
+                    "firmware_revision": entry.get("firmware_revision") or resolved.get("firmware_revision"),
+                    "smart": _smart_field_bundle(
+                        smart if isinstance(smart, dict) else None,
+                        entry.get("firmware_revision") or resolved.get("firmware_revision"),
+                    ),
+                    "health_label": health_label,
+                    "health_eval": health,
+                    "capture_status": capture_status,
+                    "resolve_status": resolve_status,
+                    "smartctl_present": isinstance(smartctl, dict) and "error" not in smartctl,
+                    "error_log_entries": len(entries) if isinstance(entries, (list, tuple)) else 0,
+                    "write_allowed": False,
+                }
+            )
+        except Exception as exc:  # noqa: BLE001 — one drive must not abort sibling SMART capture
+            devices_out.append(
+                {
+                    "nvme_identity_hash": identity_hash,
+                    "device_path": str(entry.get("device_path") or ""),
+                    "controller": str(entry.get("controller") or ""),
                     "firmware_revision": entry.get("firmware_revision"),
                     "smart": _smart_field_bundle(None, entry.get("firmware_revision")),
                     "health_label": "UNKNOWN",
                     "capture_status": "failed",
-                    "resolve_status": resolve_status,
+                    "resolve_status": "device_exception",
+                    "error": f"{type(exc).__name__}:{exc}",
                     "write_allowed": False,
                 }
             )
-            continue
-
-        if ctrl:
-            rc, out, err = run(["nvme", "smart-log", ctrl, "-o", "json"], 30.0)
-            smart = _parse_json(out) if rc == 0 else {}
-            smart_raw.append(
-                {
-                    "path": ctrl,
-                    "nvme_identity_hash": identity_hash,
-                    "rc": rc,
-                    "smart": smart,
-                    "stderr": err[:500] if err else "",
-                }
-            )
-            rc_e, out_e, err_e = run(["nvme", "error-log", ctrl, "--log-entries=64", "-o", "json"], 60.0)
-            err_log = _parse_json(out_e) if rc_e == 0 else {"rc": rc_e, "error": err_e or out_e}
-            error_raw.append({"path": ctrl, "nvme_identity_hash": identity_hash, "error_log": err_log})
-        if ns:
-            rc, out, err = run(["smartctl", "-x", "-j", ns], 60.0)
-            smartctl = _parse_json(out) if rc == 0 else {"rc": rc, "error": err or out[:500]}
-
-        if isinstance(smart, dict) and smart:
-            capture_status = "complete"
-        elif isinstance(smartctl, dict) and "error" not in smartctl:
-            capture_status = "partial"
-        elif ctrl or ns:
-            capture_status = "failed"
-
-        health_label = classify_smart_health(smart if isinstance(smart, dict) else {})
-        eval_in = {
-            **entry,
-            "smart_status": health_label.lower(),
-            "critical_warning": int((smart or {}).get("critical_warning") or 0) if isinstance(smart, dict) else 0,
-            "media_errors": int((smart or {}).get("media_errors") or 0) if isinstance(smart, dict) else 0,
-        }
-        health = evaluate_nvme_health(eval_in)
-        devices_out.append(
-            {
-                "nvme_identity_hash": identity_hash,
-                "device_path": ns,
-                "controller": ctrl,
-                "firmware_revision": entry.get("firmware_revision") or resolved.get("firmware_revision"),
-                "smart": _smart_field_bundle(
-                    smart if isinstance(smart, dict) else None,
-                    entry.get("firmware_revision") or resolved.get("firmware_revision"),
-                ),
-                "health_label": health_label,
-                "health_eval": health,
-                "capture_status": capture_status,
-                "resolve_status": resolve_status,
-                "smartctl_present": isinstance(smartctl, dict) and "error" not in smartctl,
-                "error_log_entries": (
-                    len(err_log.get("errors") or err_log.get("Entries") or [])
-                    if isinstance(err_log, dict)
-                    else 0
-                ),
-                "write_allowed": False,
-            }
-        )
 
     return {
         "schema_version": SCHEMA_VERSION,
@@ -523,6 +573,7 @@ def collect_nvme_health(*, inventory: Mapping[str, Any], run: RunFn | None = Non
         "error_logs_raw": error_raw,
         "write_allowed": False,
     }
+
 
 def collect_kernel_storage_findings(*, run: RunFn | None = None) -> dict[str, Any]:
     run = run or _default_run
@@ -1341,10 +1392,19 @@ def run_hardware_discovery(
 
     except BaseException as exc:  # noqa: BLE001 — finalizer must always run
         fatal_exc = exc
-        errors.append(f"capture_exception:{type(exc).__name__}")
+        exc_name = type(exc).__name__
+        exc_msg = str(exc).replace("\n", " ")[:500]
+        errors.append(f"capture_exception:{exc_name}:{exc_msg}")
         status["errors"] = errors
         status["warnings"] = warnings
         status["captures"] = captures
+        try:
+            _atomic_write_text(
+                out_dir / "capture-exception.txt",
+                "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)),
+            )
+        except OSError:
+            pass
         if status.get("status") == "running":
             status["status"] = "partial" if any(v != "pending" for v in captures.values()) else "failed"
         if endstatus == "diagnosis_incomplete" and not binding_ok and not allow_non_gabriel_diag:

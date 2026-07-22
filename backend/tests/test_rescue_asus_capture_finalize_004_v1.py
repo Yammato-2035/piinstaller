@@ -479,3 +479,62 @@ class SensitiveGateScriptTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class CoerceIntTests(unittest.TestCase):
+    def test_hex_and_list_smart_fields(self) -> None:
+        self.assertEqual(hdc.coerce_int("0x0"), 0)
+        self.assertEqual(hdc.coerce_int("0x1"), 1)
+        self.assertEqual(hdc.coerce_int([0]), 0)
+        self.assertEqual(hdc.coerce_int({"value": "0x2"}), 2)
+        self.assertEqual(hdc.classify_smart_health({"critical_warning": "0x0", "media_errors": "0"}), "HEALTHY")
+        self.assertEqual(hdc.classify_smart_health({"critical_warning": "0x1", "media_errors": 0}), "CRITICAL")
+
+    def test_health_survives_hex_critical_warning(self) -> None:
+        responses = {
+            ("nvme", "smart-log", "/dev/nvme0", "-o", "json"): (
+                0,
+                json.dumps(
+                    {
+                        "critical_warning": "0x0",
+                        "media_errors": "0",
+                        "num_err_log_entries": "0",
+                        "unsafe_shutdowns": "0",
+                        "warning_temp_time": "0",
+                    }
+                ),
+                "",
+            ),
+            ("nvme", "error-log", "/dev/nvme0", "--log-entries=64", "-o", "json"): (
+                0,
+                json.dumps({"errors": []}),
+                "",
+            ),
+            ("smartctl", "-x", "-j", "/dev/nvme0n1"): (0, "{}", ""),
+        }
+        with mock.patch.object(
+            hdc,
+            "resolve_live_nvme_paths_by_identity_hash",
+            return_value={
+                "ok": True,
+                "controller": "/dev/nvme0",
+                "device_path": "/dev/nvme0n1",
+                "firmware_revision": "1",
+                "reason": "test",
+            },
+        ):
+            health = hdc.collect_nvme_health(
+                inventory={
+                    "devices_redacted": [
+                        {
+                            "controller": "/dev/nvme0",
+                            "device_path": "/dev/nvme0n1",
+                            "nvme_identity_hash": "h",
+                            "firmware_revision": "1",
+                        }
+                    ]
+                },
+                run=_fake_run(responses),
+            )
+        self.assertEqual(health["devices"][0]["health_label"], "HEALTHY")
+        self.assertEqual(health["devices"][0]["capture_status"], "complete")

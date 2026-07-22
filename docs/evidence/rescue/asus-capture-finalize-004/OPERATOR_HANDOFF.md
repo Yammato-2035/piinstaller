@@ -4,7 +4,7 @@
 ASUS ROG Strix G513QM (Gabriel), Profil `asus_rog_gabriel`.
 
 ## Stick
-Ultra-Line mit Payload **1.10.2.1** (nach Update).
+Ultra-Line mit Payload **1.10.2.2** (nach Update).
 
 ## Ablauf
 1. Netzteil anschließen.

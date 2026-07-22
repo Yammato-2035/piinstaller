@@ -50,13 +50,45 @@ def stable_nvme_identity_key(entry: Mapping[str, Any]) -> str:
 def normalize_nvme_entry(raw: Mapping[str, Any]) -> dict[str, Any]:
     serial = str(raw.get("serial") or raw.get("SerialNumber") or "")
     serial_hash = str(raw.get("serial_hash") or "") or hash_serial(serial)
-    size = int(raw.get("size_bytes") or raw.get("PhysicalSize") or raw.get("size") or 0)
+    try:
+        size = int(raw.get("size_bytes") or raw.get("PhysicalSize") or raw.get("size") or 0)
+    except (TypeError, ValueError):
+        size = 0
+        for key in ("size_bytes", "PhysicalSize", "size"):
+            text = str(raw.get(key) or "").strip().lower()
+            if text.startswith("0x"):
+                try:
+                    size = int(text, 16)
+                    break
+                except ValueError:
+                    continue
+            digits = "".join(ch for ch in text if ch.isdigit())
+            if digits:
+                try:
+                    size = int(digits)
+                    break
+                except ValueError:
+                    continue
     model = str(raw.get("model") or raw.get("ModelNumber") or raw.get("Model") or "")
     device_path = str(raw.get("device_path") or raw.get("DevicePath") or raw.get("path") or "")
     controller = str(raw.get("controller") or "")
     if not controller and device_path.startswith("/dev/nvme"):
         m = re.match(r"(/dev/nvme\d+)", device_path)
         controller = m.group(1) if m else ""
+    try:
+        namespace_id = int(raw.get("namespace_id") or 1)
+    except (TypeError, ValueError):
+        namespace_id = 1
+    try:
+        logical_sector_size = int(raw.get("logical_sector_size") or 0)
+    except (TypeError, ValueError):
+        logical_sector_size = 0
+    try:
+        physical_sector_size = int(raw.get("physical_sector_size") or 0)
+    except (TypeError, ValueError):
+        physical_sector_size = 0
+    partitions = raw.get("partitions") or []
+    filesystems = raw.get("filesystems") or []
     entry = {
         "device_path": device_path,
         "controller": controller,
@@ -65,16 +97,16 @@ def normalize_nvme_entry(raw: Mapping[str, Any]) -> dict[str, Any]:
         "serial_hash": serial_hash,
         "firmware_revision": str(raw.get("firmware_revision") or raw.get("Firmware") or ""),
         "size_bytes": size,
-        "logical_sector_size": int(raw.get("logical_sector_size") or 0),
-        "physical_sector_size": int(raw.get("physical_sector_size") or 0),
+        "logical_sector_size": logical_sector_size,
+        "physical_sector_size": physical_sector_size,
         "eui64": raw.get("eui64"),
         "nguid": raw.get("nguid"),
         "pci_address": str(raw.get("pci_address") or raw.get("pci_path") or ""),
         "sysfs_path": str(raw.get("sysfs_path") or ""),
-        "namespace_id": int(raw.get("namespace_id") or 1),
+        "namespace_id": namespace_id,
         "partition_table": str(raw.get("partition_table") or "unknown"),
-        "partitions": list(raw.get("partitions") or []),
-        "filesystems": list(raw.get("filesystems") or []),
+        "partitions": list(partitions) if isinstance(partitions, (list, tuple)) else [],
+        "filesystems": list(filesystems) if isinstance(filesystems, (list, tuple)) else [],
         "smart_status": str(raw.get("smart_status") or "unknown"),
         "intended_role": str(raw.get("intended_role") or ROLE_UNASSIGNED),
         "write_allowed": False,
@@ -204,7 +236,10 @@ def resolve_role_after_device_rename(
 def evaluate_nvme_health(entry: Mapping[str, Any]) -> dict[str, Any]:
     status = str(entry.get("smart_status") or entry.get("health_status") or "unknown").lower()
     critical = bool(entry.get("critical_warning"))
-    media_errors = int(entry.get("media_errors") or entry.get("media_and_data_integrity_errors") or 0)
+    try:
+        media_errors = int(entry.get("media_errors") or entry.get("media_and_data_integrity_errors") or 0)
+    except (TypeError, ValueError):
+        media_errors = 0
     if critical or status in {"critical", "failed"} or media_errors > 0:
         health = "unsuitable_for_install"
     elif status in {"warning", "review"}:
