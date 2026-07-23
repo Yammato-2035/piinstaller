@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, Sequence
 
 import yaml
 
@@ -114,11 +114,76 @@ def evaluate_machine_identity_match(
     }
 
 
+DESTRUCTIVE_ACTIONS = frozenset(
+    {
+        "disk_delete",
+        "repartition",
+        "internal_restore",
+        "windows_efi_change",
+        "secure_boot_key_management",
+        "bios_flash",
+        "mint_install",
+    }
+)
+
+
+def evaluate_disk_fingerprint_gate(
+    *,
+    observed_disks: Sequence[Mapping[str, Any]] | None,
+    profile: Mapping[str, Any] | None = None,
+    required_role: str | None = None,
+) -> dict[str, Any]:
+    """Match expected NVMe identity hashes. Device names alone never pass."""
+    prof = dict(profile or load_lab_target_profile())
+    expected = [
+        d
+        for d in (prof.get("expected_internal_disks") or [])
+        if isinstance(d, dict)
+    ]
+    observed = [d for d in (observed_disks or []) if isinstance(d, Mapping)]
+    reasons: list[str] = []
+    role_hits: dict[str, bool] = {}
+
+    for exp in expected:
+        role = str(exp.get("role") or "")
+        want = str(exp.get("nvme_identity_hash") or "")
+        if not role or not want:
+            continue
+        hit = any(
+            str(obs.get("nvme_identity_hash") or obs.get("identity_hash") or "") == want
+            for obs in observed
+        )
+        role_hits[role] = hit
+        if not hit:
+            reasons.append(f"disk_fingerprint_miss:{role}")
+
+    if required_role and not role_hits.get(required_role):
+        reasons.append(f"required_role_miss:{required_role}")
+
+    # Reject obvious rescue-stick / SETUP_LOGS labels if presented as internal.
+    for obs in observed:
+        label = str(obs.get("label") or obs.get("fs_label") or "").upper()
+        if label in {"SETUP_LOGS", "SETUPHELFER", "SETUPHELFER_LOGS"}:
+            reasons.append("rescue_stick_excluded")
+
+    ok = not reasons and (bool(role_hits) if expected else True)
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "ok": ok,
+        "role_hits": role_hits,
+        "reasons": reasons,
+        "confirmed_required": any(not bool(d.get("confirmed")) for d in expected),
+    }
+
+
 def assert_action_allowed(
     *,
     match_result: Mapping[str, Any],
     action: str,
     bitlocker_mutation: bool = False,
+    observed_disks: Sequence[Mapping[str, Any]] | None = None,
+    required_disk_role: str | None = None,
+    profile: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Gate a lab action. BitLocker mutation always blocked."""
     if bitlocker_mutation or action.startswith("bitlocker_"):
@@ -145,10 +210,40 @@ def assert_action_allowed(
         "secure_boot_key_management": "secure_boot_key_management",
         "shell": "unrestricted_shell",
         "mint_install": "mint_install_linux_lab_nvme",
+        "diagnostic": None,
     }
+    if action == "diagnostic":
+        return {"ok": True, "blocked_reason": None, "action": action, "match": MATCH_EXACT}
     key = mapping.get(action)
     if key is None:
         return {"ok": False, "blocked_reason": "unknown_action", "action": action}
     if not auth.get(key):
         return {"ok": False, "blocked_reason": f"grant_missing:{key}", "action": action}
+
+    if action in DESTRUCTIVE_ACTIONS:
+        role = required_disk_role
+        if role is None and action == "mint_install":
+            role = "linux_lab_nvme"
+        disk_gate = evaluate_disk_fingerprint_gate(
+            observed_disks=observed_disks,
+            profile=profile,
+            required_role=role,
+        )
+        if disk_gate.get("confirmed_required"):
+            return {
+                "ok": False,
+                "blocked_reason": "disk_roles_unconfirmed",
+                "action": action,
+                "match": match_result.get("match"),
+                "disk_gate": disk_gate,
+            }
+        if not disk_gate.get("ok"):
+            return {
+                "ok": False,
+                "blocked_reason": "disk_fingerprint_mismatch",
+                "action": action,
+                "match": match_result.get("match"),
+                "disk_gate": disk_gate,
+            }
+
     return {"ok": True, "blocked_reason": None, "action": action, "match": MATCH_EXACT}

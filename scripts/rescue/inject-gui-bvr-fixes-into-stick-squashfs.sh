@@ -158,6 +158,9 @@ for loc in de-DE en-US fr-FR nl-NL; do
     "${ROOT}/usr/share/setuphelfer/rescue/ui/locales/${loc}.json"
 done
 # WinPE / Windows Setup log collector (FAT32-readable copy also synced into image tree)
+# Replace destination trees (cp -a into an existing dir nests SETUPHELFER_WIN_DIAG/).
+rm -rf "${IMG}/SETUPHELFER_WIN_DIAG" \
+  "${ROOT}/usr/share/setuphelfer/rescue/SETUPHELFER_WIN_DIAG"
 inject "${REPO_ROOT}/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG" \
   "${IMG}/SETUPHELFER_WIN_DIAG"
 inject "${REPO_ROOT}/scripts/rescue-live/image/SETUPHELFER_WIN_DIAG" \
@@ -292,6 +295,8 @@ root = Path(${ROOT@Q})
 vp = root / "opt/setuphelfer-rescue/VERSION"
 vp.parent.mkdir(parents=True, exist_ok=True)
 vp.write_text(ver + "\n", encoding="utf-8")
+plain = root / "opt/setuphelfer-rescue/rescue_payload_version"
+plain.write_text(ver + "\n", encoding="utf-8")
 # rescue_payload_version.json
 payload = build_rescue_payload_version_json(ver)
 payload.update({k: data[k] for k in data if k.startswith("pi_rs_")})

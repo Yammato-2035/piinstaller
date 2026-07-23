@@ -1,5 +1,7 @@
 # AUTHORIZATION_RESULT
 
-Implementiert: `rescue_asus_lab_authorization.py` + Lab-YAML.
-
-Freigaben nur bei exact_match. BitLocker-Mutation hart verboten (Guard + Schema + API ohne Mutationsroute).
+- Profile `ASUS_ROG_GABRIEL_LAB` geladen
+- `bitlocker_mutation: false` erzwungen
+- Grants nur bei `exact_match`
+- Destructive zusätzlich: Disk-Fingerprint + `confirmed` Flag
+- Notice: FREIGABE GILT NUR FUER ASUS_ROG_GABRIEL_LAB

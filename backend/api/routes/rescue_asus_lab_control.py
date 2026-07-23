@@ -12,11 +12,13 @@ from fastapi import APIRouter, Body, HTTPException
 
 from core.rescue_asus_lab_authorization import (
     PROFILE_ID,
+    evaluate_disk_fingerprint_gate,
     evaluate_machine_identity_match,
     load_lab_target_profile,
     profile_authorization_hash,
 )
 from core.rescue_lab_job_contract import build_lab_job, validate_lab_job
+from core.rescue_lab_job_store import cancel_job, get_job, put_job
 from core.rescue_win11_live_capture import (
     finalize_capture_status,
     generate_win11_run_id,
@@ -57,7 +59,10 @@ def lab_target(profile_id: str) -> dict[str, Any]:
 def lab_identity_check(profile_id: str, body: dict[str, Any] = Body(...)) -> dict[str, Any]:
     if profile_id != PROFILE_ID:
         raise HTTPException(status_code=404, detail="unknown_lab_target")
-    return evaluate_machine_identity_match(observed=body)
+    match = evaluate_machine_identity_match(observed=body)
+    disks = body.get("disks") if isinstance(body.get("disks"), list) else None
+    disk_gate = evaluate_disk_fingerprint_gate(observed_disks=disks)
+    return {**match, "disk_gate": disk_gate}
 
 
 @router.get("/api/lab/authorization/{profile_id}")
@@ -133,7 +138,12 @@ def win11_capture_finalize(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
 @router.get("/api/rescue/win11-capture/{run_id}")
 def win11_capture_get(run_id: str) -> dict[str, Any]:
     gate = validate_run_id(run_id)
-    return {"run_id": run_id, "run_id_valid": gate["ok"], "status": "lookup_client_side_on_stick"}
+    return {
+        "run_id": run_id,
+        "run_id_valid": gate["ok"],
+        "status": "lookup_client_side_on_stick",
+        "hint": "Import SETUP_LOGS/asus-win11/<run_id>/ after physical run",
+    }
 
 
 @router.post("/api/lab/jobs/plan")
@@ -164,7 +174,25 @@ def lab_jobs_create(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
         parameters=body.get("parameters") if isinstance(body.get("parameters"), dict) else {},
         run_id=body.get("run_id"),
     )
+    return put_job(job)
+
+
+@router.get("/api/lab/jobs/{job_id}")
+def lab_jobs_get(job_id: str) -> dict[str, Any]:
+    job = get_job(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="job_not_found")
     return job
+
+
+@router.post("/api/lab/jobs/{job_id}/cancel")
+def lab_jobs_cancel(job_id: str, body: dict[str, Any] = Body(default={})) -> dict[str, Any]:
+    if get_job(job_id) is None:
+        raise HTTPException(status_code=404, detail="job_not_found")
+    try:
+        return cancel_job(job_id, reason=str(body.get("reason") or "operator_cancel"))
+    except ValueError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
 
 
 @router.post("/api/lab/jobs/{job_id}/validate")
@@ -176,4 +204,12 @@ def lab_jobs_validate(job_id: str, body: dict[str, Any] = Body(...)) -> dict[str
     result = validate_lab_job(job, observed_identity=observed, seen_nonces=_SEEN_NONCES)
     if result.get("ok") and job.get("nonce"):
         _SEEN_NONCES.add(str(job["nonce"]))
+        stored = get_job(job_id) or dict(job)
+        stored["state"] = "validated"
+        put_job(stored)
+    elif not result.get("ok"):
+        stored = get_job(job_id) or dict(job)
+        stored["state"] = "blocked"
+        stored["block_reasons"] = result.get("reasons")
+        put_job(stored)
     return result

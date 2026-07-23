@@ -1,23 +1,81 @@
 {
   "schema_version": 1,
   "ticket": "PI-RS-ASUS-LAB-CONTROL-006",
-  "critical_path": "A_instrumented_windows_setup_live_capture",
-  "deferred_paths": ["B_bios_335_first", "C_mint_lab_node_first"],
+  "critical_path": "A_instrumented_win11_live_capture",
+  "deferred_paths": [
+    "B_bios_335_first",
+    "C_mint_lab_node_first"
+  ],
   "plan_status": "ready",
   "items": [
-    {"id": "P01", "risk_class": "read_only", "remote_possible": true, "operator_onsite": false},
-    {"id": "P02", "risk_class": "read_only", "remote_possible": true, "operator_onsite": false},
-    {"id": "P03", "risk_class": "controlled", "remote_possible": true, "operator_onsite": false},
-    {"id": "P04", "risk_class": "controlled", "remote_possible": true, "operator_onsite": false},
-    {"id": "P05", "risk_class": "controlled", "remote_possible": "partial", "operator_onsite": true},
-    {"id": "P06", "risk_class": "controlled", "remote_possible": false, "operator_onsite": true},
-    {"id": "P07", "risk_class": "controlled", "remote_possible": true, "operator_onsite": false},
-    {"id": "P08", "risk_class": "controlled", "remote_possible": false, "operator_onsite": true},
-    {"id": "P09", "risk_class": "destructive", "remote_possible": false, "operator_onsite": true, "physical": true},
-    {"id": "P10", "risk_class": "firmware", "status": "plan_only"},
-    {"id": "P11", "risk_class": "destructive", "status": "plan_only"}
+    {
+      "id": "P01",
+      "risk_class": "read_only",
+      "remote_possible": true,
+      "operator_onsite": false
+    },
+    {
+      "id": "P02",
+      "risk_class": "read_only",
+      "remote_possible": true,
+      "operator_onsite": false
+    },
+    {
+      "id": "P03",
+      "risk_class": "controlled",
+      "remote_possible": true,
+      "operator_onsite": false
+    },
+    {
+      "id": "P04",
+      "risk_class": "controlled",
+      "remote_possible": true,
+      "operator_onsite": false
+    },
+    {
+      "id": "P05",
+      "risk_class": "controlled",
+      "remote_possible": "partial",
+      "operator_onsite": true
+    },
+    {
+      "id": "P06",
+      "risk_class": "controlled",
+      "remote_possible": false,
+      "operator_onsite": true
+    },
+    {
+      "id": "P07",
+      "risk_class": "controlled",
+      "remote_possible": true,
+      "operator_onsite": false
+    },
+    {
+      "id": "P08",
+      "risk_class": "controlled",
+      "remote_possible": false,
+      "operator_onsite": true
+    },
+    {
+      "id": "P09",
+      "risk_class": "destructive",
+      "remote_possible": false,
+      "operator_onsite": true,
+      "physical": true
+    },
+    {
+      "id": "P10",
+      "risk_class": "firmware",
+      "status": "plan_only"
+    },
+    {
+      "id": "P11",
+      "risk_class": "destructive",
+      "status": "plan_only"
+    }
   ],
   "bitlocker_mutation": false,
   "payload_baseline_observed": "1.10.2.9",
-  "payload_next": "1.10.3.0"
+  "payload_next": "1.10.3.1",
+  "stick_sha256": "56a37200d7c3c72ead3f9fd8584a57fa36b4e578013b64e6a8d38d3d76491026"
 }

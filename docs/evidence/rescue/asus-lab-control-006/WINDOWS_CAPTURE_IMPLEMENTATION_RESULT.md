@@ -1,6 +1,8 @@
 # WINDOWS_CAPTURE_IMPLEMENTATION_RESULT
 
-- Contract: `rescue_win11_live_capture.py`
-- WinPE live: `collect-win11-live-capture.ps1` + CMD Run-ID Gate
-- API: prepare/finalize/get under `/api/rescue/win11-capture/*`
-- unknown-norunid für kontrollierte Läufe unzulässig
+- Backend: `rescue_win11_live_capture.py` (Run-ID, SETUP_LOGS resolve, heartbeat, finalize)
+- WinPE/Setup: `collect-win11-live-capture.ps1` (periodisch, Label/TAG)
+- Wrapper: `run-win11-setup-wrapper.cmd`
+- API: prepare / finalize / get
+- Auf Stick + SETUP_LOGS synchronisiert (Payload 1.10.3.1)
+- Physischer instrumentierter Nachweis: ausstehend

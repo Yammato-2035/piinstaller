@@ -16,6 +16,7 @@ if str(_BACKEND) not in sys.path:
 from core.rescue_asus_lab_authorization import (  # noqa: E402
     PROFILE_ID,
     assert_action_allowed,
+    evaluate_disk_fingerprint_gate,
     evaluate_machine_identity_match,
     load_lab_target_profile,
 )
@@ -24,6 +25,7 @@ from core.rescue_bitlocker_mutation_guard import (  # noqa: E402
     redact_bitlocker_secrets,
 )
 from core.rescue_lab_job_contract import build_lab_job, validate_lab_job  # noqa: E402
+from core.rescue_lab_job_store import cancel_job, get_job, put_job  # noqa: E402
 from core.rescue_win11_live_capture import (  # noqa: E402
     finalize_capture_status,
     generate_win11_run_id,
@@ -86,6 +88,59 @@ class LabAuthTests(unittest.TestCase):
         match = evaluate_machine_identity_match(observed=observed, profile=prof)
         gate = assert_action_allowed(match_result=match, action="shell", bitlocker_mutation=True)
         self.assertFalse(gate["ok"])
+
+    def test_changed_disk_fingerprint_blocks_write(self) -> None:
+        import copy
+
+        prof = copy.deepcopy(load_lab_target_profile())
+        for d in prof["expected_internal_disks"]:
+            d["confirmed"] = True
+        observed = {
+            "manufacturer": "ASUSTeK COMPUTER INC.",
+            "board_name": "G513QM",
+            "product_name": "ROG Strix G513QM_G513QM",
+            "machine_id": prof["machine_id"],
+            "system_uuid_hash": prof["system_uuid_hash"],
+        }
+        match = evaluate_machine_identity_match(observed=observed, profile=prof)
+        wrong = [{"nvme_identity_hash": "deadbeef" * 8, "role": "linux_lab_nvme"}]
+        gate = assert_action_allowed(
+            match_result=match,
+            action="mint_install",
+            observed_disks=wrong,
+            required_disk_role="linux_lab_nvme",
+            profile=prof,
+        )
+        self.assertFalse(gate["ok"])
+        self.assertEqual(gate["blocked_reason"], "disk_fingerprint_mismatch")
+
+    def test_unconfirmed_roles_block_destructive(self) -> None:
+        prof = load_lab_target_profile()
+        observed = {
+            "manufacturer": "ASUSTeK COMPUTER INC.",
+            "board_name": "G513QM",
+            "product_name": "ROG Strix G513QM_G513QM",
+            "machine_id": prof["machine_id"],
+            "system_uuid_hash": prof["system_uuid_hash"],
+        }
+        match = evaluate_machine_identity_match(observed=observed, profile=prof)
+        disks = [
+            {"nvme_identity_hash": d["nvme_identity_hash"]} for d in prof["expected_internal_disks"]
+        ]
+        gate = assert_action_allowed(
+            match_result=match,
+            action="repartition",
+            observed_disks=disks,
+        )
+        self.assertFalse(gate["ok"])
+        self.assertEqual(gate["blocked_reason"], "disk_roles_unconfirmed")
+
+    def test_rescue_stick_label_rejected(self) -> None:
+        g = evaluate_disk_fingerprint_gate(
+            observed_disks=[{"nvme_identity_hash": "x", "label": "SETUP_LOGS"}]
+        )
+        self.assertFalse(g["ok"])
+        self.assertIn("rescue_stick_excluded", g["reasons"])
 
 
 class BitLockerGuardTests(unittest.TestCase):
@@ -221,12 +276,57 @@ class LabJobTests(unittest.TestCase):
         self.assertFalse(bad["ok"])
         self.assertIn("bitlocker_mutation_forbidden", bad["reasons"])
 
+    def test_expired_job_blocked(self) -> None:
+        from datetime import datetime, timedelta, timezone
+
+        key = b"test-key-lab-006"
+        prof = load_lab_target_profile()
+        job = build_lab_job(
+            action_type="diagnostic",
+            risk_class="read_only",
+            target_fingerprint=str(prof["machine_id"]),
+            requested_by="tester",
+            authorization_profile_hash="abc",
+            ttl_seconds=1,
+            signing_key=key,
+        )
+        observed = {
+            "manufacturer": "ASUSTeK COMPUTER INC.",
+            "board_name": "G513QM",
+            "product_name": "ROG Strix G513QM_G513QM",
+            "machine_id": prof["machine_id"],
+            "system_uuid_hash": prof["system_uuid_hash"],
+        }
+        future = datetime.now(timezone.utc) + timedelta(hours=2)
+        bad = validate_lab_job(
+            job, observed_identity=observed, seen_nonces=set(), signing_key=key, now=future
+        )
+        self.assertFalse(bad["ok"])
+        self.assertIn("job_expired", bad["reasons"])
+
+    def test_job_store_cancel_and_get(self) -> None:
+        key = b"test-key-lab-006"
+        prof = load_lab_target_profile()
+        job = build_lab_job(
+            action_type="diagnostic",
+            risk_class="read_only",
+            target_fingerprint=str(prof["machine_id"]),
+            requested_by="tester",
+            authorization_profile_hash="abc",
+            run_id=generate_win11_run_id(),
+            signing_key=key,
+        )
+        put_job(job)
+        self.assertEqual(get_job(job["job_id"])["job_id"], job["job_id"])
+        cancelled = cancel_job(job["job_id"])
+        self.assertEqual(cancelled["state"], "cancelled")
+
 
 class PayloadFlagTests(unittest.TestCase):
     def test_payload_flag(self) -> None:
         cfg = json.loads((_REPO / "config/rescue_payload_version.json").read_text(encoding="utf-8"))
-        self.assertEqual(cfg["rescue_payload_version"], "1.10.3.0")
-        self.assertEqual(cfg["previous_rescue_payload_version"], "1.10.2.9")
+        self.assertEqual(cfg["rescue_payload_version"], "1.10.3.1")
+        self.assertEqual(cfg["previous_rescue_payload_version"], "1.10.3.0")
         self.assertTrue(cfg.get("pi_rs_asus_lab_control_006"))
 
 

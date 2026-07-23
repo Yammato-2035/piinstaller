@@ -2,7 +2,7 @@
   "profile_id": "ASUS_ROG_GABRIEL_LAB",
   "bitlocker_mutation": false,
   "grants_require": "exact_match",
-  "msi_blocked": true,
-  "developer_asus_blocked": true,
-  "hostname_alone_insufficient": true
+  "disk_roles_confirmed": false,
+  "destructive_blocked_until_confirmed": true,
+  "notice": "FREIGABE GILT NUR FUER ASUS_ROG_GABRIEL_LAB"
 }

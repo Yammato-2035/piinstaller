@@ -1,7 +1,21 @@
-# Linux Mint ASUS Lab Node (plan-only)
+# LINUX_MINT_ASUS_LAB_NODE
 
-Ziel: `linux_lab_nvme` via `nvme_identity_hash=ed84…` (nicht Device-Name).
+## Status im Auftrag 006
 
-Eigene EFI auf Linux-NVMe; Agent enroll; remote job + reboot continue; Evidence upload.
+**Plan-only / deferred** bis nach instrumentiertem Win11-Live-Capture.
 
-Reihenfolge: nach instrumentiertem Win11-Lauf, sofern Evidence vorliegt — siehe `MINT_NODE_DECISION.md`.
+## Zielplatte
+
+Rolle `linux_lab_nvme`, Fingerprint `nvme_identity_hash=ed84d453…` — nie allein `/dev/nvme1n1`.
+
+## Geplante Struktur
+
+- Eigene EFI auf Linux-NVMe
+- Root (+ optional Home)
+- Separates SETUP_LAB / Evidence-Volume
+
+Windows-EFI nicht als primärer Linux-Bootloader-Speicher.
+
+## Nach Installation
+
+Lab-Agent, Enrollment, DCC, Telemetrie, Hardwareinventar, Remote-Shell/Reboot, Job-Fortsetzung, Evidence-Upload, lokaler Kill-Switch. Keine BitLocker-Mutation.

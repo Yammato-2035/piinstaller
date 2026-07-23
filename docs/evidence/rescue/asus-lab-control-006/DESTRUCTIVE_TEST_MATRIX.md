@@ -1,11 +1,12 @@
 # DESTRUCTIVE_TEST_MATRIX
 
-| Test | Ziel | Vorbedingung | Verify | Rollback | Status |
-|------|------|--------------|--------|----------|--------|
-| Partition Linux-NVMe | Mint layout | exact_match + hash ed84… | GPT/FS | Neuaufbau | plan-only |
-| Restore Linux-NVMe | Restore engine | verified backup | Hash/Boot | Re-Restore | plan-only |
-| Windows-EFI repair | EFI workflow | EFI backup | BCD/Boot | EFI backup | plan-only |
-| Secure-Boot lab | Key mgmt | export pre-state | Boot | restore keys | plan-only |
-| Full internal restore | E2E | image verified | Boot+Hash | re-restore | plan-only |
+| Test | Ziel | Vorbedingung | Verify | Rollback | Status diesmal |
+|------|------|--------------|--------|----------|----------------|
+| Partitionierung Linux-NVMe | Mint-Lab-Layout | exact identity + hash `ed84…` + confirmed | GPT/FS | Neuaufbau | plan-only |
+| Restore auf Linux-NVMe | Restore-Engine | Backup verifiziert | Hash/Boot | Re-Restore | plan-only |
+| Windows-EFI-Reparatur | EFI-Workflow | EFI-Backup | BCD/Boot | EFI-Backup | plan-only |
+| Secure-Boot-Lab | Key-Management | Export Pre-State | Bootprüfung | Restore Keys | plan-only |
+| kompletter interner Restore | Recovery-E2E | belastbares Image | Boot + Hash | erneuter Restore | plan-only |
 
-BitLocker mutation: never.
+Keine destruktive Mutation in dieser Session ausgeführt.
+BitLocker-Mutation: verboten.
