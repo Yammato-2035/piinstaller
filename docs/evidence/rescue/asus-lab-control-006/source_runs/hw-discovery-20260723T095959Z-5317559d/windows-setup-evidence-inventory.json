@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.1",
+  "mounts": [
+    {
+      "source": "/dev/nvme0n1p2",
+      "mountpoint": "/run/setuphelfer/hw-discovery-mnt/ntfs-ro-0",
+      "options": "ntfs-3g-bin",
+      "fstype": "ntfs-3g-bin",
+      "argv": [
+        "ntfs-3g",
+        "-o",
+        "ro,norecover"
+      ],
+      "exitcode": 0,
+      "read_only_confirmed": true,
+      "status": "mounted_ro",
+      "dirty_force_used": false,
+      "attempts": [
+        {
+          "label": "ntfs3",
+          "rc": 32,
+          "error": "mount: /run/setuphelfer/hw-discovery-mnt/ntfs-ro-0: unknown filesystem type 'ntfs3'.\n       dmesg(1) may have more information after failed mount system call.\n"
+        },
+        {
+          "label": "ntfs3-force",
+          "rc": 32,
+          "error": "mount: /run/setuphelfer/hw-discovery-mnt/ntfs-ro-0: unknown filesystem type 'ntfs3'.\n       dmesg(1) may have more information after failed mount system call.\n"
+        },
+        {
+          "label": "ntfs-3g-bin",
+          "rc": 0,
+          "error": ""
+        }
+      ]
+    }
+  ],
+  "files": [],
+  "scan_status": "insufficient_evidence",
+  "error_classes": [
+    "unknown"
+  ],
+  "panther_found": false,
+  "rollback_found": false,
+  "copied_file_count": 0,
+  "copy_errors": [],
+  "copy_root": "/run/setuphelfer/esp-rw/setuphelfer/evidence/physical_runs/hw-discovery-20260723T095959Z-5317559d/windows-setup-logs",
+  "export_root": "/run/setuphelfer/esp-rw/setuphelfer-win11-logs/linux-auto-hw-discovery-20260723T095959Z-5317559d",
+  "windows_files_modified": false,
+  "write_allowed": false,
+  "capture_status": "not_found"
+}

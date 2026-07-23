@@ -1,0 +1,24 @@
+[Unit]
+Description=Setuphelfer Rescue auto Win11 setup-log capture (G513QM / read-only)
+After=setuphelfer-rescue-setup-logs-resolver.service local-fs.target
+Wants=setuphelfer-rescue-setup-logs-resolver.service
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-win11-setup-log-capture-runner
+ConditionPathExists=/usr/local/sbin/setuphelfer-rescue-auto-win11-setup-log-capture-start-gate
+ConditionPathExists=!/run/setuphelfer-rescue/auto-win11-setup-log-capture.done
+ConditionKernelCommandLine=!setuphelfer_msi_e2e_auto=1
+ConditionKernelCommandLine=!setuphelfer_msi_lab_auto=1
+
+[Service]
+Type=oneshot
+TimeoutStartSec=1800
+Restart=no
+EnvironmentFile=-/run/setuphelfer-rescue/environment
+ExecCondition=/usr/local/sbin/setuphelfer-rescue-auto-win11-setup-log-capture-start-gate
+ExecStart=/usr/local/sbin/setuphelfer-rescue-auto-win11-setup-log-capture-runner
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
+TTYPath=
+
+[Install]
+WantedBy=multi-user.target

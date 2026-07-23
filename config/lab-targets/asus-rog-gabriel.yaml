@@ -1,0 +1,51 @@
+# Machine-bound lab target — PI-RS-ASUS-LAB-CONTROL-006
+# Hashes only; no raw serials. Device names are not identity.
+profile_id: ASUS_ROG_GABRIEL_LAB
+authorization_scope: machine_bound
+manufacturer: "ASUSTeK COMPUTER INC."
+product_name: "ROG Strix G513QM_G513QM"
+product_family: "ROG Strix"
+board_name: "G513QM"
+board_serial_hash: ""
+system_uuid_hash: "fd11cf4334c1081a5ef358f615417c3f"
+machine_id: "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9"
+bios_vendor: "American Megatrends International, LLC."
+bios_version_baseline: "G513QM.331"
+bios_date_baseline: "02/24/2023"
+cpu_model: ""
+gpu_inventory: []
+tpm_present: null
+secure_boot_state: ""
+expected_internal_disks:
+  - role: windows_nvme
+    model: "Samsung SSD 970 EVO Plus 2TB"
+    serial_hash: "c637055cc164eacf318916954783d1a3abadef888e6c8e57715f67710395f6a0"
+    nvme_identity_hash: "6b45cc50d930d46e55b9d56e73b7540e03329164619069dd784a8273cb33d031"
+    eui_hash: ""
+    wwn_hash: ""
+    size_bytes: 2000398934016
+    pci_path_hint: "0000:00:02.4"
+    confirmed: false
+  - role: linux_lab_nvme
+    model: "Samsung SSD 970 EVO Plus 2TB"
+    serial_hash: "84d4cc6f1c6b0cb7a80b092f7fa2c9a18b238f3794415fc9b14883b21b4fd082"
+    nvme_identity_hash: "ed84d453078b002bb70e496cefbb1d4c18fd3b783c0e8483703a770cb087c94a"
+    eui_hash: ""
+    wwn_hash: ""
+    size_bytes: 2000398934016
+    pci_path_hint: "0000:00:02.3"
+    confirmed: false
+authorization:
+  bios_flash: true
+  disk_delete: true
+  repartition: true
+  internal_restore: true
+  windows_efi_change: true
+  secure_boot_key_management: true
+  unrestricted_shell: true
+  bitlocker_mutation: false
+  mint_install_linux_lab_nvme: true
+notes:
+  - "Device paths /dev/nvmeXnY are capture-time only."
+  - "BitLocker mutation is always false regardless of other grants."
+  - "Disk role confirmation still required before destructive Stage actions."

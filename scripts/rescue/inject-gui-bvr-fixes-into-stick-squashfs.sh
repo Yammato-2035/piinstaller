@@ -116,6 +116,28 @@ inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-asus-rog-bios-
   "${IMG}/setuphelfer-rescue-asus-rog-bios-gate"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-hardware-discovery" \
   "${IMG}/setuphelfer-rescue-hardware-discovery"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-auto-win11-setup-log-capture-start-gate" \
+  "${IMG}/setuphelfer-rescue-auto-win11-setup-log-capture-start-gate"
+inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-auto-win11-setup-log-capture-runner" \
+  "${IMG}/setuphelfer-rescue-auto-win11-setup-log-capture-runner"
+inject "${REPO_ROOT}/scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-win11-setup-log-capture.service" \
+  "${ROOT}/etc/systemd/system/setuphelfer-rescue-auto-win11-setup-log-capture.service"
+inject "${REPO_ROOT}/backend/core/rescue_auto_win11_setup_log_capture.py" \
+  "${BE}/core/rescue_auto_win11_setup_log_capture.py"
+inject "${REPO_ROOT}/backend/core/rescue_hardware_discovery_capture.py" \
+  "${BE}/core/rescue_hardware_discovery_capture.py"
+inject "${REPO_ROOT}/backend/core/rescue_asus_lab_authorization.py" \
+  "${BE}/core/rescue_asus_lab_authorization.py"
+inject "${REPO_ROOT}/backend/core/rescue_bitlocker_mutation_guard.py" \
+  "${BE}/core/rescue_bitlocker_mutation_guard.py"
+inject "${REPO_ROOT}/backend/core/rescue_win11_live_capture.py" \
+  "${BE}/core/rescue_win11_live_capture.py"
+inject "${REPO_ROOT}/backend/core/rescue_lab_job_contract.py" \
+  "${BE}/core/rescue_lab_job_contract.py"
+inject "${REPO_ROOT}/backend/api/routes/rescue_asus_lab_control.py" \
+  "${BE}/api/routes/rescue_asus_lab_control.py"
+inject "${REPO_ROOT}/config/lab-targets/asus-rog-gabriel.yaml" \
+  "${ROOT}/opt/setuphelfer-rescue/config/lab-targets/asus-rog-gabriel.yaml"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-pi5-lab" \
   "${IMG}/setuphelfer-rescue-pi5-lab"
 inject "${REPO_ROOT}/scripts/rescue-live/image/setuphelfer-rescue-tui-deadline" \
@@ -166,6 +188,8 @@ ln -sf ../setuphelfer-rescue-tui-deadline.timer \
   "${ROOT}/etc/systemd/system/timers.target.wants/setuphelfer-rescue-tui-deadline.timer"
 ln -sf ../setuphelfer-rescue-tui-deadline.timer \
   "${ROOT}/etc/systemd/system/basic.target.wants/setuphelfer-rescue-tui-deadline.timer"
+ln -sf ../setuphelfer-rescue-auto-win11-setup-log-capture.service \
+  "${ROOT}/etc/systemd/system/multi-user.target.wants/setuphelfer-rescue-auto-win11-setup-log-capture.service"
 # Drop debug probe if a previous inject left it enabled.
 rm -f "${ROOT}/etc/systemd/system/basic.target.wants/setuphelfer-rescue-tui-probe.service" \
   "${ROOT}/etc/systemd/system/multi-user.target.wants/setuphelfer-rescue-tui-probe.service" \
@@ -182,6 +206,8 @@ for name in setuphelfer-rescue-tui setuphelfer-rescue-common.sh \
             setuphelfer-rescue-entrypoint setuphelfer-rescue-entrypoint.sh \
             setuphelfer-rescue-asus-rog-bios-gate setuphelfer-rescue-pi5-lab \
             setuphelfer-rescue-hardware-discovery \
+            setuphelfer-rescue-auto-win11-setup-log-capture-start-gate \
+            setuphelfer-rescue-auto-win11-setup-log-capture-runner \
             setuphelfer-rescue-tui-deadline \
             setuphelfer-rescue-physical-e2e setuphelfer-rescue-physical-e2e-start-gate \
             setuphelfer-rescue-auto-physical-e2e \
@@ -290,25 +316,48 @@ if unit.is_file():
 print("payload", ver)
 PY
 
-# Ensure ntfs-3g userspace exists for dirty NTFS RO Panther capture (FUSE type
-# is often not registered for `mount -t ntfs-3g` on the live image).
-echo "[INFO] inject host ntfs-3g helpers if missing…"
-if [[ -x /usr/bin/ntfs-3g ]]; then
-  mkdir -p "${ROOT}/usr/bin" "${ROOT}/bin" "${ROOT}/usr/sbin" \
-    "${ROOT}/lib/x86_64-linux-gnu" "${ROOT}/usr/lib/x86_64-linux-gnu"
-  cp -a /usr/bin/ntfs-3g "${ROOT}/usr/bin/ntfs-3g"
-  cp -a /usr/bin/ntfs-3g "${ROOT}/bin/ntfs-3g"
+# NTFS RO for Panther: Debian bookworm ntfs-3g (live kernel has CONFIG_NTFS3_FS=n).
+# Never inject host Ubuntu 24.04 ntfs-3g — it needs GLIBC_2.38 and breaks on Debian 12 live.
+echo "[INFO] inject Debian-bookworm-compatible ntfs-3g + fuse3…"
+NTFS_VENDOR="${REPO_ROOT}/scripts/rescue/vendor/ntfs-3g-debian-bookworm"
+mkdir -p "${ROOT}/usr/bin" "${ROOT}/bin" "${ROOT}/usr/sbin" "${ROOT}/sbin" \
+  "${ROOT}/lib/x86_64-linux-gnu" "${ROOT}/usr/lib/x86_64-linux-gnu"
+if [[ -x "${NTFS_VENDOR}/usr/bin/ntfs-3g" || -x "${NTFS_VENDOR}/bin/ntfs-3g" ]]; then
+  _ntfs_bin="${NTFS_VENDOR}/usr/bin/ntfs-3g"
+  [[ -x "$_ntfs_bin" ]] || _ntfs_bin="${NTFS_VENDOR}/bin/ntfs-3g"
+  cp -a "$_ntfs_bin" "${ROOT}/usr/bin/ntfs-3g"
+  cp -a "$_ntfs_bin" "${ROOT}/bin/ntfs-3g"
   chmod 755 "${ROOT}/usr/bin/ntfs-3g" "${ROOT}/bin/ntfs-3g"
   ln -sfn /usr/bin/ntfs-3g "${ROOT}/usr/sbin/mount.ntfs-3g"
-  ln -sfn /usr/bin/ntfs-3g "${ROOT}/sbin/mount.ntfs-3g" 2>/dev/null || \
-    (mkdir -p "${ROOT}/sbin" && ln -sfn /usr/bin/ntfs-3g "${ROOT}/sbin/mount.ntfs-3g")
-  if [[ -f /lib/x86_64-linux-gnu/libntfs-3g.so.89 ]]; then
-    cp -a /lib/x86_64-linux-gnu/libntfs-3g.so.89* "${ROOT}/lib/x86_64-linux-gnu/" || true
-    cp -a /lib/x86_64-linux-gnu/libntfs-3g.so.89* "${ROOT}/usr/lib/x86_64-linux-gnu/" || true
+  ln -sfn /usr/bin/ntfs-3g "${ROOT}/sbin/mount.ntfs-3g"
+  if [[ -e "${NTFS_VENDOR}/lib/x86_64-linux-gnu/libntfs-3g.so.89" ]]; then
+    cp -a "${NTFS_VENDOR}/lib/x86_64-linux-gnu/libntfs-3g.so.89"* \
+      "${ROOT}/lib/x86_64-linux-gnu/" || true
+    cp -a "${NTFS_VENDOR}/lib/x86_64-linux-gnu/libntfs-3g.so.89"* \
+      "${ROOT}/usr/lib/x86_64-linux-gnu/" || true
   fi
-  echo "[OK] ntfs-3g userspace injected"
+  if [[ -x "${NTFS_VENDOR}/usr/bin/fusermount3" ]]; then
+    cp -a "${NTFS_VENDOR}/usr/bin/fusermount3" "${ROOT}/usr/bin/fusermount3"
+    cp -a "${NTFS_VENDOR}/usr/bin/fusermount3" "${ROOT}/bin/fusermount3" 2>/dev/null || true
+    chmod 755 "${ROOT}/usr/bin/fusermount3" 2>/dev/null || true
+  fi
+  if [[ -e "${NTFS_VENDOR}/lib/x86_64-linux-gnu/libfuse3.so.3" ]]; then
+    cp -aL "${NTFS_VENDOR}/lib/x86_64-linux-gnu/libfuse3.so.3"* \
+      "${ROOT}/lib/x86_64-linux-gnu/" || true
+    cp -aL "${NTFS_VENDOR}/lib/x86_64-linux-gnu/libfuse3.so.3"* \
+      "${ROOT}/usr/lib/x86_64-linux-gnu/" || true
+  fi
+  # Prove binary does not require GLIBC newer than 2.36 (Debian 12).
+  if command -v readelf >/dev/null 2>&1; then
+    if readelf -V "${ROOT}/usr/bin/ntfs-3g" 2>/dev/null | grep -qE 'Name: GLIBC_2\.(3[8-9]|[4-9][0-9])'; then
+      echo "[ERROR] injected ntfs-3g still requires GLIBC >= 2.38" >&2
+      exit 1
+    fi
+  fi
+  echo "[OK] bookworm ntfs-3g + fuse3 injected from vendor"
 else
-  echo "[WARN] host /usr/bin/ntfs-3g missing — dirty NTFS force mount may fail"
+  echo "[ERROR] missing vendor ntfs-3g at ${NTFS_VENDOR}" >&2
+  exit 1
 fi
 
 # NetworkManager refuses plugins not owned by root (squashfs inject can preserve wrong uid).

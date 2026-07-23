@@ -1,0 +1,12 @@
+{
+  "profile_id": "ASUS_ROG_GABRIEL_LAB",
+  "machine_id": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+  "system_uuid_hash": "fd11cf4334c1081a5ef358f615417c3f",
+  "board_name": "G513QM",
+  "bios_version_baseline": "G513QM.331",
+  "windows_nvme_identity_hash": "6b45cc50d930d46e55b9d56e73b7540e03329164619069dd784a8273cb33d031",
+  "linux_nvme_identity_hash": "ed84d453078b002bb70e496cefbb1d4c18fd3b783c0e8483703a770cb087c94a",
+  "match_expected_for_grants": "exact_match",
+  "source_run": "hw-discovery-20260723T095959Z-5317559d",
+  "disk_roles_confirmed": false
+}

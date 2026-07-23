@@ -9,10 +9,22 @@ set "OUT_ROOT="
 set "STAMP="
 set "RUN_ID="
 
+REM Prefer operator-provided Run-ID (never unknown-norunid for controlled runs).
+if defined SETUPHELFER_WIN11_RUN_ID set "RUN_ID=%SETUPHELFER_WIN11_RUN_ID%"
+if "%RUN_ID%"=="" (
+  for /f %%I in ('powershell -NoProfile -Command "$ts=(Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ'); $s=-join((0..7)|ForEach-Object{'{0:x}' -f (Get-Random -Max 16)}); Write-Output ('asus-win11-'+$ts+'-'+$s)"') do set "RUN_ID=%%I"
+)
+if "%RUN_ID%"=="" (
+  echo [setuphelfer] ERROR: could not allocate run_id
+  exit /b 3
+)
+echo %RUN_ID% | findstr /I "norunid unknown" >nul && (
+  echo [setuphelfer] ERROR: forbidden run_id %RUN_ID%
+  exit /b 3
+)
+
 for /f %%I in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd-HHmmss"') do set "STAMP=%%I"
 if "%STAMP%"=="" set "STAMP=unknown"
-for /f %%I in ('powershell -NoProfile -Command "[guid]::NewGuid().ToString(\"N\").Substring(0,8)"') do set "RUN_ID=%%I"
-if "%RUN_ID%"=="" set "RUN_ID=norunid"
 
 echo [setuphelfer] Searching for SETUP_LOGS destination...
 for %%D in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
@@ -42,15 +54,23 @@ if "%OUT_ROOT%"=="" (
   exit /b 2
 )
 
-set "RUN_DIR=%OUT_ROOT%\%STAMP%-%RUN_ID%"
+set "RUN_DIR=%OUT_ROOT%\asus-win11\%RUN_ID%"
 mkdir "%RUN_DIR%" 2>nul
+mkdir "%RUN_DIR%\winpe" 2>nul
 echo [setuphelfer] Output: %RUN_DIR%
 
-echo setuphelfer_win_diag=1> "%RUN_DIR%\collector_meta.txt"
-echo stamp=%STAMP%>> "%RUN_DIR%\collector_meta.txt"
-echo run_id=%RUN_ID%>> "%RUN_DIR%\collector_meta.txt"
-echo computername=%COMPUTERNAME%>> "%RUN_DIR%\collector_meta.txt"
-echo date=%DATE% %TIME%>> "%RUN_DIR%\collector_meta.txt"
+REM Live periodic capture when PS1 present (primary path for LAB-CONTROL-006).
+if exist "%SCRIPT_DIR%collect-win11-live-capture.ps1" (
+  set "SETUPHELFER_WIN11_RUN_ID=%RUN_ID%"
+  if "%SETUPHELFER_WIN11_CAPTURE_ONCE%"=="" set "SETUPHELFER_WIN11_CAPTURE_ONCE=1"
+  powershell -NoProfile -ExecutionPolicy Bypass -File "%SCRIPT_DIR%collect-win11-live-capture.ps1" -RunId "%RUN_ID%" -OutRoot "%OUT_ROOT%\.."
+)
+
+echo setuphelfer_win_diag=1> "%RUN_DIR%\winpe\collector_meta.txt"
+echo stamp=%STAMP%>> "%RUN_DIR%\winpe\collector_meta.txt"
+echo run_id=%RUN_ID%>> "%RUN_DIR%\winpe\collector_meta.txt"
+echo computername=%COMPUTERNAME%>> "%RUN_DIR%\winpe\collector_meta.txt"
+echo date=%DATE% %TIME%>> "%RUN_DIR%\winpe\collector_meta.txt"
 
 REM Boot / time info
 echo. > "%RUN_DIR%\boot_time.txt"

@@ -2630,6 +2630,15 @@ except ImportError:
     pass
 
 try:
+    from api.routes.rescue_asus_lab_control import router as rescue_asus_lab_control_router
+    app.include_router(rescue_asus_lab_control_router)
+except Exception:
+    logger.exception(
+        "ASUS-Lab-Control-Router konnte nicht registriert werden; "
+        "/api/lab/* und /api/rescue/win11-capture/* fehlen dann."
+    )
+
+try:
     from rescue_telemetry.routers import router as rescue_telemetry_router
 
     app.include_router(rescue_telemetry_router)

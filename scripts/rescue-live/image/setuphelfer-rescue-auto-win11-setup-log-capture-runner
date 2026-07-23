@@ -1,0 +1,196 @@
+#!/bin/bash
+# Autonomous G513QM Windows Setup log capture → SETUP_LOGS (read-only NVMe).
+set -uo pipefail
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=setuphelfer-rescue-common.sh
+source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh" 2>/dev/null || true
+
+setuphelfer_rescue_ensure_state_dir 2>/dev/null || true
+if [[ -f /run/setuphelfer-rescue/environment ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source /run/setuphelfer-rescue/environment
+  set +a
+fi
+
+_marker="${SETUPHELFER_RESCUE_STATE_DIR:-/run/setuphelfer-rescue}/auto-win11-setup-log-capture.done"
+_log="${SETUPHELFER_RESCUE_STATE_DIR:-/run/setuphelfer-rescue}/auto-win11-setup-log-capture.log"
+mkdir -p "$(dirname "$_log")" 2>/dev/null || true
+
+{
+  echo "=== auto-win11-setup-log-capture $(date -u +%Y-%m-%dT%H:%M:%SZ) ==="
+} >>"$_log"
+
+_tty_banner() {
+  # Clear-ish, high-visibility operator panel on tty1.
+  {
+    printf '\n\n'
+    printf '############################################################\n'
+    printf '#  SETUPHELFER — WINDOWS-SETUP-LOGS (nur Lesen)            #\n'
+    printf '############################################################\n'
+    printf '%s\n' "$@"
+    printf '############################################################\n\n'
+  } >/dev/tty1 2>/dev/null || true
+}
+
+# Ensure FUSE is available for ntfs-3g force RO mounts.
+modprobe fuse 2>>"$_log" || true
+
+# Wait briefly for SETUP_LOGS resolver / udisks.
+_evidence=""
+for _ in $(seq 1 60); do
+  for cand in \
+    /run/setuphelfer/esp-rw/setuphelfer/evidence \
+    /media/*/SETUP_LOGS/setuphelfer/evidence \
+    /media/*/SETUP_LOGS2/setuphelfer/evidence; do
+    for p in $cand; do
+      if [[ -d "$p" ]]; then
+        _evidence="$p"
+        break 3
+      fi
+    done
+  done
+  sleep 2
+done
+if [[ -z "$_evidence" ]]; then
+  _evidence="/run/setuphelfer/hardware-discovery-evidence"
+  mkdir -p "$_evidence"
+  echo "WARN: SETUP_LOGS not found — using ${_evidence}" >>"$_log"
+fi
+
+_tty_banner \
+  "# Status: starte automatische Sammlung…" \
+  "# Stick NICHT entfernen." \
+  "# Schreibzugriff NVMe/BIOS: GESPERRT"
+
+_hw="${SCRIPT_DIR}/setuphelfer-rescue-hardware-discovery"
+[[ -x "$_hw" ]] || _hw="/usr/local/sbin/setuphelfer-rescue-hardware-discovery"
+if [[ ! -x "$_hw" ]]; then
+  echo "ERROR: hardware-discovery missing" >>"$_log"
+  _tty_banner "# FEHLER: Hardwarediagnose-Skript fehlt." "# Bitte Stick zurückgeben."
+  exit 1
+fi
+
+export SETUPHELFER_HW_DISCOVERY_EVIDENCE_ROOT="$_evidence"
+# Auto Gabriel diagnostics bind (phrase + confirmed). Still write_allowed=false.
+set +e
+"$_hw" --operator-confirmed --operator-phrase "Dies ist Gabriels ASUS ROG Strix G513QM." \
+  >>"$_log" 2>&1
+_rc=$?
+set -e
+
+# Mark done even on partial so we do not loop forever this boot.
+date -u +%Y-%m-%dT%H:%M:%SZ >"$_marker" 2>/dev/null || true
+
+_last="/run/setuphelfer-rescue/hardware-discovery-last.json"
+_panther="false"
+_rollback="false"
+_end="unknown"
+_run_id=""
+_copied="0"
+_mount_err=""
+_win_status=""
+if [[ -f "$_last" ]]; then
+  _panther="$(python3 -c 'import json,sys; from pathlib import Path; d=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")); print("true" if d.get("panther_found") else "false")' "$_last" 2>/dev/null || echo false)"
+  _rollback="$(python3 -c 'import json,sys; from pathlib import Path; d=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")); print("true" if d.get("rollback_found") else "false")' "$_last" 2>/dev/null || echo false)"
+  _end="$(python3 -c 'import json,sys; from pathlib import Path; print(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")).get("endstatus",""))' "$_last" 2>/dev/null || true)"
+  _run_id="$(python3 -c 'import json,sys; from pathlib import Path; print(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")).get("run_id",""))' "$_last" 2>/dev/null || true)"
+  _copied="$(python3 -c 'import json,sys; from pathlib import Path; print(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")).get("copied_file_count",0))' "$_last" 2>/dev/null || echo 0)"
+  _win_status="$(python3 -c 'import json,sys; from pathlib import Path; print(json.loads(Path(sys.argv[1]).read_text(encoding="utf-8")).get("windows_setup_logs_status",""))' "$_last" 2>/dev/null || true)"
+fi
+
+# Prefer mount error from newest run inventory under evidence.
+if [[ -n "$_run_id" && -f "${_evidence}/physical_runs/${_run_id}/windows-setup-error-summary.json" ]]; then
+  _mount_err="$(python3 -c '
+import json,sys
+from pathlib import Path
+d=json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+ms=d.get("mounts") or []
+print(((ms[0].get("error") if ms else "") or "")[:240])
+' "${_evidence}/physical_runs/${_run_id}/windows-setup-error-summary.json" 2>/dev/null || true)"
+fi
+
+_tag_dir="$(dirname "$_evidence")"
+_stick="$(dirname "$_tag_dir")"
+mkdir -p "$_tag_dir" 2>/dev/null || true
+mkdir -p "${_stick}/setuphelfer-win11-logs" 2>/dev/null || true
+
+_ok_line="NEIN — Panther/Rollback fehlen"
+_verdict="LOGS_FEHLEN"
+_operator_action="Stick nach dem Herunterfahren entfernen und zurückgeben. Kein BIOS-Flash."
+if [[ "$_panther" == "true" || "$_rollback" == "true" ]]; then
+  _ok_line="JA — Windows-Setup-Logs kopiert"
+  _verdict="LOGS_OK"
+  _operator_action="Erfolg. Stick herunterfahren und zurückgeben."
+fi
+
+{
+  echo "schema=setuphelfer.auto_win11_setup_log_capture.v1"
+  echo "completed_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "evidence_root=${_evidence}"
+  echo "run_id=${_run_id}"
+  echo "panther_found=${_panther}"
+  echo "rollback_found=${_rollback}"
+  echo "copied_file_count=${_copied}"
+  echo "windows_setup_logs_status=${_win_status}"
+  echo "endstatus=${_end}"
+  echo "verdict=${_verdict}"
+  echo "rc=${_rc}"
+  echo "write_allowed=false"
+} >"${_tag_dir}/AUTO_WIN11_LOG_CAPTURE.TAG" 2>/dev/null || true
+
+# Human-readable operator panel on the stick (FAT32).
+_status_txt="${_stick}/OPERATOR_WIN11_LOG_STATUS.txt"
+{
+  echo "============================================================"
+  echo "SETUPHELFER — Windows-Setup-Log Capture (ASUS G513QM)"
+  echo "============================================================"
+  echo "Zeit (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "Ergebnis:   ${_ok_line}"
+  echo "Verdict:    ${_verdict}"
+  echo "Run-ID:     ${_run_id}"
+  echo "Panther:    ${_panther}"
+  echo "Rollback:   ${_rollback}"
+  echo "Kopiert:    ${_copied} Dateien"
+  echo "Status:     ${_win_status}"
+  echo "Endstatus:  ${_end}"
+  echo "NVMe/BIOS:  Schreibzugriff GESPERRT"
+  if [[ -n "$_mount_err" ]]; then
+    echo "Mount-Hinweis:"
+    echo "  ${_mount_err}"
+  fi
+  echo
+  echo "Nächster Schritt:"
+  echo "  ${_operator_action}"
+  echo "============================================================"
+} >"$_status_txt" 2>/dev/null || true
+
+cp -a "${_tag_dir}/AUTO_WIN11_LOG_CAPTURE.TAG" \
+  "${_stick}/setuphelfer-win11-logs/AUTO_WIN11_LOG_CAPTURE.TAG" 2>/dev/null || true
+cp -a "$_status_txt" \
+  "${_stick}/setuphelfer-win11-logs/OPERATOR_WIN11_LOG_STATUS.txt" 2>/dev/null || true
+
+if [[ "$_verdict" == "LOGS_OK" ]]; then
+  _tty_banner \
+    "# ERGEBNIS: ${_ok_line}" \
+    "# Run: ${_run_id}" \
+    "# Kopierte Dateien: ${_copied}" \
+    "# ${_operator_action}"
+else
+  _tty_banner \
+    "# ERGEBNIS: ${_ok_line}" \
+    "# Run: ${_run_id}" \
+    "# Win-Status: ${_win_status}" \
+    "# Mount: ${_mount_err:0:70}" \
+    "# ${_operator_action}"
+fi
+
+# Also leave a short hold message for TUI/getty users.
+if [[ -c /dev/tty1 ]] && command -v whiptail >/dev/null 2>&1; then
+  _wt=/dev/tty1
+  whiptail --title "Windows-Setup-Logs — Ergebnis" --msgbox \
+    "Ergebnis: ${_ok_line}\n\nRun: ${_run_id}\nPanther: ${_panther}\nRollback: ${_rollback}\nKopiert: ${_copied}\n\n${_operator_action}\n\nDetails: OPERATOR_WIN11_LOG_STATUS.txt auf dem Stick." \
+    18 72 3>&1 1>"$_wt" 2>&3 || true
+fi
+
+exit 0

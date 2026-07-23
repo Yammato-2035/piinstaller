@@ -585,20 +585,34 @@ PY
 import json
 from pathlib import Path
 d = json.loads(Path("${last}").read_text(encoding="utf-8"))
-print("\\n".join([
+panther = d.get("panther_found")
+rollback = d.get("rollback_found")
+copied = d.get("copied_file_count")
+win_st = d.get("windows_setup_logs_status")
+lines = [
     "Run-ID: " + str(d.get("run_id")),
     "Boot-ID: " + str(d.get("boot_id")),
     "Status: " + str(d.get("status")) + " terminal=" + str(d.get("terminal")),
     "Endstatus: " + str(d.get("endstatus")),
     "NVMe count: " + str(d.get("device_count")),
+    "Windows-Logs Status: " + str(win_st),
+    "Panther gefunden: " + str(panther),
+    "Rollback gefunden: " + str(rollback),
+    "Kopierte Log-Dateien: " + str(copied),
     "GUI: " + str(d.get("gui_status") or "not_applicable_for_text_hardware_discovery"),
     "Schreibzugriffe: gesperrt",
-    str(d.get("stick_remove_hint") or "Diagnose abgeschlossen – Stick kann nach dem Herunterfahren entfernt werden."),
-]))
+]
+if panther or rollback:
+    lines.append("ERGEBNIS: Windows-Setup-Logs OK — Stick nach Shutdown entfernen.")
+else:
+    lines.append("ERGEBNIS: KEINE Panther/Rollback-Logs — Stick zurückgeben.")
+    lines.append("Hinweis: OPERATOR_WIN11_LOG_STATUS.txt auf dem Stick prüfen.")
+lines.append(str(d.get("stick_remove_hint") or "Diagnose abgeschlossen – Stick kann nach dem Herunterfahren entfernt werden."))
+print("\\n".join(lines))
 PY
 )"
   fi
-  whiptail --title "Hardwarediagnose — Ergebnis" --msgbox "$body" 18 74 3>&1 1>"$_wt" 2>&3 || true
+  whiptail --title "Hardwarediagnose — Ergebnis" --msgbox "$body" 22 74 3>&1 1>"$_wt" 2>&3 || true
 }
 
 _tui_run_pi5_lab() {

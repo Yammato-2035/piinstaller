@@ -1,0 +1,86 @@
+{
+  "schema_version": "1.1",
+  "rows": [
+    {
+      "hypothesis": "NVMe-Hardwarefehler",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "plausible",
+      "next_test": "error-log + controlled retest"
+    },
+    {
+      "hypothesis": "NVMe-Firmware",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "compare firmware vs Samsung release notes"
+    },
+    {
+      "hypothesis": "GPT-/Partitionsfehler",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "read-only sgdisk/parted inventory"
+    },
+    {
+      "hypothesis": "EFI-/Bootloaderfehler",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "efibootmgr -v on Gabriel"
+    },
+    {
+      "hypothesis": "Storage-Treiber",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "Panther/setupapi.dev.log"
+    },
+    {
+      "hypothesis": "BIOS G513QM.331",
+      "evidence_for": "official newer 335 available",
+      "evidence_against": "no changelog-proven Windows-11 abort link in this capture",
+      "rating": "plausible",
+      "next_test": "review ASUS changelog; optional operator BIOS update outside this ticket"
+    },
+    {
+      "hypothesis": "Installationsmedium",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "media hash + structure check"
+    },
+    {
+      "hypothesis": "RAM-Instabilität",
+      "evidence_for": "MCE hits",
+      "evidence_against": "",
+      "rating": "plausible",
+      "next_test": "memtest smoke"
+    },
+    {
+      "hypothesis": "Strom/Temperatur",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "AC-only retest"
+    },
+    {
+      "hypothesis": "Windows-Image",
+      "evidence_for": "",
+      "evidence_against": "",
+      "rating": "insufficient_evidence",
+      "next_test": "controlled retest with log collection"
+    },
+    {
+      "hypothesis": "zweite NVMe beeinflusst Setup",
+      "evidence_for": "dual internal NVMe present",
+      "evidence_against": "",
+      "rating": "plausible",
+      "next_test": "single-target install planning after identity bind"
+    }
+  ],
+  "likely_cause": "unknown",
+  "confidence": "low",
+  "panther_or_rollback_present": false,
+  "write_allowed": false
+}

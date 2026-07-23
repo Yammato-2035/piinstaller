@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 import re
+import shutil
 import subprocess
 import traceback
 import uuid
@@ -665,6 +666,8 @@ def mount_ntfs_read_only(
     """
     run = run or _default_run
     mount_point.mkdir(parents=True, exist_ok=True)
+    # ntfs-3g needs FUSE; ignore failure if already loaded or unavailable.
+    run(["modprobe", "fuse"], 10.0)
 
     # (label, argv_without_source_mountpoint, ok_status)
     attempts: list[tuple[str, list[str], str]] = [
@@ -683,10 +686,18 @@ def mount_ntfs_read_only(
         )
 
     last_err = ""
+    attempts_log: list[dict[str, Any]] = []
     for label, argv, ok_status in attempts:
         cmd = [*argv, source, str(mount_point)]
         rc, out, err = run(cmd, 30.0)
         last_err = (err or out or "")[:500]
+        attempts_log.append(
+            {
+                "label": label,
+                "rc": rc,
+                "error": last_err[:300] if rc != 0 else "",
+            }
+        )
         if rc != 0:
             continue
         _rc_f, findmnt, _err_f = run(["findmnt", "-no", "OPTIONS", str(mount_point)], 5.0)
@@ -702,6 +713,7 @@ def mount_ntfs_read_only(
                 "read_only_confirmed": False,
                 "status": "ntfs_read_only_mount_blocked",
                 "error": "mount_not_read_only",
+                "attempts": attempts_log,
             }
         return {
             "source": source,
@@ -713,6 +725,7 @@ def mount_ntfs_read_only(
             "read_only_confirmed": True,
             "status": ok_status,
             "dirty_force_used": ok_status == "mounted_ro_force_recovery",
+            "attempts": attempts_log,
         }
     return {
         "source": source,
@@ -722,6 +735,8 @@ def mount_ntfs_read_only(
         "read_only_confirmed": False,
         "status": "ntfs_read_only_mount_blocked",
         "error": last_err or "mount_failed",
+        "attempts": attempts_log,
+        "hint": "live_kernel_may_lack_ntfs3_use_bookworm_ntfs-3g",
     }
 
 
@@ -735,11 +750,20 @@ def collect_windows_setup_logs(
     work_root: Path,
     run: RunFn | None = None,
     nvme_hash_by_part: Mapping[str, str] | None = None,
+    copy_root: Path | None = None,
+    export_root: Path | None = None,
 ) -> dict[str, Any]:
+    """Scan and copy Panther/Rollback evidence off NTFS (read-only mounts only)."""
     run = run or _default_run
     mounts: list[dict[str, Any]] = []
     files: list[dict[str, Any]] = []
     roots: list[Path] = []
+    copied_count = 0
+    copy_errors: list[str] = []
+    if copy_root is not None:
+        copy_root.mkdir(parents=True, exist_ok=True)
+    if export_root is not None:
+        export_root.mkdir(parents=True, exist_ok=True)
     for idx, source in enumerate(ntfs_sources):
         mp = work_root / f"ntfs-ro-{idx}"
         result = mount_ntfs_read_only(source, mp, run=run)
@@ -759,6 +783,7 @@ def collect_windows_setup_logs(
             size = path.stat().st_size
         except OSError:
             digest, mtime, size = "", "", 0
+            data = b""
         # relative path under mount
         rel = str(path)
         for root in roots:
@@ -767,6 +792,28 @@ def collect_windows_setup_logs(
                 break
             except ValueError:
                 continue
+        copy_status = "indexed_not_copied"
+        dest_rel = rel.replace("\\", "/")
+        if copy_root is not None and path.is_file():
+            dest = copy_root / dest_rel
+            try:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                if data:
+                    dest.write_bytes(data)
+                else:
+                    shutil.copy2(path, dest)
+                copy_status = "copied"
+                copied_count += 1
+                if export_root is not None:
+                    export_dest = export_root / dest_rel
+                    export_dest.parent.mkdir(parents=True, exist_ok=True)
+                    if data:
+                        export_dest.write_bytes(data)
+                    else:
+                        shutil.copy2(path, export_dest)
+            except OSError as exc:
+                copy_status = "copy_failed"
+                copy_errors.append(f"{dest_rel}:{exc}")
         files.append(
             {
                 "source_nvme_hash": (nvme_hash_by_part or {}).get(str(path), ""),
@@ -776,7 +823,7 @@ def collect_windows_setup_logs(
                 "mtime": mtime,
                 "sha256": digest,
                 "log_type": path.name,
-                "copy_status": "indexed_not_copied",
+                "copy_status": copy_status,
                 "redaction_status": "pending",
                 "error_classes": item.get("error_classes"),
             }
@@ -794,6 +841,10 @@ def collect_windows_setup_logs(
         "error_classes": scan.get("error_classes"),
         "panther_found": panther,
         "rollback_found": rollback,
+        "copied_file_count": copied_count,
+        "copy_errors": copy_errors,
+        "copy_root": str(copy_root) if copy_root else "",
+        "export_root": str(export_root) if export_root else "",
         "windows_files_modified": False,
         "write_allowed": False,
     }
@@ -1324,10 +1375,21 @@ def run_hardware_discovery(
                 dev = line.split(":", 1)[0].strip()
                 if dev.startswith("/dev/nvme"):
                     ntfs_sources.append(dev)
+        export_root: Path | None = None
+        # Flat export on SETUP_LOGS for operator USB pull without digging into physical_runs.
+        try:
+            evidence_parent = evidence_root.resolve()
+            if evidence_parent.name == "evidence" and "setuphelfer" in str(evidence_parent):
+                stick_root = evidence_parent.parent.parent
+                export_root = stick_root / "setuphelfer-win11-logs" / f"linux-auto-{run_id}"
+        except OSError:
+            export_root = None
         win_logs = collect_windows_setup_logs(
             ntfs_sources=ntfs_sources,
             work_root=Path("/run/setuphelfer/hw-discovery-mnt"),
             run=run,
+            copy_root=out_dir / "windows-setup-logs",
+            export_root=export_root,
         )
         win_status = classify_windows_capture_status(win_logs)
         win_logs["capture_status"] = win_status
@@ -1502,6 +1564,10 @@ def run_hardware_discovery(
         "terminal": True,
         "gui_status": "not_applicable_for_text_hardware_discovery",
         "stick_remove_hint": SAFE_REMOVE_HINT,
+        "panther_found": bool(win_logs.get("panther_found")),
+        "rollback_found": bool(win_logs.get("rollback_found")),
+        "copied_file_count": int(win_logs.get("copied_file_count") or 0),
+        "windows_setup_logs_status": captures.get("windows_setup_logs"),
     }
     if fatal_exc is not None and not isinstance(fatal_exc, RuntimeError):
         result["exception"] = type(fatal_exc).__name__

@@ -1,0 +1,17 @@
+============================================================
+SETUPHELFER — Windows-Setup-Log Capture (ASUS G513QM)
+============================================================
+Zeit (UTC): 2026-07-23T10:00:07Z
+Ergebnis:   NEIN — Panther/Rollback fehlen
+Verdict:    LOGS_FEHLEN
+Run-ID:     hw-discovery-20260723T095959Z-5317559d
+Panther:    false
+Rollback:   false
+Kopiert:    0 Dateien
+Status:     not_found
+Endstatus:  ready_for_controlled_windows_retest_with_log_collection
+NVMe/BIOS:  Schreibzugriff GESPERRT
+
+Nächster Schritt:
+  Stick nach dem Herunterfahren entfernen und zurückgeben. Kein BIOS-Flash.
+============================================================

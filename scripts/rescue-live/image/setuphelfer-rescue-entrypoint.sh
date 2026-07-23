@@ -42,12 +42,14 @@ if grep -Eq '(^| )setuphelfer_wifi_diag=1( |$)' /proc/cmdline 2>/dev/null \
 fi
 
 # PI-RS-ASUS-PHYSICAL-DIAG-003: read-only hardware_discovery (no MSI auto / no shutdown).
-if grep -Eq '(^| )setuphelfer_hardware_discovery=1( |$)' /proc/cmdline 2>/dev/null; then
+if grep -Eq '(^| )setuphelfer_hardware_discovery=1( |$)' /proc/cmdline 2>/dev/null \
+   || grep -Eq '(^| )setuphelfer_auto_win11_setup_logs=1( |$)' /proc/cmdline 2>/dev/null; then
   setuphelfer_rescue_write_boot_state "hardware_discovery_requested"
-  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-hardware-discovery" ]]; then
-    # Operator must confirm Gabriel bind in TUI; here only tooling/prep marker.
-    printf '\nSetuphelfer: Hardwarediagnose (nur Lesen) — bitte im Textmenü bestätigen.\n' \
-      >/dev/tty1 2>/dev/null || true
+  printf '\nSetuphelfer: Hardwarediagnose / Auto-Win11-Logs — Capture startet im Hintergrund.\n' \
+    >/dev/tty1 2>/dev/null || true
+  if [[ -x /usr/local/sbin/setuphelfer-rescue-auto-win11-setup-log-capture-runner ]]; then
+    # Kick oneshot early; systemd unit also covers plain G513QM rescue boots.
+    systemctl start --no-block setuphelfer-rescue-auto-win11-setup-log-capture.service 2>/dev/null || true
   fi
 fi
 

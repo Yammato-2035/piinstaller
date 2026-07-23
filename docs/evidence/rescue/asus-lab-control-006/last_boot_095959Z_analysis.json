@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "ticket": "PI-RS-ASUS-LAB-CONTROL-006",
+  "run_id": "hw-discovery-20260723T095959Z-5317559d",
+  "payload_version": "1.10.2.9",
+  "ntfs_mount_status": "mounted_ro",
+  "ntfs_driver": "bookworm_ntfs_3g",
+  "previous_glibc_error_present": false,
+  "panther_file_count": 0,
+  "rollback_file_count": 0,
+  "setup_scan_status": "insufficient_evidence",
+  "winpe_collector_status": "empty",
+  "winpe_run_id": "unknown-norunid",
+  "windows_disk_role": "windows_nvme",
+  "windows_partition_layout_observed": ["msr", "large_ntfs_basic_data"],
+  "linux_lab_nvme_state": "gpt_no_partitions",
+  "mount_tooling_root_cause": false,
+  "setup_logs_persisted_to_windows_disk": false,
+  "definitive_setup_freeze_root_cause_known": false,
+  "machine_id": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+  "bios_version_observed": "G513QM.331",
+  "auto_capture_verdict": "LOGS_FEHLEN"
+}
