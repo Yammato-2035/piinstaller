@@ -11,10 +11,10 @@
 1. Ausgang: `/home/volker/piinstaller` (Branch `pi-rs-bvr-gui-vt-progress-002`, Drift unberührt)
 2. Ziel: `/tmp/piinstaller-asus-lab-control-006`
 3. Repo: `Yammato-2035/piinstaller`
-4. Branch vorher: `pi-rs-asus-lab-control-006` @ `9ac93c56`; nachher: neuer Commit auf demselben Branch
+4. Branch vorher: `pi-rs-asus-lab-control-006` @ `9ac93c56`; nachher: `b57bd335`
 5. HEAD Basis: `f89a5187` (ASUS Win11 Retest-005)
 6. Basisbranch: `origin/pi-rs-asus-win11-retest-005`
-7. origin: Feature-Branch `pi-rs-asus-lab-control-006` (Push nach Commit)
+7. origin: Feature-Branch `pi-rs-asus-lab-control-006` gepusht (`b57bd335`)
 8. Fremde Drift in `/home/volker/piinstaller` und `/tmp/piinstaller-asus-win11-retest-005`: **unangetastet**
 9. Ja — fremde Drift blieb unangetastet; nur selektive Kopie der untracked ASUS-Boot-Profile-Module
 
@@ -73,6 +73,6 @@
 52. Runtime-/opt-Gate: nicht gegen Live-`/opt` deployed (Code + Stick-Prep; Phase-0 Runtime-Tests nicht Teil dieses Laufs)
 53. Payload-Gate: Stick ESP `1.10.3.1`, Squashfs SHA wie oben; Restcarrier `opt/.../rescue_payload_version` Plaintext kann bis nächstem Inject noch stale sein — **JSON ist maßgeblich**
 54. Evidence: `docs/evidence/rescue/asus-lab-control-006/`
-55–56. Commit + Push auf Feature-Branch
+55–56. Commit `b57bd335` + Push auf `origin/pi-rs-asus-lab-control-006`
 57. Offen: physischer instrumentierter Setup; Disk-Rollen `confirmed:false`; Agent-Execute/mTLS Bridge; Plaintext-Carrier-Rest
 58. Nächster Schritt: Operator startet Setup mit Live-Capture am ASUS (`SETUPHELFER_WIN_DIAG`), Stick zurück, Import nach Run-ID, dann BIOS/Mint entscheiden
