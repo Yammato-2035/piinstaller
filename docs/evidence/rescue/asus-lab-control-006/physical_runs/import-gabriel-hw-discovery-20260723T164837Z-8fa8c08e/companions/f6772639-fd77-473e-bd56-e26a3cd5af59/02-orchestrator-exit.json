@@ -1,0 +1,15 @@
+{
+  "schema": "setuphelfer.rescue.discovery-orchestrator-exit.v1",
+  "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+  "started": true,
+  "started_at": "2026-07-23T16:48:40Z",
+  "completed_at": "2026-07-23T16:49:05Z",
+  "exit_code": 0,
+  "signal": null,
+  "exception_type": null,
+  "exception_summary": null,
+  "session_created": true,
+  "terminal_state_written": true,
+  "status": "rescue_auto_discovery_review_required",
+  "recorded_at": "2026-07-23T16:49:05Z"
+}

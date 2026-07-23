@@ -1,0 +1,7 @@
+{
+  "schema": "setuphelfer.rescue.discovery-boot-context.v1",
+  "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+  "called_at": "2026-07-23T16:48:48Z",
+  "cmdline_redacted": "BOOT_IMAGE=/live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0 setuphelfer_asus_rog_lab=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0",
+  "storage_mode": "persistent_setup_logs"
+}

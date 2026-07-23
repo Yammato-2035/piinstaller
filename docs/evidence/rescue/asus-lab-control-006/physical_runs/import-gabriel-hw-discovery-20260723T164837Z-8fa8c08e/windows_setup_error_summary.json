@@ -1,0 +1,43 @@
+{
+  "panther_found": false,
+  "rollback_found": false,
+  "error_classes": [
+    "unknown"
+  ],
+  "file_count": 0,
+  "mounts": [
+    {
+      "source": "/dev/nvme0n1p2",
+      "mountpoint": "/run/setuphelfer/hw-discovery-mnt/ntfs-ro-0",
+      "options": "ntfs-3g-bin",
+      "fstype": "ntfs-3g-bin",
+      "argv": [
+        "ntfs-3g",
+        "-o",
+        "ro,norecover"
+      ],
+      "exitcode": 0,
+      "read_only_confirmed": true,
+      "status": "mounted_ro",
+      "dirty_force_used": false,
+      "attempts": [
+        {
+          "label": "ntfs3",
+          "rc": 32,
+          "error": "mount: /run/setuphelfer/hw-discovery-mnt/ntfs-ro-0: unknown filesystem type 'ntfs3'.\n       dmesg(1) may have more information after failed mount system call.\n"
+        },
+        {
+          "label": "ntfs3-force",
+          "rc": 32,
+          "error": "mount: /run/setuphelfer/hw-discovery-mnt/ntfs-ro-0: unknown filesystem type 'ntfs3'.\n       dmesg(1) may have more information after failed mount system call.\n"
+        },
+        {
+          "label": "ntfs-3g-bin",
+          "rc": 0,
+          "error": ""
+        }
+      ]
+    }
+  ],
+  "capture_status": "not_found"
+}

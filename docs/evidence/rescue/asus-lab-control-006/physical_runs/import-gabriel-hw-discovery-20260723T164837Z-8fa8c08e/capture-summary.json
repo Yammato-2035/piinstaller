@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.1",
+  "run_id": "hw-discovery-20260723T164837Z-8fa8c08e",
+  "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+  "status": "complete",
+  "terminal": true,
+  "endstatus": "ready_for_controlled_windows_retest_with_log_collection",
+  "captures": {
+    "machine_identity": "complete",
+    "bios": "complete",
+    "nvme_identity": "complete",
+    "nvme_smart": "complete",
+    "nvme_error_logs": "complete",
+    "kernel_storage": "complete",
+    "partition_inventory": "complete",
+    "windows_setup_logs": "not_found"
+  },
+  "missing_areas": [],
+  "warnings": [
+    "nguid_absent:6b45cc50d930",
+    "nguid_absent:ed84d453078b"
+  ],
+  "errors": [],
+  "gui_status": "not_applicable_for_text_hardware_discovery",
+  "stick_remove_hint": "Diagnose abgeschlossen – Stick kann nach dem Herunterfahren entfernt werden.",
+  "completed_at": "2026-07-23T16:48:43Z"
+}

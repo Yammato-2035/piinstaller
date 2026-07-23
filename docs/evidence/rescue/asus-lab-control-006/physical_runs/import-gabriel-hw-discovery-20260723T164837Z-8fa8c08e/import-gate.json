@@ -1,0 +1,17 @@
+{
+  "ok": true,
+  "import_status": "import_ok",
+  "reasons": [],
+  "run_id": "hw-discovery-20260723T164837Z-8fa8c08e",
+  "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+  "profile_id": "asus_rog_gabriel",
+  "terminal": true,
+  "status": "complete",
+  "msi_excluded": false,
+  "has_manifest": true,
+  "has_sha256": true,
+  "has_marker": true,
+  "copied": true,
+  "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e",
+  "protected_raw_excluded": true
+}

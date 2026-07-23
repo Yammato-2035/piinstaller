@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "gate_id": "asus_rog_bios_win11",
+  "asus_rog_detected": true,
+  "evaluated_at": "2026-07-23T16:49:13Z",
+  "cmdline_asus_lab": true,
+  "findings": [
+    {
+      "id": "uefi_mode",
+      "status": "ok",
+      "detail": "UEFI firmware interface present"
+    },
+    {
+      "id": "secure_boot",
+      "status": "warn",
+      "detail": "Secure Boot disabled"
+    },
+    {
+      "id": "fast_boot",
+      "status": "checklist",
+      "detail": "Operator must verify Fast Boot is Off for USB install media"
+    },
+    {
+      "id": "vmd_raid",
+      "status": "checklist",
+      "detail": "VMD/RAID can hide NVMe from Win11 setup \u2014 prefer AHCI if install fails"
+    },
+    {
+      "id": "usb_boot_order",
+      "status": "checklist",
+      "detail": "USB storage must be above internal disk for rescue/install stick"
+    },
+    {
+      "id": "bitlocker",
+      "status": "unknown",
+      "detail": "No BitLocker hint in runtime discovery"
+    }
+  ],
+  "operator_next_actions": [
+    "BIOS: Secure Boot aktivieren (Win11-Setup erfordert oft Secure Boot)",
+    "BIOS: Fast Boot = Disabled beim USB-Install",
+    "BIOS: VMD/RAID pr\u00fcfen \u2014 bei fehlender Systemdisk AHCI/Non-RAID",
+    "BIOS: Boot Order \u2014 USB Stick vor interner NVMe"
+  ],
+  "severity": "attention",
+  "blocks_bvr": false,
+  "production_ready": false,
+  "secrets_exposed": false
+}

@@ -1,0 +1,75 @@
+{
+  "ticket": "PI-RS-ASUS-LAB-CONTROL-006",
+  "import_mode": "manual_identity_gated_no_gui_no_auto",
+  "setup_logs_mount": "/media/volker/SETUP_LOGS2",
+  "source_run": "/media/volker/SETUP_LOGS2/setuphelfer/evidence/physical_runs/hw-discovery-20260723T164837Z-8fa8c08e",
+  "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e",
+  "import_gate": {
+    "ok": true,
+    "import_status": "import_ok",
+    "reasons": [],
+    "run_id": "hw-discovery-20260723T164837Z-8fa8c08e",
+    "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+    "profile_id": "asus_rog_gabriel",
+    "terminal": true,
+    "status": "complete",
+    "msi_excluded": false,
+    "has_manifest": true,
+    "has_sha256": true,
+    "has_marker": true,
+    "copied": true,
+    "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e",
+    "protected_raw_excluded": true
+  },
+  "companions": {
+    "operator_status": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/OPERATOR_WIN11_LOG_STATUS.txt",
+      "type": "file"
+    },
+    "auto_tag": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/AUTO_WIN11_LOG_CAPTURE.TAG",
+      "type": "file"
+    },
+    "linux_auto_dir": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/linux-auto-hw-discovery-20260723T164837Z-8fa8c08e",
+      "type": "dir"
+    },
+    "session": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/rescue-session-20260723T164840Z-84eca914",
+      "type": "dir"
+    },
+    "discovery_boot": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/f6772639-fd77-473e-bd56-e26a3cd5af59",
+      "type": "dir"
+    },
+    "bios_gate": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/asus-rog-bios-gate.json",
+      "type": "file"
+    },
+    "host_fingerprint": {
+      "ok": true,
+      "destination": "/tmp/piinstaller-asus-lab-control-006/docs/evidence/rescue/asus-lab-control-006/physical_runs/import-gabriel-hw-discovery-20260723T164837Z-8fa8c08e/companions/host-fingerprint.json",
+      "type": "file"
+    }
+  },
+  "windows_setup_logs_dir_entries": [],
+  "asus_win11_live_capture_tree_present": false,
+  "hw_discovery_run_id_is_live_capture_format": false,
+  "payload_version_from_run": "1.10.3.1",
+  "windows_setup_logs_status": "not_found",
+  "panther_present": null,
+  "operator_verdict": "LOGS_FEHLEN",
+  "endstatus": "ready_for_controlled_windows_retest_with_log_collection",
+  "windows_setup_evidence_inventory": {
+    "scan_status": "insufficient_evidence"
+  },
+  "operator_run_id": "hw-discovery-20260723T164837Z-8fa8c08e",
+  "live_capture_finalize_note": "This stick return is hardware_discovery + auto post-hang scan, not asus-win11 live capture.",
+  "bitlocker_mutation": false
+}

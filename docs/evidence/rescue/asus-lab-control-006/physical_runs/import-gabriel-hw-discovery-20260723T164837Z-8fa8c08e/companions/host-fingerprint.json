@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+  "recorded_at": "2026-07-23T16:48:50Z",
+  "payload_version": "1.10.3.1",
+  "vendor": "ASUSTeK COMPUTER INC.",
+  "product": "ROG Strix G513QM_G513QM",
+  "board": "G513QM",
+  "bios": "G513QM.331",
+  "uname": "Linux 6.1.0-49-amd64 x86_64",
+  "local_evidence_only": true,
+  "telemetry_auto_push": false,
+  "diagnostics_server_hop": false
+}

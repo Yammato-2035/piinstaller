@@ -1,0 +1,12 @@
+schema=setuphelfer.auto_win11_setup_log_capture.v1
+completed_at=2026-07-23T16:48:45Z
+evidence_root=/run/setuphelfer/esp-rw/setuphelfer/evidence
+run_id=hw-discovery-20260723T164837Z-8fa8c08e
+panther_found=false
+rollback_found=false
+copied_file_count=0
+windows_setup_logs_status=not_found
+endstatus=ready_for_controlled_windows_retest_with_log_collection
+verdict=LOGS_FEHLEN
+rc=0
+write_allowed=false

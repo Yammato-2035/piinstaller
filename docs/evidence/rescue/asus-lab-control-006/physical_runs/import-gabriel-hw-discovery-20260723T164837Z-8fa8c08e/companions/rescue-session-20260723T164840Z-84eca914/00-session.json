@@ -1,0 +1,33 @@
+{
+  "schema": "setuphelfer.rescue.session-state.v1",
+  "session_id": "rescue-session-20260723T164840Z-84eca914",
+  "boot_id": "f6772639-fd77-473e-bd56-e26a3cd5af59",
+  "payload_version": "1.10.3.1",
+  "source": "physical_msi",
+  "run_mode": "interactive",
+  "started_at": "2026-07-23T16:48:40Z",
+  "updated_at": "2026-07-23T16:48:40Z",
+  "current_phase": "session_created",
+  "phase_started_at": "2026-07-23T16:48:40Z",
+  "last_heartbeat_at": "2026-07-23T16:48:40Z",
+  "progress_percent": 0,
+  "terminal": false,
+  "result": null,
+  "blocking_reason": null,
+  "shutdown_safe": false,
+  "evidence_complete": false,
+  "last_completed_module": "",
+  "current_warning": "",
+  "setup_logs": {
+    "detected": true,
+    "mount_point": "/run/setuphelfer/esp-rw",
+    "writable": true,
+    "unclean_detected": false,
+    "status": "ready",
+    "fallback_used": false,
+    "evidence_root": "/run/setuphelfer/esp-rw/setuphelfer/evidence",
+    "persistence_mode": "setup_logs"
+  },
+  "allow_destructive": false,
+  "runtime_state_path": "/run/setuphelfer-rescue/session/state.json"
+}
