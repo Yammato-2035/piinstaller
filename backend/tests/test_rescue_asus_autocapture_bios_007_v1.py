@@ -173,16 +173,18 @@ class AutoImportTests(unittest.TestCase):
             repo = root / "repo"
             (repo / "docs/evidence/rescue/asus-autocapture-bios-007/physical_runs").mkdir(parents=True)
             # copy lab target for authorization load — uses real repo modules with real profile
+            fake_repo = root / "fake_repo"
+            (fake_repo / "docs/evidence/rescue/asus-autocapture-bios-007/physical_runs").mkdir(parents=True)
             out = import_one_run(
                 run=found[0],
-                repo_root=_REPO,
+                repo_root=fake_repo,
                 quarantine_root=root / "quarantine",
             )
             self.assertEqual(out["status"], "imported", out)
             # idempotent
             out2 = import_one_run(
                 run=found[0],
-                repo_root=_REPO,
+                repo_root=fake_repo,
                 quarantine_root=root / "quarantine",
             )
             self.assertEqual(out2["status"], "already_imported")
