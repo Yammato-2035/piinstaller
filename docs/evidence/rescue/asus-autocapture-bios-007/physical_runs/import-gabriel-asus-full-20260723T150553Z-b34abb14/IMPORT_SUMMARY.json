@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "status": "imported",
+  "run_id": "asus-full-20260723T150553Z-b34abb14",
+  "run_type": "unknown",
+  "destination": "/tmp/piinstaller-asus-autocapture-bios-007/docs/evidence/rescue/asus-autocapture-bios-007/physical_runs/import-gabriel-asus-full-20260723T150553Z-b34abb14",
+  "imported_at": "2026-07-23T15:05:53Z",
+  "identity_match": "exact_match",
+  "redaction_status": "clean",
+  "bitlocker_mutation": false,
+  "definitive_freeze_root_cause_known": false
+}

@@ -134,6 +134,10 @@ inject "${REPO_ROOT}/backend/core/rescue_win11_live_capture.py" \
   "${BE}/core/rescue_win11_live_capture.py"
 inject "${REPO_ROOT}/backend/core/rescue_lab_job_contract.py" \
   "${BE}/core/rescue_lab_job_contract.py"
+# ASUS lab automation package (autocapture-bios-007)
+rm -rf "${BE}/core/asus_lab"
+inject "${REPO_ROOT}/backend/core/asus_lab" \
+  "${BE}/core/asus_lab"
 inject "${REPO_ROOT}/backend/api/routes/rescue_asus_lab_control.py" \
   "${BE}/api/routes/rescue_asus_lab_control.py"
 inject "${REPO_ROOT}/config/lab-targets/asus-rog-gabriel.yaml" \

@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rescue_payload_version": "1.10.3.1",
-  "previous_rescue_payload_version": "1.10.3.0",
+  "rescue_payload_version": "1.10.4.0",
+  "previous_rescue_payload_version": "1.10.3.1",
   "pi_rs_msi_fix_001": true,
   "pi_rs_msi_gui_002": true,
   "pi_rs_msi_gui_003": true,
@@ -46,5 +46,6 @@
   "pi_rs_asus_win11_stage_a_006": true,
   "pi_rs_asus_auto_win11_log_007": true,
   "pi_rs_asus_ntfs_bookworm_008": true,
-  "pi_rs_asus_lab_control_006": true
+  "pi_rs_asus_lab_control_006": true,
+  "pi_rs_asus_autocapture_bios_007": true
 }

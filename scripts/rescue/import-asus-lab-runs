@@ -1,0 +1,48 @@
+#!/usr/bin/env python3
+"""ASUS lab auto-import dispatcher — no GUI, no manual importer selection.
+
+Usage:
+  ./scripts/rescue/import-asus-lab-runs [--setup-logs PATH] [--repo PATH]
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+from pathlib import Path
+
+REPO_DEFAULT = Path(__file__).resolve().parents[2]
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Import ASUS lab runs from SETUP_LOGS")
+    parser.add_argument("--setup-logs", action="append", default=[])
+    parser.add_argument("--repo", default=str(REPO_DEFAULT))
+    parser.add_argument("--expected-payload", default=None)
+    parser.add_argument("--include-legacy-hw", action="store_true", default=False)
+    args = parser.parse_args()
+
+    repo = Path(args.repo)
+    sys.path.insert(0, str(repo / "backend"))
+    from core.asus_lab.auto_import import dispatch_auto_import
+
+    candidates = [Path(p) for p in args.setup_logs] if args.setup_logs else None
+    expected = args.expected_payload
+    if expected is None:
+        cfg = repo / "config/rescue_payload_version.json"
+        if cfg.is_file():
+            expected = json.loads(cfg.read_text(encoding="utf-8")).get("rescue_payload_version")
+
+    result = dispatch_auto_import(
+        repo_root=repo,
+        setup_logs_candidates=candidates,
+        expected_payload=expected,
+        include_legacy_hw=bool(args.include_legacy_hw),
+    )
+    print(json.dumps(result, indent=2))
+    return 0 if result.get("ok") else 1
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

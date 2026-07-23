@@ -1,0 +1,9 @@
+{
+  "ticket": "PI-RS-ASUS-AUTOCAPTURE-BIOS-007",
+  "plan_status": "ready",
+  "critical_path": "autonomous_full_lab_capture_then_win11_live_then_auto_import",
+  "deferred": ["bios_335_flash", "mint_install", "destructive_disk_tests"],
+  "payload_target": "1.10.4.0",
+  "bitlocker_mutation": false,
+  "import_checkpoint_commit": "b03656f7"
+}

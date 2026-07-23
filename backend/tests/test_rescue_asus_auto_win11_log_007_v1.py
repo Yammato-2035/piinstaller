@@ -111,8 +111,8 @@ class WindowsLogCopyTests(unittest.TestCase):
 class PayloadFlagTests(unittest.TestCase):
     def test_payload_007(self) -> None:
         cfg = json.loads((_REPO / "config/rescue_payload_version.json").read_text(encoding="utf-8"))
-        self.assertEqual(cfg["rescue_payload_version"], "1.10.3.1")
-        self.assertEqual(cfg["previous_rescue_payload_version"], "1.10.3.0")
+        self.assertEqual(cfg["rescue_payload_version"], "1.10.4.0")
+        self.assertEqual(cfg["previous_rescue_payload_version"], "1.10.3.1")
         self.assertTrue(cfg.get("pi_rs_asus_auto_win11_log_007"))
 
 

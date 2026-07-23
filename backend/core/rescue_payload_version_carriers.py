@@ -12,6 +12,7 @@ from core.rescue_payload_version import previous_rescue_payload_version, rescue_
 
 _ACTIVE_RUNTIME_PATHS = (
     "opt/setuphelfer-rescue/VERSION",
+    "opt/setuphelfer-rescue/rescue_payload_version",
     "opt/setuphelfer-rescue/config/rescue_payload_version.json",
     "opt/setuphelfer-rescue/config/version.json",
 )
@@ -59,6 +60,8 @@ def read_payload_version_carriers(squashfs_path: Path) -> dict[str, Any]:
     carriers: dict[str, Any] = {}
     version_file = _unsquashfs_cat(squashfs_path, "opt/setuphelfer-rescue/VERSION").strip()
     carriers["VERSION"] = version_file
+    plain = _unsquashfs_cat(squashfs_path, "opt/setuphelfer-rescue/rescue_payload_version").strip()
+    carriers["rescue_payload_version"] = plain
     payload_cfg_raw = _unsquashfs_cat(squashfs_path, "opt/setuphelfer-rescue/config/rescue_payload_version.json")
     if payload_cfg_raw.strip():
         payload_cfg = json.loads(payload_cfg_raw)
@@ -68,7 +71,9 @@ def read_payload_version_carriers(squashfs_path: Path) -> dict[str, Any]:
     version_json_raw = _unsquashfs_cat(squashfs_path, "opt/setuphelfer-rescue/config/version.json")
     if version_json_raw.strip():
         version_json = json.loads(version_json_raw)
-        carriers["version.json"] = str(version_json.get("project_version") or "")
+        carriers["version.json"] = str(
+            version_json.get("rescue_payload_version") or version_json.get("project_version") or ""
+        )
     else:
         carriers["version.json"] = ""
     return carriers

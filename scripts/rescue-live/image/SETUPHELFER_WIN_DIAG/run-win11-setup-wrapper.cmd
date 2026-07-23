@@ -1,12 +1,13 @@
 @echo off
-REM Setuphelfer controlled Windows Setup wrapper — PI-RS-ASUS-LAB-CONTROL-006
-REM Starts live capture, then documents setup.exe invocation. No BitLocker mutation.
+REM Setuphelfer controlled Windows Setup wrapper — PI-RS-ASUS-AUTOCAPTURE-BIOS-007
+REM Auto Run-ID if unset. SETUP_LOGS by label. No BitLocker mutation.
 REM Do not invent unsupported setup flags. /noreboot only if explicitly enabled AND verified.
 setlocal EnableExtensions
 
+set "SCRIPT_DIR=%~dp0"
 if "%SETUPHELFER_WIN11_RUN_ID%"=="" (
-  echo [setuphelfer] ERROR: SETUPHELFER_WIN11_RUN_ID required ^(asus-win11-...^)
-  exit /b 2
+  for /f %%I in ('powershell.exe -NoProfile -Command "$ts=(Get-Date).ToUniversalTime().ToString('yyyyMMddTHHmmssZ'); $s=-join((0..7)|ForEach-Object{'{0:x}' -f (Get-Random -Max 16)}); 'asus-win11-'+$ts+'-'+$s"') do set "SETUPHELFER_WIN11_RUN_ID=%%I"
+  echo [setuphelfer] auto run_id=%SETUPHELFER_WIN11_RUN_ID%
 )
 echo %SETUPHELFER_WIN11_RUN_ID% | findstr /I "norunid unknown" >nul
 if not errorlevel 1 (
@@ -14,7 +15,6 @@ if not errorlevel 1 (
   exit /b 2
 )
 
-set "SCRIPT_DIR=%~dp0"
 set "CAPTURE_PS1=%SCRIPT_DIR%collect-win11-live-capture.ps1"
 set "SETUP_EXE=%SETUPHELFER_WIN11_SETUP_EXE%"
 if "%SETUP_EXE%"=="" set "SETUP_EXE=D:\sources\setup.exe"
