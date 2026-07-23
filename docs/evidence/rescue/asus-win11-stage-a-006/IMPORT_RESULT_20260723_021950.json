@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PI-RS-ASUS-WIN11-STAGE-A-006",
+  "import_mode": "manual_identity_gated",
+  "auto_flow": false,
+  "imported_at": "2026-07-23T00:22:54Z",
+  "selected_run": {
+    "run_id": "hw-discovery-20260723T021950Z-57f66411",
+    "boot_id": "a723358a-9683-4128-9909-f3962518a3ee",
+    "payload_version": "1.10.2.4",
+    "profile_id": "asus_rog_gabriel",
+    "status": "complete",
+    "terminal": true,
+    "captures": {
+      "machine_identity": "complete",
+      "bios": "complete",
+      "nvme_identity": "complete",
+      "nvme_smart": "complete",
+      "nvme_error_logs": "complete",
+      "kernel_storage": "complete",
+      "partition_inventory": "complete",
+      "windows_setup_logs": "partial"
+    },
+    "missing_areas": [
+      "windows_setup_logs"
+    ],
+    "endstatus_on_stick": "ready_for_controlled_windows_retest_with_log_collection"
+  },
+  "import_gate": {
+    "ok": true,
+    "import_status": "import_ok",
+    "reasons": [],
+    "run_id": "hw-discovery-20260723T021950Z-57f66411",
+    "boot_id": "a723358a-9683-4128-9909-f3962518a3ee",
+    "profile_id": "asus_rog_gabriel",
+    "terminal": true,
+    "status": "complete",
+    "msi_excluded": false,
+    "has_manifest": true,
+    "has_sha256": true,
+    "has_marker": true,
+    "copied": true,
+    "destination": "docs/evidence/rescue/asus-win11-stage-a-006/physical_runs/import-gabriel-hw-discovery-20260723-021950",
+    "protected_raw_excluded": true
+  },
+  "windows_setup_logs": {
+    "panther_found": false,
+    "rollback_found": false,
+    "mount_error": "unknown filesystem type ntfs-3g on rescue image; ntfs3 attempts also failed (see inventory)",
+    "capture_status": "partial"
+  },
+  "winpe_collector": {
+    "path": "docs/evidence/rescue/asus-win11-stage-a-006/physical_runs/import-winpe-collector-unknown-norunid",
+    "panther_copied": false,
+    "note": "collector meta/boot/disk only"
+  },
+  "assessment": {
+    "stage_a_hang_reported": true,
+    "logs_sufficient_for_setupdiag": false,
+    "endstatus": "stage_a_incomplete_logs_missing",
+    "bios_335_justified": false,
+    "next": "fix_ntfs_mount_via_ntfs-3g_binary_on_payload_then_re-capture_panther"
+  }
+}

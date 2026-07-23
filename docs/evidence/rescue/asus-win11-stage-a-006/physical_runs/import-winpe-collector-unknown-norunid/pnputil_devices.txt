@@ -1,0 +1,1110 @@
+Microsoft-PnP-Hilfsprogramm
+
+Instanz-ID:                PCI\VEN_1022&DEV_790E&SUBSYS_16021043&REV_51\3&11583659&0&A3
+Gerätebeschreibung:         PCI Standard-ISA-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1639&SUBSYS_201F1043&REV_00\4&12c9051d&0&0341
+Gerätebeschreibung:         AMD USB 3.10 eXtensible-Hostcontroller – 1.10 (Microsoft)
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          Generischer USB-xHCI-Hostcontroller
+Status:                     Gestartet
+Treibername:                usbxhci.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1639&SUBSYS_201F1043&REV_00\4&12c9051d&0&0441
+Gerätebeschreibung:         AMD USB 3.10 eXtensible-Hostcontroller – 1.10 (Microsoft)
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          Generischer USB-xHCI-Hostcontroller
+Status:                     Gestartet
+Treibername:                usbxhci.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\10
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                PCI\VEN_10EC&DEV_8168&SUBSYS_208F1043&REV_15\01000000684CE00000
+Gerätebeschreibung:         Ethernet-Controller
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               18 (0x12) [CM_PROB_REINSTALL]
+Problemstatus:             0xC0000493
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\1
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\2
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\3
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\4
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\5
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\6
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\7
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\8
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\9
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\a
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\b
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\c
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\d
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\e
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                ACPI\AuthenticAMD_-_AMD64_Family_25_Model_80_-_AMD_Ryzen_9_5900HX_with_Radeon_Graphics________\f
+Gerätebeschreibung:         AMD Ryzen 9 5900HX with Radeon Graphics        
+Klassenname:                 Processor
+Klassen-GUID:                 {50127dc3-0f36-415e-a6cc-4cb3be910b65}
+Herstellername:          Advanced Micro Devices
+Status:                     Gestartet
+Treibername:                cpu.inf
+
+Instanz-ID:                STORAGE\Volume\{81dad639-8631-11f1-8f69-806e6f6e6963}#0000000100100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                HID\ASUE120A&Col02\4&2b4ef635&0&0001
+Gerätebeschreibung:         HID-kompatibles Touchpad
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                ACPI\PNP0C0A\1
+Gerätebeschreibung:         Microsoft ACPI-Kontrollmethodenkompatibler Akku
+Klassenname:                 Battery
+Klassen-GUID:                 {72631e54-78a4-11d0-bcf7-00aa00b7b32a}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                cmbatt.inf
+
+Instanz-ID:                ACPI\ASUS2018\2&daba3ff&0
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                ACPI\PNP0800\4&60943c0&0
+Gerätebeschreibung:         Systemlautsprecher
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                ROOT\volmgr\0000
+Gerätebeschreibung:         Volume-Manager
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volmgr.inf
+
+Instanz-ID:                ACPI\PNP0103\2&daba3ff&0
+Gerätebeschreibung:         Hochpräzisionsereigniszeitgeber
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_166B&SUBSYS_00000000&REV_00\3&11583659&0&C1
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_790B&SUBSYS_16021043&REV_51\3&11583659&0&A0
+Gerätebeschreibung:         SM-Bus-Controller
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                STORAGE\Volume\{81dad634-8631-11f1-8f69-806e6f6e6963}#0000000001100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                ROOT\BasicDisplay\0000
+Gerätebeschreibung:         Microsoft Basic Display Driver
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardgrafikkartentypen)
+Status:                     Gestartet
+Treibername:                basicdisplay.inf
+
+Instanz-ID:                ACPI\PNP0C0E\2&daba3ff&0
+Gerätebeschreibung:         ACPI-Energiezustandknopf
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                STORAGE\Volume\_??_USBSTOR#Disk&Ven_Intenso&Prod_Ultra_Line&Rev_#24111412110212&0#{53f56307-b6bf-11d0-94f2-00a0c91efb8b}
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                ACPI\AMDI0030\0
+Gerätebeschreibung:         AMD-GPIO-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Advanced Micro Devices, Inc.
+Status:                     Gestartet
+Treibername:                amdgpio2.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col01\7&289d55ad&0&0000
+Gerätebeschreibung:         HID-konformes, vom Hersteller definiertes Gerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1670&SUBSYS_00000000&REV_00\3&11583659&0&C6
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col06\7&289d55ad&0&0005
+Gerätebeschreibung:         HID-konformes Benutzersteuergerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hidserv.inf
+
+Instanz-ID:                ACPI\ThermalZone\TZ01
+Gerätebeschreibung:         ACPI-Thermozone
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\PNP0200\4&60943c0&0
+Gerätebeschreibung:         DMA-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\ACPI0010\1
+Gerätebeschreibung:         ACPI-Prozessorcontainergerät
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\USBC000\0
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                STORAGE\Volume\{81dad639-8631-11f1-8f69-806e6f6e6963}#0000000000100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                ACPI\PNP0B00\4&60943c0&0
+Gerätebeschreibung:         System CMOS/Echtzeituhr
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                HID\ASUE120A&Col03\4&2b4ef635&0&0002
+Gerätebeschreibung:         Microsoft Input Configuration Device
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                mtconfig.inf
+
+Instanz-ID:                UEFI\RES_{2c7ee4fb-5564-51f2-9b36-39c103b720b5}\0
+Gerätebeschreibung:         Systemfirmware
+Klassenname:                 Firmware
+Klassen-GUID:                 {f2e7dd72-6468-4e36-b6f1-6488f42c1b52}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                c_firmware.inf
+
+Instanz-ID:                ROOT\vdrvroot\0000
+Gerätebeschreibung:         Microsoft virtueller Datenträgerenumerator
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                vdrvroot.inf
+
+Instanz-ID:                ROOT\spaceport\0000
+Gerätebeschreibung:         Microsoft-Controller für Speicherplätze
+Klassenname:                 SCSIAdapter
+Klassen-GUID:                 {4d36e97b-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                spaceport.inf
+
+Instanz-ID:                STORAGE\Volume\{81dad634-8631-11f1-8f69-806e6f6e6963}#0000000000100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                HDAUDIO\FUNC_01&VEN_10EC&DEV_0285&SUBSYS_104315F2&REV_1000\5&786cd4d&0&0001
+Gerätebeschreibung:         High Definition Audio-Gerät
+Klassenname:                 MEDIA
+Klassen-GUID:                 {4d36e96c-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hdaudio.inf
+
+Instanz-ID:                STORAGE\Volume\{81dad637-8631-11f1-8f69-806e6f6e6963}#0000000200100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1633&SUBSYS_16021043&REV_00\3&11583659&0&09
+Gerätebeschreibung:         PCI Express-Stammport
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                ROOT\KDNIC\0000
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               18 (0x12) [CM_PROB_REINSTALL]
+Problemstatus:             0xC0000493
+
+Instanz-ID:                ACPI\ATK3001\4&60943c0&0
+Gerätebeschreibung:         Erweiterte PC/AT-PS/2-Tastatur (101/102 Tasten)
+Klassenname:                 Keyboard
+Klassen-GUID:                 {4d36e96b-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardtastaturen)
+Status:                     Gestartet
+Treibername:                keyboard.inf
+
+Instanz-ID:                PCI\VEN_10DE&DEV_2520&SUBSYS_104C1043&REV_A1\4&1ba6dc09&0&0009
+Gerätebeschreibung:         Videocontroller (VGA-kompatibel)
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                PCI\VEN_1022&DEV_166D&SUBSYS_00000000&REV_00\3&11583659&0&C3
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col02\7&289d55ad&0&0001
+Gerätebeschreibung:         HID-konformes, vom Hersteller definiertes Gerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                HDAUDIO\FUNC_01&VEN_10DE&DEV_009F&SUBSYS_1043104C&REV_1001\5&d2405f0&0&0001
+Gerätebeschreibung:         High Definition Audio-Gerät
+Klassenname:                 MEDIA
+Klassen-GUID:                 {4d36e96c-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hdaudio.inf
+
+Instanz-ID:                USB\VID_24A9&PID_205A\24111412110212
+Gerätebeschreibung:         USB-Massenspeichergerät
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          Kompatibles USB-Speichergerät
+Status:                     Gestartet
+Treibername:                usbstor.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col07\7&289d55ad&0&0006
+Gerätebeschreibung:         HID-konformer Systemcontroller
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                DISPLAY\NCP004D\1&8713bca&0&UID0
+Gerätebeschreibung:         Generic Monitor
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Gestartet
+
+Instanz-ID:                USB\VID_24A9&PID_205A\24111412110686
+Gerätebeschreibung:         USB-Massenspeichergerät
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          Kompatibles USB-Speichergerät
+Status:                     Gestartet
+Treibername:                usbstor.inf
+
+Instanz-ID:                ROOT\Ramdisk\0000
+Gerätebeschreibung:         Windows RAM-Laufwerkcontroller
+Klassenname:                 Ramdisk
+Klassen-GUID:                 {9d6d66a6-0b0c-4563-9077-a0e9a7955ae4}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                ramdisk.inf
+
+Instanz-ID:                SCSI\Disk&Ven_NVMe&Prod_Samsung_SSD_970\5&140b1f2c&0&000000
+Gerätebeschreibung:         Samsung SSD 970 EVO Plus 2TB
+Klassenname:                 DiskDrive
+Klassen-GUID:                 {4d36e967-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardlaufwerke)
+Status:                     Gestartet
+Treibername:                disk.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1630&SUBSYS_16021043&REV_00\3&11583659&0&00
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                Ramdisk\RamVolume\{d9b257fc-684e-4dcb-ab79-03cfa2f6b750}
+Gerätebeschreibung:         RamDisk
+Klassenname:                 Ramdisk
+Klassen-GUID:                 {9d6d66a6-0b0c-4563-9077-a0e9a7955ae4}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                ramdisk.inf
+
+Instanz-ID:                ROOT\UMBUS\0000
+Gerätebeschreibung:         UMBus-Stamm-Busenumerator
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                umbus.inf
+
+Instanz-ID:                USB\VID_0B05&PID_1866\6&5280d8e&0&3
+Gerätebeschreibung:         USB-Eingabegerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_15DF&SUBSYS_16021043&REV_00\4&12c9051d&0&0241
+Gerätebeschreibung:         PCI-Ver-/Entschlüsselungscontroller
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                USB\VID_152D&PID_1561\MSFT30DB9876543214E
+Gerätebeschreibung:         Per USB angeschlossenes SCSI (UAS)-Massenspeichergerät
+Klassenname:                 SCSIAdapter
+Klassen-GUID:                 {4d36e97b-e325-11ce-bfc1-08002be10318}
+Herstellername:          Per USB angeschlossenes SCSI (UAS)-kompatibles Gerät
+Status:                     Gestartet
+Treibername:                uaspstor.inf
+
+Instanz-ID:                ACPI\ACPI0003\4&60943c0&0
+Gerätebeschreibung:         Microsoft-Netzteil
+Klassenname:                 Battery
+Klassen-GUID:                 {72631e54-78a4-11d0-bcf7-00aa00b7b32a}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                cmbatt.inf
+
+Instanz-ID:                USBSTOR\Disk&Ven_Intenso&Prod_Ultra_Line&Rev_\24111412110212&0
+Gerätebeschreibung:         Intenso Ultra Line USB Device
+Klassenname:                 DiskDrive
+Klassen-GUID:                 {4d36e967-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardlaufwerke)
+Status:                     Gestartet
+Treibername:                disk.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_166A&SUBSYS_00000000&REV_00\3&11583659&0&C0
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                USB\ROOT_HUB30\5&315b279c&0&0
+Gerätebeschreibung:         USB-Root-Hub (USB 3.0)
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          (Standardmäßige USB-HUBs)
+Status:                     Gestartet
+Treibername:                usbhub3.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_15E3&SUBSYS_15F21043&REV_00\4&12c9051d&0&0641
+Gerätebeschreibung:         High Definition Audio-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hdaudbus.inf
+
+Instanz-ID:                ACPI\PNP0C01\c8
+Gerätebeschreibung:         Hauptplatine
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                ROOT\ACPI_HAL\0000
+Gerätebeschreibung:         ACPI x64-basierter PC
+Klassenname:                 Computer
+Klassen-GUID:                 {4d36e966-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardcomputer)
+Status:                     Gestartet
+Treibername:                hal.inf
+
+Instanz-ID:                PCI\VEN_10DE&DEV_228E&SUBSYS_104C1043&REV_A1\4&1ba6dc09&0&0109
+Gerätebeschreibung:         High Definition Audio-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hdaudbus.inf
+
+Instanz-ID:                ACPI\ATK4002\2&daba3ff&0
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                ACPI\PNP0C14\AOD
+Gerätebeschreibung:         Microsoft Windows-Verwaltungsschnittstelle für ACPI
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                wmiacpi.inf
+
+Instanz-ID:                ACPI\PNP0C14\ATK
+Gerätebeschreibung:         Microsoft Windows-Verwaltungsschnittstelle für ACPI
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                wmiacpi.inf
+
+Instanz-ID:                PCI\VEN_144D&DEV_A808&SUBSYS_A801144D&REV_00\4&3aee3b2d&0&0013
+Gerätebeschreibung:         Standardmäßiger NVM Express-Controller
+Klassenname:                 SCSIAdapter
+Klassen-GUID:                 {4d36e97b-e325-11ce-bfc1-08002be10318}
+Herstellername:          Standardmäßiger NVM Express-Controller
+Status:                     Gestartet
+Treibername:                stornvme.inf
+
+Instanz-ID:                ACPI\PNP0A08\0
+Gerätebeschreibung:         Stammkomplex für PCI-Express
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                PCI\VEN_144D&DEV_A808&SUBSYS_A801144D&REV_00\4&28348a88&0&0014
+Gerätebeschreibung:         Standardmäßiger NVM Express-Controller
+Klassenname:                 SCSIAdapter
+Klassen-GUID:                 {4d36e97b-e325-11ce-bfc1-08002be10318}
+Herstellername:          Standardmäßiger NVM Express-Controller
+Status:                     Gestartet
+Treibername:                stornvme.inf
+
+Instanz-ID:                ACPI\PNP0C0D\4&60943c0&0
+Gerätebeschreibung:         ACPI-Deckel
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI_HAL\PNP0C08\0
+Gerätebeschreibung:         Microsoft ACPI-konformes System
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                acpi.inf
+
+Instanz-ID:                HTREE\ROOT\0
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Gestartet
+
+Instanz-ID:                ROOT\BasicRender\0000
+Gerätebeschreibung:         Microsoft Basic Render Driver
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                basicrender.inf
+
+Instanz-ID:                ACPI\PNP0000\4&60943c0&0
+Gerätebeschreibung:         Programmierbarer Interruptcontroller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col03\7&289d55ad&0&0002
+Gerätebeschreibung:         HID-Tastatur
+Klassenname:                 Keyboard
+Klassen-GUID:                 {4d36e96b-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardtastaturen)
+Status:                     Gestartet
+Treibername:                keyboard.inf
+
+Instanz-ID:                ACPI_HAL\UEFI\0
+Gerätebeschreibung:         Microsoft UEFI-konformes System
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                uefi.inf
+
+Instanz-ID:                USB\VID_13D3&PID_3563\000000000
+Gerätebeschreibung:         USB-Verbundgerät
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          (Standard-USB-Hostcontroller)
+Status:                     Gestartet
+Treibername:                usb.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_166F&SUBSYS_00000000&REV_00\3&11583659&0&C5
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\MSFT0101\1
+Gerätebeschreibung:         Trusted Platform Module 2.0
+Klassenname:                 SecurityDevices
+Klassen-GUID:                 {d94ee5d8-d189-4994-83d2-f68d7d41b0e6}
+Herstellername:          (Standard)
+Status:                     Gestartet
+Treibername:                tpm.inf
+
+Instanz-ID:                ACPI\AMDI0005\1
+Gerätebeschreibung:         Standardcontroller für Energieverwaltung
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                STORAGE\Volume\{81dad637-8631-11f1-8f69-806e6f6e6963}#0000000000100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                SWD\COMPUTER\MFG_ASUSTeK_COMPUTER_INC.&FAM_ROG_Strix&PROD_ROG_Strix_G513QM_G513QM
+Gerätebeschreibung:         ASUSTeK COMPUTER INC. ROG Strix G513QM_G513QM
+Klassenname:                 Computer
+Klassen-GUID:                 {4d36e966-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                compdev.inf
+
+Instanz-ID:                ACPI\PNP0C02\15
+Gerätebeschreibung:         Hauptplatinenressourcen
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\PNP0C02\90
+Gerätebeschreibung:         Hauptplatinenressourcen
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                PCI\VEN_1002&DEV_1638&SUBSYS_104C1043&REV_C4\4&12c9051d&0&0041
+Gerätebeschreibung:         Videocontroller (VGA-kompatibel)
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                STORAGE\Volume\{81dad637-8631-11f1-8f69-806e6f6e6963}#0000000A00100000
+Gerätebeschreibung:         Volume
+Klassenname:                 Volume
+Klassen-GUID:                 {71a27cdd-812a-11d0-bec7-08002be2092f}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                volume.inf
+
+Instanz-ID:                HDAUDIO\FUNC_01&VEN_1002&DEV_AA01&SUBSYS_00AA0100&REV_1007\5&4d8b2c4&0&0001
+Gerätebeschreibung:         High Definition Audio-Gerät
+Klassenname:                 MEDIA
+Klassen-GUID:                 {4d36e96c-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hdaudio.inf
+
+Instanz-ID:                SCSI\Disk&Ven_NVMe&Prod_Samsung_SSD_970\5&862df6f&0&000000
+Gerätebeschreibung:         Samsung SSD 970 EVO Plus 2TB
+Klassenname:                 DiskDrive
+Klassen-GUID:                 {4d36e967-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardlaufwerke)
+Status:                     Gestartet
+Treibername:                disk.inf
+
+Instanz-ID:                ACPI\ASUE120A\1
+Gerätebeschreibung:         I2C HID-Gerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hidi2c.inf
+
+Instanz-ID:                PCI\VEN_14C3&DEV_7961&SUBSYS_46801A3B&REV_00\4&120d21cb&0&0012
+Gerätebeschreibung:         Netzwerkcontroller
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                PCI\VEN_1022&DEV_166C&SUBSYS_00000000&REV_00\3&11583659&0&C2
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                SWD\MMDEVAPI\MicrosoftGSWavetableSynth
+Gerätebeschreibung:         Microsoft GS Wavetable Synthesizer
+Klassenname:                 SoftwareDevice
+Klassen-GUID:                 {62f9c741-b25a-46ce-b54c-9bccce08b6f2}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                c_swdevice.inf
+
+Instanz-ID:                ACPI\PNP0C0C\aa
+Gerätebeschreibung:         ACPI-Einschaltknopf
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                USB\ROOT_HUB30\5&18c1fff2&0&0
+Gerätebeschreibung:         USB-Root-Hub (USB 3.0)
+Klassenname:                 USB
+Klassen-GUID:                 {36fc9e60-c465-11cf-8056-444553540000}
+Herstellername:          (Standardmäßige USB-HUBs)
+Status:                     Gestartet
+Treibername:                usbhub3.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col04\7&289d55ad&0&0003
+Gerätebeschreibung:         HID-konformes, vom Hersteller definiertes Gerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1632&SUBSYS_00000000&REV_00\3&11583659&0&08
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1632&SUBSYS_00000000&REV_00\3&11583659&0&10
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1632&SUBSYS_00000000&REV_00\3&11583659&0&40
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                ROOT\NdisVirtualBus\0000
+Gerätebeschreibung:         Enumerator für virtuelle NDIS-Netzwerkadapter
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                ndisvirtualbus.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1671&SUBSYS_00000000&REV_00\3&11583659&0&C7
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\AMDI0010\0
+Gerätebeschreibung:         AMD I2C-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Advanced Micro Devices, Inc.
+Status:                     Gestartet
+Treibername:                amdi2c.inf
+
+Instanz-ID:                ACPI\AMDI0010\3
+Gerätebeschreibung:         AMD I2C-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Advanced Micro Devices, Inc.
+Status:                     Gestartet
+Treibername:                amdi2c.inf
+
+Instanz-ID:                ACPI\NVDA0820\NPCF
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                USBSTOR\Disk&Ven_Intenso&Prod_Ultra_Line&Rev_\24111412110686&0
+Gerätebeschreibung:         Intenso Ultra Line USB Device
+Klassenname:                 DiskDrive
+Klassen-GUID:                 {4d36e967-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardlaufwerke)
+Status:                     Gestartet
+Treibername:                disk.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1635&SUBSYS_16351022&REV_00\3&11583659&0&41
+Gerätebeschreibung:         PCI Express-Stammport
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                HID\ASUE120A&Col01\4&2b4ef635&0&0000
+Gerätebeschreibung:         HID-konforme Maus
+Klassenname:                 Mouse
+Klassen-GUID:                 {4d36e96f-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                msmouse.inf
+
+Instanz-ID:                ACPI\PNP0C02\700
+Gerätebeschreibung:         Hauptplatinenressourcen
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                USB\VID_13D3&PID_3563&MI_00\7&1d754fa2&0&0000
+Gerätebeschreibung:         BT_FUNCTION
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                ACPI\PNP0100\4&60943c0&0
+Gerätebeschreibung:         Systemzeitgeber
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                ACPI\ASUS9001\2&daba3ff&0
+Gerätebeschreibung:         Unbekannt
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                ROOT\mssmbios\0000
+Gerätebeschreibung:         Microsoft-Systemverwaltungs-BIOS-Treiber
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                mssmbios.inf
+
+Instanz-ID:                ACPI\PNP0C02\4&12c9051d&0
+Gerätebeschreibung:         Hauptplatinenressourcen
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Beendet
+Treibername:                machine.inf
+
+Instanz-ID:                SCSI\Disk&Ven_SABRENT&Prod_\7&25ef7960&0&000000
+Gerätebeschreibung:         SABRENT  SCSI Disk Device
+Klassenname:                 DiskDrive
+Klassen-GUID:                 {4d36e967-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardlaufwerke)
+Status:                     Gestartet
+Treibername:                disk.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1634&SUBSYS_16021043&REV_00\3&11583659&0&11
+Gerätebeschreibung:         PCI Express-Stammport
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1634&SUBSYS_16021043&REV_00\3&11583659&0&12
+Gerätebeschreibung:         PCI Express-Stammport
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1634&SUBSYS_16021043&REV_00\3&11583659&0&13
+Gerätebeschreibung:         PCI Express-Stammport
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_1634&SUBSYS_16021043&REV_00\3&11583659&0&14
+Gerätebeschreibung:         PCI Express-Stammport
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                pci.inf
+
+Instanz-ID:                ROOT\SYSTEM\0000
+Gerätebeschreibung:         PnP-Softwaregeräte-Enumerator
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                swenum.inf
+
+Instanz-ID:                ACPI\PNP0C14\ITKS
+Gerätebeschreibung:         Microsoft Windows-Verwaltungsschnittstelle für ACPI
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                wmiacpi.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_15E2&SUBSYS_15F21043&REV_01\4&12c9051d&0&0541
+Gerätebeschreibung:         Multimediacontroller
+Klassenname:                 Unbekannt
+Klassen-GUID:                 Unbekannt
+Herstellername:          Unbekannt
+Status:                     Problem
+Problemcode:               28 (0x1C) [CM_PROB_FAILED_INSTALL]
+Problemstatus:             0xC0000490
+
+Instanz-ID:                PCI\VEN_1002&DEV_1637&SUBSYS_104C1043&REV_00\4&12c9051d&0&0141
+Gerätebeschreibung:         High Definition Audio-Controller
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          Microsoft
+Status:                     Gestartet
+Treibername:                hdaudbus.inf
+
+Instanz-ID:                HID\VID_0B05&PID_1866&Col05\7&289d55ad&0&0004
+Gerätebeschreibung:         HID-konformes, vom Hersteller definiertes Gerät
+Klassenname:                 HIDClass
+Klassen-GUID:                 {745a17a0-74d3-11d0-b6fe-00a0c90f57da}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                input.inf
+
+Instanz-ID:                PCI\VEN_1022&DEV_166E&SUBSYS_00000000&REV_00\3&11583659&0&C4
+Gerätebeschreibung:         PCI Standard-Host-CPU-Brücke
+Klassenname:                 System
+Klassen-GUID:                 {4d36e97d-e325-11ce-bfc1-08002be10318}
+Herstellername:          (Standardsystemgeräte)
+Status:                     Gestartet
+Treibername:                machine.inf
+

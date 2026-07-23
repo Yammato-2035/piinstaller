@@ -290,6 +290,28 @@ if unit.is_file():
 print("payload", ver)
 PY
 
+# Ensure ntfs-3g userspace exists for dirty NTFS RO Panther capture (FUSE type
+# is often not registered for `mount -t ntfs-3g` on the live image).
+echo "[INFO] inject host ntfs-3g helpers if missing…"
+if [[ -x /usr/bin/ntfs-3g ]]; then
+  mkdir -p "${ROOT}/usr/bin" "${ROOT}/usr/sbin" "${ROOT}/lib/x86_64-linux-gnu"
+  cp -a /usr/bin/ntfs-3g "${ROOT}/usr/bin/ntfs-3g"
+  chmod 755 "${ROOT}/usr/bin/ntfs-3g"
+  if [[ -x /usr/sbin/mount.ntfs-3g ]]; then
+    cp -a /usr/sbin/mount.ntfs-3g "${ROOT}/usr/sbin/mount.ntfs-3g"
+    chmod 755 "${ROOT}/usr/sbin/mount.ntfs-3g"
+  elif [[ -x /sbin/mount.ntfs-3g ]]; then
+    cp -a /sbin/mount.ntfs-3g "${ROOT}/usr/sbin/mount.ntfs-3g"
+    chmod 755 "${ROOT}/usr/sbin/mount.ntfs-3g"
+  fi
+  if [[ -f /lib/x86_64-linux-gnu/libntfs-3g.so.89 ]]; then
+    cp -a /lib/x86_64-linux-gnu/libntfs-3g.so.89* "${ROOT}/lib/x86_64-linux-gnu/" || true
+  fi
+  echo "[OK] ntfs-3g userspace injected"
+else
+  echo "[WARN] host /usr/bin/ntfs-3g missing — dirty NTFS force mount may fail"
+fi
+
 # NetworkManager refuses plugins not owned by root (squashfs inject can preserve wrong uid).
 # Without this, WiFi is only a generic device — breaks multi-host WLAN.
 echo "[INFO] fix NetworkManager plugin ownership…"

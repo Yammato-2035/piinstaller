@@ -1,5 +1,7 @@
 {
-  "endstatus": "ready_for_windows_retest_bios331",
-  "reason": "runtime_payload_stick_ready_physical_stage_a_pending",
-  "bios_335_justified": false
+  "endstatus": "stage_a_incomplete_logs_missing",
+  "reason": "hang_reported_panther_not_captured_ntfs3g_mount_missing_on_rescue",
+  "imported_run": "hw-discovery-20260723T021950Z-57f66411",
+  "bios_335_justified": false,
+  "updated_at": "2026-07-23T00:23:23Z"
 }

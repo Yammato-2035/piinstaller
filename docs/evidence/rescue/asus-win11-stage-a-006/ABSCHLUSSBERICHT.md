@@ -124,3 +124,12 @@ Endstatus: **ready_for_windows_retest_bios331**
 - Windows-Postcheck: nach erfolgreicher Installation
 - Linux weiterhin gesperrt: ja
 - nächster Operatorlauf: Rollenbindung → Isolation → Media → Stage A + Collector
+
+## Log-Import 2026-07-23T021950Z
+
+- Identity-gated Import: `hw-discovery-20260723T021950Z-57f66411` (Gabriel, Payload 1.10.2.4, COMPLETED.TAG)
+- Panther/Rollback: **nicht** vorhanden (NTFS-Mount auf Rescue: `unknown filesystem type ntfs-3g`)
+- WinPE-Collector-Fragment: nur Boot/Disk-Inventar, keine Setup-Logs
+- Endstatus: **stage_a_incomplete_logs_missing**
+- Stick nachfix: Payload **1.10.2.6** (ntfs-3g userspace + force RO)
+- Nächster Operatorlauf: erneut Hardwarediagnose → Panther von `/dev/nvme0n1p2` (1.8T NTFS) auslesen

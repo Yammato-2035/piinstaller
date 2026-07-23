@@ -659,51 +659,61 @@ def mount_ntfs_read_only(
     Never mounts read-write. Never clears hibernation files.
     After a hung Windows Setup the volume is often dirty; then a documented
     ``ro,force`` recovery mount may be used (still read-only).
+
+    Rescue squashfs may lack ``mount -t ntfs-3g`` (FUSE type not registered).
+    Prefer kernel ``ntfs3``, then the ``ntfs-3g`` / ``mount.ntfs-3g`` binaries.
     """
     run = run or _default_run
     mount_point.mkdir(parents=True, exist_ok=True)
-    attempts: list[tuple[str, str, str]] = [
-        ("ntfs3", "ro,norecover", "mounted_ro"),
-        ("ntfs-3g", "ro,norecover", "mounted_ro"),
-        ("ntfs-3g", "ro,remove_hiberfile=0", "mounted_ro"),
+
+    # (label, argv_without_source_mountpoint, ok_status)
+    attempts: list[tuple[str, list[str], str]] = [
+        ("ntfs3", ["mount", "-t", "ntfs3", "-o", "ro,norecover"], "mounted_ro"),
+        ("ntfs3-force", ["mount", "-t", "ntfs3", "-o", "ro,force"], "mounted_ro_force_recovery"),
+        ("ntfs-3g-bin", ["ntfs-3g", "-o", "ro,norecover"], "mounted_ro"),
+        ("mount.ntfs-3g", ["mount.ntfs-3g", "-o", "ro,norecover"], "mounted_ro"),
+        ("ntfs-3g-mount-t", ["mount", "-t", "ntfs-3g", "-o", "ro,norecover"], "mounted_ro"),
     ]
     if allow_dirty_force_ro:
-        # Last resort after unclean/dirty Stage-A hang — still RO, no write/repair.
-        attempts.append(("ntfs-3g", "ro,force", "mounted_ro_force_recovery"))
+        attempts.extend(
+            [
+                ("ntfs-3g-bin-force", ["ntfs-3g", "-o", "ro,force"], "mounted_ro_force_recovery"),
+                ("mount.ntfs-3g-force", ["mount.ntfs-3g", "-o", "ro,force"], "mounted_ro_force_recovery"),
+            ]
+        )
 
     last_err = ""
-    for fstype, opts, ok_status in attempts:
-        rc, out, err = run(["mount", "-t", fstype, "-o", opts, source, str(mount_point)], 30.0)
-        combined = f"{out}\n{err}".lower()
+    for label, argv, ok_status in attempts:
+        cmd = [*argv, source, str(mount_point)]
+        rc, out, err = run(cmd, 30.0)
         last_err = (err or out or "")[:500]
-        if rc == 0:
-            _rc_f, findmnt, _err_f = run(["findmnt", "-no", "OPTIONS", str(mount_point)], 5.0)
-            ro = "ro" in (findmnt or "") or "ro" in opts.split(",")
-            if not ro:
-                _umount(mount_point, run)
-                return {
-                    "source": source,
-                    "mountpoint": str(mount_point),
-                    "options": opts,
-                    "fstype": fstype,
-                    "exitcode": 1,
-                    "read_only_confirmed": False,
-                    "status": "ntfs_read_only_mount_blocked",
-                    "error": "mount_not_read_only",
-                }
+        if rc != 0:
+            continue
+        _rc_f, findmnt, _err_f = run(["findmnt", "-no", "OPTIONS", str(mount_point)], 5.0)
+        ro = "ro" in (findmnt or "") or "ro" in " ".join(argv)
+        if not ro:
+            _umount(mount_point, run)
             return {
                 "source": source,
                 "mountpoint": str(mount_point),
-                "options": opts,
-                "fstype": fstype,
-                "exitcode": 0,
-                "read_only_confirmed": True,
-                "status": ok_status,
-                "dirty_force_used": ok_status == "mounted_ro_force_recovery",
+                "options": label,
+                "fstype": label,
+                "exitcode": 1,
+                "read_only_confirmed": False,
+                "status": "ntfs_read_only_mount_blocked",
+                "error": "mount_not_read_only",
             }
-        # Continue trying safer RO options; do not abort the whole chain on dirty.
-        if "hiber" in combined and "force" not in opts:
-            continue
+        return {
+            "source": source,
+            "mountpoint": str(mount_point),
+            "options": label,
+            "fstype": label,
+            "argv": cmd[:3],
+            "exitcode": 0,
+            "read_only_confirmed": True,
+            "status": ok_status,
+            "dirty_force_used": ok_status == "mounted_ro_force_recovery",
+        }
     return {
         "source": source,
         "mountpoint": str(mount_point),

@@ -1,0 +1,135 @@
+{
+  "schema_version": "1.1",
+  "journal_rc": 0,
+  "dmesg_rc": 0,
+  "filtered_hits": [
+    {
+      "token": "nvme",
+      "count": 40,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme 0000:04:00.0: platform quirk: setting simple suspend",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme0: pci function 0000:04:00.0",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme 0000:05:00.0: platform quirk: setting simple suspend",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme1: pci function 0000:05:00.0",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme0: missing or invalid SUBNQN field.",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme0: Shutdown timeout set to 8 seconds",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme1: missing or invalid SUBNQN field.",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme1: Shutdown timeout set to 8 seconds"
+      ]
+    },
+    {
+      "token": "pcie",
+      "count": 32,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: acpi PNP0A08:00: _OSC: OS now controls [PCIeHotplug PME AER PCIeCapability]",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:01:00.0: 63.008 Gb/s available PCIe bandwidth, limited by 8.0 GT/s PCIe x8 link at 0000:00:01.1 (capable of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:06:00.0: 126.016 Gb/s available PCIe bandwidth, limited by 8.0 GT/s PCIe x16 link at 0000:00:08.1 (capable of 252.048 Gb/s with 16.0 GT/s PCIe x16 link)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pcieport 0000:00:01.1: PME: Signaling with IRQ 36",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pcieport 0000:00:01.1: pciehp: Slot #0 AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug+ Surprise+ Interlock- NoCompl+ IbPresDis- LLActRep+",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pcieport 0000:00:02.1: PME: Signaling with IRQ 37",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pcieport 0000:00:02.2: PME: Signaling with IRQ 38",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pcieport 0000:00:02.3: PME: Signaling with IRQ 39"
+      ]
+    },
+    {
+      "token": "aer",
+      "count": 2,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: acpi PNP0A08:00: _OSC: OS now controls [PCIeHotplug PME AER PCIeCapability]",
+        "[    0.286716] acpi PNP0A08:00: _OSC: OS now controls [PCIeHotplug PME AER PCIeCapability]"
+      ]
+    },
+    {
+      "token": "timeout",
+      "count": 4,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme0: Shutdown timeout set to 8 seconds",
+        "Jul 23 02:18:15 localhost.localdomain kernel: nvme nvme1: Shutdown timeout set to 8 seconds",
+        "[    1.378122] nvme nvme0: Shutdown timeout set to 8 seconds",
+        "[    1.383908] nvme nvme1: Shutdown timeout set to 8 seconds"
+      ]
+    },
+    {
+      "token": "controller",
+      "count": 26,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: acpiphp: ACPI Hot Plug PCI Controller Driver version: 0.5",
+        "Jul 23 02:18:15 localhost.localdomain kernel: shpchp: Standard Hot Plug PCI Controller Driver version: 0.4",
+        "Jul 23 02:18:15 localhost.localdomain kernel: i8042: PNP: PS/2 Controller [PNP030b:PS2K] at 0x60,0x64 irq 1",
+        "Jul 23 02:18:15 localhost.localdomain kernel: piix4_smbus 0000:00:14.0: SMBus Host Controller at 0xb00, revision 0",
+        "Jul 23 02:18:15 localhost.localdomain kernel: piix4_smbus 0000:00:14.0: Auxiliary SMBus Host Controller at 0xb20",
+        "Jul 23 02:18:15 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: xHCI Host Controller",
+        "Jul 23 02:18:15 localhost.localdomain kernel: xhci_hcd 0000:06:00.3: xHCI Host Controller",
+        "Jul 23 02:18:15 localhost.localdomain kernel: usb usb1: Product: xHCI Host Controller"
+      ]
+    },
+    {
+      "token": "amd",
+      "count": 150,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: Linux version 6.1.0-49-amd64 (debian-kernel@lists.debian.org) (gcc-12 (Debian 12.2.0-14+deb12u1) 12.2.0, GNU ld (GNU Binutils for Debian) 2.40) #1 SMP PREEMPT_DYNAMIC Debian 6.1.174-1 (2026-05-26)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: RAMDISK: [mem 0xe13d8000-0xe38bdfff]",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE66000 007229 (v02 AMD    AmdTable 00000002 MSFT 04000000)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: IVRS 0x00000000ECE65000 0001A4 (v02 AMD    AmdTable 00000001 AMD  00000000)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE61000 003A21 (v01 AMD    AMD AOD  00000001 INTL 20190509)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: VFCT 0x00000000ECE42000 00D884 (v01 _ASUS_ Notebook 00000001 AMD  31504F47)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: SSDT 0x00000000ECE3A000 005354 (v02 AMD    AmdTable 00000001 AMD  00000001)",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: CRAT 0x00000000ECE39000 000EE8 (v01 AMD    AmdTable 00000001 AMD  00000001)"
+      ]
+    },
+    {
+      "token": "iommu",
+      "count": 78,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: iommu: Default domain type: Translated ",
+        "Jul 23 02:18:15 localhost.localdomain kernel: iommu: DMA domain TLB invalidation policy: lazy mode ",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:00:00.2: AMD-Vi: IOMMU performance counters supported",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:00:01.0: Adding to iommu group 0",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:00:01.1: Adding to iommu group 1",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:00:02.0: Adding to iommu group 2",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:00:02.1: Adding to iommu group 3",
+        "Jul 23 02:18:15 localhost.localdomain kernel: pci 0000:00:02.2: Adding to iommu group 4"
+      ]
+    },
+    {
+      "token": "acpi",
+      "count": 300,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: BIOS-e820: [mem 0x000000000a200000-0x000000000a20efff] ACPI NVS",
+        "Jul 23 02:18:15 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ece0d000-0x00000000ece70fff] ACPI data",
+        "Jul 23 02:18:15 localhost.localdomain kernel: BIOS-e820: [mem 0x00000000ece71000-0x00000000ed165fff] ACPI NVS",
+        "Jul 23 02:18:15 localhost.localdomain kernel: reserve setup_data: [mem 0x000000000a200000-0x000000000a20efff] ACPI NVS",
+        "Jul 23 02:18:15 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ece0d000-0x00000000ece70fff] ACPI data",
+        "Jul 23 02:18:15 localhost.localdomain kernel: reserve setup_data: [mem 0x00000000ece71000-0x00000000ed165fff] ACPI NVS",
+        "Jul 23 02:18:15 localhost.localdomain kernel: efi: ACPI=0xece70000 ACPI 2.0=0xece70014 TPMFinalLog=0xed11d000 SMBIOS=0xed819000 SMBIOS 3.0=0xed818000 MEMATTR=0xe7739018 ESRT=0xea0f8898 INITRD=0xe7729b18 RNG=0xece20018 TPMEventLog=0xece1f018 ",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: Early table checksum verification disabled"
+      ]
+    },
+    {
+      "token": "thermal",
+      "count": 30,
+      "samples": [
+        "Jul 23 02:18:15 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'fair_share'",
+        "Jul 23 02:18:15 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'bang_bang'",
+        "Jul 23 02:18:15 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'step_wise'",
+        "Jul 23 02:18:15 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'user_space'",
+        "Jul 23 02:18:15 localhost.localdomain kernel: thermal_sys: Registered thermal governor 'power_allocator'",
+        "Jul 23 02:18:15 localhost.localdomain kernel: thermal LNXTHERM:00: registered as thermal_zone0",
+        "Jul 23 02:18:15 localhost.localdomain kernel: ACPI: thermal: Thermal Zone [TZ01] (78 C)",
+        "Jul 23 02:18:16 localhost.localdomain kernel: asus-nb-wmi asus-nb-wmi: Using throttle_thermal_policy for platform_profile support"
+      ]
+    },
+    {
+      "token": "mce",
+      "count": 4,
+      "samples": [
+        "Jul 23 02:18:17 setuphelfer-rescue kernel: MCE: In-kernel MCE decoding enabled.",
+        "[    5.912769] MCE: In-kernel MCE decoding enabled."
+      ]
+    }
+  ],
+  "critical_io_or_mce": true,
+  "reset_mentions": 0,
+  "pci_noaer_on_cmdline": false,
+  "write_allowed": false
+}

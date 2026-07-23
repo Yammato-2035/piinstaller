@@ -1,0 +1,8 @@
+{
+  "task_id": "PI-RS-ASUS-WIN11-STAGE-A-006",
+  "payload_version_after": "1.10.2.6",
+  "sha256": "b26b982fdd867535361a41691865c9ca59bb1ba7523c5021d5f027077fb3a96f",
+  "ntfs_3g_userspace_injected": true,
+  "reason": "enable dirty NTFS RO Panther capture after Stage A hang",
+  "created_at": "2026-07-23T00:28:52Z"
+}

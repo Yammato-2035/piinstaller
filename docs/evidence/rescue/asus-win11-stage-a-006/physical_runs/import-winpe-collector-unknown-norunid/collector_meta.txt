@@ -1,0 +1,5 @@
+setuphelfer_win_diag=
+stamp=unknown
+run_id=norunid
+computername=MINWINPC
+date=23.07.2026  2:02:17,12

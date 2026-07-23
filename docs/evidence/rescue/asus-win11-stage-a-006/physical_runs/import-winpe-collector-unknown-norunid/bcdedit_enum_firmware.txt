@@ -1,0 +1,2 @@
+Der Speicher fr die Startkonfigurationsdaten konnte nicht ge”ffnet werden.
+Das System kann die angegebene Datei nicht finden.

@@ -1,4 +1,8 @@
 {
-  "status": "pending_physical_stage_a",
-  "bios": "G513QM.331"
+  "status": "hung_incomplete_logs",
+  "bios": "G513QM.331",
+  "panther": false,
+  "rollback": false,
+  "setupdiag": false,
+  "operator_report": "system hung during Windows installation; PowerShell unavailable"
 }

@@ -1,0 +1,15 @@
+{
+  "machine_profile": "asus_rog_gabriel",
+  "windows_target": {
+    "nvme_identity_hash": "6b45cc50d930d46e55b9d56e73b7540e03329164619069dd784a8273cb33d031",
+    "confirmed": false,
+    "write_allowed": false
+  },
+  "linux_target": {
+    "nvme_identity_hash": "ed84d453078b002bb70e496cefbb1d4c18fd3b783c0e8483703a770cb087c94a",
+    "confirmed": false,
+    "write_allowed": false
+  },
+  "same_device": false,
+  "created_at": "2026-07-23T02:19:54Z"
+}

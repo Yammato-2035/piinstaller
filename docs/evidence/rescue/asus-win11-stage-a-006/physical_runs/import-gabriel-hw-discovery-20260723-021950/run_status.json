@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.1",
+  "run_type": "hardware_discovery",
+  "profile_id": "asus_rog_gabriel",
+  "machine_fingerprint_hash": "79396619c22d7b85a9fe12605be514de731c157ba349911edfa65df5017b38b9",
+  "boot_id": "a723358a-9683-4128-9909-f3962518a3ee",
+  "run_id": "hw-discovery-20260723T021950Z-57f66411",
+  "payload_version": "1.10.2.4",
+  "started_at": "2026-07-23T02:19:50Z",
+  "completed_at": "2026-07-23T02:19:54Z",
+  "status": "complete",
+  "terminal": true,
+  "write_operations_allowed": false,
+  "bvr_run_control_required": false,
+  "captures": {
+    "machine_identity": "complete",
+    "bios": "complete",
+    "nvme_identity": "complete",
+    "nvme_smart": "complete",
+    "nvme_error_logs": "complete",
+    "kernel_storage": "complete",
+    "partition_inventory": "complete",
+    "windows_setup_logs": "partial"
+  },
+  "warnings": [
+    "nguid_absent:6b45cc50d930",
+    "nguid_absent:ed84d453078b"
+  ],
+  "errors": [],
+  "gui_status": "not_applicable_for_text_hardware_discovery",
+  "stick_remove_hint": "Diagnose abgeschlossen – Stick kann nach dem Herunterfahren entfernt werden.",
+  "run_control_eval": {
+    "status": "discovery_complete",
+    "declared_run_type": "hardware_discovery",
+    "missing_fields": [],
+    "run_control_invalid_correct": false
+  },
+  "endstatus": "ready_for_controlled_windows_retest_with_log_collection",
+  "missing_areas": [
+    "windows_setup_logs"
+  ]
+}

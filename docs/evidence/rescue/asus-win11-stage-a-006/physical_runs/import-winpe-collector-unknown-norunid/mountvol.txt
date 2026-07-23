@@ -1,0 +1,47 @@
+Erstellt, lîscht oder listet einen Volumebereitstellungspunkt auf.
+
+MOUNTVOL [Laufwerk:]Pfad Volumename
+MOUNTVOL [Laufwerk:]Pfad /D
+MOUNTVOL [Laufwerk:]Pfad /L
+MOUNTVOL [Laufwerk:]Pfad /P
+MOUNTVOL /R
+MOUNTVOL /N
+MOUNTVOL /E
+MOUNTVOL Laufwerk: /S
+
+    Pfad        Gibt das (bereits vorhandene) NTFS-Verzeichnis an, auf dem der
+                Bereitstellungspunkt eingerichtet werden soll.
+    Volumename  Gibt den Namen des bereitzustellenden Volumes an.
+    /D          Lîscht den Bereitstellungspunkt vom angegebenen Verzeichnis.
+    /L          Zeigt den Namen des bereitgestellten Volumes fÅr das
+                angegebene Verzeichnis an.
+    /P          Entfernt den Volumebereitstellungspunkt vom angegebenen
+                Verzeichnis, entfernt die Volumebereitstellung und setzt das
+                Volume nicht mehr  bereitstellbar.
+                Sie kînnen das Volume wieder bereitstellbar machen, indem Sie
+                einen Volumebereitstellungspunkt erstellen
+    /R          Entfernt Verzeichnisse fÅr Volumebereitstellungspunkte und 
+                Registrierungseinstellungen fÅr Volumes d. im System nicht mehr
+                existieren.
+    /N          Deaktiviert das automatische Bereitstellen neuer Volumes.
+    /E          Aktiviert das automatische Bereitstellen neuer Volumes wieder.
+    /S          Stellt die EFI-Systempartition auf dem angegebenen Laufwerk
+                bereit.
+
+Mîgliche Werte fÅr VolumeName mit aktuellen Bereitstellungspunkten:
+
+    \\?\Volume{e558db84-ac14-4e42-bafa-4c2a330990cc}\
+        C:\
+
+    \\?\Volume{81dad63f-8631-11f1-8f69-806e6f6e6963}\
+        D:\
+
+    \\?\Volume{6ab59ae6-1515-4091-9e55-8fd88728861e}\
+        E:\
+
+    \\?\Volume{5ce958bc-22e2-4a38-92a7-b34caf623aed}\
+        *** KEINE BEREITSTELLUNGSPUNKTE ***
+
+    \\?\Volume{d9b257fc-684e-4dcb-ab79-03cfa2f6b750}\
+        X:\
+
