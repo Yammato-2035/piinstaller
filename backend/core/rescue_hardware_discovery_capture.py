@@ -652,41 +652,58 @@ def mount_ntfs_read_only(
     mount_point: Path,
     *,
     run: RunFn | None = None,
+    allow_dirty_force_ro: bool = True,
 ) -> dict[str, Any]:
-    """Mount NTFS read-only; never force hibernated volumes."""
+    """Mount NTFS read-only for Panther/Rollback capture.
+
+    Never mounts read-write. Never clears hibernation files.
+    After a hung Windows Setup the volume is often dirty; then a documented
+    ``ro,force`` recovery mount may be used (still read-only).
+    """
     run = run or _default_run
     mount_point.mkdir(parents=True, exist_ok=True)
-    # Probe with ntfs3 ro,norecover first
-    for fstype, opts in (
-        ("ntfs3", "ro,norecover"),
-        ("ntfs-3g", "ro,remove_hiberfile=0"),
-    ):
+    attempts: list[tuple[str, str, str]] = [
+        ("ntfs3", "ro,norecover", "mounted_ro"),
+        ("ntfs-3g", "ro,norecover", "mounted_ro"),
+        ("ntfs-3g", "ro,remove_hiberfile=0", "mounted_ro"),
+    ]
+    if allow_dirty_force_ro:
+        # Last resort after unclean/dirty Stage-A hang — still RO, no write/repair.
+        attempts.append(("ntfs-3g", "ro,force", "mounted_ro_force_recovery"))
+
+    last_err = ""
+    for fstype, opts, ok_status in attempts:
         rc, out, err = run(["mount", "-t", fstype, "-o", opts, source, str(mount_point)], 30.0)
         combined = f"{out}\n{err}".lower()
+        last_err = (err or out or "")[:500]
         if rc == 0:
-            # Confirm read-only
-            rc_f, findmnt, _ = run(["findmnt", "-no", "OPTIONS", str(mount_point)], 5.0)
-            ro = "ro" in (findmnt or "") or "ro" in opts
+            _rc_f, findmnt, _err_f = run(["findmnt", "-no", "OPTIONS", str(mount_point)], 5.0)
+            ro = "ro" in (findmnt or "") or "ro" in opts.split(",")
+            if not ro:
+                _umount(mount_point, run)
+                return {
+                    "source": source,
+                    "mountpoint": str(mount_point),
+                    "options": opts,
+                    "fstype": fstype,
+                    "exitcode": 1,
+                    "read_only_confirmed": False,
+                    "status": "ntfs_read_only_mount_blocked",
+                    "error": "mount_not_read_only",
+                }
             return {
                 "source": source,
                 "mountpoint": str(mount_point),
                 "options": opts,
                 "fstype": fstype,
                 "exitcode": 0,
-                "read_only_confirmed": ro,
-                "status": "mounted_ro",
+                "read_only_confirmed": True,
+                "status": ok_status,
+                "dirty_force_used": ok_status == "mounted_ro_force_recovery",
             }
-        if "hiber" in combined or "unclean" in combined or "volume is dirty" in combined:
-            return {
-                "source": source,
-                "mountpoint": str(mount_point),
-                "options": opts,
-                "fstype": fstype,
-                "exitcode": rc,
-                "read_only_confirmed": False,
-                "status": "ntfs_read_only_mount_blocked",
-                "error": (err or out)[:500],
-            }
+        # Continue trying safer RO options; do not abort the whole chain on dirty.
+        if "hiber" in combined and "force" not in opts:
+            continue
     return {
         "source": source,
         "mountpoint": str(mount_point),
@@ -694,7 +711,7 @@ def mount_ntfs_read_only(
         "exitcode": 1,
         "read_only_confirmed": False,
         "status": "ntfs_read_only_mount_blocked",
-        "error": "mount_failed",
+        "error": last_err or "mount_failed",
     }
 
 
@@ -717,9 +734,10 @@ def collect_windows_setup_logs(
         mp = work_root / f"ntfs-ro-{idx}"
         result = mount_ntfs_read_only(source, mp, run=run)
         mounts.append(result)
-        if result.get("status") == "mounted_ro" and result.get("read_only_confirmed"):
+        status = str(result.get("status") or "")
+        if status in {"mounted_ro", "mounted_ro_force_recovery"} and result.get("read_only_confirmed"):
             roots.append(mp)
-        elif result.get("status") == "mounted_ro":
+        elif status.startswith("mounted_ro"):
             _umount(mp, run)
     scan = scan_windows_setup_evidence(roots)
     for item in scan.get("files") or []:

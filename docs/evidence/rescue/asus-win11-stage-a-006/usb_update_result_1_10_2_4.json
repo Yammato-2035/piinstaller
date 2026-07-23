@@ -1,0 +1,8 @@
+{
+  "task_id": "PI-RS-ASUS-WIN11-STAGE-A-006",
+  "payload_version_after": "1.10.2.4",
+  "sha256": "5e129838a098dd415ca21e9c4de4a19a19bf51977826c4f5bc50e474c5b1842d",
+  "reason": "dirty_ntfs_ro_force_recovery_for_post_hang_panther_capture",
+  "update_method": "inject-gui-bvr-fixes-into-stick-squashfs.sh",
+  "created_at": "2026-07-23T00:08:09Z"
+}

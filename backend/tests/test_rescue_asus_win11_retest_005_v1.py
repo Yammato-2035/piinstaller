@@ -301,7 +301,7 @@ class LocaleAndPayloadTests(unittest.TestCase):
     def test_payload_flag(self) -> None:
         cfg = json.loads((_repo / "config/rescue_payload_version.json").read_text(encoding="utf-8"))
         self.assertTrue(cfg.get("pi_rs_asus_win11_retest_005"))
-        self.assertEqual(cfg.get("rescue_payload_version"), "1.10.2.3")
+        self.assertEqual(cfg.get("rescue_payload_version"), "1.10.2.4")
 
 
 if __name__ == "__main__":
