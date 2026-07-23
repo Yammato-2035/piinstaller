@@ -1,0 +1,6 @@
+{
+  "payload_version_after": "1.10.2.7",
+  "sha256": "7f25917b0e254418d868aa86890ece6e77698b0d91936873e232adfc06bd380e",
+  "fix": "ntfs-3g symlink /bin and /usr/bin both present",
+  "created_at": "2026-07-23T00:32:03Z"
+}

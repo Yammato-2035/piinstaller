@@ -294,18 +294,17 @@ PY
 # is often not registered for `mount -t ntfs-3g` on the live image).
 echo "[INFO] inject host ntfs-3g helpers if missing…"
 if [[ -x /usr/bin/ntfs-3g ]]; then
-  mkdir -p "${ROOT}/usr/bin" "${ROOT}/usr/sbin" "${ROOT}/lib/x86_64-linux-gnu"
+  mkdir -p "${ROOT}/usr/bin" "${ROOT}/bin" "${ROOT}/usr/sbin" \
+    "${ROOT}/lib/x86_64-linux-gnu" "${ROOT}/usr/lib/x86_64-linux-gnu"
   cp -a /usr/bin/ntfs-3g "${ROOT}/usr/bin/ntfs-3g"
-  chmod 755 "${ROOT}/usr/bin/ntfs-3g"
-  if [[ -x /usr/sbin/mount.ntfs-3g ]]; then
-    cp -a /usr/sbin/mount.ntfs-3g "${ROOT}/usr/sbin/mount.ntfs-3g"
-    chmod 755 "${ROOT}/usr/sbin/mount.ntfs-3g"
-  elif [[ -x /sbin/mount.ntfs-3g ]]; then
-    cp -a /sbin/mount.ntfs-3g "${ROOT}/usr/sbin/mount.ntfs-3g"
-    chmod 755 "${ROOT}/usr/sbin/mount.ntfs-3g"
-  fi
+  cp -a /usr/bin/ntfs-3g "${ROOT}/bin/ntfs-3g"
+  chmod 755 "${ROOT}/usr/bin/ntfs-3g" "${ROOT}/bin/ntfs-3g"
+  ln -sfn /usr/bin/ntfs-3g "${ROOT}/usr/sbin/mount.ntfs-3g"
+  ln -sfn /usr/bin/ntfs-3g "${ROOT}/sbin/mount.ntfs-3g" 2>/dev/null || \
+    (mkdir -p "${ROOT}/sbin" && ln -sfn /usr/bin/ntfs-3g "${ROOT}/sbin/mount.ntfs-3g")
   if [[ -f /lib/x86_64-linux-gnu/libntfs-3g.so.89 ]]; then
     cp -a /lib/x86_64-linux-gnu/libntfs-3g.so.89* "${ROOT}/lib/x86_64-linux-gnu/" || true
+    cp -a /lib/x86_64-linux-gnu/libntfs-3g.so.89* "${ROOT}/usr/lib/x86_64-linux-gnu/" || true
   fi
   echo "[OK] ntfs-3g userspace injected"
 else

@@ -14,7 +14,7 @@ class VersionTests(unittest.TestCase):
         app = json.loads((ROOT / "config/version.json").read_text(encoding="utf-8"))
         payload = json.loads((ROOT / "config/rescue_payload_version.json").read_text(encoding="utf-8"))
         self.assertEqual(app["project_version"], "1.9.21.2")
-        self.assertEqual(payload["rescue_payload_version"], "1.10.2.6")
+        self.assertEqual(payload["rescue_payload_version"], "1.10.2.7")
         self.assertTrue(payload.get("pi_rs_asus_capture_finalize_004"))
         self.assertTrue(payload.get("pi_rs_asus_physical_diag_003"))
 
