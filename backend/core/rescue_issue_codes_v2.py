@@ -60,16 +60,30 @@ class RescueIssueCodeV2(str, Enum):
   SUSPICIOUS_AUTOSTART_HINT = "suspicious_autostart_hint"
   SUSPICIOUS_WEBROOT_HINT = "suspicious_webroot_hint"
 
+  # Linux install diagnosis
+  BIOS_OUTDATED_LIKELY = "bios_outdated_likely"
+  PCIE_AER_FLOOD_BLOCKS_INSTALLER = "pcie_aer_flood_blocks_installer"
+  SECURE_BOOT_BLOCKS_UNSIGNED_ISO = "secure_boot_blocks_unsigned_iso"
+  NVME_ROLE_BIND_REQUIRED = "nvme_role_bind_required"
+  INSTALL_ISO_HASH_MISMATCH = "install_iso_hash_mismatch"
+  PARTITION_WRITE_BLOCKED_NO_BACKUP_OR_APPROVAL = "partition_write_blocked_no_backup_or_approval"
+  LINUX_INSTALL_POST_VERIFY_FAILED = "linux_install_post_verify_failed"
+  INSTALL_DIAGNOSIS_CLEAR = "install_diagnosis_clear"
+
 
 ISSUE_SEVERITY: dict[str, str] = {
   RescueIssueCodeV2.PCIE_AER_FATAL.value: "critical",
   RescueIssueCodeV2.PCIE_AER_NONFATAL.value: "high",
   RescueIssueCodeV2.STORAGE_SMART_WARNING.value: "high",
   RescueIssueCodeV2.STORAGE_NVME_WARNING.value: "high",
+  RescueIssueCodeV2.BIOS_OUTDATED_LIKELY.value: "high",
+  RescueIssueCodeV2.PCIE_AER_FLOOD_BLOCKS_INSTALLER.value: "high",
+  RescueIssueCodeV2.INSTALL_ISO_HASH_MISMATCH.value: "high",
   RescueIssueCodeV2.DNS_FAILED.value: "medium",
   RescueIssueCodeV2.HTTPS_FAILED.value: "medium",
   RescueIssueCodeV2.TELEMETRY_ENDPOINT_UNREACHABLE.value: "medium",
   RescueIssueCodeV2.MISSING_TOOL.value: "low",
+  RescueIssueCodeV2.INSTALL_DIAGNOSIS_CLEAR.value: "info",
 }
 
 

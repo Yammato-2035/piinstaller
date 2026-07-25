@@ -28,6 +28,10 @@ class RescueRecommendationCodeV2(str, Enum):
   BETA_AGREEMENT_REQUIRED = "beta_agreement_required"
   DEVICE_APPROVAL_REQUIRED = "device_approval_required"
   STICK_VERIFICATION_REQUIRED = "stick_verification_required"
+  GUIDED_BIOS_SESSION = "guided_bios_session"
+  BIND_DISK_ROLES = "bind_disk_roles"
+  PROCEED_MINT_ON_SECOND_NVME = "proceed_mint_on_second_nvme"
+  USE_PARTITIONSHELFER_AFTER_GATE = "use_partitionshelfer_after_gate"
 
 
 SAFE_RECOMMENDATION_CODES: frozenset[str] = frozenset(
