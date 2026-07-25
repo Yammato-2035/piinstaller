@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+## [1.9.20.3] — 2026-07-25
+
+### Fixed
+- Gabriel: Mint boots via extracted casper on SETUP_LOGS (no ISO loopback hang); GRUB force halt; TUI force poweroff; skip auto-discovery during install.
+
+
 ## [1.9.20.2] — 2026-07-25
 
 ### Fixed

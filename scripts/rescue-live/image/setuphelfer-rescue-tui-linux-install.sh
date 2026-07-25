@@ -92,33 +92,27 @@ _request_mint_iso_boot() {
   cat >"$marker" <<EOF
 {
   "schema_version": 1,
-  "action": "reboot_to_mint_iso_grub",
+  "action": "reboot_to_mint_casper_grub",
   "requested_at": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
-  "grub_title": "Linux Mint 22.2 Installer (ISO vom Stick)"
+  "grub_title": "Linux Mint 22.2 Installer (direkt vom Stick)"
 }
 EOF
-  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-set-boot-next-mint-iso" ]]; then
-    "${SCRIPT_DIR}/setuphelfer-rescue-set-boot-next-mint-iso" || true
-  fi
-  # Fallback: rewrite default on ESP grub if writable
   local esp grub
   for esp in /run/setuphelfer/esp-rw /run/live/medium; do
     grub="$esp/boot/grub/grub.cfg"
     if [[ -f "$grub" && -w "$grub" ]]; then
-      if grep -q 'Linux Mint 22.2 Installer (ISO vom Stick)' "$grub"; then
-        # set default to that entry index
+      if grep -q 'Linux Mint 22.2 Installer (direkt vom Stick)' "$grub"; then
         python3 - <<PY
 from pathlib import Path
 import re
 p = Path("$grub")
 text = p.read_text(encoding="utf-8", errors="replace")
 titles = re.findall(r'menuentry "([^"]+)"', text)
-idx = next((i for i,t in enumerate(titles) if t.startswith("Linux Mint 22.2 Installer")), None)
-if idx is not None:
-    text2, n = re.subn(r"(?m)^set default=\d+\s*$", f"set default={idx}", text, count=1)
-    if n:
-        p.write_text(text2, encoding="utf-8")
-        print(f"default={idx}")
+idx = next((i for i,t in enumerate(titles) if "Installer (direkt vom Stick)" in t), 0)
+text2, n = re.subn(r"(?m)^set default=\d+\s*$", f"set default={idx}", text, count=1)
+if n:
+    p.write_text(text2, encoding="utf-8")
+    print(f"default={idx}")
 PY
       fi
     fi

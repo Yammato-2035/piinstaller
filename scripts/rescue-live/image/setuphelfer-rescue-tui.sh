@@ -166,8 +166,13 @@ _tui_main_menu() {
       evidence) _tui_collect_evidence ;;
       gui) _tui_start_gui ;;
       shell) _tui_shell ;;
-      reboot) systemctl reboot 2>/dev/null || reboot ;;
-      poweroff) systemctl poweroff 2>/dev/null || poweroff ;;
+      reboot) systemctl reboot -i --force --force 2>/dev/null || reboot -f 2>/dev/null || echo b > /proc/sysrq-trigger ;;
+      poweroff)
+        # Discovery/jobs often block plain poweroff on Gabriel — force.
+        systemctl stop setuphelfer-rescue-auto-discovery.service 2>/dev/null || true
+        systemctl stop setuphelfer-rescue-hardware-discovery.service 2>/dev/null || true
+        systemctl poweroff -i --force --force 2>/dev/null || poweroff -f 2>/dev/null || echo o > /proc/sysrq-trigger
+        ;;
     esac
   done
 }

@@ -269,14 +269,11 @@ class GabrielGrubTests(unittest.TestCase):
         cfg = grub.generate_gabriel_install_grub_cfg()
         v = grub.validate_gabriel_install_grub(cfg)
         self.assertTrue(v["ok"], v)
-        self.assertEqual(v["checks"]["first_entry"], grub.INSTALL_TEXT_TITLE)
-        self.assertIn(grub.MINT_ISO_BOOT_TITLE, cfg)
-        self.assertIn("setuphelfer_install_assistant=1", cfg)
-        self.assertIn(
-            "setuphelfer_msi_e2e_auto=0",
-            cfg.split(grub.INSTALL_TEXT_TITLE, 1)[1].split("}", 1)[0],
-        )
+        self.assertEqual(v["checks"]["first_entry"], grub.MINT_CASPER_BOOT_TITLE)
+        self.assertIn("/mint-live/vmlinuz", cfg)
+        self.assertIn("live-media-path=/mint-live", cfg)
         self.assertIn(grub.LAB_E2E_GUI_WARN, cfg)
+        self.assertIn("Ausschalten (sofort)", cfg)
 
     def test_patch_forces_default_zero(self) -> None:
         old = 'set default=13\nmenuentry "Setuphelfer Lab-Auto (GUI, Physical E2E)" {\n  linux /live/vmlinuz x\n  initrd /live/initrd.img\n}\n'
