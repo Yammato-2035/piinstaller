@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+## [1.9.20.0] — 2026-07-25
+
+### Added
+- PI-RS-INSTALL-ASSISTANT-001: guided Mint install assistant (disk roles, diagnosis, ISO verify, partition dry-run, BIOS session read-only, handoff gates).
+
+
 ### Added
 
 - **PI-RS-MSI-GUI-002:** Payload **1.10.0.15** — GUI unter MSI-Compat/nomodeset gesperrt; kein openvt/chvt/startx; TUI primär; Operator-Meldung; Repack + Content-Check; kein USB-Write.

@@ -96,6 +96,7 @@ def rescue_capabilities_matrix() -> dict[str, Any]:
         },
         "wipe": False,
         "linux_install": False,
+        "linux_install_preview": True,
         "ntfs_mount_write": False,
         "bitlocker_unlock": False,
         "cloud_dependency": False,

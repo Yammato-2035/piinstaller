@@ -34,6 +34,8 @@ async def get_rescue_capabilities() -> dict[str, Any]:
         "restore_preview": True,
         "wipe": False,
         "linux_install": False,
+        "linux_install_preview": True,
+        "linux_install_capability": "preview",
     }
     return base
 

@@ -116,16 +116,30 @@
       }
     },
     "linuxInstall": {
-      "intro": "Reinstall is shown as plan-only preview on the rescue stick — no automatic formatting or install without explicit approval.",
-      "planTitle": "Planned flow (Debian/Linux)",
-      "stepAnalyze": "Analyze system and partitions",
-      "stepBackup": "Create backup on external target",
-      "stepPartition": "Prepare partitioning (hand-off)",
-      "stepInstall": "Start installation (Pro/Private — not executable here)",
+      "intro": "Install assistant: diagnosis, disk role binding and Mint ISO verify as preview — no wipe, no auto BIOS flash. Windows NVMe stays write-blocked.",
+      "planTitle": "Planned flow (Linux Mint P0)",
+      "diagnosisTitle": "Install diagnosis",
+      "runDiagnosis": "Run diagnosis (read-only)",
+      "runPlanDryRun": "Partition plan dry-run",
+      "planHash": "Plan hash",
+      "nextAction": "Next action",
+      "ampel": {
+        "green": "Green — no install blockers detected",
+        "yellow": "Yellow — review before install",
+        "red": "Red — install blocked",
+        "unknown": "Ampel: no diagnosis yet"
+      },
+      "stepAnalyze": "Run install diagnosis and bind disk roles",
+      "stepBackup": "Acknowledge backup hint",
+      "stepPartition": "Partition plan dry-run (write_allowed=false)",
+      "stepInstall": "Mint handoff only after operator gates (A5)",
       "statusReady": "Execute allowed (Pro/Private).",
+      "statusPreview": "Preview active — diagnosis and dry-run allowed, execute still blocked.",
       "statusBlocked": "Execute blocked — plan-only in public rescue. Backup and analysis first.",
-      "rescueHint": "From rescue stick: backup and verify first, then partitioning via Setuphelfer desktop.",
-      "wipeHint": "To wipe data and install Linux: create a plan under “Switch this PC to Linux”, rescue files and verify backup first. The stick never formats disks automatically."
+      "doubleConfirm": "Double-confirm installation",
+      "doubleConfirmDisabled": "Double-confirm enabled only after A5 approval",
+      "rescueHint": "From rescue stick: diagnosis and ISO SHA256 first, then dry-run; never use Windows NVMe as target without extra gate.",
+      "wipeHint": "No automatic format. Mint installer handoff only after assessment, linux_target bind, SHA256 and operator phrase."
     },
     "dataRescue": {
       "intro": "Rescue important files from Windows before partitions change or Linux is installed. Nothing is deleted, formatted, or overwritten.",

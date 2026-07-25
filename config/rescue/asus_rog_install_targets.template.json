@@ -1,0 +1,17 @@
+{
+  "machine_profile": "asus_rog_gabriel",
+  "windows_target": {
+    "serial_hash": "",
+    "model": "",
+    "size_bytes": 0,
+    "pci_path": "",
+    "confirmed": false
+  },
+  "linux_target": {
+    "serial_hash": "",
+    "model": "",
+    "size_bytes": 0,
+    "pci_path": "",
+    "confirmed": false
+  }
+}

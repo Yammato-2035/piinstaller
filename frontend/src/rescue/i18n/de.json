@@ -116,16 +116,30 @@
       }
     },
     "linuxInstall": {
-      "intro": "Neuinstallation ist im Rettungsstick als Plan-only-Vorschau sichtbar — keine automatische Formatierung oder Installation ohne ausdrückliche Freigabe.",
-      "planTitle": "Geplanter Ablauf (Debian/Linux)",
-      "stepAnalyze": "System und Partitionen analysieren",
-      "stepBackup": "Backup auf externes Ziel erstellen",
-      "stepPartition": "Partitionierung vorbereiten (Hand-off)",
-      "stepInstall": "Installation starten (Pro/Private — derzeit nicht ausführbar)",
+      "intro": "Installationsassistent: Diagnose, Rollenbindung und Mint-ISO-Verify als Vorschau — kein Wipe, kein Auto-BIOS-Flash. Windows-NVMe bleibt schreibgeschützt.",
+      "planTitle": "Geplanter Ablauf (Linux Mint P0)",
+      "diagnosisTitle": "Installationsdiagnose",
+      "runDiagnosis": "Diagnose starten (nur lesen)",
+      "runPlanDryRun": "Partitionsplan Dry-Run",
+      "planHash": "Plan-Hash",
+      "nextAction": "Nächste Aktion",
+      "ampel": {
+        "green": "Grün — keine Install-Blocker erkannt",
+        "yellow": "Gelb — prüfen vor Installation",
+        "red": "Rot — Installation blockiert",
+        "unknown": "Ampel: noch keine Diagnose"
+      },
+      "stepAnalyze": "Installationsdiagnose und Disk-Rollen binden",
+      "stepBackup": "Backup-Hinweis bestätigen",
+      "stepPartition": "Partitionsplan Dry-Run (write_allowed=false)",
+      "stepInstall": "Mint-Handoff erst nach Operator-Gates (A5)",
       "statusReady": "Execute freigegeben (Pro/Private).",
+      "statusPreview": "Preview aktiv — Diagnose und Dry-Run erlaubt, Execute weiter blockiert.",
       "statusBlocked": "Execute blockiert — Plan-only im Public-Rescue. Backup und Analyse zuerst.",
-      "rescueHint": "Vom Rettungsstick: zuerst Backup und Verify, dann Partitionierung über Setuphelfer Desktop.",
-      "wipeHint": "Daten löschen und Linux installieren: zuerst unter „Computer auf Linux umstellen“ Plan erstellen, Dateien retten und Backup prüfen. Der Stick formatiert keine Platte automatisch."
+      "doubleConfirm": "Doppelbestätigung Installation",
+      "doubleConfirmDisabled": "Doppelbestätigung erst nach A5-Freigabe aktiv",
+      "rescueHint": "Vom Rettungsstick: zuerst Diagnose und ISO-SHA256, dann Dry-Run; Windows-NVMe nie als Ziel ohne Extra-Gate.",
+      "wipeHint": "Kein automatisches Formatieren. Mint-Installer-Handoff nur nach Assessment, linux_target-Bindung, SHA256 und Operator-Phrase."
     },
     "dataRescue": {
       "intro": "Retten Sie wichtige Dateien von Windows, bevor Partitionen verändert oder Linux installiert wird. Es wird nichts gelöscht, formatiert oder überschrieben.",
