@@ -7,6 +7,15 @@ from typing import Any, Optional
 from fastapi import APIRouter, Body
 
 from core.rescue_bios_official_compare import check_latest_official_bios
+from core.rescue_gabriel_ops_policy import (
+    authorize_linux_target_wipe,
+    gabriel_capabilities,
+    gabriel_ops_enabled,
+)
+from core.rescue_install_assistant_grub import (
+    generate_gabriel_install_grub_cfg,
+    validate_gabriel_install_grub,
+)
 from core.rescue_install_bios_session import build_bios_session, export_bios_session_evidence
 from core.rescue_install_diagnosis import (
     build_install_diagnosis,
@@ -212,7 +221,7 @@ async def post_linux_install_preflight(body: dict[str, Any] = Body(...)) -> dict
 
 @router.post("/linux/install-execute")
 async def post_linux_install_execute(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
-    """Handoff gate only — always executed=False for destructive wipe."""
+    """Handoff gate — executed=False for automatic wipe; may authorize Gabriel linux_target wipe."""
     result = linux_install_execute_gate(
         preflight=body.get("preflight") or {},
         confirm_identity=bool(body.get("confirm_identity")),
@@ -225,10 +234,44 @@ async def post_linux_install_execute(body: dict[str, Any] = Body(...)) -> dict[s
         expected_operator_phrase=str(
             body.get("expected_operator_phrase") or "INSTALL LINUX TARGET"
         ),
+        gabriel_ops_allowed=bool(body.get("gabriel_ops_allowed")),
+        authorize_linux_wipe=bool(body.get("authorize_linux_wipe")),
+        linux_wipe_phrase=body.get("linux_wipe_phrase"),
     )
     result["executed"] = False
-    result["write_allowed"] = False
+    result["write_allowed"] = bool(result.get("wipe_authorized"))
+    result["windows_nvme_write_allowed"] = False
     return result
+
+
+@router.post("/gabriel/wipe-authorize")
+async def post_gabriel_wipe_authorize(body: dict[str, Any] = Body(...)) -> dict[str, Any]:
+    return authorize_linux_target_wipe(
+        gabriel_ops=gabriel_ops_enabled(
+            cmdline=str(body.get("cmdline") or ""),
+            machine=body.get("machine") or {},
+            operator_explicit=bool(body.get("operator_explicit")),
+        ),
+        confirm_identity=bool(body.get("confirm_identity")),
+        confirm_destructive=bool(body.get("confirm_destructive")),
+        operator_phrase=str(body.get("operator_phrase") or ""),
+        linux_serial_hash=str(body.get("linux_serial_hash") or ""),
+        expected_linux_serial_hash=str(body.get("expected_linux_serial_hash") or ""),
+        windows_serial_hash=str(body.get("windows_serial_hash") or ""),
+    )
+
+
+@router.get("/gabriel/grub-preview")
+async def get_gabriel_grub_preview() -> dict[str, Any]:
+    cfg = generate_gabriel_install_grub_cfg()
+    return {
+        "grub_cfg": cfg,
+        "validation": validate_gabriel_install_grub(cfg),
+        "capabilities": gabriel_capabilities(
+            machine={"board_name": "G513QM", "gabriel_bound": True},
+            operator_explicit=True,
+        ),
+    }
 
 
 @router.post("/linux/post-verify")

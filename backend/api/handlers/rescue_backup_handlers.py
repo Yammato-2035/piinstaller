@@ -5,7 +5,9 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from core.rescue_gabriel_ops_policy import gabriel_capabilities
 from core.rescue_backup_target_policy import rescue_backup_preflight, rescue_capabilities_matrix
+
 from core.rescue_cloud_target_local import cloud_target_status, save_cloud_target_config
 from core.rescue_storage_discovery import discover_rescue_storage
 from rescue.boot_context import build_rescue_boot_context
@@ -28,14 +30,27 @@ async def get_rescue_capabilities() -> dict[str, Any]:
         "public_repo_implementation": False,
         "status": cloud_target_status(),
     }
+    cmdline = ""
+    try:
+        cmdline = Path("/proc/cmdline").read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        cmdline = ""
+    gab = gabriel_capabilities(cmdline=cmdline, operator_explicit=False)
+    base["gabriel_ops"] = gab
+    if gab["gabriel_ops_enabled"]:
+        base["wipe"] = True
+        base["linux_install"] = True
+        base["linux_install_preview"] = True
     base["endpoints"] = {
         "backup_execute": base["booted_from_rescue"],
         "restore_execute": False,
         "restore_preview": True,
-        "wipe": False,
-        "linux_install": False,
+        "wipe": bool(gab.get("linux_target_wipe_allowed")),
+        "linux_install": bool(gab.get("gabriel_ops_enabled")),
         "linux_install_preview": True,
-        "linux_install_capability": "preview",
+        "linux_install_capability": gab.get("linux_install") or "preview",
+        "stick_write": bool(gab.get("stick_write_allowed")),
+        "windows_system_write": False,
     }
     return base
 

@@ -10,6 +10,8 @@ import hashlib
 import time
 from typing import Any, Mapping
 
+from core.rescue_gabriel_ops_policy import authorize_linux_target_wipe
+
 CONTRACT_VERSION = 1
 SCHEMA_VERSION = 1
 
@@ -233,12 +235,16 @@ def linux_install_execute_gate(
     expected_operator_phrase: str = "INSTALL LINUX TARGET",
     now_epoch: int | None = None,
     force_execute: bool = False,
+    gabriel_ops_allowed: bool = False,
+    authorize_linux_wipe: bool = False,
+    linux_wipe_phrase: str | None = None,
 ) -> dict[str, Any]:
-    """Authorize Mint handoff. Destructive wipe is never performed by this API.
+    """Authorize Mint handoff. Optional Gabriel linux_target wipe authorization.
 
-    force_execute is reserved for lab-only future use and still never wipes disks.
+    API never performs the wipe itself; when authorized it returns wipe_authorized=True
+    for an operator/tooling handoff. Windows NVMe stays write-blocked.
     """
-    _ = force_execute  # reserved; API always returns executed=False for wipe
+    _ = force_execute
     now = int(now_epoch if now_epoch is not None else time.time())
     errors: list[str] = []
     if preflight.get("status") != "ready":
@@ -267,7 +273,33 @@ def linux_install_execute_gate(
                 e in {"target_serial_hash_changed", "machine_identity_changed"} for e in errors
             ),
             "windows_nvme_write_allowed": False,
+            "wipe_authorized": False,
         }
+
+    wipe_authorized = False
+    wipe_detail: dict[str, Any] | None = None
+    if authorize_linux_wipe:
+        wipe_detail = authorize_linux_target_wipe(
+            gabriel_ops=gabriel_ops_allowed,
+            confirm_identity=confirm_identity,
+            confirm_destructive=confirm_destructive,
+            operator_phrase=str(linux_wipe_phrase or ""),
+            linux_serial_hash=current_linux_serial_hash,
+            expected_linux_serial_hash=expected_linux_serial_hash,
+            windows_serial_hash="",
+        )
+        wipe_authorized = bool(wipe_detail.get("wipe_authorized"))
+        if not wipe_authorized:
+            return {
+                "status": "blocked",
+                "executed": False,
+                "mode": "handoff",
+                "errors": list(wipe_detail.get("errors") or ["linux_wipe_not_authorized"]),
+                "windows_nvme_write_allowed": False,
+                "wipe_authorized": False,
+                "wipe": wipe_detail,
+            }
+
     return {
         "status": "handoff_authorized",
         "executed": False,
@@ -275,15 +307,23 @@ def linux_install_execute_gate(
         "errors": [],
         "message": (
             "Gates passed; physical Linux Mint installer handoff authorized. "
-            "No automatic wipe performed. Boot official installer with prepared partition plan."
+            + (
+                "Linux-target wipe authorized for Gabriel operator tooling."
+                if wipe_authorized
+                else "No automatic wipe performed."
+            )
         ),
         "windows_nvme_write_allowed": False,
+        "wipe_authorized": wipe_authorized,
+        "gabriel_ops_allowed": gabriel_ops_allowed,
         "bootloader_target": "linux_nvme_esp_only",
         "handoff": {
             "installer": "official_linux_mint",
             "partition_plan_hash": preflight.get("plan_hash"),
             "preflight_id": preflight.get("preflight_id"),
+            "wipe_authorized": wipe_authorized,
         },
+        "wipe": wipe_detail,
     }
 
 

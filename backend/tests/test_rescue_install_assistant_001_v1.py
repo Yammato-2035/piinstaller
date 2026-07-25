@@ -15,6 +15,8 @@ from core import rescue_install_diagnosis as diag  # noqa: E402
 from core import rescue_install_distro_profiles as distro  # noqa: E402
 from core import rescue_linux_second_nvme as linux  # noqa: E402
 from core import rescue_nvme_install_target as nvme  # noqa: E402
+from core import rescue_install_assistant_grub as grub  # noqa: E402
+from core import rescue_gabriel_ops_policy as gab  # noqa: E402
 
 
 def _nvme(
@@ -260,3 +262,41 @@ class ApiRouteSmokeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GabrielGrubTests(unittest.TestCase):
+    def test_default_is_install_gui_not_msi_e2e(self) -> None:
+        cfg = grub.generate_gabriel_install_grub_cfg()
+        v = grub.validate_gabriel_install_grub(cfg)
+        self.assertTrue(v["ok"], v)
+        self.assertEqual(v["checks"]["first_entry"], grub.INSTALL_GUI_TITLE)
+        self.assertIn("setuphelfer_install_assistant=1", cfg)
+        self.assertIn("setuphelfer_msi_e2e_auto=0", cfg.split(grub.INSTALL_GUI_TITLE, 1)[1].split("}", 1)[0])
+        self.assertIn(grub.LAB_E2E_GUI_WARN, cfg)
+
+    def test_patch_forces_default_zero(self) -> None:
+        old = 'set default=13\nmenuentry "Setuphelfer Lab-Auto (GUI, Physical E2E)" {\n  linux /live/vmlinuz x\n  initrd /live/initrd.img\n}\n'
+        patched = grub.patch_grub_cfg_for_install_assistant(old)
+        self.assertIn("set default=0", patched)
+        self.assertIn(grub.INSTALL_GUI_TITLE, patched)
+        self.assertIn(grub.LAB_E2E_GUI_WARN, patched)
+
+
+class GabrielOpsPolicyTests(unittest.TestCase):
+    def test_g513qm_enables_linux_wipe_not_windows(self) -> None:
+        caps = gab.gabriel_capabilities(machine={"board_name": "G513QM"}, operator_explicit=False)
+        self.assertTrue(caps["gabriel_ops_enabled"])
+        self.assertTrue(caps["linux_target_wipe_allowed"])
+        self.assertTrue(caps["stick_write_allowed"])
+        self.assertFalse(caps["windows_system_wipe_allowed"])
+        ok = gab.authorize_linux_target_wipe(
+            gabriel_ops=True,
+            confirm_identity=True,
+            confirm_destructive=True,
+            operator_phrase=gab.LINUX_WIPE_PHRASE,
+            linux_serial_hash="aaa",
+            expected_linux_serial_hash="aaa",
+            windows_serial_hash="bbb",
+        )
+        self.assertTrue(ok["wipe_authorized"])
+        self.assertFalse(ok["executed"])

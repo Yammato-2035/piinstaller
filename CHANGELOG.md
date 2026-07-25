@@ -7,6 +7,15 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+## [1.9.20.1] — 2026-07-25
+
+### Fixed
+- Gabriel stick GRUB: Linux-Installation default, ASUS-safe GUI, MSI Lab-Auto E2E demoted (fixes sabrent_wait GUI hang).
+
+### Added
+- Gabriel write/wipe policy for linux_target + stick (Windows NVMe remains blocked).
+
+
 ## [1.9.20.0] — 2026-07-25
 
 ### Added
