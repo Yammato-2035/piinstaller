@@ -127,11 +127,28 @@ _tui_shell() {
   chvt 2 2>/dev/null || true
 }
 
+_tui_linux_install() {
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-tui-linux-install" ]]; then
+    # shellcheck source=setuphelfer-rescue-tui-linux-install.sh
+    source "${SCRIPT_DIR}/setuphelfer-rescue-tui-linux-install"
+    setuphelfer_rescue_tui_linux_install || true
+    return 0
+  fi
+  if [[ -f "${SCRIPT_DIR}/setuphelfer-rescue-tui-linux-install.sh" ]]; then
+    # shellcheck source=setuphelfer-rescue-tui-linux-install.sh
+    source "${SCRIPT_DIR}/setuphelfer-rescue-tui-linux-install.sh"
+    setuphelfer_rescue_tui_linux_install || true
+    return 0
+  fi
+  _tui_msg "Linux-Install-Assistent fehlt auf diesem Payload.\nBitte Stick aktualisieren."
+}
+
 _tui_main_menu() {
   local choice
   while true; do
     choice="$(whiptail --title "Setuphelfer Rettungsstick — Textmodus" --menu \
-      "Sicherer Textmodus (kein Backup/Restore/Wipe)" 22 78 10 \
+      "Textmodus (GUI fehlt/ausgefallen). Linux-Installation über Menüpunkt unten." 22 78 11 \
+      "linux" "Linux-Installation (Mint vom Stick)" \
       "detect" "System erkennen" \
       "wifi" "Hardware/WLAN prüfen" \
       "plan" "Backup-Plan erstellen (dry-run)" \
@@ -142,6 +159,7 @@ _tui_main_menu() {
       "poweroff" "Ausschalten" \
       3>&1 1>"$_wt" 2>&3)" || return 0
     case "$choice" in
+      linux) _tui_linux_install ;;
       detect) _tui_run_system_detect ;;
       wifi) _tui_run_wifi_diag ;;
       plan) _tui_run_backup_plan ;;

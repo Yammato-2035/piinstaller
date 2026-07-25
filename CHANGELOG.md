@@ -7,6 +7,12 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+## [1.9.20.2] — 2026-07-25
+
+### Fixed
+- Gabriel stick: TUI Linux-install menu + Mint ISO GRUB loopback; default text path when GUI frontend missing.
+
+
 ## [1.9.20.1] — 2026-07-25
 
 ### Fixed

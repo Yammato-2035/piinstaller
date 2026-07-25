@@ -269,9 +269,13 @@ class GabrielGrubTests(unittest.TestCase):
         cfg = grub.generate_gabriel_install_grub_cfg()
         v = grub.validate_gabriel_install_grub(cfg)
         self.assertTrue(v["ok"], v)
-        self.assertEqual(v["checks"]["first_entry"], grub.INSTALL_GUI_TITLE)
+        self.assertEqual(v["checks"]["first_entry"], grub.INSTALL_TEXT_TITLE)
+        self.assertIn(grub.MINT_ISO_BOOT_TITLE, cfg)
         self.assertIn("setuphelfer_install_assistant=1", cfg)
-        self.assertIn("setuphelfer_msi_e2e_auto=0", cfg.split(grub.INSTALL_GUI_TITLE, 1)[1].split("}", 1)[0])
+        self.assertIn(
+            "setuphelfer_msi_e2e_auto=0",
+            cfg.split(grub.INSTALL_TEXT_TITLE, 1)[1].split("}", 1)[0],
+        )
         self.assertIn(grub.LAB_E2E_GUI_WARN, cfg)
 
     def test_patch_forces_default_zero(self) -> None:

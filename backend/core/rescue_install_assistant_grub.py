@@ -20,6 +20,7 @@ HYBRID_GPU_FLAGS = "pci=noaer modprobe.blacklist=nouveau nouveau.modeset=0"
 
 INSTALL_GUI_TITLE = "Setuphelfer Linux-Installation (Mint Assistent, GUI)"
 INSTALL_TEXT_TITLE = "Setuphelfer Linux-Installation (Text)"
+MINT_ISO_BOOT_TITLE = "Linux Mint 22.2 Installer (ISO vom Stick)"
 GUI_SAFE_TITLE = "Setuphelfer starten - grafische Oberflaeche (ASUS-sicher)"
 TEXT_SAFE_TITLE = "Setuphelfer starten - sicherer Textmodus"
 ASUS_LAB_GUI_TITLE = "Setuphelfer ASUS ROG Lab (GUI, BIOS-Check)"
@@ -42,6 +43,8 @@ _ASUS_LAB_FLAGS = (
     "setuphelfer_asus_rog_lab=1 setuphelfer_msi_lab_auto=0 "
     "setuphelfer_auto_discovery=0 setuphelfer_msi_e2e_auto=0 setuphelfer_auto_shutdown=0"
 )
+
+MINT_ISO_REL = "/setuphelfer/iso-cache/linux_mint/linuxmint-22.2-cinnamon-64bit.iso"
 
 
 def _entry(title: str, append: str) -> str:
@@ -75,13 +78,34 @@ def asus_safe_gui_append(base_live: str = BASE_LIVE) -> str:
     )
 
 
+def mint_iso_loopback_entry() -> str:
+    """Boot official Mint installer ISO from SETUP_LOGS (no Rescue GUI required)."""
+    return (
+        f'menuentry "{MINT_ISO_BOOT_TITLE}" {{\n'
+        "  search --no-floppy --label SETUP_LOGS --set=root\n"
+        '  if [ -z "$root" ]; then\n'
+        "    search --no-floppy --label SETUP_LOGS2 --set=root\n"
+        "  fi\n"
+        f'  set isofile="{MINT_ISO_REL}"\n'
+        "  loopback loop $isofile\n"
+        "  linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=$isofile "
+        "quiet splash --- \n"
+        "  initrd (loop)/casper/initrd.lz\n"
+        "}\n"
+    )
+
+
 def generate_gabriel_install_grub_cfg(
     *,
     fat_uuid: str | None = "9BB9-A4A6",
     fat_label: str = "SETUPHELFER",
     timeout: int = 20,
 ) -> str:
-    """Full GRUB cfg optimized for Gabriel Mint install — MSI E2E demoted."""
+    """Full GRUB cfg optimized for Gabriel Mint install — MSI E2E demoted.
+
+    Default=0 is Text install assistant (GUI payload often missing frontend).
+    Entry 1 boots Mint ISO directly from SETUP_LOGS.
+    """
     root_block = [
         f"set timeout={timeout}",
         "set timeout_style=menu",
@@ -109,6 +133,8 @@ def generate_gabriel_install_grub_cfg(
             "insmod efi_uga",
             "insmod video",
             "insmod gfxterm",
+            "insmod loopback",
+            "insmod iso9660",
             "set gfxmode=auto",
             "set gfxpayload=keep",
             "terminal_output gfxterm",
@@ -120,8 +146,10 @@ def generate_gabriel_install_grub_cfg(
     )
 
     entries = [
-        _entry(INSTALL_GUI_TITLE, install_assistant_gui_append()),
+        # Default: text install assistant (works when GUI frontend missing)
         _entry(INSTALL_TEXT_TITLE, install_assistant_text_append()),
+        mint_iso_loopback_entry(),
+        _entry(INSTALL_GUI_TITLE, install_assistant_gui_append()),
         _entry(GUI_SAFE_TITLE, asus_safe_gui_append()),
         _entry(
             TEXT_SAFE_TITLE,
@@ -155,7 +183,6 @@ def generate_gabriel_install_grub_cfg(
             "setuphelfer_msi_e2e_auto=0 setuphelfer_msi_lab_auto=0 "
             f"setuphelfer_auto_shutdown=0 {HYBRID_GPU_FLAGS} nomodeset",
         ),
-        # Demoted MSI lab — must not be default on Gabriel
         _entry(
             LAB_E2E_GUI_WARN,
             f"{BASE_LIVE} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
@@ -231,36 +258,38 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
     checks = {
         "has_install_gui": INSTALL_GUI_TITLE in grub_text,
         "has_install_text": INSTALL_TEXT_TITLE in grub_text,
+        "has_mint_iso_boot": MINT_ISO_BOOT_TITLE in grub_text,
         "default_zero": bool(re.search(r"(?m)^set default=0\s*$", grub_text)),
         "no_msi_e2e_as_first_entry": True,
-        "install_gui_has_hybrid_gpu": False,
-        "install_gui_disables_msi_e2e": False,
+        "install_text_has_hybrid_gpu": False,
+        "install_text_disables_msi_e2e": False,
     }
-    # First menuentry must be install GUI
     first = re.search(r'menuentry "([^"]+)"', grub_text)
     if first:
         checks["first_entry"] = first.group(1)
-        checks["no_msi_e2e_as_first_entry"] = "Physical E2E" not in first.group(1) and "Lab-Auto" not in first.group(1)
-    # Install GUI linux line
+        checks["no_msi_e2e_as_first_entry"] = (
+            "Physical E2E" not in first.group(1) and "Lab-Auto" not in first.group(1)
+        )
     m = re.search(
-        rf'menuentry "{re.escape(INSTALL_GUI_TITLE)}" \{{(.*?)^\}}',
+        rf'menuentry "{re.escape(INSTALL_TEXT_TITLE)}" \{{(.*?)^\}}',
         grub_text,
         re.S | re.M,
     )
     if m:
         body = m.group(1)
-        checks["install_gui_has_hybrid_gpu"] = "modprobe.blacklist=nouveau" in body
-        checks["install_gui_disables_msi_e2e"] = "setuphelfer_msi_e2e_auto=0" in body
-        checks["install_gui_flag"] = "setuphelfer_install_assistant=1" in body
+        checks["install_text_has_hybrid_gpu"] = "modprobe.blacklist=nouveau" in body
+        checks["install_text_disables_msi_e2e"] = "setuphelfer_msi_e2e_auto=0" in body
+        checks["install_text_flag"] = "setuphelfer_install_assistant=1" in body
     ok = all(
         bool(checks[k])
         for k in (
             "has_install_gui",
             "has_install_text",
+            "has_mint_iso_boot",
             "default_zero",
             "no_msi_e2e_as_first_entry",
-            "install_gui_has_hybrid_gpu",
-            "install_gui_disables_msi_e2e",
+            "install_text_has_hybrid_gpu",
+            "install_text_disables_msi_e2e",
         )
     )
     return {"ok": ok, "checks": checks, "contract_version": CONTRACT_VERSION}
