@@ -406,16 +406,22 @@
       "verifyStatus": "Vérification"
     },
     "linuxInstall": {
-      "intro": "Réinstallation en mode plan uniquement sur la clé rescue.",
-      "planTitle": "Déroulement prévu (Debian/Linux)",
-      "rescueHint": "Depuis la clé rescue : sauvegarde et vérification d'abord.",
-      "statusBlocked": "Exécution bloquée — plan uniquement. Sauvegarde d'abord.",
-      "statusReady": "Exécution autorisée (Pro/Privé).",
-      "stepAnalyze": "Analyser le système et les partitions",
-      "stepBackup": "Créer une sauvegarde sur cible externe",
-      "stepInstall": "Démarrer l'installation (Pro/Privé — non exécutable ici)",
-      "stepPartition": "Préparer le partitionnement",
-      "wipeHint": "To wipe data and install Linux: create a plan under “Switch this PC to Linux”, Secours files and verify Retourup first. The stick never formats disks automatically."
+      "intro": "Assistant multi-distro (Mint, Ubuntu Server LTS/Server, Debian) — exécution seulement après approbation ou sauvegarde.",
+      "planTitle": "Déroulement prévu (multi-distro)",
+      "rescueHint": "ASUS : Mint sur 2e NVMe sans retirer la clé ; orchestration depuis le PC de développement.",
+      "statusBlocked": "Exécution bloquée — approbation ou sauvegarde+verify requis.",
+      "statusReady": "Plan/handoff prêt — exécution seulement avec approbation ou sauvegarde.",
+      "stepAnalyze": "Analyser système, BIOS et rôles NVMe",
+      "stepBackup": "Sauvegarde des médias concernés ou approbation explicite",
+      "stepInstall": "Installer la distro depuis la session live (handoff)",
+      "stepPartition": "Partitionshelfer : planifier ; écriture seulement après gate",
+      "wipeHint": "Le NVMe Windows reste protégé. Cible = NVMe Linux lié. Pas de formatage automatique.",
+      "distroMint": "Linux Mint (pris en charge)",
+      "distroUbuntuLts": "Ubuntu Server LTS (prévu)",
+      "distroUbuntuServer": "Ubuntu Server (prévu)",
+      "distroDebian": "Installation Debian (prévu ; Live = clé)",
+      "diagnosisTitle": "Diagnostic d'installation",
+      "setuphelferBootstrap": "Puis bootstrap des composants Setuphelfer"
     },
     "linuxMigration": {
       "bootMode": "Boot mode (UEFI/BIOS)",

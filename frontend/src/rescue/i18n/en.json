@@ -116,16 +116,22 @@
       }
     },
     "linuxInstall": {
-      "intro": "Reinstall is shown as plan-only preview on the rescue stick — no automatic formatting or install without explicit approval.",
-      "planTitle": "Planned flow (Debian/Linux)",
-      "stepAnalyze": "Analyze system and partitions",
-      "stepBackup": "Create backup on external target",
-      "stepPartition": "Prepare partitioning (hand-off)",
-      "stepInstall": "Start installation (Pro/Private — not executable here)",
-      "statusReady": "Execute allowed (Pro/Private).",
-      "statusBlocked": "Execute blocked — plan-only in public rescue. Backup and analysis first.",
-      "rescueHint": "From rescue stick: backup and verify first, then partitioning via Setuphelfer desktop.",
-      "wipeHint": "To wipe data and install Linux: create a plan under “Switch this PC to Linux”, rescue files and verify backup first. The stick never formats disks automatically."
+      "intro": "Install assistant for Linux Mint, Ubuntu Server LTS, Ubuntu Server and Debian — run only after approval or backup. No automatic formatting.",
+      "planTitle": "Planned flow (multi-distro)",
+      "stepAnalyze": "Analyze system, BIOS and NVMe roles",
+      "stepBackup": "Backup affected media or explicit approval",
+      "stepPartition": "Partitionshelfer: plan layout; write only after gate",
+      "stepInstall": "Install chosen distro from the live stick session (handoff)",
+      "statusReady": "Plan/handoff prepared — execute only with approval or backup.",
+      "statusBlocked": "Execute blocked — approval or backup+verify required.",
+      "rescueHint": "ASUS: Mint on second NVMe without reseating the stick; orchestration from the development laptop.",
+      "wipeHint": "Windows NVMe stays protected. Target is the bound Linux NVMe. The stick never formats automatically.",
+      "distroMint": "Linux Mint (supported)",
+      "distroUbuntuLts": "Ubuntu Server LTS (planned)",
+      "distroUbuntuServer": "Ubuntu Server (planned)",
+      "distroDebian": "Debian install (planned; Live = stick runtime)",
+      "diagnosisTitle": "Install diagnosis",
+      "setuphelferBootstrap": "Then bootstrap Setuphelfer components on the new system"
     },
     "dataRescue": {
       "intro": "Rescue important files from Windows before partitions change or Linux is installed. Nothing is deleted, formatted, or overwritten.",

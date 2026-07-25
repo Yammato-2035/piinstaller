@@ -7,6 +7,8 @@
 | Safe Action Engine | GRÜN | `backend/core/rescue_repair_advice_engine_v1.py` |
 | Network/Telemetry Connectivity | GRÜN | V2 modules + Frontend panel |
 | Telemetry Client V2 | GRÜN | Contract + queue + signing |
+| Multi-Distro Linux Install A0 | GELB | Contracts/Gates/Diagnose/API/UI — Execute handoff only (`1.9.20.0`) |
+| ASUS Mint 2. NVMe Orchestration | GELB | Dry-run Dev-Laptop; no umstecken; no partition write yet |
 | PI-RS-TEL-001 Rescue Lab Send | GRÜN | `backend/core/rescue_lab_telemetry_*` + Tests + Evidence |
 | PI-RS-TEL-002 Reachability + Queue Preview | GRÜN | Network gate + offline preview + profile-aware runtime gate |
 | PI-RS-TEL-003 Cross-Repo Preview Verification | GRÜN | Rescue → Diagnostics validate/findings preview (localhost lab) |

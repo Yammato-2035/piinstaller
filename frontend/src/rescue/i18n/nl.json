@@ -406,16 +406,22 @@
       "verifyStatus": "Verify"
     },
     "linuxInstall": {
-      "intro": "Herinstallatie als plan-only voorbeeld op de rescue-stick.",
-      "planTitle": "Geplande stappen (Debian/Linux)",
-      "rescueHint": "Vanaf rescue-stick: eerst backup en verify.",
-      "statusBlocked": "Uitvoeren geblokkeerd — eerst backup.",
-      "statusReady": "Uitvoeren toegestaan (Pro/Privé).",
-      "stepAnalyze": "Systeem en partities analyseren",
-      "stepBackup": "Backup op extern doel maken",
-      "stepInstall": "Installatie starten (Pro/Privé — hier niet uitvoerbaar)",
-      "stepPartition": "Partitionering voorbereiden",
-      "wipeHint": "To wipe data and install Linux: create a plan under “Switch this PC to Linux”, roodding files and verify Terugup first. The stick never formats disks automatically."
+      "intro": "Multi-distro-assistent (Mint, Ubuntu Server LTS/Server, Debian) — alleen na goedkeuring of backup.",
+      "planTitle": "Geplande stappen (multi-distro)",
+      "rescueHint": "ASUS: Mint op 2e NVMe zonder stick wisselen; orchestratie vanaf ontwikkel-pc.",
+      "statusBlocked": "Uitvoeren geblokkeerd — goedkeuring of backup+verify vereist.",
+      "statusReady": "Plan/handoff klaar — uitvoeren alleen met goedkeuring of backup.",
+      "stepAnalyze": "Systeem, BIOS en NVMe-rollen analyseren",
+      "stepBackup": "Backup van media of expliciete goedkeuring",
+      "stepInstall": "Distro installeren vanuit live stick-sessie (handoff)",
+      "stepPartition": "Partitionshelfer: layout plannen; schrijven alleen na gate",
+      "wipeHint": "Windows-NVMe blijft beschermd. Doel = gebonden Linux-NVMe. Geen automatische format.",
+      "distroMint": "Linux Mint (ondersteund)",
+      "distroUbuntuLts": "Ubuntu Server LTS (gepland)",
+      "distroUbuntuServer": "Ubuntu Server (gepland)",
+      "distroDebian": "Debian-installatie (gepland; Live = stick)",
+      "diagnosisTitle": "Installatiediagnose",
+      "setuphelferBootstrap": "Daarna Setuphelfer-componenten bootstrapen"
     },
     "linuxMigration": {
       "bootMode": "Boot mode (UEFI/BIOS)",

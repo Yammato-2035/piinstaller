@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-07-25T07:15:00Z",
+  "phase": "asus_mint_multidistro_install_a0",
+  "branch": "cursor/asus-mint-multidistro-install-30f2",
+  "version": "1.9.20.0",
+  "completed": [
+    "distro_profiles_v1",
+    "install_gate_approval_or_backup",
+    "install_diagnosis_codes",
+    "nvme_role_binding_from_asus_branch",
+    "bios_official_compare_readonly",
+    "asus_mint_orchestration_dry_run",
+    "api_routes",
+    "ui_i18n_de_en_fr_nl",
+    "faq_kb_plan"
+  ],
+  "execute_destructive": false,
+  "private_servers": "not_in_public_repo",
+  "next": [
+    "physical_asus_disk_bind_evidence",
+    "mint_iso_cache_verify_on_stick",
+    "operator_handoff_execute"
+  ],
+  "status": "yellow_contracts_ready"
+}

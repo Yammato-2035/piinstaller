@@ -116,16 +116,22 @@
       }
     },
     "linuxInstall": {
-      "intro": "Neuinstallation ist im Rettungsstick als Plan-only-Vorschau sichtbar — keine automatische Formatierung oder Installation ohne ausdrückliche Freigabe.",
-      "planTitle": "Geplanter Ablauf (Debian/Linux)",
-      "stepAnalyze": "System und Partitionen analysieren",
-      "stepBackup": "Backup auf externes Ziel erstellen",
-      "stepPartition": "Partitionierung vorbereiten (Hand-off)",
-      "stepInstall": "Installation starten (Pro/Private — derzeit nicht ausführbar)",
-      "statusReady": "Execute freigegeben (Pro/Private).",
-      "statusBlocked": "Execute blockiert — Plan-only im Public-Rescue. Backup und Analyse zuerst.",
-      "rescueHint": "Vom Rettungsstick: zuerst Backup und Verify, dann Partitionierung über Setuphelfer Desktop.",
-      "wipeHint": "Daten löschen und Linux installieren: zuerst unter „Computer auf Linux umstellen“ Plan erstellen, Dateien retten und Backup prüfen. Der Stick formatiert keine Platte automatisch."
+      "intro": "Installationsassistent für Linux Mint, Ubuntu Server LTS, Ubuntu Server und Debian — Ausführung nur nach Freigabe oder Backup. Keine automatische Formatierung.",
+      "planTitle": "Geplanter Ablauf (Multi-Distro)",
+      "stepAnalyze": "System, BIOS und NVMe-Rollen analysieren",
+      "stepBackup": "Backup der betroffenen Medien oder explizite Freigabe",
+      "stepPartition": "Partitionshelfer: Layout planen, Write nur nach Gate",
+      "stepInstall": "Gewählte Distro aus der Stick-Live-Session installieren (Handoff)",
+      "statusReady": "Plan/Handoff vorbereitet — Execute nur mit Freigabe oder Backup.",
+      "statusBlocked": "Execute blockiert — Freigabe oder Backup+Verify erforderlich.",
+      "rescueHint": "ASUS: Mint auf zweiter NVMe ohne Umstecken; Orchestrierung vom Entwicklungsrechner.",
+      "wipeHint": "Windows-NVMe bleibt geschützt. Ziel ist die gebundene Linux-NVMe. Der Stick formatiert nicht automatisch.",
+      "distroMint": "Linux Mint (unterstützt)",
+      "distroUbuntuLts": "Ubuntu Server LTS (geplant)",
+      "distroUbuntuServer": "Ubuntu Server (geplant)",
+      "distroDebian": "Debian Installation (geplant; Live = Stick)",
+      "diagnosisTitle": "Installationsdiagnose",
+      "setuphelferBootstrap": "Danach Setuphelfer-Komponenten auf dem neuen System bootstrapen"
     },
     "dataRescue": {
       "intro": "Retten Sie wichtige Dateien von Windows, bevor Partitionen verändert oder Linux installiert wird. Es wird nichts gelöscht, formatiert oder überschrieben.",

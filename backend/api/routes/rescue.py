@@ -60,6 +60,11 @@ try:
 except ImportError:
     rescue_ui_router = None
 
+try:
+    from api.routes.rescue_linux_install import router as rescue_linux_install_router
+except ImportError:
+    rescue_linux_install_router = None
+
 router = APIRouter(prefix="/api/rescue", tags=["rescue"])
 
 
@@ -121,5 +126,7 @@ if rescue_network_router is not None:
     router.include_router(rescue_network_router)
 if rescue_assessment_v2_router is not None:
     router.include_router(rescue_assessment_v2_router)
+if rescue_linux_install_router is not None:
+    router.include_router(rescue_linux_install_router)
 if rescue_ui_router is not None:
     router.include_router(rescue_ui_router)
