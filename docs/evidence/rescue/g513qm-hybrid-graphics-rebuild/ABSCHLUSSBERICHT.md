@@ -7,6 +7,7 @@
 ## 2. Branch
 - Branch: `pi-rs-install-assistant-001`
 - HEAD before work: `9325415c`
+- HEAD after commit: `359574c6` (pushed `origin/pi-rs-install-assistant-001`)
 - origin/main: `b8651d33`
 - Runtime gate: exit 14 (version drift) — no live telemetry claims
 
