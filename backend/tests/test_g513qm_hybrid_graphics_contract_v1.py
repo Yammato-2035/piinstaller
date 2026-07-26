@@ -34,22 +34,29 @@ class G513qmHybridContractTests(unittest.TestCase):
         cfg = grub.generate_gabriel_install_grub_cfg()
         v = grub.validate_gabriel_install_grub(cfg)
         self.assertTrue(v["ok"], v)
-        self.assertEqual(v["checks"]["first_entry"], grub.MINT_CASPER_HYBRID_TITLE)
+        self.assertEqual(v["checks"]["first_entry"], grub.MINT_CASPER_RESCUE_TITLE)
+        self.assertTrue(v["checks"]["first_is_basic_emergency"])
         self.assertIn("systemd.unit=rescue.target", cfg)
-        # Hybrid entry body must not contain nomodeset but must pin rescue.target
         import re
 
         m = re.search(
-            rf'menuentry "{re.escape(grub.MINT_CASPER_HYBRID_TITLE)}" \{{(.*?)^\}}',
+            rf'menuentry "{re.escape(grub.MINT_CASPER_RESCUE_TITLE)}" \{{(.*?)^\}}',
             cfg,
             re.S | re.M,
         )
         self.assertIsNotNone(m)
         assert m is not None
-        self.assertNotIn("nomodeset", m.group(1))
-        self.assertNotIn("amdgpu.modeset=0", m.group(1))
-        self.assertIn("systemd.unit=rescue.target", m.group(1))
-        self.assertIn("systemd.mask=cups.service", m.group(1))
+        self.assertIn("nomodeset", m.group(1))
+        # Hybrid remains present but not default
+        h = re.search(
+            rf'menuentry "{re.escape(grub.MINT_CASPER_HYBRID_TITLE)}" \{{(.*?)^\}}',
+            cfg,
+            re.S | re.M,
+        )
+        self.assertIsNotNone(h)
+        assert h is not None
+        self.assertNotIn("nomodeset", h.group(1))
+        self.assertIn("systemd.unit=rescue.target", h.group(1))
 
     def test_installer_script_refuses_ubiquity_without_modes(self) -> None:
         script = (

@@ -6,7 +6,8 @@
     {
       "id": "g513qm_hybrid_auto",
       "title": "G513QM Hybrid Auto — Rescue-Shell (AMD-KMS, root+Enter)",
-      "default_candidate": true,
+      "default_candidate": false,
+      "physical_status": "black_freeze_before_login_on_gabriel",
       "nomodeset": false,
       "blacklist_amdgpu": false,
       "blacklist_nouveau": false,
@@ -48,8 +49,9 @@
     },
     {
       "id": "g513qm_basic_emergency",
-      "title": "G513QM Basic Emergency — Rescue (nomodeset, root+Enter)",
+      "title": "G513QM Basic Emergency — STANDARD (nomodeset, root+Enter)",
       "emergency": true,
+      "default_candidate": true,
       "nomodeset": true,
       "systemd_unit": "rescue.target",
       "auto_installer": false,

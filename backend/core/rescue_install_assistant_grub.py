@@ -26,12 +26,13 @@ INSTALL_GUI_TITLE = "Setuphelfer Linux-Installation (Mint Assistent, GUI)"
 INSTALL_TEXT_TITLE = "Setuphelfer Linux-Installation (Text)"
 MINT_ISO_BOOT_TITLE = "Linux Mint 22.2 Installer (ISO-Loopback, Fallback)"
 MINT_CASPER_BOOT_TITLE = "Linux Mint 22.2 Installer (direkt vom Stick)"
-# Proven console path (emergency). Hybrid Auto is the new default for display/installer work.
-MINT_CASPER_RESCUE_TITLE = "G513QM Basic Emergency — Rescue (nomodeset, root+Enter)"
-MINT_CASPER_HYBRID_TITLE = "G513QM Hybrid Auto — Rescue-Shell (AMD-KMS, root+Enter)"
-MINT_CASPER_AMD_SAFE_TITLE = "G513QM AMD Safe — Rescue-Shell (Installer-Fallback)"
-MINT_CASPER_NVIDIA_DIAG_TITLE = "G513QM NVIDIA Proprietary Diagnostic"
-MINT_CASPER_NOUVEAU_TITLE = "G513QM Nouveau Fallback Diagnostic"
+# Proven console path (2026-07-26): rescue.target + nomodeset reaches login prompt.
+# Hybrid/AMD-KMS still freezes black before login on Gabriel — demoted, not default.
+MINT_CASPER_RESCUE_TITLE = "G513QM Basic Emergency — STANDARD (nomodeset, root+Enter)"
+MINT_CASPER_HYBRID_TITLE = "WARNUNG: Hybrid Auto AMD-KMS (schwarz vor Login auf Gabriel)"
+MINT_CASPER_AMD_SAFE_TITLE = "WARNUNG: AMD Safe AMD-KMS (schwarz/HID-Hang auf Gabriel)"
+MINT_CASPER_NVIDIA_DIAG_TITLE = "WARNUNG: NVIDIA Proprietary Diagnostic"
+MINT_CASPER_NOUVEAU_TITLE = "WARNUNG: Nouveau Fallback Diagnostic"
 MINT_CASPER_CAPTURE_TITLE = "G513QM Capture Only / Text"
 MINT_CASPER_BASH_TITLE = "WARNUNG: Emergency bash (Kernel-Panic auf Gabriel)"
 MINT_CASPER_AMDGPU_TITLE = "WARNUNG: legacy Text mit amdgpu (Keyboard-Hang)"
@@ -240,17 +241,17 @@ def _mint_menuentry(title: str, cmdline: str) -> str:
 def mint_casper_direct_entry() -> str:
     """G513QM hybrid profile matrix (STRICT rebuild).
 
-    Default: Hybrid Auto (AMD display, no nomodeset).
-    Installer fallback: AMD Safe.
-    Emergency: nomodeset Rescue (historically proven text console).
+    Default (2026-07-26 physical): Basic Emergency = nomodeset + rescue.target
+    (only path that reached a login prompt). AMD-KMS Hybrid/Safe freeze black
+    before login on Gabriel — kept as WARNUNG entries, not default.
     """
     return (
-        _mint_menuentry(MINT_CASPER_HYBRID_TITLE, _profile_cmdline("g513qm_hybrid_auto"))
+        _mint_menuentry(MINT_CASPER_RESCUE_TITLE, _profile_cmdline("g513qm_basic_emergency"))
+        + _mint_menuentry(MINT_CASPER_CAPTURE_TITLE, _profile_cmdline("g513qm_capture_only"))
+        + _mint_menuentry(MINT_CASPER_HYBRID_TITLE, _profile_cmdline("g513qm_hybrid_auto"))
         + _mint_menuentry(MINT_CASPER_AMD_SAFE_TITLE, _profile_cmdline("g513qm_amd_safe"))
         + _mint_menuentry(MINT_CASPER_NVIDIA_DIAG_TITLE, _profile_cmdline("g513qm_nvidia_prop_diag"))
         + _mint_menuentry(MINT_CASPER_NOUVEAU_TITLE, _profile_cmdline("g513qm_nouveau_fallback"))
-        + _mint_menuentry(MINT_CASPER_RESCUE_TITLE, _profile_cmdline("g513qm_basic_emergency"))
-        + _mint_menuentry(MINT_CASPER_CAPTURE_TITLE, _profile_cmdline("g513qm_capture_only"))
         + _mint_menuentry(MINT_CASPER_BOOT_TITLE, _mint_safe_cmdline(text_only=True))
         + _mint_menuentry(MINT_CASPER_BASH_TITLE, _mint_safe_cmdline(emergency_bash=True))
     )
@@ -289,12 +290,11 @@ def generate_gabriel_install_grub_cfg(
     *,
     fat_uuid: str | None = "9BB9-A4A6",
     fat_label: str = "SETUPHELFER",
-    timeout: int = 20,
+    timeout: int = 30,
 ) -> str:
     """Full GRUB cfg optimized for Gabriel Mint install — MSI E2E demoted.
 
-    Default=0 is Text install assistant (GUI payload often missing frontend).
-    Entry 1 boots Mint ISO directly from SETUP_LOGS.
+    Default=0 is Basic Emergency (nomodeset + rescue) after physical black-screen matrix.
     """
     root_block = [
         f"set timeout={timeout}",
@@ -440,9 +440,10 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         "has_mint_iso_boot": MINT_ISO_BOOT_TITLE in grub_text,
         "has_hybrid_auto": MINT_CASPER_HYBRID_TITLE in grub_text,
         "has_amd_safe": MINT_CASPER_AMD_SAFE_TITLE in grub_text,
+        "has_basic_emergency": MINT_CASPER_RESCUE_TITLE in grub_text,
         "default_zero": bool(re.search(r"(?m)^set default=0\s*$", grub_text)),
         "no_msi_e2e_as_first_entry": True,
-        "first_is_hybrid_auto": False,
+        "first_is_basic_emergency": False,
         "has_force_halt": "Ausschalten (sofort)" in grub_text,
         "hybrid_no_nomodeset": False,
         "hybrid_no_amdgpu_blacklist": False,
@@ -450,13 +451,14 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         "hybrid_uses_rescue_target": False,
         "hybrid_masks_cups": False,
         "emergency_has_nomodeset": False,
+        "emergency_is_first_and_nomodeset": False,
         "mint_no_splash": "quiet splash" not in grub_text,
         "mint_gfxpayload_text": "set gfxpayload=text" in grub_text,
     }
     first = re.search(r'menuentry "([^"]+)"', grub_text)
     if first:
         checks["first_entry"] = first.group(1)
-        checks["first_is_hybrid_auto"] = first.group(1) == MINT_CASPER_HYBRID_TITLE
+        checks["first_is_basic_emergency"] = first.group(1) == MINT_CASPER_RESCUE_TITLE
         checks["no_msi_e2e_as_first_entry"] = (
             "Physical E2E" not in first.group(1) and "Lab-Auto" not in first.group(1)
         )
@@ -479,15 +481,19 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
     )
     if e:
         checks["emergency_has_nomodeset"] = "nomodeset" in e.group(1)
+        checks["emergency_is_first_and_nomodeset"] = bool(
+            checks["first_is_basic_emergency"] and checks["emergency_has_nomodeset"]
+        )
     ok = all(
         bool(checks[k])
         for k in (
             "has_hybrid_auto",
             "has_amd_safe",
+            "has_basic_emergency",
             "has_install_text",
             "default_zero",
             "no_msi_e2e_as_first_entry",
-            "first_is_hybrid_auto",
+            "first_is_basic_emergency",
             "has_force_halt",
             "hybrid_no_nomodeset",
             "hybrid_no_amdgpu_blacklist",
@@ -495,6 +501,7 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
             "hybrid_uses_rescue_target",
             "hybrid_masks_cups",
             "emergency_has_nomodeset",
+            "emergency_is_first_and_nomodeset",
             "mint_no_splash",
             "mint_gfxpayload_text",
         )
