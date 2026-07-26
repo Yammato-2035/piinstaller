@@ -1,0 +1,30 @@
+{
+  "invocation": "bash .../install-from-rescue.sh --mode ubiquity",
+  "symptom": "brief_cli_then_black_screen_no_console_no_installer",
+  "script": "scripts/rescue/rog-pack-g513qm/scripts/install-from-rescue.sh",
+  "findings": {
+    "installer_command": "startx /usr/bin/ubiquity",
+    "reuses_existing_x11": false,
+    "starts_new_x11": true,
+    "vt_switch": "openvt -s when available",
+    "runs_as": "root",
+    "sets_DISPLAY": false,
+    "sets_XAUTHORITY": false,
+    "durable_stdout_stderr": false,
+    "capture_autostart": false,
+    "fallback_console": false,
+    "boot_profile_disables_amd_kms": true,
+    "boot_profile_has_nomodeset": true
+  },
+  "classifications": {
+    "driver_failure_confirmed": "insufficient_evidence",
+    "driver_failure_possible": "possible",
+    "x11_handoff_failure": "probable",
+    "vt_switch_failure": "probable",
+    "installer_process_failure": "possible",
+    "display_manager_failure": "excluded",
+    "secure_boot_nvidia_block": "insufficient_evidence",
+    "insufficient_evidence": true
+  },
+  "single_root_cause_claimed": false
+}

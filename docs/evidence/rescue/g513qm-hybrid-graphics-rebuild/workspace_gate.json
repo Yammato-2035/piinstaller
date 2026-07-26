@@ -1,0 +1,27 @@
+{
+  "gate": "workspace",
+  "workspace": "/tmp/piinstaller-install-assistant-001",
+  "git_root": "/tmp/piinstaller-install-assistant-001",
+  "repository": "https://github.com/Yammato-2035/piinstaller.git",
+  "branch": "pi-rs-install-assistant-001",
+  "head": "9325415c28885e65613edb5f48f49719a35ceed6",
+  "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5",
+  "dirty_tree": true,
+  "runtime_gate": {
+    "script": "scripts/check-backend-version-gate.sh",
+    "exit_code": 14,
+    "detail": "workspace project_version=1.9.20.3 api=1.9.21.2",
+    "port_8000_smokes_allowed": false
+  },
+  "stick_identity_snapshot": {
+    "vendor": "Intenso",
+    "model": "Ultra Line",
+    "size": "59G",
+    "serial": "24111412110686",
+    "setuphelfer_uuid": "9BB9-A4A6",
+    "setup_logs_uuid": "9BC7-3950",
+    "volatile_kernel_name": "/dev/sdc"
+  },
+  "work_approval": true,
+  "status": "passed_with_runtime_blocker_noted"
+}

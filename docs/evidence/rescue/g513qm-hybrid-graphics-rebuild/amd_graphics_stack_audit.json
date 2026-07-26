@@ -1,0 +1,11 @@
+{
+  "amdgpu_module_present": true,
+  "amdgpu_vermagic": "6.14.0-29-generic",
+  "amdgpu_firmware_file_count": 649,
+  "libdrm_amdgpu": "2.4.122-1~ubuntu0.24.04.1",
+  "mesa_version": "25.0.7-0ubuntu0.24.04.1",
+  "xorg_amdgpu_video": "23.0.0-1build1",
+  "image_stack_gate": "passed",
+  "legacy_rescue_cmdline_disabled_amd_kms": true,
+  "rebuild_requirement": "hybrid_and_amd_safe_profiles_must_not_nomodeset_or_blacklist_amdgpu"
+}

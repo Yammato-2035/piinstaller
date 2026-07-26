@@ -1,0 +1,13 @@
+{
+  "nvidia_driver_550_is_transitional": true,
+  "resolved_abi_branch": "580",
+  "live_kernel": "6.14.0-29-generic",
+  "headers_for_live_kernel_in_apt": false,
+  "prebuilt_modules_for_live_kernel": false,
+  "proprietary_module_in_squashfs": false,
+  "nouveau_in_squashfs": true,
+  "nvidia_live_proprietary_vermagic": "blocked_kernel_module_mismatch",
+  "offline_pack_single_abi": true,
+  "prime_userspace_present": true,
+  "prime_ready_claim": false
+}

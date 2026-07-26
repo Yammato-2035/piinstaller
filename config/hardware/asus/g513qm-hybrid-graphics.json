@@ -1,0 +1,17 @@
+{
+  "device_binding": "asus_rog_gabriel",
+  "dmi_product_expected": ["G513QM"],
+  "cpu_vendor_expected": "AMD",
+  "graphics_mode": "hybrid",
+  "display_gpu_preference": "amd_igpu",
+  "discrete_gpu_role": "nvidia_prime_render_offload",
+  "pci_devices": [],
+  "pci_devices_status": "pending_physical_capture",
+  "amd_driver_expected": "amdgpu",
+  "nvidia_driver_options": ["proprietary", "nouveau_fallback"],
+  "nvidia_live_proprietary_status": "blocked_kernel_headers_unavailable_for_6.14.0-29-generic",
+  "secure_boot_policy": "detect_do_not_modify",
+  "windows_nvme_write_allowed": false,
+  "automatic_install_allowed": false,
+  "contract_version": 1
+}

@@ -5,6 +5,10 @@ Fixes observed physical failure 2026-07-25:
 - No Linux-installation menuentry.
 - Plain GUI entry lacked hybrid-GPU flags.
 
+FROZEN default (2026-07-26 physical matrix): Rescue-Root only.
+No new experimental Mint cmdline without updating G513QM_FAILURE_MATRIX.md.
+amdgpu / Emergency-bash entries remain labeled WARNUNG (never default).
+
 Never enables MSI E2E auto as default. Stick write/wipe for Gabriel linux_target
 is gated in policy modules, not by this GRUB text alone.
 """
@@ -22,6 +26,15 @@ INSTALL_GUI_TITLE = "Setuphelfer Linux-Installation (Mint Assistent, GUI)"
 INSTALL_TEXT_TITLE = "Setuphelfer Linux-Installation (Text)"
 MINT_ISO_BOOT_TITLE = "Linux Mint 22.2 Installer (ISO-Loopback, Fallback)"
 MINT_CASPER_BOOT_TITLE = "Linux Mint 22.2 Installer (direkt vom Stick)"
+# Proven console path (emergency). Hybrid Auto is the new default for display/installer work.
+MINT_CASPER_RESCUE_TITLE = "G513QM Basic Graphics Emergency (nomodeset Rescue)"
+MINT_CASPER_HYBRID_TITLE = "G513QM Rescue Hybrid Auto (AMD display)"
+MINT_CASPER_AMD_SAFE_TITLE = "G513QM AMD Safe Display (Installer-Fallback)"
+MINT_CASPER_NVIDIA_DIAG_TITLE = "G513QM NVIDIA Proprietary Diagnostic"
+MINT_CASPER_NOUVEAU_TITLE = "G513QM Nouveau Fallback Diagnostic"
+MINT_CASPER_CAPTURE_TITLE = "G513QM Capture Only / Text"
+MINT_CASPER_BASH_TITLE = "WARNUNG: Emergency bash (Kernel-Panic auf Gabriel)"
+MINT_CASPER_AMDGPU_TITLE = "WARNUNG: legacy Text mit amdgpu (Keyboard-Hang)"
 GUI_SAFE_TITLE = "Setuphelfer starten - grafische Oberflaeche (ASUS-sicher)"
 TEXT_SAFE_TITLE = "Setuphelfer starten - sicherer Textmodus"
 ASUS_LAB_GUI_TITLE = "Setuphelfer ASUS ROG Lab (GUI, BIOS-Check)"
@@ -82,17 +95,124 @@ def asus_safe_gui_append(base_live: str = BASE_LIVE) -> str:
     )
 
 
-def mint_casper_direct_entry() -> str:
-    """Boot Mint installer from extracted casper on SETUP_LOGS (reliable on Gabriel).
+def _mint_casper_base_parts() -> list[str]:
+    path = MINT_CASPER_DIR.lstrip("/")
+    return [
+        "boot=casper",
+        f"live-media=/dev/disk/by-uuid/{SETUP_LOGS_UUID}",
+        f"live-media-path={path}",
+        "ignore_uuid",
+        "username=mint",
+        "hostname=mint",
+        "pci=noaer",
+        "noplymouth",
+        "console=tty0",
+        "consoleblank=0",
+        "fbcon=nodefer",
+        "noeject",
+        "fsck.mode=skip",
+        "systemd.debug-shell=1",
+        "setuphelfer_capture=1",
+    ]
 
-    Avoids GRUB ISO loopback which often hangs on multi-partition USB sticks.
-    Requires SETUP_LOGS/mint-live/{vmlinuz,initrd.lz,filesystem.squashfs}.
-    """
+
+def _mint_safe_cmdline(
+    *,
+    debug: bool = False,
+    text_only: bool = False,
+    rescue: bool = False,
+    allow_amdgpu: bool = False,
+    emergency_bash: bool = False,
+) -> str:
+    """Legacy helper retained for warning/emergency entries."""
+    parts = _mint_casper_base_parts()
+    parts.append("nouveau.modeset=0")
+    parts.extend(
+        [
+            "systemd.mask=lightdm.service",
+            "systemd.mask=mdm.service",
+            "systemd.mask=gdm3.service",
+            "systemd.mask=gdm.service",
+        ]
+    )
+    if allow_amdgpu:
+        parts.append("modprobe.blacklist=hid_asus,asus_nb_wmi,asus_wmi")
+    else:
+        parts.extend(
+            [
+                "modprobe.blacklist=nouveau,hid_asus,asus_nb_wmi,asus_wmi",
+                "amdgpu.modeset=0",
+                "radeon.modeset=0",
+                "nomodeset",
+            ]
+        )
+    if emergency_bash:
+        parts.append("init=/bin/bash")
+    elif rescue:
+        parts.append("systemd.unit=rescue.target")
+    elif text_only:
+        parts.append("systemd.unit=multi-user.target")
+    if debug:
+        parts.append("debug")
+    return " ".join(parts)
+
+
+def _profile_cmdline(profile_id: str) -> str:
+    """Build casper cmdline from config/rescue/g513qm_graphics_profiles.json intent."""
+    parts = _mint_casper_base_parts()
+    parts.append(f"setuphelfer_g513qm_profile={profile_id}")
+    if profile_id == "g513qm_hybrid_auto":
+        # AMD KMS allowed; do not blacklist amdgpu/nouveau globally; no nomodeset
+        parts.append("modprobe.blacklist=hid_asus,asus_nb_wmi")
+    elif profile_id == "g513qm_amd_safe":
+        parts.append(
+            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau,hid_asus"
+        )
+    elif profile_id == "g513qm_nvidia_prop_diag":
+        parts.extend(
+            [
+                "nouveau.modeset=0",
+                "modprobe.blacklist=nouveau",
+                "nvidia-drm.modeset=1",
+            ]
+        )
+    elif profile_id == "g513qm_nouveau_fallback":
+        parts.append("modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm")
+    elif profile_id in ("g513qm_basic_emergency", "g513qm_capture_only"):
+        parts.extend(
+            [
+                "nouveau.modeset=0",
+                "modprobe.blacklist=nouveau,hid_asus,asus_nb_wmi,asus_wmi",
+                "amdgpu.modeset=0",
+                "radeon.modeset=0",
+                "nomodeset",
+                "systemd.unit=rescue.target",
+                "systemd.mask=lightdm.service",
+                "systemd.mask=mdm.service",
+                "systemd.mask=gdm3.service",
+                "systemd.mask=gdm.service",
+            ]
+        )
+    if profile_id not in ("g513qm_basic_emergency", "g513qm_capture_only"):
+        # Keep DM from auto-starting until operator runs start-desktop / ubiquity modes
+        parts.extend(
+            [
+                "systemd.mask=lightdm.service",
+                "systemd.mask=mdm.service",
+                "systemd.mask=gdm3.service",
+                "systemd.mask=gdm.service",
+            ]
+        )
+    return " ".join(parts)
+
+
+def _mint_menuentry(title: str, cmdline: str) -> str:
+    """Mint casper entry; gfxpayload=text for early console; hybrid profiles may switch FB later."""
     return (
-        f'menuentry "{MINT_CASPER_BOOT_TITLE}" {{\n'
+        f'menuentry "{title}" {{\n'
         "  insmod part_gpt\n"
         "  insmod fat\n"
-        "  insmod all_video\n"
+        "  set gfxpayload=text\n"
         f"  search --no-floppy --fs-uuid {SETUP_LOGS_UUID} --set=root\n"
         '  if [ -z "$root" ]; then\n'
         "    search --no-floppy --label SETUP_LOGS --set=root\n"
@@ -100,22 +220,46 @@ def mint_casper_direct_entry() -> str:
         '  if [ -z "$root" ]; then\n'
         "    search --no-floppy --label SETUP_LOGS2 --set=root\n"
         "  fi\n"
-        f"  linux {MINT_CASPER_DIR}/vmlinuz boot=casper "
-        f"live-media-path={MINT_CASPER_DIR} ignore_uuid "
-        "username=mint hostname=mint quiet splash noeject --- \n"
+        f"  linux {MINT_CASPER_DIR}/vmlinuz {cmdline} --- \n"
         f"  initrd {MINT_CASPER_DIR}/initrd.lz\n"
         "}\n"
     )
 
 
+def mint_casper_direct_entry() -> str:
+    """G513QM hybrid profile matrix (STRICT rebuild).
+
+    Default: Hybrid Auto (AMD display, no nomodeset).
+    Installer fallback: AMD Safe.
+    Emergency: nomodeset Rescue (historically proven text console).
+    """
+    return (
+        _mint_menuentry(MINT_CASPER_HYBRID_TITLE, _profile_cmdline("g513qm_hybrid_auto"))
+        + _mint_menuentry(MINT_CASPER_AMD_SAFE_TITLE, _profile_cmdline("g513qm_amd_safe"))
+        + _mint_menuentry(MINT_CASPER_NVIDIA_DIAG_TITLE, _profile_cmdline("g513qm_nvidia_prop_diag"))
+        + _mint_menuentry(MINT_CASPER_NOUVEAU_TITLE, _profile_cmdline("g513qm_nouveau_fallback"))
+        + _mint_menuentry(MINT_CASPER_RESCUE_TITLE, _profile_cmdline("g513qm_basic_emergency"))
+        + _mint_menuentry(MINT_CASPER_CAPTURE_TITLE, _profile_cmdline("g513qm_capture_only"))
+        + _mint_menuentry(MINT_CASPER_BOOT_TITLE, _mint_safe_cmdline(text_only=True))
+        + _mint_menuentry(MINT_CASPER_BASH_TITLE, _mint_safe_cmdline(emergency_bash=True))
+    )
+
+
 def mint_iso_loopback_entry() -> str:
     """Fallback ISO loopback — prefer mint_casper_direct_entry on Gabriel."""
+    gpu = (
+        "pci=noaer nouveau.modeset=0 "
+        "modprobe.blacklist=nouveau,hid_asus,asus_nb_wmi,asus_wmi "
+        "amdgpu.modeset=0 radeon.modeset=0 nomodeset noplymouth console=tty0 "
+        "consoleblank=0 systemd.debug-shell=1"
+    )
     return (
         f'menuentry "{MINT_ISO_BOOT_TITLE}" {{\n'
         "  insmod part_gpt\n"
         "  insmod fat\n"
         "  insmod loopback\n"
         "  insmod iso9660\n"
+        "  set gfxpayload=text\n"
         f"  search --no-floppy --fs-uuid {SETUP_LOGS_UUID} --set=root\n"
         '  if [ -z "$root" ]; then\n'
         "    search --no-floppy --label SETUP_LOGS --set=root\n"
@@ -123,7 +267,8 @@ def mint_iso_loopback_entry() -> str:
         f'  set isofile="{MINT_ISO_REL}"\n'
         "  loopback loop $isofile\n"
         "  linux (loop)/casper/vmlinuz boot=casper iso-scan/filename=$isofile "
-        "ignore_uuid quiet splash noeject --- \n"
+        f"ignore_uuid {gpu} noeject fsck.mode=skip "
+        "systemd.unit=multi-user.target --- \n"
         "  initrd (loop)/casper/initrd.lz\n"
         "}\n"
     )
@@ -282,27 +427,59 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         "has_install_text": INSTALL_TEXT_TITLE in grub_text,
         "has_mint_casper_boot": MINT_CASPER_BOOT_TITLE in grub_text,
         "has_mint_iso_boot": MINT_ISO_BOOT_TITLE in grub_text,
+        "has_hybrid_auto": MINT_CASPER_HYBRID_TITLE in grub_text,
+        "has_amd_safe": MINT_CASPER_AMD_SAFE_TITLE in grub_text,
         "default_zero": bool(re.search(r"(?m)^set default=0\s*$", grub_text)),
         "no_msi_e2e_as_first_entry": True,
-        "first_is_mint_installer": False,
+        "first_is_hybrid_auto": False,
         "has_force_halt": "Ausschalten (sofort)" in grub_text,
+        "hybrid_no_nomodeset": False,
+        "hybrid_no_amdgpu_blacklist": False,
+        "hybrid_pins_live_media": False,
+        "emergency_has_nomodeset": False,
+        "mint_no_splash": "quiet splash" not in grub_text,
+        "mint_gfxpayload_text": "set gfxpayload=text" in grub_text,
     }
     first = re.search(r'menuentry "([^"]+)"', grub_text)
     if first:
         checks["first_entry"] = first.group(1)
-        checks["first_is_mint_installer"] = first.group(1) == MINT_CASPER_BOOT_TITLE
+        checks["first_is_hybrid_auto"] = first.group(1) == MINT_CASPER_HYBRID_TITLE
         checks["no_msi_e2e_as_first_entry"] = (
             "Physical E2E" not in first.group(1) and "Lab-Auto" not in first.group(1)
         )
+    m = re.search(
+        rf'menuentry "{re.escape(MINT_CASPER_HYBRID_TITLE)}" \{{(.*?)^\}}',
+        grub_text,
+        re.S | re.M,
+    )
+    if m:
+        body = m.group(1)
+        checks["hybrid_no_nomodeset"] = "nomodeset" not in body
+        checks["hybrid_no_amdgpu_blacklist"] = "blacklist=amdgpu" not in body and "amdgpu.modeset=0" not in body
+        checks["hybrid_pins_live_media"] = f"live-media=/dev/disk/by-uuid/{SETUP_LOGS_UUID}" in body
+    e = re.search(
+        rf'menuentry "{re.escape(MINT_CASPER_RESCUE_TITLE)}" \{{(.*?)^\}}',
+        grub_text,
+        re.S | re.M,
+    )
+    if e:
+        checks["emergency_has_nomodeset"] = "nomodeset" in e.group(1)
     ok = all(
         bool(checks[k])
         for k in (
-            "has_mint_casper_boot",
+            "has_hybrid_auto",
+            "has_amd_safe",
             "has_install_text",
             "default_zero",
             "no_msi_e2e_as_first_entry",
-            "first_is_mint_installer",
+            "first_is_hybrid_auto",
             "has_force_halt",
+            "hybrid_no_nomodeset",
+            "hybrid_no_amdgpu_blacklist",
+            "hybrid_pins_live_media",
+            "emergency_has_nomodeset",
+            "mint_no_splash",
+            "mint_gfxpayload_text",
         )
     )
     return {"ok": ok, "checks": checks, "contract_version": CONTRACT_VERSION}

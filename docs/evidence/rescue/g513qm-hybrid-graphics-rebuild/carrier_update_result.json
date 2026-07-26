@@ -1,0 +1,19 @@
+{
+  "stick_updated": true,
+  "identity_unique": true,
+  "vendor": "Intenso",
+  "model": "Ultra Line",
+  "serial": "24111412110686",
+  "setuphelfer_uuid": "9BB9-A4A6",
+  "setup_logs_uuid": "9BC7-3950",
+  "grub_default": "G513QM Rescue Hybrid Auto (AMD display)",
+  "gates": {
+    "amd_stack_gate": "passed",
+    "nvidia_live_vermagic": "blocked_kernel_module_mismatch",
+    "nvidia_offline_abi_single_branch": "passed",
+    "grub_profile_validation": "passed",
+    "capture_autostart_gate": "passed_scripts_present",
+    "dependency_closure": "partial"
+  },
+  "end_status_hint": "implemented_with_remaining_build_blockers"
+}

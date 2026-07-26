@@ -1,0 +1,2 @@
+# Post-install after apply-rog-pack.sh succeeded and nvidia modules build cleanly.
+pci=noaer nouveau.modeset=0 modprobe.blacklist=nouveau nvidia-drm.modeset=1 noplymouth

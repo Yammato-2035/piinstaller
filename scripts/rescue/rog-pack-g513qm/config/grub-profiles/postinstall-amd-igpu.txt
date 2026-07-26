@@ -1,0 +1,2 @@
+# Post-install: allow AMD iGPU KMS; keep NVIDIA/nouveau out until nvidia pack applied.
+pci=noaer nouveau.modeset=0 modprobe.blacklist=nouveau noplymouth consoleblank=0
