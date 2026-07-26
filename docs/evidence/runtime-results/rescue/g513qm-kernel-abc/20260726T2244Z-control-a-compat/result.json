@@ -1,0 +1,16 @@
+{
+  "run_id": "20260726T2244Z-control-a-compat",
+  "control": "A",
+  "distribution": "Linux Mint 22.1",
+  "boot_mode": "compatibility",
+  "setuphelfer_modified": false,
+  "desktop_reached": false,
+  "freeze_point": "after_cups_service_started",
+  "screen": "black",
+  "vt_reachable": false,
+  "network_alive": "not_captured",
+  "kernel_verified": null,
+  "classification": "display_or_session_path_failure_after_cups",
+  "hardware_defect_confirmed": false,
+  "prior_invalid_attempt": "wrong_usb_serial_24111412110686"
+}

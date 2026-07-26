@@ -13,7 +13,8 @@ Sources: hybrid-rebuild Abschlussbericht, physical retest notes, FAILURE_MATRIX,
 | AMD Safe → HID | mint-live | 6.14.0-29 | amd_safe | on | off | freeze | USB HID Core | no | unknown | PHYSICAL_RETEST_CUPS_HID_* |
 | Basic Emergency login prompt | mint-live | 6.14.0-29 | basic_emergency | off | off | login prompt | n/a (auth failed Mint) | yes briefly | unknown | PHYSICAL_RETEST_CUPS_HID_* |
 | Black before login | mint-live | 6.14.0-29 | hybrid default / KMS | on | — | no | before login input | no | unknown | PHYSICAL_RETEST_BLACK_BEFORE_LOGIN.md |
-| Control A official 6.8 | — | — | — | — | — | not_tested | — | — | — | pending |
+| Control A wrong stick | Setuphelfer …10686 | unknown | casper? | unknown | — | invalid | Mounting root / nfs-premount | no | unknown | photo 2026-07-26 |
+| Control A Compat | Mint 22.1 verified ISO | not_captured | Compatibility Mode | likely on | — | no desktop | after cups.service → black | no | not_captured | 20260726T2244Z-control-a-compat |
 | Control B official 22.3 | — | — | — | — | — | not_tested | — | — | — | pending |
 | Control C KMS capture | — | — | — | — | — | not_tested | — | — | — | pending |
 
