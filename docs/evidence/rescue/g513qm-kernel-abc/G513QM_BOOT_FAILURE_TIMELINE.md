@@ -15,7 +15,7 @@ Sources: hybrid-rebuild Abschlussbericht, physical retest notes, FAILURE_MATRIX,
 | Black before login | mint-live | 6.14.0-29 | hybrid default / KMS | on | — | no | before login input | no | unknown | PHYSICAL_RETEST_BLACK_BEFORE_LOGIN.md |
 | Control A wrong stick | Setuphelfer …10686 | unknown | casper? | unknown | — | invalid | Mounting root / nfs-premount | no | unknown | photo 2026-07-26 |
 | Control A Compat | Mint 22.1 verified ISO | not_captured | Compatibility Mode | likely on | — | no desktop | after cups.service → black | no | not_captured | 20260726T2244Z-control-a-compat |
-| Control B official 22.3 | — | — | — | — | — | not_tested | — | — | — | pending |
+| Control B Mint 22.3 | Mint 22.3 verified ISO | not_captured | standard (then black) | unknown | — | no desktop | after passwd-changed-like msg → black | no (C-A-F2 fail) | not_captured | 20260726T2301Z-control-b |
 | Control C KMS capture | — | — | — | — | — | not_tested | — | — | — | pending |
 
 ## Working hypothesis (not confirmed)
