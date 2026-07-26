@@ -1,0 +1,21 @@
+{
+  "workspace": "/tmp/piinstaller-install-assistant-001",
+  "branch": "pi-rs-install-assistant-001",
+  "head": "4e171c6b0ecc4ab5ee5e7af4fe085d9aa727fcf7",
+  "origin_main": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5",
+  "runtime_gate_exit": 14,
+  "arbeitsmodus": "static_and_build_only",
+  "port_8000_smokes_allowed": false,
+  "telemetry_accepted_claims_allowed": false,
+  "stick": {
+    "vendor": "Intenso",
+    "model": "Ultra Line",
+    "size": "59G",
+    "serial": "24111412110686",
+    "setuphelfer_uuid": "9BB9-A4A6",
+    "setup_logs_uuid": "9BC7-3950",
+    "volatile_name": "/dev/sdb"
+  },
+  "baseline_grub_default": "G513QM Basic Emergency — STANDARD (nomodeset, root+Enter)",
+  "baseline_dir": "baseline-20260726T130033Z"
+}

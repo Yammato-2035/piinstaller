@@ -6,8 +6,7 @@
     {
       "id": "g513qm_hybrid_auto",
       "title": "G513QM Hybrid Auto — Rescue-Shell (AMD-KMS, root+Enter)",
-      "default_candidate": false,
-      "physical_status": "black_freeze_before_login_on_gabriel",
+      "default_candidate": true,
       "nomodeset": false,
       "blacklist_amdgpu": false,
       "blacklist_nouveau": false,
@@ -49,9 +48,8 @@
     },
     {
       "id": "g513qm_basic_emergency",
-      "title": "G513QM Basic Emergency — STANDARD (nomodeset, root+Enter)",
+      "title": "G513QM Basic Emergency — Rescue (nomodeset, root+Enter)",
       "emergency": true,
-      "default_candidate": true,
       "nomodeset": true,
       "systemd_unit": "rescue.target",
       "auto_installer": false,
@@ -66,60 +64,6 @@
       "systemd_unit": "rescue.target",
       "auto_installer": false,
       "capture_mode": "full"
-    },
-    {
-      "id": "g513qm_control_c1_standard",
-      "title": "Control C1 KMS Capture (amdgpu manual, multi-user)",
-      "lab_only": true,
-      "nomodeset": false,
-      "blacklist_amdgpu_until_manual": true,
-      "blacklist_nvidia": true,
-      "systemd_unit": "multi-user.target",
-      "uses_rescue_target": false,
-      "drm_debug": "0x1ff",
-      "amdgpu_extra_params": [],
-      "auto_installer": false,
-      "auto_desktop": false,
-      "capture_mode": "early_then_manual_amdgpu"
-    },
-    {
-      "id": "g513qm_control_c2_dc0",
-      "title": "Control C2 KMS Capture (amdgpu.dc=0 only)",
-      "lab_only": true,
-      "nomodeset": false,
-      "blacklist_amdgpu_until_manual": true,
-      "blacklist_nvidia": true,
-      "systemd_unit": "multi-user.target",
-      "uses_rescue_target": false,
-      "amdgpu_extra_params": ["amdgpu.dc=0"],
-      "auto_installer": false,
-      "auto_desktop": false
-    },
-    {
-      "id": "g513qm_control_c3_aspm0",
-      "title": "Control C3 KMS Capture (amdgpu.aspm=0 only)",
-      "lab_only": true,
-      "nomodeset": false,
-      "blacklist_amdgpu_until_manual": true,
-      "blacklist_nvidia": true,
-      "systemd_unit": "multi-user.target",
-      "uses_rescue_target": false,
-      "amdgpu_extra_params": ["amdgpu.aspm=0"],
-      "auto_installer": false,
-      "auto_desktop": false
-    },
-    {
-      "id": "g513qm_control_c4_recovery",
-      "title": "Control C4 KMS Capture (amdgpu.gpu_recovery=1 only)",
-      "lab_only": true,
-      "nomodeset": false,
-      "blacklist_amdgpu_until_manual": true,
-      "blacklist_nvidia": true,
-      "systemd_unit": "multi-user.target",
-      "uses_rescue_target": false,
-      "amdgpu_extra_params": ["amdgpu.gpu_recovery=1"],
-      "auto_installer": false,
-      "auto_desktop": false
     }
   ]
 }

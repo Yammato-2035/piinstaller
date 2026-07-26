@@ -1,0 +1,9 @@
+{
+  "status": "not_run",
+  "myasus": "not_run",
+  "memtest_full_pass": "not_run",
+  "nvme_smart_readonly": "not_run",
+  "windows_stability": "not_captured",
+  "winre_stability": "not_captured",
+  "hardware_defect_confirmed": false
+}

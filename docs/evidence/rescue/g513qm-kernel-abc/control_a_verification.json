@@ -1,0 +1,12 @@
+{
+  "control": "control-a",
+  "release": "22.1",
+  "iso": "linuxmint-22.1-cinnamon-64bit.iso",
+  "expected_sha256": "ccf482436df954c0ad6d41123a49fde79352ca71f7a684a97d5e0a0c39d7f39f",
+  "signature_verified": true,
+  "gpg_fingerprint": "27DEB15644C6B3CF3BD7D291300F846BA25BAE09",
+  "mirror": "https://mirrors.edge.kernel.org/linuxmint/stable/22.1/",
+  "iso_status": "not_available",
+  "status": "verified_checksum_file",
+  "modified": false
+}

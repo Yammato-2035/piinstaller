@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "purpose": "g513qm_lab_netconsole",
+  "bind_iface": "",
+  "listen_port": 6666,
+  "target_ip_env": "G513QM_NETCONSOLE_TARGET_IP",
+  "target_port": 6666,
+  "prefer_wired": true,
+  "wifi_unsuitable": true,
+  "notes": "Set bind_iface and target IP per lab session; do not hardcode permanent public IPs in product profiles."
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "device": "asus_rog_strix_g513qm",
+  "phase": "kernel_abc_control",
+  "physical_status": "pending",
+  "control_a": {
+    "distribution": "Linux Mint",
+    "release": "22.1",
+    "codename": "Xia",
+    "edition": "cinnamon-64bit",
+    "iso_filename": "linuxmint-22.1-cinnamon-64bit.iso",
+    "iso_sha256": "ccf482436df954c0ad6d41123a49fde79352ca71f7a684a97d5e0a0c39d7f39f",
+    "checksum_source": "https://mirrors.edge.kernel.org/linuxmint/stable/22.1/sha256sum.txt",
+    "signature_verified": true,
+    "gpg_fingerprint": "27DEB15644C6B3CF3BD7D291300F846BA25BAE09",
+    "iso_present": false,
+    "iso_status": "not_available",
+    "kernel_expected": "6.8-family",
+    "kernel_verified_on_boot": null,
+    "modified": false
+  },
+  "control_b": {
+    "distribution": "Linux Mint",
+    "release": "22.3",
+    "codename": "Zena",
+    "edition": "cinnamon-64bit",
+    "iso_filename": "linuxmint-22.3-cinnamon-64bit.iso",
+    "iso_sha256": "a081ab202cfda17f6924128dbd2de8b63518ac0531bcfe3f1a1b88097c459bd4",
+    "checksum_source": "https://mirrors.edge.kernel.org/linuxmint/stable/22.3/sha256sum.txt",
+    "signature_verified": true,
+    "gpg_fingerprint": "27DEB15644C6B3CF3BD7D291300F846BA25BAE09",
+    "iso_present": false,
+    "iso_status": "not_available",
+    "kernel_expected": "as_shipped_verify_after_boot",
+    "kernel_verified_on_boot": null,
+    "modified": false
+  },
+  "control_c": {
+    "distribution": "Setuphelfer diagnostic on Mint casper",
+    "release": "lab",
+    "kernel": "from_mint_live_until_closure_upgrade",
+    "source_commit": "pending_commit",
+    "setuphelfer_modified": true,
+    "purpose": "diagnostic_capture_only",
+    "uses_rescue_target": false,
+    "debug_console": "tty9_via_systemd.debug-shell",
+    "amdgpu_autoload": false,
+    "nvidia_in_amd_runs": false
+  },
+  "forbidden_claims_without_evidence": [
+    "hardware_defect_confirmed",
+    "amdgpu_regression_confirmed",
+    "bios_update_fixed",
+    "linux_installation_passed",
+    "nvidia_hybrid_passed"
+  ]
+}

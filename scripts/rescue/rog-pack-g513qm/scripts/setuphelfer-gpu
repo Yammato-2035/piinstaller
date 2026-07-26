@@ -1,0 +1,127 @@
+#!/usr/bin/env bash
+# setuphelfer-gpu — G513QM Control-C AMD-KMS diagnostic wrappers (lab only).
+# Logs every step; never writes internal NVMe; never starts installer/X11.
+set -euo pipefail
+
+CMD="${1:-}"
+shift || true
+RUN_ID="${G513QM_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-gpu}"
+LOGS_UUID="${SETUP_LOGS_UUID:-9BC7-3950}"
+EVID_ROOT=""
+for cand in \
+  "/media/SETUP_LOGS/setuphelfer/g513qm-kernel-abc/$RUN_ID" \
+  "/mnt/SETUP_LOGS/setuphelfer/g513qm-kernel-abc/$RUN_ID" \
+  "/run/setuphelfer/g513qm-kernel-abc/$RUN_ID"; do
+  parent="$(dirname "$cand")"
+  if [[ -d "$(dirname "$parent")" ]] || mountpoint -q "$(dirname "$(dirname "$cand")")" 2>/dev/null; then
+    EVID_ROOT="$cand"
+    break
+  fi
+done
+if [[ -z "$EVID_ROOT" ]]; then
+  EVID_ROOT="/run/setuphelfer/g513qm-kernel-abc/$RUN_ID"
+fi
+mkdir -p "$EVID_ROOT"
+LOG="$EVID_ROOT/setuphelfer-gpu.log"
+
+log() {
+  local line="[$(date --iso-8601=seconds)] $*"
+  echo "$line" | tee -a "$LOG"
+}
+
+forbid_destructive() {
+  log "policy: no nvme write, no mkfs, no installer, no startx"
+}
+
+capture_snapshot() {
+  local tag="$1"
+  local d="$EVID_ROOT/$tag"
+  mkdir -p "$d"
+  date --iso-8601=seconds | tee "$d/date.txt" >/dev/null
+  cat /proc/cmdline >"$d/cmdline.txt" 2>/dev/null || true
+  lsmod >"$d/lsmod.txt" 2>/dev/null || true
+  lspci -Dnnk >"$d/lspci-nnk.txt" 2>/dev/null || true
+  find /sys/class/drm -maxdepth 2 -type f >"$d/drm-files.txt" 2>/dev/null || true
+  (cat /sys/class/drm/*/status 2>/dev/null || true) >"$d/drm-status.txt"
+  dmesg >"$d/dmesg.txt" 2>/dev/null || true
+  journalctl -k -n 500 --no-pager >"$d/journal-k.txt" 2>/dev/null || true
+  uname -a >"$d/uname.txt" 2>/dev/null || true
+  ip -br link >"$d/ip-link.txt" 2>/dev/null || true
+  ping -c 1 -W 1 127.0.0.1 >/dev/null 2>&1 && echo local_ping_ok >"$d/alive-local.txt" || echo local_ping_fail >"$d/alive-local.txt"
+  log "snapshot $tag -> $d"
+}
+
+status_cmd() {
+  forbid_destructive
+  log "=== status ==="
+  echo "RUN_ID=$RUN_ID"
+  echo "EVID_ROOT=$EVID_ROOT"
+  echo "cmdline: $(cat /proc/cmdline)"
+  lsmod | grep -E 'amdgpu|nvidia|nouveau' || echo "(no amdgpu/nvidia/nouveau loaded)"
+  systemctl is-active multi-user.target 2>/dev/null || true
+  systemctl is-active graphical.target 2>/dev/null || true
+  pgrep -a Xorg || echo "no Xorg"
+  pgrep -a ubiquity || echo "no ubiquity"
+  if [[ -d /sys/fs/pstore ]]; then
+    echo "pstore_status=present"
+    ls -la /sys/fs/pstore || true
+  else
+    echo "pstore_status=not_available"
+  fi
+}
+
+load_amdgpu() {
+  forbid_destructive
+  capture_snapshot "before-amdgpu"
+  log "modprobe amdgpu"
+  if modprobe amdgpu; then
+    log "modprobe amdgpu: ok"
+    capture_snapshot "after-amdgpu"
+  else
+    rc=$?
+    log "modprobe amdgpu: failed rc=$rc"
+    capture_snapshot "after-amdgpu-fail"
+    return "$rc"
+  fi
+}
+
+unload_amdgpu() {
+  log "modprobe -r amdgpu (may fail if in use)"
+  modprobe -r amdgpu || log "unload failed (expected if display held)"
+  capture_snapshot "after-unload"
+}
+
+network_status() {
+  log "=== network-status ==="
+  ip -br addr || true
+  ip route || true
+  echo "G513QM_NETCONSOLE_TARGET_IP=${G513QM_NETCONSOLE_TARGET_IP:-unset}"
+}
+
+finalize_cmd() {
+  capture_snapshot "finalize"
+  (cd "$EVID_ROOT" && find . -type f -print0 | sort -z | xargs -0 sha256sum >SHA256SUMS) || true
+  log "finalize complete"
+  echo "$EVID_ROOT"
+}
+
+shutdown_cmd() {
+  log "operator requested shutdown (poweroff)"
+  finalize_cmd
+  sync
+  systemctl poweroff || poweroff
+}
+
+case "$CMD" in
+  status) status_cmd ;;
+  load-amdgpu) load_amdgpu ;;
+  unload-amdgpu) unload_amdgpu ;;
+  capture) capture_snapshot "manual-capture" ;;
+  finalize) finalize_cmd ;;
+  network-status) network_status ;;
+  shutdown) shutdown_cmd ;;
+  *)
+    echo "Usage: setuphelfer-gpu {status|load-amdgpu|unload-amdgpu|capture|finalize|network-status|shutdown}" >&2
+    exit 2
+    ;;
+esac

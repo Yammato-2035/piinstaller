@@ -1,0 +1,12 @@
+{
+  "status": "documented",
+  "live_basis": "mint-live casper from Linux Mint 22.2",
+  "live_kernel_observed": "6.14.0-29-generic",
+  "note": "Control C currently boots the existing mint-live kernel until an official package closure upgrade is remastered. Kernel package names must be resolved from official Mint/Ubuntu apt indexes before remaster; do not leave 6.14 blindly if Control A proves older kernels work.",
+  "nvidia_blocker": "proprietary modules/headers mismatch for 6.14.0-29 — out of scope for AMD-only Control C",
+  "amdgpu_in_live": true,
+  "amd_firmware_files_approx": 649,
+  "upgrade_required_before_claiming_kernel_fix": true,
+  "module_package_closure": "deferred_to_remaster",
+  "initramfs_gate": "uses_existing_mint_initrd_lz"
+}

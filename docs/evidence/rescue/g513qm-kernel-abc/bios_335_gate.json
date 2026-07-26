@@ -1,0 +1,9 @@
+{
+  "status": "recommended_after_baseline",
+  "model_required": "G513QM",
+  "automatic_flash_from_setuphelfer": false,
+  "baseline_abc_required_first": true,
+  "bitlocker_key_secured": "operator_must_confirm",
+  "file_sha256": null,
+  "operator_completed_at": null
+}

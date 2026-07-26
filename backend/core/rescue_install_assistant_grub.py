@@ -36,6 +36,18 @@ MINT_CASPER_NOUVEAU_TITLE = "WARNUNG: Nouveau Fallback Diagnostic"
 MINT_CASPER_CAPTURE_TITLE = "G513QM Capture Only / Text"
 MINT_CASPER_BASH_TITLE = "WARNUNG: Emergency bash (Kernel-Panic auf Gabriel)"
 MINT_CASPER_AMDGPU_TITLE = "WARNUNG: legacy Text mit amdgpu (Keyboard-Hang)"
+# Control C — multi-user + debug-shell tty9; NO rescue.target; AMDGPU deferred.
+MINT_CONTROL_C1_TITLE = "Control C1 KMS Capture (amdgpu manual, multi-user)"
+MINT_CONTROL_C2_TITLE = "Control C2 KMS Capture (amdgpu.dc=0 only)"
+MINT_CONTROL_C3_TITLE = "Control C3 KMS Capture (amdgpu.aspm=0 only)"
+MINT_CONTROL_C4_TITLE = "Control C4 KMS Capture (amdgpu.gpu_recovery=1 only)"
+
+CONTROL_C_PROFILE_IDS = (
+    "g513qm_control_c1_standard",
+    "g513qm_control_c2_dc0",
+    "g513qm_control_c3_aspm0",
+    "g513qm_control_c4_recovery",
+)
 GUI_SAFE_TITLE = "Setuphelfer starten - grafische Oberflaeche (ASUS-sicher)"
 TEXT_SAFE_TITLE = "Setuphelfer starten - sicherer Textmodus"
 ASUS_LAB_GUI_TITLE = "Setuphelfer ASUS ROG Lab (GUI, BIOS-Check)"
@@ -215,6 +227,25 @@ def _profile_cmdline(profile_id: str) -> str:
             ]
         )
         parts.extend(dm_masks)
+    elif profile_id in CONTROL_C_PROFILE_IDS:
+        # AMD-only Control C: reach multi-user + tty9 before amdgpu probe.
+        parts.extend(
+            [
+                "setuphelfer_g513qm_control_c=1",
+                "ignore_loglevel",
+                "log_buf_len=8M",
+                "drm.debug=0x1ff",
+                "modprobe.blacklist=amdgpu,nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau,hid_asus,asus_nb_wmi,asus_wmi",
+                "systemd.unit=multi-user.target",
+            ]
+        )
+        if profile_id == "g513qm_control_c2_dc0":
+            parts.append("amdgpu.dc=0")
+        elif profile_id == "g513qm_control_c3_aspm0":
+            parts.append("amdgpu.aspm=0")
+        elif profile_id == "g513qm_control_c4_recovery":
+            parts.append("amdgpu.gpu_recovery=1")
+        parts.extend(dm_masks)
     return " ".join(parts)
 
 
@@ -248,6 +279,10 @@ def mint_casper_direct_entry() -> str:
     return (
         _mint_menuentry(MINT_CASPER_RESCUE_TITLE, _profile_cmdline("g513qm_basic_emergency"))
         + _mint_menuentry(MINT_CASPER_CAPTURE_TITLE, _profile_cmdline("g513qm_capture_only"))
+        + _mint_menuentry(MINT_CONTROL_C1_TITLE, _profile_cmdline("g513qm_control_c1_standard"))
+        + _mint_menuentry(MINT_CONTROL_C2_TITLE, _profile_cmdline("g513qm_control_c2_dc0"))
+        + _mint_menuentry(MINT_CONTROL_C3_TITLE, _profile_cmdline("g513qm_control_c3_aspm0"))
+        + _mint_menuentry(MINT_CONTROL_C4_TITLE, _profile_cmdline("g513qm_control_c4_recovery"))
         + _mint_menuentry(MINT_CASPER_HYBRID_TITLE, _profile_cmdline("g513qm_hybrid_auto"))
         + _mint_menuentry(MINT_CASPER_AMD_SAFE_TITLE, _profile_cmdline("g513qm_amd_safe"))
         + _mint_menuentry(MINT_CASPER_NVIDIA_DIAG_TITLE, _profile_cmdline("g513qm_nvidia_prop_diag"))
@@ -441,6 +476,7 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         "has_hybrid_auto": MINT_CASPER_HYBRID_TITLE in grub_text,
         "has_amd_safe": MINT_CASPER_AMD_SAFE_TITLE in grub_text,
         "has_basic_emergency": MINT_CASPER_RESCUE_TITLE in grub_text,
+        "has_control_c1": MINT_CONTROL_C1_TITLE in grub_text,
         "default_zero": bool(re.search(r"(?m)^set default=0\s*$", grub_text)),
         "no_msi_e2e_as_first_entry": True,
         "first_is_basic_emergency": False,
@@ -452,6 +488,10 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         "hybrid_masks_cups": False,
         "emergency_has_nomodeset": False,
         "emergency_is_first_and_nomodeset": False,
+        "control_c_no_rescue_target": False,
+        "control_c_multi_user": False,
+        "control_c_blacklists_amdgpu": False,
+        "control_c_blacklists_nvidia": False,
         "mint_no_splash": "quiet splash" not in grub_text,
         "mint_gfxpayload_text": "set gfxpayload=text" in grub_text,
     }
@@ -484,12 +524,24 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         checks["emergency_is_first_and_nomodeset"] = bool(
             checks["first_is_basic_emergency"] and checks["emergency_has_nomodeset"]
         )
+    c1 = re.search(
+        rf'menuentry "{re.escape(MINT_CONTROL_C1_TITLE)}" \{{(.*?)^\}}',
+        grub_text,
+        re.S | re.M,
+    )
+    if c1:
+        body = c1.group(1)
+        checks["control_c_no_rescue_target"] = "systemd.unit=rescue.target" not in body
+        checks["control_c_multi_user"] = "systemd.unit=multi-user.target" in body
+        checks["control_c_blacklists_amdgpu"] = "blacklist=amdgpu" in body or "amdgpu," in body
+        checks["control_c_blacklists_nvidia"] = "nvidia_drm" in body and "nouveau" in body
     ok = all(
         bool(checks[k])
         for k in (
             "has_hybrid_auto",
             "has_amd_safe",
             "has_basic_emergency",
+            "has_control_c1",
             "has_install_text",
             "default_zero",
             "no_msi_e2e_as_first_entry",
@@ -502,6 +554,10 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
             "hybrid_masks_cups",
             "emergency_has_nomodeset",
             "emergency_is_first_and_nomodeset",
+            "control_c_no_rescue_target",
+            "control_c_multi_user",
+            "control_c_blacklists_amdgpu",
+            "control_c_blacklists_nvidia",
             "mint_no_splash",
             "mint_gfxpayload_text",
         )

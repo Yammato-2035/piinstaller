@@ -1,0 +1,21 @@
+{
+  "physical_control": "pending",
+  "decision": null,
+  "allowed_without_physical": ["implemented_ready_for_g513qm_kernel_abc_physical_control"],
+  "cases": {
+    "fall_1": "setuphelfer_boot_or_initramfs_fault_probable",
+    "fall_2": "kernel_6_14_regression_probable",
+    "fall_3": "bios_acpi_amdgpu_or_hardware_fault_suspected",
+    "fall_4": "hardware_fault_highly_suspected",
+    "fall_5": "internal_panel_display_path_suspected",
+    "fall_6": "display_stack_failure_not_full_system_crash",
+    "fall_7": "amdgpu_gpu_hang_evidence_present"
+  },
+  "forbidden_without_evidence": [
+    "hardware_defect_confirmed",
+    "amdgpu_regression_confirmed",
+    "bios_update_fixed",
+    "linux_installation_passed",
+    "nvidia_hybrid_passed"
+  ]
+}

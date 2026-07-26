@@ -1,0 +1,21 @@
+[Unit]
+Description=Setuphelfer G513QM early capture (lab Control C)
+DefaultDependencies=no
+After=local-fs.target
+Before=multi-user.target
+ConditionKernelCommandLine=|setuphelfer_g513qm_control_c=1
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c1_standard
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c2_dc0
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c3_aspm0
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c4_recovery
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=G513QM_RUN_ID=
+ExecStart=/bin/bash -c 'export G513QM_RUN_ID=$${G513QM_RUN_ID:-$$(date -u +%%Y%%m%%dT%%H%%M%%SZ)-early}; /usr/local/sbin/setuphelfer-early-capture.sh || /bin/true'
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

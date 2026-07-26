@@ -1,0 +1,19 @@
+[Unit]
+Description=Setuphelfer G513QM netconsole config (lab)
+After=network-pre.target
+Before=network.target
+ConditionKernelCommandLine=|setuphelfer_g513qm_control_c=1
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c1_standard
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c2_dc0
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c3_aspm0
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c4_recovery
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+EnvironmentFile=-/etc/setuphelfer/g513qm-netconsole.env
+ExecStart=/usr/local/sbin/setuphelfer-netconsole-config.sh
+StandardOutput=journal
+
+[Install]
+WantedBy=multi-user.target

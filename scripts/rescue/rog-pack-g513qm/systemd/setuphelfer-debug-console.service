@@ -1,0 +1,17 @@
+[Unit]
+Description=Setuphelfer G513QM lab debug console banner (tty9)
+DefaultDependencies=no
+After=multi-user.target
+ConditionKernelCommandLine=|setuphelfer_g513qm_control_c=1
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c1_standard
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c2_dc0
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c3_aspm0
+ConditionKernelCommandLine=|setuphelfer_g513qm_profile=g513qm_control_c4_recovery
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/bash -c 'echo "=== SETUPHELFER LAB DEBUG (tty9 via systemd.debug-shell) ===" >/dev/tty9; echo "NO LOGIN REQUIRED. Run: setuphelfer-gpu status|capture|load-amdgpu|finalize" >/dev/tty9; echo "RUN: check dmesg /run/setuphelfer/g513qm-kernel-abc/" >/dev/tty9 || true'
+
+[Install]
+WantedBy=multi-user.target

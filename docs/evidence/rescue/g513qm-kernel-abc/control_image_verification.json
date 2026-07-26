@@ -1,0 +1,26 @@
+{
+  "verified_at": "2026-07-26T13:01:00Z",
+  "gpg_fingerprint": "27DEB15644C6B3CF3BD7D291300F846BA25BAE09",
+  "controls": {
+    "control_a": {
+      "release": "22.1",
+      "iso": "linuxmint-22.1-cinnamon-64bit.iso",
+      "expected_sha256": "ccf482436df954c0ad6d41123a49fde79352ca71f7a684a97d5e0a0c39d7f39f",
+      "signature_verified": true,
+      "iso_status": "not_available",
+      "status": "checksum_only",
+      "modified": false
+    },
+    "control_b": {
+      "release": "22.3",
+      "iso": "linuxmint-22.3-cinnamon-64bit.iso",
+      "expected_sha256": "a081ab202cfda17f6924128dbd2de8b63518ac0531bcfe3f1a1b88097c459bd4",
+      "signature_verified": true,
+      "iso_status": "not_available",
+      "status": "checksum_only",
+      "modified": false
+    }
+  },
+  "usb_write_allowed": false,
+  "reason": "official_isos_not_yet_downloaded_and_hashed"
+}

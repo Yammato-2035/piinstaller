@@ -1,0 +1,174 @@
+{
+  "pack_id": "g513qm-hybrid-graphics",
+  "pack_version": "1.1.0",
+  "contract": "rog-pack-g513qm-v1-hybrid",
+  "created_utc": "2026-07-26T08:17:51Z",
+  "base_distribution": "Linux Mint",
+  "base_release": "22.2",
+  "architecture": "amd64",
+  "kernel_version": "6.14.0-29-generic",
+  "amd_stack": {
+    "in_live_image": "passed",
+    "firmware_files": 649
+  },
+  "nvidia_stack": {
+    "abi_branch": "580",
+    "live_proprietary_vermagic": "blocked_kernel_headers_unavailable",
+    "offline_debs": "present",
+    "nouveau_fallback": "in_live_image"
+  },
+  "dependency_closure": "partial_nvidia_live_module_blocked",
+  "build_source_commit": "9325415c28885e65613edb5f48f49719a35ceed6",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "679867ea25e88c1b519f5ba334ffdf3a01cc35591b7265d144fcb8336a29a6ba",
+      "bytes": 1482
+    },
+    {
+      "path": "config/g513qm-hybrid-graphics.json",
+      "sha256": "235a706feaf9e329d9a2501171a58e6e6579b1ff79a5103a1df086ff668d9e1f",
+      "bytes": 654
+    },
+    {
+      "path": "config/g513qm_graphics_profiles.json",
+      "sha256": "695816834b7fadc8715159d3e826e6f859d89f662ab67250aee37d6ddab78594",
+      "bytes": 2681
+    },
+    {
+      "path": "config/grub-profiles/postinstall-amd-igpu.txt",
+      "sha256": "2a731f6fc94672f2c086d825a2b96e245a9fc06a12716331407f1c0e37f26c31",
+      "bytes": 168
+    },
+    {
+      "path": "config/grub-profiles/postinstall-nvidia-prime.txt",
+      "sha256": "607fb72738295fb5552f5ef0e79200a6326a062ace0a63f67b7d68bf4db4108c",
+      "bytes": 170
+    },
+    {
+      "path": "config/grub-profiles/rescue-nomodeset.txt",
+      "sha256": "c779874b976cb5978003b22fb6ba4a2ac079bf54c820d1cdc2444c4c6fabd00b",
+      "bytes": 476
+    },
+    {
+      "path": "config/modprobe.d/asus-rog-safe.conf",
+      "sha256": "cd548f139cc88550d34964082ec471a3f3df126352b5e67ecd93708eea40ef37",
+      "bytes": 266
+    },
+    {
+      "path": "config/modprobe.d/blacklist-nouveau.conf",
+      "sha256": "5ea8609b6cdede97c610116b8efd1255b3d6aab291d062ceb545ee521a5f192e",
+      "bytes": 130
+    },
+    {
+      "path": "config/modprobe.d/nvidia-drm.conf",
+      "sha256": "9fe49e876ea5a83ff4bc53de9d1a0347b49c19f645c38722c13d02787bbd5f67",
+      "bytes": 150
+    },
+    {
+      "path": "debs/nvidia/dkms_3.0.11-1ubuntu13_all.deb",
+      "sha256": "18d098c65e3002040afc11f80656e84377551a5d1bdcd3933cdf6ae2e58dcd75",
+      "bytes": 51542
+    },
+    {
+      "path": "debs/nvidia/libnvidia-cfg1-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "e04add4fb1f8e644e0d71d45bf0c0f72347e7e85a6427951a4c3c94f41d722b9",
+      "bytes": 160702
+    },
+    {
+      "path": "debs/nvidia/libnvidia-common-580_580.173.02-0ubuntu0.24.04.1_all.deb",
+      "sha256": "ce1150fd18ecc16e2ceb4df6a1acdf31068dad2e86c71b5bcbd9a8430433ddf1",
+      "bytes": 18588
+    },
+    {
+      "path": "debs/nvidia/libnvidia-compute-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "ad87a8a478849efcc47dbe1aefd39dc58d15d7b4852bf3c1ef1671286e623984",
+      "bytes": 59451252
+    },
+    {
+      "path": "debs/nvidia/libnvidia-decode-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "a31ff39cbbb1f78ca7140e6e25e0e9da350fb33b0e0f3cf9128450045211f523",
+      "bytes": 3172144
+    },
+    {
+      "path": "debs/nvidia/libnvidia-encode-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "844521f88f097bc60f8b76708c6840598016597e3d19d174564a34b9a8782d2f",
+      "bytes": 115106
+    },
+    {
+      "path": "debs/nvidia/libnvidia-extra-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "73e4590815acc5d97b69ddbc72d6a30c6682825328a27b73f909c9d813aff37c",
+      "bytes": 78180
+    },
+    {
+      "path": "debs/nvidia/libnvidia-fbc1-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "2f6ed052a291dee333e4a245202d308b4ca07fd998d6e7081990107604d2acc4",
+      "bytes": 94946
+    },
+    {
+      "path": "debs/nvidia/libnvidia-gl-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "0eccf4563b0f3aa4f181df00047869213b1890160bf1a85905219607c406529e",
+      "bytes": 172812352
+    },
+    {
+      "path": "debs/nvidia/nvidia-compute-utils-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "e685fce27209c2f746105f98c052b134097ff259578cbf7497813f3371e07b12",
+      "bytes": 130022
+    },
+    {
+      "path": "debs/nvidia/nvidia-dkms-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "5bb8bc07ffd30c727308ffc318ff0621807804e94ef71848c464e0b6fea4ec18",
+      "bytes": 37788
+    },
+    {
+      "path": "debs/nvidia/nvidia-driver-550_550.163.01-0ubuntu0.24.04.2_amd64.deb",
+      "sha256": "f48885f2145efff0674a3c5a135b1e2458832e299b449ddd3f358b42495339c3",
+      "bytes": 11090
+    },
+    {
+      "path": "debs/nvidia/nvidia-driver-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "12808f362531db8390e86ccb585a44660795bb15b126ab6581d54f4577e94e69",
+      "bytes": 510310
+    },
+    {
+      "path": "debs/nvidia/nvidia-firmware-580-580.173.02_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "7dcf939ece48abb2b19af80887aab93e04ba4c515e5b3563ff224f2df87cedc8",
+      "bytes": 75994310
+    },
+    {
+      "path": "debs/nvidia/nvidia-kernel-common-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "35f21f801a14ea75d65504a6fe9e83b95ed7dce1b638e157604c00a697fdbcff",
+      "bytes": 779904
+    },
+    {
+      "path": "debs/nvidia/nvidia-kernel-source-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "9dbb2d61048c86d9cbf0514e755a691fa9fe737c851f171d0e91e3bdfe0e0dfd",
+      "bytes": 83828944
+    },
+    {
+      "path": "debs/nvidia/nvidia-utils-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "5e57c845e34f119d67164e7a81b73d5fdc7ddc6dc82a9a29c1d7d76cd7664064",
+      "bytes": 601462
+    },
+    {
+      "path": "debs/nvidia/xserver-xorg-video-nvidia-580_580.173.02-0ubuntu0.24.04.1_amd64.deb",
+      "sha256": "d89b70d3c24f35a403b3b2e00d97c4c339186e5fc6bfa3668ad70eac8a39f653",
+      "bytes": 1784364
+    },
+    {
+      "path": "scripts/apply-rog-pack.sh",
+      "sha256": "8528186babc77472669ad1bfa26ad4086d90b1511d136654ab0cfc45985d2e46",
+      "bytes": 3729
+    },
+    {
+      "path": "scripts/install-from-rescue.sh",
+      "sha256": "018bce106e4c06fdeb2573dea20996ce94bdcbab57515f87fc3d7b4f1d3cfd2d",
+      "bytes": 10852
+    },
+    {
+      "path": "scripts/setuphelfer-g513qm-capture.sh",
+      "sha256": "dcd70c468471fc8cf899195a568fdd8e24b1fb792bec9a4202fcc4ea7899a598",
+      "bytes": 3597
+    }
+  ]
+}
