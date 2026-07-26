@@ -39,7 +39,7 @@
     "distribution": "Setuphelfer diagnostic on Mint casper",
     "release": "lab",
     "kernel": "from_mint_live_until_closure_upgrade",
-    "source_commit": "pending_commit",
+    "source_commit": "c33433587eaf0f44ecfc10ebe6f95f6b805111b0",
     "setuphelfer_modified": true,
     "purpose": "diagnostic_capture_only",
     "uses_rescue_target": false,

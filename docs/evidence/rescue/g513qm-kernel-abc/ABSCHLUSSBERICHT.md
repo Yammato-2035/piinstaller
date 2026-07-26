@@ -27,7 +27,7 @@ Git-Root: /tmp/piinstaller-install-assistant-001
 Repository: https://github.com/Yammato-2035/piinstaller.git
 Branch: pi-rs-install-assistant-001
 HEAD vorher: 4e171c6b0ecc4ab5ee5e7af4fe085d9aa727fcf7
-HEAD nachher: (siehe Commit nach Push)
+HEAD nachher: c33433587eaf0f44ecfc10ebe6f95f6b805111b0
 origin/main: b8651d3337bf30b4443a622fdf8a6c9dc2995df5
 Remote: origin → Yammato-2035/piinstaller.git
 Dirty-Tree: nur A/B/C-Phase-Dateien
