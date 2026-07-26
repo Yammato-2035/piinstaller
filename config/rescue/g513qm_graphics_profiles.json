@@ -1,68 +1,69 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "device_binding": "asus_rog_gabriel",
+  "physical_retest_20260726_note": "Hybrid/AMD-Safe without rescue.target died at cups/HID; Basic Emergency reached login. Hybrid/AMD-Safe now use rescue.target + AMD KMS.",
   "profiles": [
     {
       "id": "g513qm_hybrid_auto",
-      "title": "G513QM Rescue Hybrid Auto (AMD display)",
+      "title": "G513QM Hybrid Auto — Rescue-Shell (AMD-KMS, root+Enter)",
       "default_candidate": true,
       "nomodeset": false,
       "blacklist_amdgpu": false,
       "blacklist_nouveau": false,
+      "systemd_unit": "rescue.target",
+      "mask_cups": true,
       "nvidia_modeset": "allow",
       "auto_installer": false,
       "capture_mode": "full",
-      "kernel_extra": "pci=noaer noplymouth consoleblank=0 setuphelfer_g513qm_profile=g513qm_hybrid_auto setuphelfer_capture=1"
+      "login_hint": "root then Enter (empty password); not Mint"
     },
     {
       "id": "g513qm_amd_safe",
-      "title": "G513QM AMD Safe Display (Installer-Fallback)",
-      "default_candidate": false,
+      "title": "G513QM AMD Safe — Rescue-Shell (Installer-Fallback)",
       "preferred_installer_fallback": true,
       "nomodeset": false,
       "blacklist_amdgpu": false,
       "blacklist_nouveau": true,
-      "modprobe_blacklist": "nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau",
+      "systemd_unit": "rescue.target",
+      "mask_cups": true,
       "auto_installer": false,
       "capture_mode": "full",
-      "kernel_extra": "pci=noaer noplymouth consoleblank=0 setuphelfer_g513qm_profile=g513qm_amd_safe setuphelfer_capture=1"
+      "login_hint": "root then Enter (empty password); not Mint"
     },
     {
       "id": "g513qm_nvidia_prop_diag",
       "title": "G513QM NVIDIA Proprietary Diagnostic",
       "nomodeset": false,
-      "blacklist_amdgpu": false,
+      "systemd_unit": "rescue.target",
       "auto_installer": false,
-      "capture_mode": "full",
-      "kernel_extra": "pci=noaer nouveau.modeset=0 modprobe.blacklist=nouveau nvidia-drm.modeset=1 noplymouth setuphelfer_g513qm_profile=g513qm_nvidia_prop_diag setuphelfer_capture=1"
+      "capture_mode": "full"
     },
     {
       "id": "g513qm_nouveau_fallback",
       "title": "G513QM Nouveau Fallback Diagnostic",
       "nomodeset": false,
-      "blacklist_amdgpu": false,
-      "modprobe_blacklist": "nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm",
+      "systemd_unit": "rescue.target",
       "auto_installer": false,
-      "capture_mode": "full",
-      "kernel_extra": "pci=noaer noplymouth setuphelfer_g513qm_profile=g513qm_nouveau_fallback setuphelfer_capture=1"
+      "capture_mode": "full"
     },
     {
       "id": "g513qm_basic_emergency",
-      "title": "G513QM Basic Graphics Emergency (nomodeset)",
+      "title": "G513QM Basic Emergency — Rescue (nomodeset, root+Enter)",
       "emergency": true,
       "nomodeset": true,
+      "systemd_unit": "rescue.target",
       "auto_installer": false,
       "gui_install_success_criterion": false,
       "capture_mode": "full",
-      "kernel_extra": "pci=noaer nomodeset noplymouth console=tty0 setuphelfer_g513qm_profile=g513qm_basic_emergency setuphelfer_capture=1 systemd.unit=rescue.target"
+      "login_hint": "root then Enter; lowercase mint+Enter only if getty login: appears"
     },
     {
       "id": "g513qm_capture_only",
       "title": "G513QM Capture Only / Text",
       "nomodeset": true,
+      "systemd_unit": "rescue.target",
       "auto_installer": false,
-      "capture_mode": "full",
-      "kernel_extra": "pci=noaer nomodeset noplymouth setuphelfer_g513qm_profile=g513qm_capture_only setuphelfer_capture=1 systemd.unit=rescue.target"
+      "capture_mode": "full"
     }
   ]
 }

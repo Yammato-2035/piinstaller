@@ -276,6 +276,8 @@ class GabrielGrubTests(unittest.TestCase):
         self.assertIn("live-media=/dev/disk/by-uuid/9BC7-3950", cfg)
         self.assertNotIn("live-media-timeout=", cfg)
         self.assertIn("setuphelfer_g513qm_profile=g513qm_hybrid_auto", cfg)
+        self.assertIn("systemd.unit=rescue.target", cfg)
+        self.assertIn("systemd.mask=cups.service", cfg)
         self.assertIn(grub.MINT_CASPER_AMD_SAFE_TITLE, cfg)
         self.assertIn(grub.MINT_CASPER_RESCUE_TITLE, cfg)
         self.assertNotIn("quiet splash", cfg)

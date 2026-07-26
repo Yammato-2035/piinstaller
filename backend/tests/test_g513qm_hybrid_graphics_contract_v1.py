@@ -35,9 +35,8 @@ class G513qmHybridContractTests(unittest.TestCase):
         v = grub.validate_gabriel_install_grub(cfg)
         self.assertTrue(v["ok"], v)
         self.assertEqual(v["checks"]["first_entry"], grub.MINT_CASPER_HYBRID_TITLE)
-        self.assertIn("setuphelfer_g513qm_profile=g513qm_hybrid_auto", cfg)
-        self.assertIn(grub.MINT_CASPER_AMD_SAFE_TITLE, cfg)
-        # Hybrid entry body must not contain nomodeset
+        self.assertIn("systemd.unit=rescue.target", cfg)
+        # Hybrid entry body must not contain nomodeset but must pin rescue.target
         import re
 
         m = re.search(
@@ -49,6 +48,8 @@ class G513qmHybridContractTests(unittest.TestCase):
         assert m is not None
         self.assertNotIn("nomodeset", m.group(1))
         self.assertNotIn("amdgpu.modeset=0", m.group(1))
+        self.assertIn("systemd.unit=rescue.target", m.group(1))
+        self.assertIn("systemd.mask=cups.service", m.group(1))
 
     def test_installer_script_refuses_ubiquity_without_modes(self) -> None:
         script = (

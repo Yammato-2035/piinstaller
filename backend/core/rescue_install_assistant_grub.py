@@ -27,9 +27,9 @@ INSTALL_TEXT_TITLE = "Setuphelfer Linux-Installation (Text)"
 MINT_ISO_BOOT_TITLE = "Linux Mint 22.2 Installer (ISO-Loopback, Fallback)"
 MINT_CASPER_BOOT_TITLE = "Linux Mint 22.2 Installer (direkt vom Stick)"
 # Proven console path (emergency). Hybrid Auto is the new default for display/installer work.
-MINT_CASPER_RESCUE_TITLE = "G513QM Basic Graphics Emergency (nomodeset Rescue)"
-MINT_CASPER_HYBRID_TITLE = "G513QM Rescue Hybrid Auto (AMD display)"
-MINT_CASPER_AMD_SAFE_TITLE = "G513QM AMD Safe Display (Installer-Fallback)"
+MINT_CASPER_RESCUE_TITLE = "G513QM Basic Emergency — Rescue (nomodeset, root+Enter)"
+MINT_CASPER_HYBRID_TITLE = "G513QM Hybrid Auto — Rescue-Shell (AMD-KMS, root+Enter)"
+MINT_CASPER_AMD_SAFE_TITLE = "G513QM AMD Safe — Rescue-Shell (Installer-Fallback)"
 MINT_CASPER_NVIDIA_DIAG_TITLE = "G513QM NVIDIA Proprietary Diagnostic"
 MINT_CASPER_NOUVEAU_TITLE = "G513QM Nouveau Fallback Diagnostic"
 MINT_CASPER_CAPTURE_TITLE = "G513QM Capture Only / Text"
@@ -158,26 +158,50 @@ def _mint_safe_cmdline(
 
 
 def _profile_cmdline(profile_id: str) -> str:
-    """Build casper cmdline from config/rescue/g513qm_graphics_profiles.json intent."""
+    """Build casper cmdline from config/rescue/g513qm_graphics_profiles.json intent.
+
+    Physical 2026-07-26 retest:
+    - Hybrid/AMD-Safe without rescue.target reached cups/HID then dead VT (same class as
+      earlier multi-user hang).
+    - Basic Emergency (rescue.target + nomodeset) reached a login prompt.
+    Therefore Hybrid Auto and AMD Safe keep AMD KMS (no nomodeset) but pin
+    systemd.unit=rescue.target so the operator gets a text shell before any GUI.
+    """
     parts = _mint_casper_base_parts()
     parts.append(f"setuphelfer_g513qm_profile={profile_id}")
+    dm_masks = [
+        "systemd.mask=lightdm.service",
+        "systemd.mask=mdm.service",
+        "systemd.mask=gdm3.service",
+        "systemd.mask=gdm.service",
+        "systemd.mask=cups.service",
+        "systemd.mask=cups-browsed.service",
+    ]
     if profile_id == "g513qm_hybrid_auto":
-        # AMD KMS allowed; do not blacklist amdgpu/nouveau globally; no nomodeset
-        parts.append("modprobe.blacklist=hid_asus,asus_nb_wmi")
+        # AMD KMS on; text Rescue shell first (do not boot into multi-user/cups).
+        parts.append("modprobe.blacklist=hid_asus,asus_nb_wmi,asus_wmi")
+        parts.append("systemd.unit=rescue.target")
+        parts.extend(dm_masks)
     elif profile_id == "g513qm_amd_safe":
         parts.append(
-            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau,hid_asus"
+            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau,hid_asus,asus_nb_wmi,asus_wmi"
         )
+        parts.append("systemd.unit=rescue.target")
+        parts.extend(dm_masks)
     elif profile_id == "g513qm_nvidia_prop_diag":
         parts.extend(
             [
                 "nouveau.modeset=0",
                 "modprobe.blacklist=nouveau",
                 "nvidia-drm.modeset=1",
+                "systemd.unit=rescue.target",
             ]
         )
+        parts.extend(dm_masks)
     elif profile_id == "g513qm_nouveau_fallback":
         parts.append("modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm")
+        parts.append("systemd.unit=rescue.target")
+        parts.extend(dm_masks)
     elif profile_id in ("g513qm_basic_emergency", "g513qm_capture_only"):
         parts.extend(
             [
@@ -187,22 +211,9 @@ def _profile_cmdline(profile_id: str) -> str:
                 "radeon.modeset=0",
                 "nomodeset",
                 "systemd.unit=rescue.target",
-                "systemd.mask=lightdm.service",
-                "systemd.mask=mdm.service",
-                "systemd.mask=gdm3.service",
-                "systemd.mask=gdm.service",
             ]
         )
-    if profile_id not in ("g513qm_basic_emergency", "g513qm_capture_only"):
-        # Keep DM from auto-starting until operator runs start-desktop / ubiquity modes
-        parts.extend(
-            [
-                "systemd.mask=lightdm.service",
-                "systemd.mask=mdm.service",
-                "systemd.mask=gdm3.service",
-                "systemd.mask=gdm.service",
-            ]
-        )
+        parts.extend(dm_masks)
     return " ".join(parts)
 
 
@@ -436,6 +447,8 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         "hybrid_no_nomodeset": False,
         "hybrid_no_amdgpu_blacklist": False,
         "hybrid_pins_live_media": False,
+        "hybrid_uses_rescue_target": False,
+        "hybrid_masks_cups": False,
         "emergency_has_nomodeset": False,
         "mint_no_splash": "quiet splash" not in grub_text,
         "mint_gfxpayload_text": "set gfxpayload=text" in grub_text,
@@ -457,6 +470,8 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
         checks["hybrid_no_nomodeset"] = "nomodeset" not in body
         checks["hybrid_no_amdgpu_blacklist"] = "blacklist=amdgpu" not in body and "amdgpu.modeset=0" not in body
         checks["hybrid_pins_live_media"] = f"live-media=/dev/disk/by-uuid/{SETUP_LOGS_UUID}" in body
+        checks["hybrid_uses_rescue_target"] = "systemd.unit=rescue.target" in body
+        checks["hybrid_masks_cups"] = "systemd.mask=cups.service" in body
     e = re.search(
         rf'menuentry "{re.escape(MINT_CASPER_RESCUE_TITLE)}" \{{(.*?)^\}}',
         grub_text,
@@ -477,6 +492,8 @@ def validate_gabriel_install_grub(grub_text: str) -> dict[str, Any]:
             "hybrid_no_nomodeset",
             "hybrid_no_amdgpu_blacklist",
             "hybrid_pins_live_media",
+            "hybrid_uses_rescue_target",
+            "hybrid_masks_cups",
             "emergency_has_nomodeset",
             "mint_no_splash",
             "mint_gfxpayload_text",
