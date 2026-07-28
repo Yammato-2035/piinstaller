@@ -1,6 +1,7 @@
 /**
  * Remote-Companion-Container: Pair / Dashboard / Module je nach Session und Auswahl.
- * Session beim Mount aus localStorage laden; WebSocket starten bei Session.
+ * Refresh-Token (persistiert) entscheidet über Pairing-Status; Access-Token wird
+ * bei Mount proaktiv erneuert, WebSocket startet sobald ein Access-Token vorliegt.
  */
 
 import React, { useEffect, useState } from 'react'
@@ -15,24 +16,25 @@ interface RemoteViewProps {
 }
 
 export default function RemoteView({ setCurrentPage }: RemoteViewProps) {
-  const sessionToken = useRemoteStore((s) => s.sessionToken)
+  const refreshToken = useRemoteStore((s) => s.refreshToken)
+  const accessToken = useRemoteStore((s) => s.accessToken)
   const modules = useRemoteStore((s) => s.modules)
-  const loadSessionFromStorage = useRemoteStore((s) => s.loadSessionFromStorage)
+  const ensureFreshAccessToken = useRemoteStore((s) => s.ensureFreshAccessToken)
   const startWs = useRemoteStore((s) => s.startWs)
   const [selectedModuleId, setSelectedModuleId] = useState<string | null>(null)
 
   useEffect(() => {
-    loadSessionFromStorage()
-  }, [loadSessionFromStorage])
+    if (refreshToken) ensureFreshAccessToken()
+  }, [refreshToken, ensureFreshAccessToken])
 
   useEffect(() => {
-    if (sessionToken) startWs()
-  }, [sessionToken, startWs])
+    if (accessToken) startWs()
+  }, [accessToken, startWs])
 
   const descriptor: ModuleDescriptor | null =
     selectedModuleId ? modules.find((m) => m.id === selectedModuleId) ?? null : null
 
-  if (!sessionToken) {
+  if (!refreshToken) {
     return <PairPage />
   }
 

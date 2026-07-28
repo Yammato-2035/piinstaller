@@ -1,0 +1,108 @@
+{
+  "schema_version": "1.0",
+  "erstellt_am": "2026-07-28",
+  "hinweis": "Manuell gepflegtes Inventar. status='aktiv' wird vom wöchentlichen CI-Check geprüft (Version + bekannte CVEs). status='geplant' wird NICHT automatisch geprüft, da noch nicht integriert — Eintrag beim Aktivieren auf 'aktiv' umstellen.",
+  "komponenten": [
+    {
+      "name": "starlette",
+      "ecosystem": "pypi",
+      "gepinnt": "==1.3.1",
+      "status": "aktiv",
+      "lizenz": "BSD-3-Clause",
+      "quelle": "backend/requirements.txt",
+      "notiz": "Exakt gepinnt (==), nicht Range — Grund in requirements.txt nicht dokumentiert, bei nächster Prüfung klären ob bewusst."
+    },
+    {
+      "name": "fastapi",
+      "ecosystem": "pypi",
+      "gepinnt": ">=0.128,<0.136",
+      "status": "aktiv",
+      "lizenz": "MIT",
+      "quelle": "backend/requirements.txt"
+    },
+    {
+      "name": "uvicorn",
+      "ecosystem": "pypi",
+      "gepinnt": ">=0.24,<0.25",
+      "status": "aktiv",
+      "lizenz": "BSD-3-Clause",
+      "quelle": "backend/requirements.txt",
+      "notiz": "Ursprung der Müll-Dateien =0.100/=0.24/=2.5 (E-11) — unquotiertes pip install."
+    },
+    { "name": "python-multipart", "ecosystem": "pypi", "gepinnt": ">=0.0.6", "status": "aktiv", "lizenz": "Apache-2.0", "quelle": "backend/requirements.txt" },
+    { "name": "httpx", "ecosystem": "pypi", "gepinnt": ">=0.25,<0.28", "status": "aktiv", "lizenz": "BSD-3-Clause", "quelle": "backend/requirements.txt", "notiz": "Obergrenze 0.28 bewusst wegen sync-ASGI-Bruch laut Kommentar im Original." },
+    { "name": "python-dotenv", "ecosystem": "pypi", "gepinnt": ">=1.0", "status": "aktiv", "lizenz": "BSD-3-Clause", "quelle": "backend/requirements.txt" },
+    { "name": "PyYAML", "ecosystem": "pypi", "gepinnt": ">=6.0", "status": "aktiv", "lizenz": "MIT", "quelle": "backend/requirements.txt" },
+    { "name": "Jinja2", "ecosystem": "pypi", "gepinnt": ">=3.1", "status": "aktiv", "lizenz": "BSD-3-Clause", "quelle": "backend/requirements.txt" },
+    { "name": "requests", "ecosystem": "pypi", "gepinnt": ">=2.31", "status": "aktiv", "lizenz": "Apache-2.0", "quelle": "backend/requirements.txt" },
+    { "name": "aiofiles", "ecosystem": "pypi", "gepinnt": ">=23", "status": "aktiv", "lizenz": "Apache-2.0", "quelle": "backend/requirements.txt" },
+    { "name": "click", "ecosystem": "pypi", "gepinnt": ">=8.0", "status": "aktiv", "lizenz": "BSD-3-Clause", "quelle": "backend/requirements.txt" },
+    { "name": "psutil", "ecosystem": "pypi", "gepinnt": ">=5.9", "status": "aktiv", "lizenz": "BSD-3-Clause", "quelle": "backend/requirements.txt" },
+    { "name": "cryptography", "ecosystem": "pypi", "gepinnt": ">=43", "status": "aktiv", "lizenz": "Apache-2.0/BSD", "quelle": "backend/requirements.txt", "notiz": "Sicherheitskritisch (Fernet-Verschlüsselung) — Versions-Drift hier mit höherer Priorität behandeln." },
+    { "name": "slowapi", "ecosystem": "pypi", "gepinnt": ">=0.1.9", "status": "aktiv", "lizenz": "MIT", "quelle": "backend/requirements.txt" },
+    { "name": "jsonschema", "ecosystem": "pypi", "gepinnt": "==4.25.1", "status": "aktiv", "lizenz": "MIT", "quelle": "backend/requirements.txt" },
+    { "name": "luma.oled", "ecosystem": "pypi", "gepinnt": ">=3.13", "status": "aktiv", "lizenz": "MIT", "quelle": "backend/requirements.txt" },
+    { "name": "Pillow", "ecosystem": "pypi", "gepinnt": ">=10.0", "status": "aktiv", "lizenz": "MIT-CMU (PIL)", "quelle": "backend/requirements.txt", "notiz": "Historisch häufig CVEs (Bildparser) — Prioritätskomponente." },
+
+    { "name": "axios", "ecosystem": "npm", "gepinnt": "^1.18.1", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "framer-motion", "ecosystem": "npm", "gepinnt": "^12.29.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "html2canvas", "ecosystem": "npm", "gepinnt": "^1.4.1", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "i18next", "ecosystem": "npm", "gepinnt": "^25.9.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "lucide-react", "ecosystem": "npm", "gepinnt": "^0.294.0", "status": "aktiv", "lizenz": "ISC", "quelle": "frontend/package.json" },
+    { "name": "qrcode", "ecosystem": "npm", "gepinnt": "^1.5.4", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json", "notiz": "Relevant für Remote-Companion-Pairing (E-09) — bei Sicherheitshärtung mitdenken." },
+    { "name": "react", "ecosystem": "npm", "gepinnt": "^18.2.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "react-dom", "ecosystem": "npm", "gepinnt": "^18.2.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "react-hot-toast", "ecosystem": "npm", "gepinnt": "^2.4.1", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "react-i18next", "ecosystem": "npm", "gepinnt": "^16.5.8", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "react-router-dom", "ecosystem": "npm", "gepinnt": "^6.18.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "recharts", "ecosystem": "npm", "gepinnt": "^3.7.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+    { "name": "tauri-plugin-screenshots-api", "ecosystem": "npm", "gepinnt": "^2", "status": "aktiv", "lizenz": "unbekannt — prüfen", "quelle": "frontend/package.json" },
+    { "name": "zustand", "ecosystem": "npm", "gepinnt": "^4.4.0", "status": "aktiv", "lizenz": "MIT", "quelle": "frontend/package.json" },
+
+    {
+      "name": "ckb-next",
+      "ecosystem": "git-submodule",
+      "gepinnt": "siehe .gitmodules Commit-Pointer",
+      "status": "inaktiv",
+      "lizenz": "GPLv2",
+      "quelle": ".gitmodules",
+      "notiz": "Nicht in build/rescue/live-build/.../package-lists/setuphelfer.list.chroot enthalten — wird aktuell NICHT ins Stick-Image kompiliert (siehe CKB-NEXT-PRUEFUNG.md). Bei Aktivierung: status auf 'aktiv' setzen UND GPLv2-Distributionspflicht prüfen."
+    },
+    {
+      "name": "ClamAV (clamscan/clamd, Subprocess-Integration)",
+      "ecosystem": "apt/subprocess",
+      "gepinnt": "n/a — noch kein Code gefunden",
+      "status": "geplant",
+      "lizenz": "GPLv2",
+      "quelle": "Architekturprinzip in Projekt-Memory dokumentiert, aber kein Treffer in backend/ für clamscan/clamd/ClamAV",
+      "notiz": "Bei Implementierung: status auf 'aktiv', Subprocess-Pattern beibehalten (kein libclamav-Linking, siehe Prinzip 'ClamAV-Integrationsmuster')."
+    },
+    {
+      "name": "Wazuh (IDS-Integration, PRO+IDS-Tier)",
+      "ecosystem": "extern/service",
+      "gepinnt": "n/a — noch kein Code gefunden",
+      "status": "geplant",
+      "lizenz": "GPLv2 (Wazuh-Agent/Manager)",
+      "quelle": "Roadmap PRO+IDS 9,95€/Monat, kein Code-Treffer",
+      "notiz": "Sobald integriert: eigenständiger Eintrag mit Versions-Pin für Agent UND Manager, da beide unabhängig patchen."
+    },
+    {
+      "name": "Plesk-API-Anbindung (Cloud Edition)",
+      "ecosystem": "extern/api",
+      "gepinnt": "n/a — noch kein API-Client-Code gefunden",
+      "status": "geplant",
+      "lizenz": "n/a (proprietäre API, kein eigener Code-Vertrieb)",
+      "quelle": "Nur Telemetrie/TLS-Reverse-Proxy-Doku erwähnt Plesk, kein API-Client",
+      "notiz": "Kein klassisches Lizenz-Risiko, aber API-Versionsdrift relevant sobald implementiert (Plesk-Extension-Kompatibilität)."
+    },
+    {
+      "name": "Debian-Firmware- und Basis-Pakete (Rescue Stick, apt)",
+      "ecosystem": "apt",
+      "gepinnt": "ungepinnt — 'apt install <name>' ohne Version in package-lists/setuphelfer.list.chroot",
+      "status": "aktiv",
+      "lizenz": "gemischt (GPL/BSD/proprietäre Firmware-Blobs bei firmware-*)",
+      "quelle": "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot",
+      "notiz": "34 Pakete, u.a. chromium (großes CVE-Volumen), firmware-* (non-free, Redistribution rechtlich ok laut Debian non-free-firmware, aber Herkunft dokumentieren). Automatischer Versions-Diff schwer, da ungepinnt — Empfehlung: Build-Zeitpunkt + genutzte Debian-Snapshot-Datum hier eintragen, sobald live-build das unterstützt."
+    }
+  ]
+}

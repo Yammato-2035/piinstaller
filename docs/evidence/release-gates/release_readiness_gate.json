@@ -1,30 +1,38 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "release_readiness_gate",
-  "generated": "2026-05-15T19:15:00Z",
+  "generated": "2026-07-28T21:00:00Z",
   "overall_status": "blocked",
   "ampel": "rot",
   "evidence_complete": true,
-  "summary": "**Runtime-Deploy-Gate (PKG-001):** `check-runtime-deploy-gate.sh` Exit 0, `runtime_gate.passed` true, `deploy_drift` green (2026-05-15). **Release bleibt blockiert:** **BR-001** — kein vollständiger Backup-Verify-Restore-Zyklus auf freigegebenem Medium. **CI:** Run **25751304968** success (Referenz); lokaler pytest 2026-05-15: **1624 passed**. BR-012/013/004/005 weiterhin offen.",
+  "summary": "**Re-verifiziert 2026-07-28** (Claude Code, Gate-Freshness-Rollout Paket 3): **Runtime-Deploy-Gate (PKG-001)** heute real erneut geprüft mit dem profil-bewussten `check-runtime-profile-deploy-gate.sh` (Legacy-Skript `check-runtime-deploy-gate.sh` meldet selbst 'LEGACY_GATE_NON_PROFILE_AWARE' im Release-Profil) — Ergebnis: **`project_version_mismatch:1.9.21.2!=1.9.23.0`**, Exit 12. **Root Cause geklärt:** `/opt` ist ein am 2026-07-22 aus dem damaligen (unkommittierten) Workspace-Stand deployter Snapshot (`scripts/deploy-to-opt.sh` deployt aus dem Arbeitsverzeichnis, nicht aus einem Commit/Tag); der Workspace ist seither ohne erneuten Deploy weitergewandert (aktuell 1.9.23.0, Git-HEAD sogar erst 1.9.20.0). Das ist normale Dev-Snapshot-Drift auf dieser Maschine, kein eigenständiger Release-Blocker — daher NICHT in blockers_p0, sondern separat unter dev_environment_note. Bewusst kein Redeploy/Neustart des laufenden Dienstes durchgeführt (Owner-Entscheidung 2026-07-28: 'nur dokumentieren'). **Release bleibt blockiert:** **BR-001-OFFLINE** — weiterhin kein vollständiger Backup-Verify-Restore-Zyklus auf freigegebenem Rettungsstick-Medium (unverändert, siehe backup_restore_release_gate.json). **CI:** kein frischer Lauf verfügbar, da in dieser Session nichts gepusht wurde — Referenz-Run 25751304968 (2026-05-15) ist veraltet und nicht mehr aussagekräftig. **Pytest:** heute lokal real erneut ausgeführt: **78 failed, 3957 passed, 5 skipped** (voller Backend-Suite-Lauf, davor 82/3953/5, 4 Fehler in dieser Session durch Router-Subprocess-Fix behoben — siehe backend/core/rescue_bvr_dcc_status.py). Die verbleibenden 78 Fehlschläge sind größtenteils Work-in-Progress der laufenden Rescue-Stick-Feature-Arbeit (bvr-gui-vt-progress-002), nicht neu durch dieses Paket verursacht.",
   "runtime_deploy_gate": {
-    "check_script": "scripts/check-runtime-deploy-gate.sh",
+    "check_script": "scripts/check-runtime-profile-deploy-gate.sh",
+    "legacy_check_script": "scripts/check-runtime-deploy-gate.sh",
     "eval_script": "scripts/runtime_deploy_gate_eval.py",
-    "passed": true,
-    "deploy_drift_status": "green",
-    "verified_at": "2026-05-15",
-    "notes": "Phase-0-Gate grün; schließt BR-001 nicht automatisch."
+    "passed": false,
+    "deploy_drift_status": "red",
+    "verified_at": "2026-07-28",
+    "notes": "profile_gate: project_version_mismatch 1.9.21.2 (laufender /opt-Dienst, Deploy-Snapshot vom 2026-07-22) != 1.9.23.0 (Workspace, unkommittiert). Erwartete Dev-Drift, kein Produktionsproblem — siehe dev_environment_note. Legacy-Skript check-runtime-deploy-gate.sh ist im Release-Profil nicht mehr aussagekräftig (dev-dashboard 404 erwartet) und wurde durch die profil-bewusste Variante ersetzt."
+  },
+  "dev_environment_note": {
+    "date": "2026-07-28",
+    "finding": "/opt/setuphelfer (laufender setuphelfer-backend.service, User setuphelfer) ist ein am 2026-07-22 deployter Snapshot (project_version 1.9.21.2). Git-HEAD dieses Branches ist 1.9.20.0 (2026-07-19); Workspace working tree ist 1.9.23.0 (unkommittiert). scripts/deploy-to-opt.sh deployt direkt aus dem Arbeitsverzeichnis, nicht aus einem Commit — der 22.07-Deploy lief also gegen einen damaligen Zwischenstand.",
+    "decision": "Owner-Entscheidung 2026-07-28: kein Redeploy/Neustart jetzt, nur dokumentieren. /opt bleibt bewusst auf 1.9.21.2.",
+    "not_a_release_blocker_because": "Ein Release entsteht aus einem Commit/Artifact, nicht aus diesem einen lokalen /opt-Snapshot. Die Drift ist ein normales Dev-Betriebsmerkmal dieser Maschine, kein Zustand, der einen Release-Build blockiert."
   },
   "backend_version_gate": {
     "check_script": "scripts/check-backend-version-gate.sh",
-    "runtime_deploy_gate": "scripts/check-runtime-deploy-gate.sh",
+    "runtime_deploy_gate": "scripts/check-runtime-profile-deploy-gate.sh",
     "runtime_deploy_eval": "scripts/runtime_deploy_gate_eval.py",
     "evidence_json": "docs/evidence/release-gates/backend_version_update_gate.json",
     "apt_gap": "docs/evidence/release-gates/apt_update_delivery_gap.json",
-    "package_gate_docs": "docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md"
+    "package_gate_docs": "docs/packaging/PACKAGE_DEPLOYMENT_GATE_DE.md",
+    "note": "backend_version_update_gate.json selbst noch nicht in diesem Durchlauf aktualisiert (Stand 2026-05-15) — separater Schritt, da eigenständiges Gate mit eigenem Owner-Ablauf."
   },
   "blockers_p0": [
-    "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001)"
+    "Kein vollständiger dokumentierter Backup-Verify-Restore-Zyklus auf freigegebenem Medium (BR-001-OFFLINE)"
   ],
-  "pytest_note": "Lokal 2026-05-15: pytest tests/ 1624 passed; Remote CI `ci.yml` Referenz Run 25751304968 success.",
+  "pytest_note": "Lokal 2026-07-28: pytest tests/ (backend, voller Lauf) — 78 failed, 3957 passed, 5 skipped. Vorher in dieser Session (vor Router-Fix): 82 failed, 3953 passed, 5 skipped. Remote-CI-Referenz Run 25751304968 (2026-05-15) veraltet, kein frischer Lauf ohne Push verfügbar.",
   "recommendation": "do_not_release"
 }

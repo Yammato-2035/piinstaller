@@ -748,6 +748,10 @@ class TestBackupTargetMountValidation(unittest.TestCase):
         arch = base / "b.tar.gz"
         validate_backup_target(arch, runner=fake_run)
 
+    @unittest.skipIf(
+        os.name != "nt" and os.getuid() == 0,
+        "chmod-Restriktion wirkungslos unter Root (z.B. GitHub Actions Container)",
+    )
     def test_validate_rejects_unwritable_directory(self) -> None:
         def inner(argv, **kwargs):
             if argv[:2] == ["findmnt", "-J"]:

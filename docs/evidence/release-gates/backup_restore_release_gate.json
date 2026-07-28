@@ -48,5 +48,10 @@
   "open_br_ids": ["BR-002", "BR-003", "BR-004", "BR-005", "BR-006", "BR-007", "BR-008", "BR-009", "BR-010", "BR-011"],
   "partial_br_ids": ["BR-001-LIVE", "BR-012", "BR-013", "BR-016", "BR-017", "BR-018", "BR-019"],
   "blocked_br_ids": ["BR-001-OFFLINE"],
-  "notes": "Pivot 2026-05-20: BR-001-LIVE experimentell/rot, kein Release-Gate. Release blockiert an BR-001-OFFLINE (Rettungsstick) bis Archiv+SHA256+Verify Deep auf HW. BR-004/005 an Offline-Archiv. Kein Fake-Grün."
+  "notes": "Pivot 2026-05-20: BR-001-LIVE experimentell/rot, kein Release-Gate. Release blockiert an BR-001-OFFLINE (Rettungsstick) bis Archiv+SHA256+Verify Deep auf HW. BR-004/005 an Offline-Archiv. Kein Fake-Grün.",
+  "reviewed_no_change": {
+    "date": "2026-07-28",
+    "note": "Re-checked against docs/testing/BACKUP_RESTORE_TEST_MATRIX.md. BR-001-OFFLINE (the release-blocking item) still requires a physical Rescue-Stick boot with a real backup/verify/restore cycle on external hardware — cannot be produced from this environment. BR-011/012/013/016-019 remain Gelb (partially implemented in code, HW acceptance still open). Status/ampel intentionally left untouched rather than re-dated without new physical evidence.",
+    "next_action": "Owner runs the actual BR-001-OFFLINE cycle on the Rescue Stick per docs/architecture/BR-001_GATE_STRATEGY_DE.md, writes the evidence JSON/MD under docs/evidence/release-gates/ and docs/evidence/backup-restore/, then re-runs scripts/check-gate-freshness.sh."
+  }
 }

@@ -14,7 +14,7 @@ export default function PairPage() {
   const [loading, setLoading] = useState(false)
   const [createPayload, setCreatePayload] = useState<remoteClient.PairingCreateResponse | null>(null)
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
-  const setSessionToken = useRemoteStore((s) => s.setSessionToken)
+  const setTokenPair = useRemoteStore((s) => s.setTokenPair)
 
   useEffect(() => {
     if (!createPayload?.payload) {
@@ -36,8 +36,12 @@ export default function PairPage() {
     setLoading(true)
     try {
       const res = await remoteClient.pairingClaim(token)
-      if (res.success && res.session_token) {
-        setSessionToken(res.session_token)
+      if (res.success && res.access_token && res.access_expires_at && res.refresh_token) {
+        setTokenPair({
+          accessToken: res.access_token,
+          accessExpiresAt: res.access_expires_at,
+          refreshToken: res.refresh_token,
+        })
         toast.success('Gerät gekoppelt')
         setPairToken('')
       } else {

@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "schwelle_kritisch_tage": 14,
+  "schwelle_standard_tage": 30,
+  "verdacht_kopiert_abweichung_tage": 7,
+  "kritische_gates": [
+    "release_readiness_gate.json",
+    "hardware_release_gate.json",
+    "backup_restore_release_gate.json",
+    "supply_chain_gate.json",
+    "apt_update_delivery_gap.json",
+    "website_release_gate.json"
+  ],
+  "ausschluss_muster": [
+    "*_NEXT_STEP_DECISION.md",
+    "*_analysis_*.md",
+    "README.md"
+  ]
+}

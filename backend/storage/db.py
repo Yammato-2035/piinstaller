@@ -16,7 +16,7 @@ from core.install_paths import get_state_dir
 _remote_db_path: Optional[Path] = None
 
 # Schema-Version für spätere Migrationen
-SCHEMA_VERSION = 2
+SCHEMA_VERSION = 3
 
 
 def get_remote_db_path() -> Path:
@@ -58,6 +58,30 @@ def init_remote_db(config_dir: Optional[Path] = None) -> None:
             except sqlite3.OperationalError:
                 pass  # Spalte existiert bereits
             conn.execute("UPDATE _schema_version SET version = 2")
+            current = 2
+        if current < 3:
+            # Paket 5 (E-09): kurzlebiger Access-Token (Standard 5 Min) statt
+            # einem einzelnen 24h-Token im localStorage. Refresh-Token wird
+            # bei jeder Nutzung rotiert; previous_refresh_token_hash dient der
+            # Wiederverwendungs-Erkennung (Reuse Detection) — wird ein bereits
+            # rotierter Refresh-Token erneut vorgelegt, ist das ein starkes
+            # Diebstahl-Signal und die gesamte Session wird revoked.
+            # session_token_hash/expires_at (Schema v1/v2) bleiben für die
+            # Übergangszeit erhalten, werden aber von neuem Code nicht mehr
+            # genutzt — siehe core/token_lifecycle.py.
+            for stmt in (
+                "ALTER TABLE sessions ADD COLUMN access_token_hash TEXT",
+                "ALTER TABLE sessions ADD COLUMN access_expires_at TEXT",
+                "ALTER TABLE sessions ADD COLUMN refresh_token_hash TEXT",
+                "ALTER TABLE sessions ADD COLUMN refresh_expires_at TEXT",
+                "ALTER TABLE sessions ADD COLUMN previous_refresh_token_hash TEXT",
+                "ALTER TABLE sessions ADD COLUMN revoked INTEGER NOT NULL DEFAULT 0",
+            ):
+                try:
+                    conn.execute(stmt)
+                except sqlite3.OperationalError:
+                    pass  # Spalte existiert bereits
+            conn.execute("UPDATE _schema_version SET version = 3")
         conn.commit()
 
 
@@ -73,13 +97,22 @@ CREATE TABLE IF NOT EXISTS pairing_tickets (
 );
 
 -- Sessions: nur Hash des Session-Tokens
+-- access_token_hash/refresh_token_hash etc.: Paket 5 (E-09), siehe
+-- core/token_lifecycle.py. session_token_hash/expires_at bleiben als
+-- Legacy-Spalten für die Übergangszeit (Schema v1/v2).
 CREATE TABLE IF NOT EXISTS sessions (
     id TEXT PRIMARY KEY,
     session_token_hash TEXT NOT NULL,
     device_id TEXT NOT NULL,
     created_at TEXT NOT NULL,
     expires_at TEXT NOT NULL,
-    refreshed_at TEXT
+    refreshed_at TEXT,
+    access_token_hash TEXT,
+    access_expires_at TEXT,
+    refresh_token_hash TEXT,
+    refresh_expires_at TEXT,
+    previous_refresh_token_hash TEXT,
+    revoked INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS idx_sessions_device_id ON sessions(device_id);

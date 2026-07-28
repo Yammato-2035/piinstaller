@@ -1,10 +1,16 @@
 {
   "schema": "setuphelfer.evidence.v1",
   "id": "apt_update_delivery_gap",
-  "generated": "2026-05-13T20:00:00Z",
+  "generated": "2026-07-28T20:00:00Z",
   "ampel": "rot",
   "summary": "End-user APT updates for Setuphelfer are not production-ready: no signed APT repository wired to CI; apt update alone does not install new backend bits. **PKG-001** (gelb/rot): runtime deploy gate scripts + package acceptance docs added; full pipeline still open.",
   "package_runtime_gate_id": "PKG-001",
+  "reverified": {
+    "date": "2026-07-28",
+    "method": "grep .github/workflows and scripts for gpg/apt-repository/reprepro/aptly tooling; reviewed release-deb.yml",
+    "result": "no_change — .github/workflows/release-deb.yml still only attaches an unsigned .deb + SHA256SUMS to a GitHub Release; no signed APT repository or GPG signing pipeline exists anywhere in .github/ or scripts/. Status remains accurate, not stale-copied.",
+    "previous_generated": "2026-05-13T20:00:00Z"
+  },
   "distinction": {
     "apt_update": "Refreshes package index metadata only.",
     "apt_upgrade_or_install": "Installs or upgrades packages when a suitable .deb is available from a configured source."

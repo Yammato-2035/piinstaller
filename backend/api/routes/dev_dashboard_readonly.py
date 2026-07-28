@@ -17,31 +17,14 @@ async def dev_dashboard_rescue_bvr_status(request: Request):
     """Read-only: Rescue Stick BVR/GUI/i18n/drift status for PI-RS-BVR-GUI-DCC-001."""
     from pathlib import Path
 
-    from core.rescue_bvr_dcc_status import build_rescue_bvr_dcc_status
+    from core.rescue_bvr_dcc_status import build_rescue_bvr_dcc_status, get_workspace_git_state
     from core.version_commit_drift import build_version_drift_matrix
 
     repo = Path(__file__).resolve().parents[3]
-    workspace_commit = ""
-    workspace_branch = ""
-    origin_main = ""
-    try:
-        import subprocess
-
-        workspace_commit = (
-            subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
-        )
-        workspace_branch = (
-            subprocess.check_output(
-                ["git", "branch", "--show-current"], cwd=repo, text=True
-            ).strip()
-        )
-        origin_main = (
-            subprocess.check_output(
-                ["git", "rev-parse", "origin/main"], cwd=repo, text=True
-            ).strip()
-        )
-    except Exception:
-        pass
+    git_state = get_workspace_git_state(repo)
+    workspace_commit = git_state["workspace_commit"]
+    workspace_branch = git_state["workspace_branch"]
+    origin_main = git_state["origin_main"]
 
     payload_meta = {}
     project_version = ""

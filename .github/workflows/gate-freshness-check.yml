@@ -1,0 +1,45 @@
+# Gate-Freshness-Check (Paket 3, E-08): wöchentliche Prüfung, ob
+# Release-Gates unter docs/evidence/release-gates/ veraltet sind.
+# Nutzt Git-Commit-Datum als primäre Quelle (siehe RETENTION-POLICY.md).
+name: Gate-Freshness-Check
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"   # Jeden Montag 06:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  gate-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (volle Historie für Git-Log)
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0   # WICHTIG: ohne volle Historie liefert git log falsche/keine Daten
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Freshness-Check ausführen
+        run: bash scripts/check-gate-freshness.sh
+
+      - name: Report als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: gate-freshness-report
+          path: docs/evidence/release-gates/GATE_FRESHNESS_REPORT.json
+          retention-days: 90
+
+      - name: Zusammenfassung im Job-Log
+        run: |
+          python3 -c "
+          import json
+          r = json.load(open('docs/evidence/release-gates/GATE_FRESHNESS_REPORT.json'))
+          print(f\"Ampel: {r['ampel']}\")
+          print(f\"Stale-kritisch: {r['anzahl_stale_kritisch']} | Stale: {r['anzahl_stale']} | Unbekannt: {r['anzahl_unbekannt']} | Verdacht kopiert: {r['anzahl_verdacht_kopiert']}\")
+          for g in r['gates']:
+              if g['status'] != 'OK' or g['verdacht_kopiert_statt_neu_generiert']:
+                  print(f\" - {g['datei']}: {g['status']} (Alter: {g['alter_tage']} Tage, Quelle: {g['datumsquelle']}, Verdacht kopiert: {g['verdacht_kopiert_statt_neu_generiert']})\")
+          "

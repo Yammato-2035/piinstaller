@@ -41,6 +41,17 @@ class TestHasMinRole(unittest.TestCase):
         ctx = SessionContext(session_id="s", device_id="d", role="viewer")
         self.assertFalse(has_min_role(ctx, "controller"))
 
+    def test_sync_does_not_outrank_admin(self):
+        """Regressionstest (Paket 5, E-09): 'sync' war versehentlich nach
+        'admin' in ROLE_ORDER einsortiert und hätte damit als privilegierter
+        als admin gegolten, sobald has_min_role/require_min_role für einen
+        admin-Endpunkt genutzt würde. 'sync' ist eine eigenständige, nicht
+        aufsteigende Rolle — role_level() muss dafür den Fallback (0) liefern,
+        nicht 3."""
+        ctx = SessionContext(session_id="s", device_id="d", role="sync")
+        self.assertFalse(has_min_role(ctx, "admin"))
+        self.assertEqual(role_level("sync"), 0)
+
 
 class TestRequireWrite(unittest.TestCase):
     def test_viewer_cannot_write(self):

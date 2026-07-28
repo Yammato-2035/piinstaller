@@ -47,7 +47,12 @@ export interface PairingClaimResponse {
   success: boolean
   message: string
   ticket_id?: string
+  /** @deprecated seit Paket 5 (E-09) — Backend gibt dieses Feld nicht mehr aus. */
   session_token?: string
+  access_token?: string
+  access_expires_at?: string
+  refresh_token?: string
+  refresh_expires_at?: string
 }
 
 export async function pairingClaim(pairToken: string, deviceId?: string, deviceName?: string): Promise<PairingClaimResponse> {
@@ -56,6 +61,33 @@ export async function pairingClaim(pairToken: string, deviceId?: string, deviceN
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pair_token: pairToken, device_id: deviceId, device_name: deviceName }),
+  })
+  if (!res.ok) throw new Error(await res.text().catch(() => res.statusText))
+  return res.json()
+}
+
+export interface RefreshResponse {
+  access_token: string
+  access_expires_at: string
+  refresh_token: string
+  refresh_expires_at: string
+}
+
+/**
+ * Tauscht den Refresh-Token gegen ein neues Access-/Refresh-Token-Paar
+ * (Paket 5, E-09). Der zurückgegebene refresh_token MUSS die zuvor
+ * gespeicherte Kopie ersetzen — der alte Refresh-Token ist ab hier
+ * ungültig (Rotation). Wird ein bereits verbrauchter Refresh-Token erneut
+ * gesendet (z.B. durch einen Bug mit zwei parallelen Refresh-Aufrufen),
+ * lehnt das Backend ab UND revoked die gesamte Session als Sicherheits-
+ * maßnahme — in dem Fall muss neu gepaart werden.
+ */
+export async function refreshSession(refreshToken: string): Promise<RefreshResponse> {
+  const base = getBase()
+  const res = await fetch(`${base}/api/sessions/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: refreshToken }),
   })
   if (!res.ok) throw new Error(await res.text().catch(() => res.statusText))
   return res.json()

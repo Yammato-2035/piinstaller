@@ -38,13 +38,42 @@ jobs:
           pip install -r requirements.txt
           pip install ruff bandit pytest pytest-asyncio httpx
 
+      # Ruff: bestehende Altlast (Stand 2026-07-28: 3603 Findings, nie zuvor
+      # durchgesetzt) macht "sofort hart" unmöglich, ohne CI dauerhaft rot zu
+      # schalten. Übergangsfrist bis 2026-08-11 wie bei Bandit: weich, aber
+      # mit sichtbarem Report-Artifact statt stillem Fake-Green. Danach:
+      # Altlast triagieren, continue-on-error entfernen.
       - name: Ruff (Lint)
-        run: ruff check . --output-format=github
+        id: ruff
+        run: |
+          ruff check . --output-format=json > ruff-report.json || true
+          ruff check . --output-format=github || true
         continue-on-error: true
 
+      - name: Ruff-Report als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruff-report
+          path: backend/ruff-report.json
+          retention-days: 30
+
+      # Bandit: Übergangsfrist bis 2026-08-11 (2 Wochen ab Umstellung).
+      # continue-on-error bleibt bewusst gesetzt, ABER Ergebnis ist sichtbar
+      # (Report als Artifact + Zusammenfassung im Job-Log), damit es kein
+      # stilles Fake-Green ist. Nach der Frist: continue-on-error entfernen.
       - name: Bandit (Security)
-        run: bandit -r . -x ./venv,./.venv,./tests -ll
+        id: bandit
+        run: |
+          bandit -r . -x ./venv,./.venv,./tests -ll -f json -o bandit-report.json || true
+          bandit -r . -x ./venv,./.venv,./tests -ll || true
         continue-on-error: true
+
+      - name: Bandit-Report als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: bandit-report
+          path: backend/bandit-report.json
+          retention-days: 30
 
       - name: Pytest
         env:
@@ -54,4 +83,4 @@ jobs:
         run: |
           set -e
           test -f pytest.ini
-          python -m pytest tests/ -v --tb=short -x
+          python -m pytest tests/ -v --tb=short

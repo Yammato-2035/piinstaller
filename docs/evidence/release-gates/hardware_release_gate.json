@@ -4,5 +4,10 @@
   "ampel": "rot",
   "evidence_complete": false,
   "matrix": "docs/testing/HARDWARE_TEST_MATRIX.md",
-  "open_hw_ids": ["HW-001", "HW-002", "HW-003", "HW-004", "HW-005", "HW-006", "HW-007", "HW-008", "HW-009", "HW-010"]
+  "open_hw_ids": ["HW-001", "HW-002", "HW-003", "HW-004", "HW-005", "HW-006", "HW-007", "HW-008", "HW-009", "HW-010"],
+  "reviewed_no_change": {
+    "date": "2026-07-28",
+    "note": "Content re-read against docs/testing/HARDWARE_TEST_MATRIX.md and docs/evidence/hardware/*.json during Gate-Freshness rollout (Paket 3). All 10 HW-IDs require a physical device run (Raspberry Pi 5, UEFI laptop, USB rescue stick, SD card, external SSD) — nothing here can be produced from a code/CI environment. Status/ampel intentionally left untouched rather than re-dated without new physical evidence, to avoid a false 'freshly generated' signal.",
+    "next_action": "Owner (Volker) schedules and runs the physical device sessions per docs/testing/HARDWARE_TEST_MATRIX.md, writes one docs/evidence/hardware/HW-0XX.json per completed run, then re-runs scripts/check-gate-freshness.sh to confirm this gate is picked up as freshly evidenced."
+  }
 }

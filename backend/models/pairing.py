@@ -52,4 +52,16 @@ class PairingClaimResponse(BaseModel):
     success: bool = Field(..., description="Claim erfolgreich")
     message: str = Field("", description="Hinweistext")
     ticket_id: Optional[str] = Field(None, description="Ticket-ID bei Erfolg")
-    session_token: Optional[str] = Field(None, description="Session-Token bei Erfolg (nur einmal zurückgegeben)")
+    session_token: Optional[str] = Field(
+        None,
+        description="VERALTET seit Paket 5 (E-09) — wird nicht mehr ausgegeben. "
+                     "Bleibt im Schema für Abwärtskompatibilität mit älteren Clients.",
+    )
+    access_token: Optional[str] = Field(
+        None, description="Kurzlebiger Access-Token (Standard 5 Min), Paket 5 (E-09)."
+    )
+    access_expires_at: Optional[str] = Field(None, description="ISO-8601 Ablauf des Access-Tokens")
+    refresh_token: Optional[str] = Field(
+        None, description="Refresh-Token zum Erneuern des Access-Tokens, rotiert bei jeder Nutzung."
+    )
+    refresh_expires_at: Optional[str] = Field(None, description="ISO-8601 Ablauf des Refresh-Tokens")

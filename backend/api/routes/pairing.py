@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse
 
 from core.settings import get_remote_settings
 from core.qr import build_pairing_payload, iso_expires_at
+from core.token_lifecycle import issue_token_pair
 from models.pairing import PairingClaimRequest, PairingCreateResponse, PairingClaimResponse
 from storage.db import get_connection, hash_token, audit_log_insert
 
@@ -125,17 +126,22 @@ async def pairing_claim(body: PairingClaimRequest, request: Request):
         )
         session_ttl = int(config.get("REMOTE_SESSION_TTL_SECONDS") or 86400)
         session_id = str(uuid.uuid4())
-        session_token = secrets.token_urlsafe(32)
-        session_token_hash = hash_token(session_token)
-        session_expires_at = iso_expires_at(session_ttl)
+        # Legacy-Spalten (session_token_hash/expires_at) werden nur noch als
+        # Platzhalter befüllt — neue Clients erhalten Access-/Refresh-Token
+        # über issue_token_pair() (Paket 5, E-09). Platzhalter-Hash ist
+        # absichtlich niemals gültig einlösbar (Zufallswert, nie an Client
+        # ausgegeben).
+        placeholder_hash = hash_token(secrets.token_urlsafe(32))
         conn.execute(
             """INSERT INTO sessions (id, session_token_hash, device_id, created_at, expires_at, refreshed_at)
                VALUES (?, ?, ?, ?, ?, ?)""",
-            (session_id, session_token_hash, device_id, now_iso, session_expires_at, None),
+            (session_id, placeholder_hash, device_id, now_iso, iso_expires_at(session_ttl), None),
         )
         conn.commit()
     finally:
         conn.close()
+
+    token_pair = issue_token_pair(session_id, refresh_ttl_seconds=session_ttl)
 
     try:
         audit_log_insert("session_created", device_id=device_id, details=f"ticket_id={ticket_id}")
@@ -146,5 +152,8 @@ async def pairing_claim(body: PairingClaimRequest, request: Request):
         success=True,
         message="Gerät erfolgreich gekoppelt",
         ticket_id=ticket_id,
-        session_token=session_token,
+        access_token=token_pair.access_token,
+        access_expires_at=token_pair.access_expires_at,
+        refresh_token=token_pair.refresh_token,
+        refresh_expires_at=token_pair.refresh_expires_at,
     )

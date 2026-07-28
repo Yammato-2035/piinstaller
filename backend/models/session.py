@@ -36,3 +36,18 @@ class SessionInfo(BaseModel):
     device_id: str = Field(..., description="Geräte-Kennung")
     role: str = Field(..., description="Rolle: viewer, controller, admin, sync")
     expires_at: str = Field(..., description="ISO-8601 Ablauf")
+
+
+class RefreshRequest(BaseModel):
+    """Request-Body für POST /api/sessions/refresh (Paket 5, E-09).
+    Refresh-Token wird gegen ein neues Access-/Refresh-Token-Paar
+    eingetauscht und dabei rotiert (alter Refresh-Token wird ungültig)."""
+    refresh_token: str = Field(..., description="Aktueller Refresh-Token")
+
+
+class RefreshResponse(BaseModel):
+    """Response für POST /api/sessions/refresh."""
+    access_token: str
+    access_expires_at: str
+    refresh_token: str
+    refresh_expires_at: str

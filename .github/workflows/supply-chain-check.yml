@@ -1,0 +1,65 @@
+# Supply-Chain-Gate (Paket 1b): wöchentliche Prüfung von Drittkomponenten
+# (Python/npm-Abhängigkeiten, Versionsvergleich + CVE-Scan) gegen
+# docs/evidence/supply-chain/component-inventory.json.
+# Ergebnis: docs/evidence/release-gates/supply_chain_gate.json
+name: Supply-Chain-Check
+
+on:
+  schedule:
+    # Jeden Montag 06:00 UTC
+    - cron: "0 6 * * 1"
+  workflow_dispatch: {}   # manuell auslösbar über Actions-Tab
+
+jobs:
+  supply-chain-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: pip-audit (Python-CVE-Scan)
+        working-directory: backend
+        run: |
+          python -m pip install --upgrade pip pip-audit
+          pip install -r requirements.txt
+          pip-audit -r requirements.txt -f json -o pip-audit-report.json || true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: npm audit (JS-CVE-Scan)
+        working-directory: frontend
+        run: |
+          npm install --package-lock-only || true
+          npm audit --json > npm-audit-report.json || true
+
+      - name: Supply-Chain-Gate auswerten
+        run: python3 scripts/supply_chain_check.py
+
+      - name: Gate + Reports als Artifact hochladen
+        uses: actions/upload-artifact@v4
+        with:
+          name: supply-chain-gate
+          path: |
+            docs/evidence/release-gates/supply_chain_gate.json
+            backend/pip-audit-report.json
+            frontend/npm-audit-report.json
+          retention-days: 90
+
+      - name: Ampel-Status im Job-Log anzeigen
+        run: |
+          echo "=== Supply-Chain-Gate Ergebnis ==="
+          cat docs/evidence/release-gates/supply_chain_gate.json | python3 -c "
+          import json, sys
+          g = json.load(sys.stdin)
+          print(f\"Ampel: {g['ampel']}\")
+          print(f\"Empfehlung: {g['empfehlung']}\")
+          print(f\"Geprüft: {g['geprueft_anzahl']}, Übersprungen: {g['uebersprungen_anzahl']}\")
+          "

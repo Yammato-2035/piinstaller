@@ -13,8 +13,13 @@ from core.auth import SessionContext
 # Erlaubte Rollen (eine Quelle der Wahrheit)
 ROLES: Tuple[str, ...] = ("viewer", "controller", "admin", "sync")
 
-# Hierarchie für "mindestens Rolle X": Index höher = mehr Rechte
-ROLE_ORDER = ("viewer", "controller", "admin", "sync")
+# Hierarchie für "mindestens Rolle X": Index höher = mehr Rechte.
+# WICHTIG: "sync" ist eine eigenständige, eng begrenzte Rolle für künftige
+# Sync-Integration (Dateisync/CalDAV) — KEINE Erweiterung von "admin" und
+# darf admin nicht überranken. Getrennt von der Hierarchie geführt, damit
+# has_min_role()/require_min_role() nicht versehentlich "sync" als
+# privilegierter als "admin" behandeln (siehe E-09-Fix, Paket 5).
+ROLE_ORDER = ("viewer", "controller", "admin")
 
 
 def role_level(role: str) -> int:

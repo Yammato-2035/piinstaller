@@ -12,7 +12,7 @@ interface DashboardPageProps {
 }
 
 export default function DashboardPage({ onOpenModule }: DashboardPageProps) {
-  const sessionToken = useRemoteStore((s) => s.sessionToken)
+  const refreshToken = useRemoteStore((s) => s.refreshToken)
   const deviceInfo = useRemoteStore((s) => s.deviceInfo)
   const modules = useRemoteStore((s) => s.modules)
   const error = useRemoteStore((s) => s.error)
@@ -21,11 +21,11 @@ export default function DashboardPage({ onOpenModule }: DashboardPageProps) {
   const clearSession = useRemoteStore((s) => s.clearSession)
 
   useEffect(() => {
-    if (sessionToken) {
+    if (refreshToken) {
       fetchDeviceInfo()
       fetchModules()
     }
-  }, [sessionToken, fetchDeviceInfo, fetchModules])
+  }, [refreshToken, fetchDeviceInfo, fetchModules])
 
   return (
     <div className="p-4 max-w-lg mx-auto space-y-6">
