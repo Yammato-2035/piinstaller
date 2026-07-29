@@ -8,6 +8,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+# Bare relative paths below only resolve when cwd == repo root; anchor them
+# explicitly since pytest is normally invoked with cwd == backend/ (see
+# .github/workflows/ci.yml `working-directory: backend`).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 from core.rescue_physical_e2e_auto_e2e_state import (
     cancel_requested,
     heartbeat_fresh,
@@ -69,21 +74,21 @@ def _sabrent_candidate(**overrides) -> LabDiskCandidate:
 
 class ServiceIsolationTests(unittest.TestCase):
     def test_msi_evidence_unit_has_no_tty(self):
-        unit = Path("scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-msi-evidence.service").read_text(
+        unit = (_REPO_ROOT / "scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-msi-evidence.service").read_text(
             encoding="utf-8"
         )
         self.assertIn("StandardInput=null", unit)
         self.assertIn("TTYPath=", unit)
 
     def test_physical_e2e_unit_has_no_tty(self):
-        unit = Path("scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-physical-e2e.service").read_text(
+        unit = (_REPO_ROOT / "scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-physical-e2e.service").read_text(
             encoding="utf-8"
         )
         self.assertIn("StandardInput=null", unit)
         self.assertIn("TTYPath=", unit)
 
     def test_tui_service_owns_tty(self):
-        unit = Path("scripts/rescue-live/image/systemd/setuphelfer-rescue-tui.service").read_text(encoding="utf-8")
+        unit = (_REPO_ROOT / "scripts/rescue-live/image/systemd/setuphelfer-rescue-tui.service").read_text(encoding="utf-8")
         self.assertIn("TTYPath=/dev/tty1", unit)
 
 
@@ -112,7 +117,7 @@ class TuiAutoLockTests(unittest.TestCase):
         self.assertTrue(shutdown_requested())
 
     def test_tui_script_has_auto_lock_mode(self):
-        tui = Path("scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
+        tui = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
         self.assertIn("auto_physical_e2e_locked", tui)
         self.assertIn("setuphelfer-rescue-auto-e2e-tui-display.py", tui)
         self.assertIn("refresh_auto_e2e_phase_from_runtime", tui)
@@ -152,7 +157,7 @@ class MsiEvidenceGateTests(unittest.TestCase):
             self.assertTrue(msi_evidence_complete_ok(logs))
 
     def test_physical_e2e_waits_for_setup_logs_not_msi_marker(self):
-        script = Path("scripts/rescue-live/image/setuphelfer-rescue-auto-physical-e2e").read_text(encoding="utf-8")
+        script = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-auto-physical-e2e").read_text(encoding="utf-8")
         self.assertIn("Waiting for SETUP_LOGS with setuphelfer/", script)
         self.assertIn("_progress_write", script)
         self.assertIn("physical-progress.json", script)
@@ -319,7 +324,7 @@ class HeartbeatFailsafeTests(unittest.TestCase):
                 self.assertTrue(heartbeat_fresh(max_age=30))
 
     def test_failsafe_script_checks_heartbeat(self):
-        script = Path("scripts/rescue-live/image/setuphelfer-rescue-lab-auto-shutdown-failsafe").read_text(
+        script = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-lab-auto-shutdown-failsafe").read_text(
             encoding="utf-8"
         )
         self.assertIn("evaluate_lab_failsafe", script)
@@ -332,7 +337,7 @@ class UnattendedExitStatusTests(unittest.TestCase):
         self.assertFalse(is_physical_e2e_success_status("blocked"))
 
     def test_wrapper_uses_success_helper(self):
-        common = Path("scripts/rescue-live/image/setuphelfer-rescue-common.sh").read_text(encoding="utf-8")
+        common = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-common.sh").read_text(encoding="utf-8")
         self.assertIn("is_physical_e2e_success_status", common)
 
 
@@ -392,7 +397,7 @@ class UnattendedDestructiveSmokeTests(unittest.TestCase):
                 }
                 from core.rescue_physical_e2e_unattended import run_unattended_msi_physical_e2e
 
-                result = run_unattended_msi_physical_e2e(setup_logs_base=logs, repo_root=Path("."))
+                result = run_unattended_msi_physical_e2e(setup_logs_base=logs, repo_root=_REPO_ROOT)
                 self.assertNotEqual(result["status"], "physical_automation_smoke_passed_external_target_pending")
                 self.assertEqual(result["layout_mode"], "dedicated_external_lab_hdd")
                 rc = load_run_control(logs)

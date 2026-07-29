@@ -8,6 +8,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+# Bare relative paths below only resolve when cwd == repo root; anchor them
+# explicitly since pytest is normally invoked with cwd == backend/ (see
+# .github/workflows/ci.yml `working-directory: backend`).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 from core.rescue_evidence_completeness import validate_session_evidence
 from core.rescue_privacy_redaction import build_privacy_summary, redact_mapping
 from core.rescue_session_state import (
@@ -87,19 +92,19 @@ class StaleArtifactTests(unittest.TestCase):
 
 class TtyGateScriptTests(unittest.TestCase):
     def test_check_script_exists(self):
-        path = Path("scripts/check-rescue-exclusive-tty-owner.sh")
+        path = (_REPO_ROOT / "scripts/check-rescue-exclusive-tty-owner.sh")
         self.assertTrue(path.is_file())
 
 
 class AutoMsiEvidenceUnitTests(unittest.TestCase):
     def test_no_start_assistant_dependency(self):
-        unit = Path("scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-msi-evidence.service").read_text(
+        unit = (_REPO_ROOT / "scripts/rescue-live/image/systemd/setuphelfer-rescue-auto-msi-evidence.service").read_text(
             encoding="utf-8"
         )
         self.assertNotIn("start-assistant", unit)
 
     def test_running_marker_in_script(self):
-        script = Path("scripts/rescue-live/image/setuphelfer-rescue-auto-msi-evidence").read_text(encoding="utf-8")
+        script = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-auto-msi-evidence").read_text(encoding="utf-8")
         self.assertIn("auto-msi-evidence.running", script)
 
 

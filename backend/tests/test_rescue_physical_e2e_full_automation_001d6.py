@@ -9,6 +9,11 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
+# Bare relative paths below only resolve when cwd == repo root; anchor them
+# explicitly since pytest is normally invoked with cwd == backend/ (see
+# .github/workflows/ci.yml `working-directory: backend`).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 from core.rescue_physical_e2e_auto_e2e_state import (
     AUTO_E2E_PHASES,
     PHASE_LABELS_DE,
@@ -35,7 +40,7 @@ from core.rescue_physical_e2e_run_control import (
 
 class TuiLiveRefreshTests(unittest.TestCase):
     def test_tui_display_script_exists(self):
-        path = Path("scripts/rescue-live/image/setuphelfer-rescue-auto-e2e-tui-display.py")
+        path = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-auto-e2e-tui-display.py")
         self.assertTrue(path.is_file())
         text = path.read_text(encoding="utf-8")
         self.assertIn("REFRESH_SEC", text)
@@ -44,7 +49,7 @@ class TuiLiveRefreshTests(unittest.TestCase):
         self.assertIn("request_shutdown", text)
 
     def test_tui_shell_invokes_python_display(self):
-        tui = Path("scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
+        tui = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
         self.assertIn("setuphelfer-rescue-auto-e2e-tui-display.py", tui)
 
     def test_phase_labels_cover_001d6_states(self):
@@ -116,17 +121,17 @@ class Failsafe001D6Tests(unittest.TestCase):
         self.assertTrue(result["allow_shutdown"])
 
     def test_failsafe_script_uses_evaluate_lab_failsafe(self):
-        script = Path("scripts/rescue-live/image/setuphelfer-rescue-lab-auto-shutdown-failsafe").read_text(encoding="utf-8")
+        script = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-lab-auto-shutdown-failsafe").read_text(encoding="utf-8")
         self.assertIn("evaluate_lab_failsafe", script)
         self.assertNotIn("420", script)
 
     def test_main_timer_is_3600_not_420(self):
-        timer = Path("scripts/rescue-live/image/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer").read_text(encoding="utf-8")
+        timer = (_REPO_ROOT / "scripts/rescue-live/image/systemd/setuphelfer-rescue-lab-auto-shutdown-failsafe.timer").read_text(encoding="utf-8")
         self.assertIn("OnBootSec=3600s", timer)
         self.assertNotIn("OnBootSec=420s", timer)
 
     def test_watchdog_timer_present(self):
-        timer = Path("scripts/rescue-live/image/systemd/setuphelfer-rescue-lab-auto-shutdown-watchdog.timer").read_text(encoding="utf-8")
+        timer = (_REPO_ROOT / "scripts/rescue-live/image/systemd/setuphelfer-rescue-lab-auto-shutdown-watchdog.timer").read_text(encoding="utf-8")
         self.assertIn("OnBootSec=300s", timer)
 
     def test_timing_constants(self):
@@ -218,7 +223,7 @@ class FsckEvidenceRedactionTests(unittest.TestCase):
             "setup_logs_fsck_precheck.redacted.json",
             "setup_logs_fsck_result.redacted.json",
         ):
-            path = Path("docs/evidence/e2e_live_001d") / name
+            path = (_REPO_ROOT / "docs/evidence/e2e_live_001d") / name
             self.assertTrue(path.is_file(), f"missing {name}")
 
 

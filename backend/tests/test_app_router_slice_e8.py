@@ -90,11 +90,13 @@ class TestAppRouterSliceE8(unittest.TestCase):
 
     def test_handlers_are_get_only_for_e8(self) -> None:
         text = (_backend / "api/routes/dev_dashboard_readonly.py").read_text(encoding="utf-8")
-        # E.4 (5) + E.8 (3) + status facade (1) + products (1) + rescue-bvr-status (1) = 11 GET handlers
-        self.assertEqual(text.count("@router.get"), 11)
+        # E.4 (5) + E.8 (3) + status facade (1) + products (1) = 10 GET handlers
+        # (rescue-bvr-status moved to api/routes/status.py — /api/dev-dashboard/*
+        # is forbidden in the release profile, so it can't live here.)
+        self.assertEqual(text.count("@router.get"), 10)
         self.assertNotIn("@router.post", text)
 
     def test_readonly_router_has_nine_get_handlers_total(self) -> None:
         tbl = _route_table(dev_dashboard_readonly_router)
         get_routes = [p for m, p in tbl if m == "GET"]
-        self.assertEqual(len(get_routes), 11)
+        self.assertEqual(len(get_routes), 10)

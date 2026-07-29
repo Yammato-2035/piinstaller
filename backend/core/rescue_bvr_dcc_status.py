@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -16,30 +15,6 @@ TASK_ID = "PI-RS-BVR-GUI-DCC-001"
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-
-
-def _git(repo_root: Path, *args: str) -> str:
-    try:
-        proc = subprocess.run(
-            ["git", *args],
-            cwd=repo_root,
-            capture_output=True,
-            text=True,
-            timeout=2.0,
-            check=False,
-        )
-        return (proc.stdout or "").strip() if proc.returncode == 0 else ""
-    except Exception:
-        return ""
-
-
-def get_workspace_git_state(repo_root: Path) -> dict[str, str]:
-    """Workspace commit/branch and origin/main for BVR status; empty strings on any failure."""
-    return {
-        "workspace_commit": _git(repo_root, "rev-parse", "HEAD"),
-        "workspace_branch": _git(repo_root, "branch", "--show-current"),
-        "origin_main": _git(repo_root, "rev-parse", "origin/main"),
-    }
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:

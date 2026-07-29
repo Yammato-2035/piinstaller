@@ -9,6 +9,11 @@ import unittest
 from pathlib import Path
 from unittest import mock
 
+# Bare relative paths below only resolve when cwd == repo root; anchor them
+# explicitly since pytest is normally invoked with cwd == backend/ (see
+# .github/workflows/ci.yml `working-directory: backend`).
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+
 from core.rescue_bvr_release_status import build_release_rescue_bvr_status
 from core.rescue_canonical_bvr_progress import (
     CANONICAL_PHASES,
@@ -98,14 +103,14 @@ class ReleaseStatusTests(unittest.TestCase):
             self.assertIn("bvr", status)
 
     def test_route_exists_in_status_module(self) -> None:
-        text = Path("backend/api/routes/status.py").read_text(encoding="utf-8")
+        text = (_REPO_ROOT / "backend/api/routes/status.py").read_text(encoding="utf-8")
         self.assertIn('/api/status/rescue-bvr', text)
         self.assertIn("build_release_rescue_bvr_status", text)
 
 
 class WatchdogHealthPatternTests(unittest.TestCase):
     def test_chromium_pattern_includes_auto_e2e(self) -> None:
-        common = Path("scripts/rescue-live/image/setuphelfer-rescue-common.sh").read_text(
+        common = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-common.sh").read_text(
             encoding="utf-8"
         )
         self.assertIn("auto-e2e-progress", common)
@@ -114,7 +119,7 @@ class WatchdogHealthPatternTests(unittest.TestCase):
         self.assertIn("rescue.gui.vt.none_available", common)
 
     def test_watchdog_uses_select_gui_vt(self) -> None:
-        wd = Path("scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh").read_text(
+        wd = (_REPO_ROOT / "scripts/rescue-live/image/setuphelfer-rescue-gui-watchdog.sh").read_text(
             encoding="utf-8"
         )
         self.assertIn("setuphelfer_rescue_select_gui_vt", wd)
