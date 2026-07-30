@@ -33,13 +33,24 @@ def _run(cmd: list[str], *, timeout: int = 15) -> tuple[str, bool]:
     return f"[error:{type(exc).__name__}]", True
 
 
-def _parse_lshw_summary(text: str) -> dict[str, Any]:
-  vendor = re.search(r"vendor:\s*(.+)", text)
-  product = re.search(r"product:\s*(.+)", text)
-  return {
-    "vendor": vendor.group(1).strip() if vendor else None,
-    "product": product.group(1).strip() if product else None,
-  }
+def _extract_dmidecode_field(text: str, label: str) -> str | None:
+  m = re.search(rf"{re.escape(label)}:\s*(.+)", text)
+  if not m:
+    return None
+  value = m.group(1).strip()
+  return value or None
+
+
+_DMI_SYSFS_ROOT = "/sys/class/dmi/id"
+
+
+def _read_dmi_sysfs(key: str) -> str | None:
+  try:
+    with open(f"{_DMI_SYSFS_ROOT}/{key}", encoding="utf-8", errors="replace") as fh:
+      value = fh.read().strip()
+      return value or None
+  except OSError:
+    return None
 
 
 def _collect_system() -> dict[str, Any]:
@@ -58,9 +69,17 @@ def _collect_system() -> dict[str, Any]:
   missing: list[str] = []
   if not dm_ok:
     missing.append("dmidecode")
+  # Read sysfs DMI first (no subprocess, matches hardware_discovery.get_motherboard_info()
+  # and rescue_msi_diagnostics._dmi_fields()); dmidecode text is a fallback for manufacturer/model.
+  manufacturer = _read_dmi_sysfs("sys_vendor") or (
+    _extract_dmidecode_field(dmidecode, "Manufacturer") if dm_ok else None
+  )
+  model = _read_dmi_sysfs("product_name") or (
+    _extract_dmidecode_field(dmidecode, "Product Name") if dm_ok else None
+  )
   return {
-    "manufacturer": _parse_lshw_summary(dmidecode).get("vendor") if dm_ok else None,
-    "model": _parse_lshw_summary(dmidecode).get("product") if dm_ok else None,
+    "manufacturer": manufacturer,
+    "model": model,
     "bios_uefi": "uefi" if boot_mode == "uefi" else "legacy_or_unknown",
     "boot_mode": boot_mode,
     "secure_boot_status": secure_boot,
@@ -71,12 +90,57 @@ def _collect_system() -> dict[str, Any]:
   }
 
 
+def _collect_mainboard() -> dict[str, Any]:
+  board_vendor = _read_dmi_sysfs("board_vendor")
+  board_name = _read_dmi_sysfs("board_name")
+  bios_vendor = _read_dmi_sysfs("bios_vendor")
+  bios_version = _read_dmi_sysfs("bios_version")
+  bios_release_date = _read_dmi_sysfs("bios_date")
+  missing: list[str] = []
+  if board_vendor is None and board_name is None:
+    baseboard, bb_ok = _run(["dmidecode", "-t", "baseboard"])
+    if bb_ok:
+      board_vendor = board_vendor or _extract_dmidecode_field(baseboard, "Manufacturer")
+      board_name = board_name or _extract_dmidecode_field(baseboard, "Product Name")
+    else:
+      missing.append("dmidecode")
+  if bios_vendor is None and bios_version is None:
+    bios, bios_ok = _run(["dmidecode", "-t", "bios"])
+    if bios_ok:
+      bios_vendor = bios_vendor or _extract_dmidecode_field(bios, "Vendor")
+      bios_version = bios_version or _extract_dmidecode_field(bios, "Version")
+      bios_release_date = bios_release_date or _extract_dmidecode_field(bios, "Release Date")
+    elif "dmidecode" not in missing:
+      missing.append("dmidecode")
+  return {
+    "board_vendor": board_vendor,
+    "board_name": board_name,
+    "bios_vendor": bios_vendor,
+    "bios_version": bios_version,
+    "bios_release_date": bios_release_date,
+    "missing_tools": missing,
+  }
+
+
+_CPU_VENDOR_DISPLAY: dict[str, str] = {
+  "genuineintel": "Intel",
+  "authenticamd": "AMD",
+}
+
+
+def _cpu_vendor_display_name(vendor_id: str | None) -> str:
+  if not vendor_id:
+    return "unknown"
+  return _CPU_VENDOR_DISPLAY.get(vendor_id.strip().lower(), vendor_id.strip())
+
+
 def _collect_cpu_ram() -> dict[str, Any]:
   lscpu, lscpu_ok = _run(["lscpu"])
   mem, mem_ok = _run(["grep", "MemTotal", "/proc/meminfo"])
   vendor = None
   arch = None
   family = None
+  model_name = None
   if lscpu_ok:
     for line in lscpu.splitlines():
       if line.startswith("Vendor ID:"):
@@ -85,6 +149,8 @@ def _collect_cpu_ram() -> dict[str, Any]:
         arch = line.split(":", 1)[1].strip()
       if line.startswith("CPU family:"):
         family = line.split(":", 1)[1].strip()
+      if line.startswith("Model name:"):
+        model_name = line.split(":", 1)[1].strip()
   ram_gb = None
   if mem_ok and mem:
     m = re.search(r"(\d+)", mem)
@@ -95,6 +161,8 @@ def _collect_cpu_ram() -> dict[str, Any]:
     missing.append("lscpu")
   return {
     "cpu_vendor": vendor,
+    "cpu_vendor_display": _cpu_vendor_display_name(vendor),
+    "cpu_model_name": model_name,
     "cpu_family": family,
     "architecture": arch,
     "ram_size_gb_approx": ram_gb,
@@ -102,27 +170,59 @@ def _collect_cpu_ram() -> dict[str, Any]:
   }
 
 
+_AMD_INTEGRATED_GPU_HINTS = (
+  "radeon graphics", "vega", "raphael", "phoenix", "renoir", "cezanne",
+  "rembrandt", "vangogh", "stoney", "picasso",
+)
+
+
 def _collect_gpu() -> dict[str, Any]:
   lspci, ok = _run(["lspci", "-nnk"])
   vendors: list[str] = []
   drivers: list[str] = []
+  descriptions: list[str] = []
   nvidia_compat = False
+  integrated_present = False
+  discrete_present = False
   if ok:
     for line in lspci.splitlines():
       if re.search(r"VGA|3D|Display", line, re.I):
-        if "Intel" in line:
+        descriptions.append(line.strip())
+        line_lower = line.lower()
+        if "intel" in line_lower:
           vendors.append("intel")
-        if "AMD" in line or "ATI" in line:
+          integrated_present = True
+        if "amd" in line_lower or "ati" in line_lower:
           vendors.append("amd")
-        if "NVIDIA" in line:
+          if any(hint in line_lower for hint in _AMD_INTEGRATED_GPU_HINTS):
+            integrated_present = True
+          else:
+            discrete_present = True
+        if "nvidia" in line_lower:
           vendors.append("nvidia")
+          discrete_present = True
       if "Kernel driver in use:" in line:
         drivers.append(line.split(":", 1)[1].strip())
       if "nouveau" in line.lower() or "nvidia" in line.lower():
         nvidia_compat = "nvidia" in " ".join(vendors)
+  vendor_set = sorted(set(vendors))
+  driver_text = " ".join(drivers).lower()
+  # Vendor detected via PCI but no matching kernel driver bound to any of its
+  # devices — a plausible "this machine needs an additional driver" signal.
+  driver_gaps = [
+    v
+    for v in vendor_set
+    if (v == "intel" and not any(d in driver_text for d in ("i915", "xe")))
+    or (v == "amd" and not any(d in driver_text for d in ("amdgpu", "radeon")))
+    or (v == "nvidia" and "nvidia" not in driver_text)
+  ]
   return {
-    "vendors": sorted(set(vendors)),
+    "vendors": vendor_set,
+    "descriptions": descriptions,
     "drivers_loaded": drivers,
+    "integrated_graphics_present": integrated_present,
+    "discrete_graphics_present": discrete_present,
+    "vendor_driver_gaps": driver_gaps,
     "nvidia_compat_mode_detected": nvidia_compat,
     "missing_tools": [] if ok else ["lspci"],
   }
@@ -232,6 +332,17 @@ def derive_issue_codes(assessment: dict[str, Any]) -> list[str]:
   fw = assessment.get("firmware") or {}
   if fw.get("dmesg_missing_firmware_redacted"):
     codes.append(RescueIssueCodeV2.DMESG_FIRMWARE_MISSING.value)
+  mainboard = assessment.get("mainboard") or {}
+  if mainboard and not mainboard.get("bios_version"):
+    codes.append(RescueIssueCodeV2.BIOS_INFO_UNAVAILABLE.value)
+  cpu_ram = assessment.get("cpu_ram") or {}
+  if cpu_ram and not cpu_ram.get("cpu_vendor"):
+    codes.append(RescueIssueCodeV2.CPU_INFO_PARTIAL.value)
+  gpu = assessment.get("gpu") or {}
+  if gpu.get("vendor_driver_gaps"):
+    codes.append(RescueIssueCodeV2.GPU_DRIVER_MISSING.value)
+  if gpu.get("nvidia_compat_mode_detected"):
+    codes.append(RescueIssueCodeV2.NVIDIA_COMPAT_MODE.value)
   return sorted(set(codes))
 
 
@@ -243,6 +354,10 @@ def derive_recommendation_codes(issue_codes: list[str]) -> list[str]:
     recs.append(RescueRecommendationCodeV2.REVIEW_STORAGE_SMART.value)
   if RescueIssueCodeV2.PCIE_AER_FATAL.value in issue_codes:
     recs.append(RescueRecommendationCodeV2.DESTRUCTIVE_BLOCKED_MANUAL_GUIDE.value)
+  if RescueIssueCodeV2.GPU_DRIVER_MISSING.value in issue_codes:
+    recs.append(RescueRecommendationCodeV2.REVIEW_GPU_DRIVER_COVERAGE.value)
+  if RescueIssueCodeV2.NVIDIA_COMPAT_MODE.value in issue_codes:
+    recs.append(RescueRecommendationCodeV2.REVIEW_GPU_DRIVER_COVERAGE.value)
   return sorted(set(recs))
 
 
@@ -253,6 +368,7 @@ def build_system_assessment_v2(*, rescue_version: str | None = None) -> dict[str
     "schema_version": ASSESSMENT_SCHEMA_VERSION,
     "collected_at": _utc_now(),
     "system": system,
+    "mainboard": _collect_mainboard(),
     "cpu_ram": _collect_cpu_ram(),
     "gpu": _collect_gpu(),
     "storage": _collect_storage(),

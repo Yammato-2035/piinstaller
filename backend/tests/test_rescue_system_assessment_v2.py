@@ -33,6 +33,28 @@ class RescueSystemAssessmentV2Tests(unittest.TestCase):
         codes = derive_issue_codes({"storage": {"missing_tools": ["smartctl"]}})
         self.assertIn("missing_tool", codes)
 
+    def test_bios_info_unavailable_issue_code(self) -> None:
+        codes = derive_issue_codes({"mainboard": {"bios_version": None, "missing_tools": []}})
+        self.assertIn("bios_info_unavailable", codes)
+
+    def test_cpu_info_partial_issue_code(self) -> None:
+        codes = derive_issue_codes({"cpu_ram": {"cpu_vendor": None, "missing_tools": []}})
+        self.assertIn("cpu_info_partial", codes)
+
+    def test_gpu_driver_missing_issue_code(self) -> None:
+        codes = derive_issue_codes({"gpu": {"vendor_driver_gaps": ["nvidia"], "missing_tools": []}})
+        self.assertIn("gpu_driver_missing", codes)
+
+    def test_live_build_includes_mainboard_and_cpu_vendor_display(self) -> None:
+        result = build_system_assessment_v2(rescue_version="1.9.17.0")
+        assessment = result["assessment"]
+        self.assertIn("mainboard", assessment)
+        self.assertIn("board_vendor", assessment["mainboard"])
+        self.assertIn("bios_version", assessment["mainboard"])
+        self.assertIn("cpu_vendor_display", assessment["cpu_ram"])
+        self.assertIn("integrated_graphics_present", assessment["gpu"])
+        self.assertIn("vendor_driver_gaps", assessment["gpu"])
+
 
 if __name__ == "__main__":
     unittest.main()

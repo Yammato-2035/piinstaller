@@ -80,7 +80,26 @@ Beispiel-API-Host (Doku): `https://operator.internal.setuphelfer.example`
 
 ---
 
-## 8. Referenzen
+## 8. Verfügbare Public-Contract-Felder für Hardware-/Treiberanzeige
+
+`backend/core/rescue_system_assessment_v2.py` (`system-assessment.v2`, öffentlich, read-only) liefert seit dieser Erweiterung zusätzlich:
+
+| Feld | Beschreibung |
+|------|--------------|
+| `mainboard.board_vendor` / `mainboard.board_name` | Mainboard-Hersteller/-Modell (DMI) |
+| `mainboard.bios_vendor` / `mainboard.bios_version` / `mainboard.bios_release_date` | BIOS-Informationen (DMI) |
+| `cpu_ram.cpu_vendor_display` | Normalisiert: `Intel` / `AMD` / `unknown` |
+| `gpu.integrated_graphics_present` / `gpu.discrete_graphics_present` | Grafikeinheit(en) vorhanden |
+| `gpu.vendors` | GPU-Hersteller (`intel`/`amd`/`nvidia`) |
+| `gpu.vendor_driver_gaps` | Hersteller ohne gebundenen Kernel-Treiber (Treiberbedarf-Signal) |
+| `issue_codes` | u. a. `bios_info_unavailable`, `cpu_info_partial`, `gpu_driver_missing`, `nvidia_compat_mode` |
+| `recommendation_codes` | u. a. `review_gpu_driver_coverage` (plan-only) |
+
+Das private Operator-Dashboard kann diese Felder aus dem Assessment-Bundle (`rescue.master_assessment_bundle.v1` bzw. der Telemetrie-Payload aus `rescue_assessment_telemetry_v1.py`) übernehmen, statt eigene Hardware-Erkennung zu implementieren. Alle Werte sind bereits durch `redact_assessment_payload()` gelaufen.
+
+---
+
+## 9. Referenzen
 
 - [`SETUPHELFER_PUBLIC_PRIVATE_STRATEGY.md`](../architecture/SETUPHELFER_PUBLIC_PRIVATE_STRATEGY.md)
 - [`NOTIFICATION_EVENT_CONTRACT.md`](../architecture/NOTIFICATION_EVENT_CONTRACT.md)

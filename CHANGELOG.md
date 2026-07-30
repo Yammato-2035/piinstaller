@@ -7,8 +7,17 @@ Details und Versionsschema: [docs/developer/VERSIONING.md](./docs/developer/VERS
 
 ## [Unreleased]
 
+### Fixed
+
+- Rettungsstick: `setuphelfer_rescue_console_owner_transition()` verschluckte Python-Fehler bisher vollständig (`2>/dev/null || return 0`); Fehler landen jetzt in `console-owner-transition-errors.log` statt spurlos zu verschwinden — relevant für den bislang ungeklärten `console_owner=boot_progress`-Befund aus PI-RS-MSI-RETEST-003B.
+- Rettungsstick: statischer `phase_map`-Fallback in `setuphelfer-rescue-boot-progress` (griff bei leerem `_load_plan()`) erzeugte immer die Phase `x11_starting`, unabhängig vom MSI-Compat-Modus (bestätigte Root Cause aus PI-RS-MSI-GUI-003). Fallback ist jetzt `SAFE_TTY`-bewusst und protokolliert den Rückfall statt ihn stillschweigend zu nehmen.
+- `rescue_system_assessment_v2.py`: `system.manufacturer`/`system.model` waren wegen Regex/Feldnamen-Mismatch (`_parse_lshw_summary` erwartete `vendor:`/`product:`, `dmidecode -t system` liefert aber `Manufacturer:`/`Product Name:`) immer `None`; werden jetzt primär über `/sys/class/dmi/id` gelesen (Fallback: dmidecode-Parsing mit korrekten Feldnamen).
+
 ### Added
 
+- `rescue_system_assessment_v2.py`: neue `mainboard`-Sektion (Board-/BIOS-Hersteller, BIOS-Version/-Datum), `cpu_ram.cpu_vendor_display` (Intel/AMD/unknown), `gpu.integrated_graphics_present`/`discrete_graphics_present`/`vendor_driver_gaps`; neue Issue-/Recommendation-Codes (`bios_info_unavailable`, `cpu_info_partial`, `gpu_driver_missing`, `review_gpu_driver_coverage`) als Grundlage für die geplante Cloudserver-Dashboard-Anzeige (Treiberbedarf). Siehe Operator-Dashboard-Handoff im privaten Handoff-Verzeichnis (`docs/private-handoff/`), Abschnitt 8.
+- `rescue_telemetry_opt_in_state.py` + `GET/POST /api/rescue/network/telemetry/opt-in`: Backend für den bisher fehlenden Telemetrie-Opt-in-Endpunkt (Frontend-Toggle in `RescueSettingsPanel.tsx` rief zuvor eine nicht existierende Route auf).
+- `rescue_assessment_telemetry_v1.py`: reale, bereits redigierte Assessment-Daten werden — nur bei aktivem Opt-in — direkt nach `GET /api/rescue/master-assessment-bundle-v1` in die bestehende Offline-First-Telemetrie-Queue (`telemetry.rescue.beta.v2`) eingereiht, statt einen separaten manuellen Sendeschritt zu erfordern. Versand selbst bleibt über die bestehende Reachability-/Warteschlangen-Logik gesteuert.
 - **PI-RS-MSI-GUI-002:** Payload **1.10.0.15** — GUI unter MSI-Compat/nomodeset gesperrt; kein openvt/chvt/startx; TUI primär; Operator-Meldung; Repack + Content-Check; kein USB-Write.
 - **PI-RS-MSI-FIX-001:** Payload **1.10.0.14** — Console-Shield (`setuphelfer_rescue_shield_console_early`), MSI-Evidence-Helper, boot-progress tty1-Race-Fix, GUI/openvt-Fallback; Repack + Content/Secret-Checks; kein USB-Write.
 - **PI-RS-USB-TELEMETRY-001:** Rescue-Stick USB Payload-Update auf **1.10.0.13** via `update-fat32-esp-live-payload.sh`; Verify OK; Boot-Smoke operator pending.

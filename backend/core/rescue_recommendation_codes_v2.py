@@ -21,6 +21,7 @@ class RescueRecommendationCodeV2(str, Enum):
   RETRY_TELEMETRY_QUEUE = "retry_telemetry_queue"
   REVIEW_STORAGE_SMART = "review_storage_smart"
   REVIEW_NVME_HEALTH = "review_nvme_health"
+  REVIEW_GPU_DRIVER_COVERAGE = "review_gpu_driver_coverage"
   USE_EXTERNAL_BACKUP_TARGET = "use_external_backup_target"
   REVIEW_PCIE_AER = "review_pcie_aer"
   OPERATOR_CONFIRM_LOW_RISK_FIX = "operator_confirm_low_risk_fix"

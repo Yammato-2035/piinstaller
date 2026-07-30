@@ -9,6 +9,7 @@ from typing import Any
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
+from core.rescue_assessment_telemetry_v1 import maybe_send_assessment_telemetry_early
 from core.rescue_master_assessment_bundle_v1 import build_master_assessment_bundle_v1
 from core.rescue_network_connectivity_v2 import build_network_connectivity_v2
 from core.rescue_repair_advice_engine_v1 import build_safe_action_plan
@@ -52,7 +53,12 @@ async def get_safe_action_plan_v1() -> dict[str, Any]:
 
 @router.get("/master-assessment-bundle-v1")
 async def get_master_assessment_bundle_v1() -> dict[str, Any]:
-  return build_master_assessment_bundle_v1()
+  bundle = build_master_assessment_bundle_v1()
+  # Opt-in gated: as soon as the full assessment exists, queue it for telemetry
+  # instead of requiring a separate manual "send" step later (see
+  # docs/knowledge-base/TELEMETRY_AND_DIAGNOSTICS_PRIVACY.md for the consent flow).
+  bundle["telemetry_auto_send"] = maybe_send_assessment_telemetry_early()
+  return bundle
 
 
 @router.post("/telemetry/upload-v1")

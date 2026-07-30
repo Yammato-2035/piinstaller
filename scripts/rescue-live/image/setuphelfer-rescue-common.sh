@@ -395,8 +395,14 @@ setuphelfer_rescue_console_owner_transition() {
   local lifecycle="${1:-boot_progress}"
   local reason="${2:-$lifecycle}"
   local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  local err_log="${SETUPHELFER_RESCUE_STATE_DIR}/console-owner-transition-errors.log"
+  mkdir -p "$(dirname "$err_log")" 2>/dev/null || true
   [[ -d "$py_backend" ]] || return 0
-  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY 2>/dev/null || return 0
+  # PI-RS-MSI-RETEST-003B: a failed transition here previously vanished into
+  # /dev/null, leaving console-ownership.json stuck on a stale owner (e.g.
+  # boot_progress) with no diagnosable trace. Failures are now logged instead
+  # of swallowed; callers still treat this as non-fatal (`|| true`).
+  if PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath)" python3 - <<PY >>"$err_log" 2>&1
 from core.rescue_console_ownership import transition_console_owner
 from core.rescue_session_evidence import load_current_session_meta
 meta = load_current_session_meta() or {}
@@ -407,7 +413,12 @@ transition_console_owner(
     shield_reason=${reason@Q},
 )
 PY
-  return 0
+  then
+    return 0
+  fi
+  printf '%s RESCUE_CONSOLE_OWNER_TRANSITION_FAILED lifecycle=%s reason=%s\n' \
+    "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$lifecycle" "$reason" >>"$err_log" 2>/dev/null || true
+  return 1
 }
 
 setuphelfer_rescue_sync_console_shield_from_ownership() {
