@@ -145,6 +145,17 @@ capabilities:
         - backend/modules/rescue_target_assessment.py
       gaps:
         - Matrix nicht vollständig befüllt
+    peripherals:
+      status: partial
+      evidence:
+        - backend/core/rescue_peripheral_discovery.py
+        - backend/core/driver_catalog.py
+        - backend/tests/test_rescue_peripheral_discovery.py
+        - backend/tests/test_driver_catalog.py
+      gaps:
+        - Keyword-Klassifikation (lsusb-Text), keine echte USB-Device-Class-Auswertung
+        - Kein physischer Mehr-Geräte-Nachweis (Drucker/Webcam/AI-Beschleuniger)
+        - driver_catalog bewusst nicht vollständig (lebende Liste)
 
   backup_restore_verify:
     file_level_backup:

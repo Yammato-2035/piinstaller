@@ -12,8 +12,10 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
+from core.driver_catalog import match_driver_hint
 from core.rescue_assessment_redaction import redact_assessment_payload
 from core.rescue_issue_codes_v2 import RescueIssueCodeV2
+from core.rescue_peripheral_discovery import build_peripheral_inventory
 from core.rescue_recommendation_codes_v2 import RescueRecommendationCodeV2
 
 ASSESSMENT_SCHEMA_VERSION = "system-assessment.v2"
@@ -246,6 +248,7 @@ def _collect_storage() -> dict[str, Any]:
           "size": dev.get("size"),
           "rotational": dev.get("rota"),
           "internal_guess": tran in {"nvme", "sata", "ata"} and dev.get("type") == "disk",
+          "external_usb": tran == "usb" and dev.get("type") == "disk",
         })
         for child in dev.get("children") or []:
           if isinstance(child, dict) and child.get("fstype"):
@@ -361,6 +364,33 @@ def derive_recommendation_codes(issue_codes: list[str]) -> list[str]:
   return sorted(set(recs))
 
 
+def derive_driver_hints(assessment: dict[str, Any]) -> list[dict[str, str]]:
+  """Plan-only driver/manufacturer-link hints (core.driver_catalog); never
+  claims exhaustive vendor coverage, only surfaces catalog matches."""
+  hints: list[dict[str, str]] = []
+  seen: set[tuple[str, str]] = set()
+
+  def _add(context: str, text: str) -> None:
+    hint = match_driver_hint(text)
+    if not hint:
+      return
+    key = (hint["vendor"], context)
+    if key in seen:
+      return
+    seen.add(key)
+    hints.append({"vendor": hint["vendor"], "official_url": hint["official_url"], "context": context})
+
+  gpu = assessment.get("gpu") or {}
+  for vendor in gpu.get("vendor_driver_gaps") or []:
+    _add("gpu", str(vendor))
+  peripherals = assessment.get("peripherals") or {}
+  usb = peripherals.get("usb") or {}
+  for device in usb.get("devices") or []:
+    if device.get("kind") in {"printer", "webcam", "audio", "ai_accelerator"}:
+      _add(str(device.get("kind")), str(device.get("description") or ""))
+  return hints
+
+
 def build_system_assessment_v2(*, rescue_version: str | None = None) -> dict[str, Any]:
   system = _collect_system()
   system["rescue_version"] = rescue_version
@@ -374,17 +404,20 @@ def build_system_assessment_v2(*, rescue_version: str | None = None) -> dict[str
     "storage": _collect_storage(),
     "firmware": _collect_firmware(),
     "pcie_aer": _collect_pcie_aer(),
+    "peripherals": build_peripheral_inventory(),
     "network_summary": {},
     "malware_hints": {"autostart_hints": [], "webroot_hints": []},
   }
   raw["issue_codes"] = derive_issue_codes(raw)
   raw["recommendation_codes"] = derive_recommendation_codes(raw["issue_codes"])
+  raw["driver_hints"] = derive_driver_hints(raw)
   redacted, report = redact_assessment_payload(raw)
   return {
     "assessment": redacted,
     "redaction_report": report,
     "issue_codes": raw["issue_codes"],
     "recommendation_codes": raw["recommendation_codes"],
+    "driver_hints": raw["driver_hints"],
   }
 
 
@@ -395,10 +428,12 @@ def build_assessment_from_snapshot(snapshot: dict[str, Any]) -> dict[str, Any]:
   raw.setdefault("collected_at", _utc_now())
   raw["issue_codes"] = derive_issue_codes(raw)
   raw["recommendation_codes"] = derive_recommendation_codes(raw["issue_codes"])
+  raw["driver_hints"] = derive_driver_hints(raw)
   redacted, report = redact_assessment_payload(raw)
   return {
     "assessment": redacted,
     "redaction_report": report,
     "issue_codes": raw["issue_codes"],
     "recommendation_codes": raw["recommendation_codes"],
+    "driver_hints": raw["driver_hints"],
   }

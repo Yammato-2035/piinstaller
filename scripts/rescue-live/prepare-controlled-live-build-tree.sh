@@ -687,6 +687,8 @@ firmware-brcm80211
 firmware-amd-graphics
 firmware-misc-nonfree
 firmware-sof-signed
+intel-microcode
+amd64-microcode
 wireless-regdb
 network-manager
 wpasupplicant
@@ -699,11 +701,9 @@ lshw
 hwinfo
 dnsutils
 ethtool
-parted
 gdisk
 dosfstools
 exfatprogs
-ntfs-3g
 btrfs-progs
 xfsprogs
 e2fsprogs
