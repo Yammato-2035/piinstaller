@@ -526,6 +526,37 @@ def build_dcc_project_overview_body(*, repo_root: Path | None = None) -> dict[st
     return build_project_overview_dashboard_state(repo_root=repo_root)
 
 
+def build_dcc_hardware_provisioning_section(*, repo_root: Path | None = None) -> dict[str, Any]:
+    """Additive DCC section for PI-RS-HW-COMPAT-PROVISION-001 (Phase 16).
+
+    Deliberately separate from ``build_dcc_status_overview``/``build_dcc_roadmap_overview``
+    — does not modify either. Wired into its own read-only route
+    (``GET /api/dev-dashboard/hardware-provisioning-status``), not into the legacy
+    dashboard body, to avoid any risk of regressing existing DCC consumers.
+    """
+    warnings: list[DccStatusFacadeWarning] = []
+    errors: list[str] = []
+
+    def _build() -> DccStatusSection:
+        from core.hardware_dcc_status import build_hardware_dcc_status_fields
+
+        fields = build_hardware_dcc_status_fields(repo_root=repo_root)
+        overall_yellow_or_green = all(
+            fields.get(key) in ("partial_green", "yellow")
+            for key in fields
+            if key.endswith("_status")
+        )
+        return DccStatusSection(
+            section_id="hardware_provisioning",
+            status="partial_green" if overall_yellow_or_green else "yellow",
+            data=fields,
+        )
+
+    section = _safe_section("hardware_provisioning", _build, facade_warnings=warnings, facade_errors=errors)
+    result = DccStatusFacadeResult(sections=[section], warnings=warnings, errors=errors)
+    return _result_to_dict(result)
+
+
 def build_dcc_facade_diagnostics() -> dict[str, Any]:
     """Lightweight facade diagnostics — no heavy aggregation."""
     return {

@@ -33,6 +33,15 @@ async def dev_dashboard_evidence_index():
     return build_dcc_evidence_index_api()
 
 
+@router.get("/api/dev-dashboard/hardware-provisioning-status")
+async def dev_dashboard_hardware_provisioning_status():
+    """PI-RS-HW-COMPAT-PROVISION-001 Phase 16 — additive DCC section, does not
+    replace or alter /api/dev-dashboard/status or /roadmap."""
+    from core.dcc_status_facade import build_dcc_hardware_provisioning_section
+
+    return build_dcc_hardware_provisioning_section()
+
+
 @router.get("/api/dev-dashboard/manual-command-runs")
 async def dev_dashboard_manual_command_runs(
     limit: int = Query(default=5, ge=1, le=50),
