@@ -21,8 +21,11 @@ class RescueGuiVisualContractV1(unittest.TestCase):
         nav = (RESCUE_SRC / "rescueNavTiles.ts").read_text(encoding="utf-8")
         tile_ids = re.findall(r"id: '([a-z_]+)'", nav)
         self.assertIn("linux_migration", tile_ids)
-        self.assertEqual(len(tile_ids), 9)
+        # PI-RS-HW-COMPAT-PROVISION-001 Phase 15 added the 'hardware' overview
+        # tile (9 -> 10). Test name kept for history; count reflects current tiles.
+        self.assertEqual(len(tile_ids), 10)
         self.assertIn("data_rescue", tile_ids)
+        self.assertIn("hardware", tile_ids)
 
     def test_required_markers_in_dashboard(self) -> None:
         dash = (RESCUE_SRC / "RescueDashboard.tsx").read_text(encoding="utf-8")

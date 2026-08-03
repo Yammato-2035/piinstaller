@@ -34,3 +34,4 @@
 | PI-RS-USB-UPDATER-001 Atomic Payload + Version Sync (1.10.0.16) | GRÜN | Updater gehärtet; Stick **1.10.0.16** atomar; keine manuelle Metadatenkorrektur |
 | PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | GELB | review_required — Operator TUI ok; Timeline ohne tui_mode_selected |
 | PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | ROT | Session `20260712_225944_boot` — Capture ~10,5 s; kein console_owner=tui |
+| PI-RS-HW-COMPAT-PROVISION-001 Hardware-Erkennung/Treiberauflösung | GELB | `implemented_hardware_inventory_and_provisioning_preview_pending_physical_matrix` — Contracts, Detektoren, Resolver, Katalog, Pi 3-5, 64-GB-Carrier-Plan, OS-Katalog, Read-only-APIs, UI, Telemetrie/DCC, 198+ Unit-Tests grün; **keine** physische Hardware verifiziert |
