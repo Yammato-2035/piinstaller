@@ -1,0 +1,85 @@
+{
+  "schema_version": "hardware-compat-catalog.v1",
+  "generated_at": "2026-08-03T00:00:00Z",
+  "note": "Kein vollstaendiger PCI/USB-ID-Katalog. Nur getestete Sonderfaelle mit Evidence-Referenz. Siehe hardware_compat_catalog.schema.json.",
+  "entries": [
+    {
+      "entry_id": "msi-ge63-raider-rgb-8rf-ms16p5",
+      "match": {
+        "dmi_product": "GE63 Raider RGB 8RF",
+        "platform_compatible": null
+      },
+      "classification": {
+        "device_class": "platform",
+        "platform_class": "laptop"
+      },
+      "known_issues": [
+        {
+          "code": "msi_boot_console_shield_required",
+          "description": "Ohne MSI-Kompatibilitaetsprofil kann der Rescue-Boot auf diesem Geraet TTY-Konsolen-/GUI-Instabilitaeten zeigen; siehe docs/rescue-stick/PI_RS_MSI_FIX_001_CONSOLE_SHIELD_BOOT_PROGRESS_TTY1.md.",
+          "severity": "warning"
+        },
+        {
+          "code": "nvidia_nouveau_boot_conflict",
+          "description": "nouveau-Modeset-Konflikt beim Boot ohne 'nouveau.modeset=0' im getesteten Payload 1.10.0.15 beobachtet.",
+          "severity": "warning"
+        }
+      ],
+      "driver_recommendation": {
+        "recommended_driver": "nouveau",
+        "driver_type": "kernel_in_tree",
+        "package_candidates": []
+      },
+      "safe_boot_parameters": [
+        "setuphelfer_msi_compat=1",
+        "nomodeset",
+        "nouveau.modeset=0",
+        "pci=noaer"
+      ],
+      "forbidden_parameters": [],
+      "tested_kernels": [],
+      "tested_rescue_payloads": ["1.10.0.13", "1.10.0.14", "1.10.0.15", "1.10.0.16"],
+      "evidence_paths": [
+        "docs/evidence/pi_rs_usb_msi_gui_002/MSI_GE63_BOOT_RETEST_RUNBOOK.md",
+        "docs/evidence/pi_rs_msi_fix_001_console_shield_boot_progress_tty1",
+        "docs/evidence/pi_rs_msi_retest_002_ge63_operator_boot_retest",
+        "docs/evidence/pi_rs_msi_retest_002_ge63_payload_1_10_0_13",
+        "docs/rescue-stick/PI_RS_MSI_FIX_001_CONSOLE_SHIELD_BOOT_PROGRESS_TTY1.md"
+      ],
+      "support_level": "partial",
+      "last_verified_at": "2026-07-12"
+    },
+    {
+      "entry_id": "asus-rog-strix-g513qm",
+      "match": {
+        "dmi_product": "G513QM",
+        "platform_compatible": null
+      },
+      "classification": {
+        "device_class": "platform",
+        "platform_class": "laptop"
+      },
+      "known_issues": [
+        {
+          "code": "detailed_boot_diagnostics_pending_merge",
+          "description": "Detaillierte G513QM-Boot-/GPU-/NVMe-Diagnoseevidenz existiert nur auf einem noch nicht gemergten Arbeits-Branch (wip/rescue-stick-extension); auf dieser Basis (origin/main) liegt nur die ASUS-ROG-Luefterkontrolle vor. Keine ungeprueften Aussagen zu GPU/NVMe/BIOS uebernommen.",
+          "severity": "info"
+        }
+      ],
+      "driver_recommendation": {
+        "recommended_driver": null,
+        "driver_type": null,
+        "package_candidates": []
+      },
+      "safe_boot_parameters": [],
+      "forbidden_parameters": [],
+      "tested_kernels": [],
+      "tested_rescue_payloads": [],
+      "evidence_paths": [
+        "docs/ASUS_ROG_FAN_CONTROL.md"
+      ],
+      "support_level": "experimental",
+      "last_verified_at": null
+    }
+  ]
+}

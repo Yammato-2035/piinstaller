@@ -77,6 +77,11 @@ docs/PI-Installer-Dokumentation.md
 data/*
 !data/diagnostics/
 !data/diagnostics/**
+# PI-RS-HW-COMPAT-PROVISION-001: versionierte, kuratierte Hardware-/OS-Kataloge (kein Laufzeit-Cache)
+!data/hardware/
+!data/hardware/**
+!data/provisioning/
+!data/provisioning/**
 
 # Debian-Paket (Build-Artefakte, .deb ggf. im Repo-Root)
 debian/pi-installer/

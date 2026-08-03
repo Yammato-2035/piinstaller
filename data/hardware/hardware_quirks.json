@@ -1,0 +1,19 @@
+{
+  "schema_version": "hardware-quirks.v1",
+  "generated_at": "2026-08-03T00:00:00Z",
+  "quirks": [
+    {
+      "quirk_id": "msi-ge63-8rf-nouveau-modeset-conflict",
+      "match": {
+        "dmi_product": "GE63 Raider RGB 8RF",
+        "driver_name": "nouveau"
+      },
+      "problem": "nouveau-Modeset auf diesem Geraet kollidiert beim Rescue-Boot mit dem MSI-Kompatibilitaetsprofil; ohne 'nouveau.modeset=0' wurden TTY-/GUI-Instabilitaeten beobachtet.",
+      "recommended_mitigation": "Kernel-Parameter 'nouveau.modeset=0' zusammen mit 'setuphelfer_msi_compat=1' setzen (siehe safe_boot_parameters im Kompatibilitaetskatalog-Eintrag).",
+      "evidence_paths": [
+        "docs/evidence/pi_rs_usb_msi_gui_002/MSI_GE63_BOOT_RETEST_RUNBOOK.md",
+        "docs/rescue-stick/PI_RS_MSI_FIX_001_CONSOLE_SHIELD_BOOT_PROGRESS_TTY1.md"
+      ]
+    }
+  ]
+}

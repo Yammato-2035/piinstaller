@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.local/schema/hardware_compat_catalog.schema.json",
+  "title": "Setuphelfer curated hardware compatibility catalog entry",
+  "description": "PI-RS-HW-COMPAT-PROVISION-001 Phase 10. Deliberately NOT exhaustive — only known special cases, tested devices, proven driver problems, evidence-backed boot parameters.",
+  "type": "object",
+  "required": ["entry_id", "match", "classification", "support_level", "evidence_paths"],
+  "properties": {
+    "entry_id": { "type": "string" },
+    "match": {
+      "type": "object",
+      "properties": {
+        "vendor_id": { "type": ["string", "null"] },
+        "product_id": { "type": ["string", "null"] },
+        "subsystem_vendor_id": { "type": ["string", "null"] },
+        "subsystem_product_id": { "type": ["string", "null"] },
+        "dmi_product": { "type": ["string", "null"] },
+        "platform_compatible": { "type": ["string", "null"] }
+      },
+      "minProperties": 1
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "device_class": { "type": "string" },
+        "platform_class": { "type": ["string", "null"] }
+      }
+    },
+    "known_issues": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "description"],
+        "properties": {
+          "code": { "type": "string" },
+          "description": { "type": "string" },
+          "severity": { "type": "string", "enum": ["info", "warning", "blocking"] }
+        }
+      }
+    },
+    "driver_recommendation": {
+      "type": "object",
+      "properties": {
+        "recommended_driver": { "type": ["string", "null"] },
+        "driver_type": { "type": ["string", "null"] },
+        "package_candidates": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "safe_boot_parameters": { "type": "array", "items": { "type": "string" } },
+    "forbidden_parameters": { "type": "array", "items": { "type": "string" } },
+    "tested_kernels": { "type": "array", "items": { "type": "string" } },
+    "tested_rescue_payloads": { "type": "array", "items": { "type": "string" } },
+    "evidence_paths": { "type": "array", "items": { "type": "string" }, "minItems": 1 },
+    "support_level": { "type": "string", "enum": ["verified", "partial", "experimental", "unknown"] },
+    "last_verified_at": { "type": ["string", "null"], "format": "date" }
+  }
+}

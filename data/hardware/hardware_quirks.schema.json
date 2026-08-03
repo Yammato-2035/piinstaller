@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.local/schema/hardware_quirks.schema.json",
+  "title": "Setuphelfer curated hardware quirks (forbidden/problematic combinations)",
+  "description": "PI-RS-HW-COMPAT-PROVISION-001 Phase 10. Narrow, evidence-backed device+driver/parameter combination warnings — not a general driver database.",
+  "type": "object",
+  "required": ["quirks"],
+  "properties": {
+    "quirks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["quirk_id", "match", "problem", "evidence_paths"],
+        "properties": {
+          "quirk_id": { "type": "string" },
+          "match": {
+            "type": "object",
+            "properties": {
+              "dmi_product": { "type": ["string", "null"] },
+              "vendor_id": { "type": ["string", "null"] },
+              "product_id": { "type": ["string", "null"] },
+              "driver_name": { "type": ["string", "null"] },
+              "cmdline_parameter": { "type": ["string", "null"] }
+            },
+            "minProperties": 1
+          },
+          "problem": { "type": "string" },
+          "recommended_mitigation": { "type": ["string", "null"] },
+          "evidence_paths": { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+        }
+      }
+    }
+  }
+}
