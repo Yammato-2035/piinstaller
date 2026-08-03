@@ -1,0 +1,128 @@
+{
+  "schema_version": "hardware-discovery-ist-audit.v1",
+  "generated_at": "2026-08-03T00:00:00Z",
+  "branch": "pi-rs-hw-compat-provision-001",
+  "base_ref": "origin/main",
+  "base_head": "b8651d3337bf30b4443a622fdf8a6c9dc2995df5",
+  "existing_paths": [
+    {
+      "area": "cpu_detection",
+      "modules": ["backend/core/hardware_discovery.py", "backend/core/rescue_system_assessment_v2.py"],
+      "maturity": "medium",
+      "duplicate_risk": "medium",
+      "next_action": "cpu_platform_detection.py adds structured HardwareDevice model, reuses no display-formatting helpers"
+    },
+    {
+      "area": "raspberry_pi_model_detection",
+      "modules": ["backend/modules/raspberry_pi_config.py::_detect_pi_model"],
+      "maturity": "low",
+      "duplicate_risk": "high_for_basic_model_string_read",
+      "next_action": "raspberry_pi_detection.py reads compatible string + EEPROM/bootloader read-only, independent of live config module"
+    },
+    {
+      "area": "raspberry_pi_configuration",
+      "modules": ["backend/modules/raspberry_pi_config.py"],
+      "maturity": "high",
+      "duplicate_risk": "none",
+      "next_action": "leave untouched — different concern (live config write vs. rescue compatibility)"
+    },
+    {
+      "area": "mainboard_chipset_detection",
+      "modules": ["backend/core/hardware_discovery.py::get_motherboard_info", "backend/core/rescue_system_assessment_v2.py::_collect_system"],
+      "maturity": "low",
+      "duplicate_risk": "medium",
+      "next_action": "mainboard_chipset_detection.py adds chipset-id mapping + review_required threshold"
+    },
+    {
+      "area": "gpu_detection",
+      "modules": ["backend/core/hardware_discovery.py::_get_gpus_for_system_info", "backend/core/rescue_system_assessment_v2.py::_collect_gpu"],
+      "maturity": "medium",
+      "duplicate_risk": "high_for_display_name_cleanup",
+      "next_action": "gpu_detection.py builds own PCI/DRM status model, may reuse _clean_gpu_description for display names only"
+    },
+    {
+      "area": "usb_device_classification",
+      "modules": [],
+      "maturity": "none",
+      "duplicate_risk": "none",
+      "next_action": "usb_device_detection.py new"
+    },
+    {
+      "area": "input_device_detection",
+      "modules": [],
+      "maturity": "none",
+      "duplicate_risk": "none",
+      "next_action": "input_device_detection.py new"
+    },
+    {
+      "area": "printer_scanner_detection",
+      "modules": ["frontend/src/pages/PeripheryScan.tsx (product app CUPS/network feature)"],
+      "maturity": "medium_but_different_context",
+      "duplicate_risk": "medium_naming_confusion",
+      "next_action": "backend/peripherals/* is rescue-stick specific, read-only, separate namespace from product-app CUPS management"
+    },
+    {
+      "area": "driver_firmware_resolver",
+      "modules": ["backend/core/rescue_system_assessment_v2.py (ad-hoc firmware/driver strings only)"],
+      "maturity": "low",
+      "duplicate_risk": "none_structural",
+      "next_action": "driver_resolver.py / firmware_resolver.py new, rescue_system_assessment_v2 unchanged"
+    },
+    {
+      "area": "curated_hardware_catalog",
+      "modules": ["docs/evidence/rescue-stick/*.md (freeform evidence only, no structured DB)"],
+      "maturity": "evidence_only",
+      "duplicate_risk": "none",
+      "next_action": "data/hardware/hardware_compat_catalog.json new, references existing evidence paths"
+    },
+    {
+      "area": "storage_mount_safety_facades",
+      "modules": ["backend/core/safe_device.py", "backend/core/storage_facade.py", "backend/core/mount_facade.py", "backend/core/device_identity.py"],
+      "maturity": "high",
+      "duplicate_risk": "high_if_reimplemented",
+      "next_action": "carrier planner MUST call storage_facade.get_block_devices/get_block_device_size_bytes, no new lsblk logic"
+    },
+    {
+      "area": "telemetry_redaction",
+      "modules": ["backend/core/rescue_assessment_redaction.py"],
+      "maturity": "high_for_its_schema",
+      "duplicate_risk": "medium",
+      "next_action": "new hardware_inventory_summary_v1 contract with its own narrower redaction function, same forbidden-field principles"
+    },
+    {
+      "area": "dcc_product_status",
+      "modules": ["backend/core/dcc_status_facade.py"],
+      "maturity": "high",
+      "duplicate_risk": "none",
+      "next_action": "additive new status fields only"
+    },
+    {
+      "area": "os_image_catalog_provisioning",
+      "modules": [],
+      "maturity": "none",
+      "duplicate_risk": "none",
+      "next_action": "backend/provisioning/* new, separate namespace from backend/deploy/ (setuphelfer self-deployment)"
+    },
+    {
+      "area": "api_router_registration_pattern",
+      "modules": ["backend/api/routes/rescue.py", "backend/app.py", "backend/app_bootstrap/router_registry.py"],
+      "maturity": "high",
+      "duplicate_risk": "none",
+      "next_action": "new route modules follow same optional try/except ImportError + include_router pattern"
+    },
+    {
+      "area": "rescue_ui",
+      "modules": ["frontend/src/rescue/RescueApp.tsx", "frontend/src/rescue/RescueBootStatus.tsx", "frontend/src/rescue/rescueTypes.ts"],
+      "maturity": "medium_different_purpose",
+      "duplicate_risk": "low",
+      "next_action": "add new hardware overview screens, does not replace boot-status overlay"
+    }
+  ],
+  "open_pr_risk": {
+    "branch": "claude/projekt-bewertung-setup-hts9w7",
+    "adds": ["backend/core/driver_catalog.py", "backend/core/rescue_peripheral_discovery.py"],
+    "present_on_base": false,
+    "blocker": false,
+    "note": "merge review needed only if both PRs land; no assumptions made about that branch in this phase"
+  }
+}
