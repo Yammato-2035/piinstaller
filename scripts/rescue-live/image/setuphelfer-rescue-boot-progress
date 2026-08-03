@@ -161,6 +161,14 @@ for step in data.get("steps") or []:
 PY
 )
 else
+  # PI-RS-MSI-GUI-003 follow-up: a failed/empty _load_plan() used to fall back
+  # to a fixed phase_map that always included x11_starting, bypassing
+  # resolve_rescue_boot_profile() and MSI-compat entirely (confirmed root
+  # cause of x11_starting appearing under MSI-compat, see
+  # docs/evidence/pi_rs_msi_gui_003/MSI_GUI_003_ROOT_CAUSE_ANALYSIS.md).
+  # This fallback now stays MSI-compat-aware via the already-computed
+  # SAFE_TTY flag and records why it had to fall back.
+  _record_timeline "rescue_boot_status_visible" "warning" "Boot-Plan nicht verfügbar — Sicherheitsmodus" "Boot plan unavailable — safe fallback" "reason_code=plan_load_failed"
   steps=(
     "Setuphelfer Rettungssystem wird geladen …"
     "Hardware wird erkannt …"
@@ -168,8 +176,6 @@ else
     "Protokollspeicher wird vorbereitet …"
     "Bitte warten Sie. Bitte nicht ausschalten."
     "Netzwerk wird geprüft …"
-    "Grafische Oberfläche wird gestartet …"
-    "Backend wird geprüft …"
   )
   phase_map=(
     "rescue_boot_status_visible"
@@ -178,13 +184,20 @@ else
     "setup_logs_probe_started"
     "rescue_boot_status_visible"
     "network_probe_started"
-    "x11_starting"
-    "backend_starting"
   )
+  if [[ "$SAFE_TTY" -eq 1 ]]; then
+    steps+=("MSI-Kompatibilitätsmodus: Textoberfläche wird verwendet.")
+    phase_map+=("tui_mode_selected")
+  else
+    steps+=("Grafische Oberfläche wird gestartet …")
+    phase_map+=("x11_starting")
+  fi
+  steps+=("Backend wird geprüft …")
+  phase_map+=("backend_starting")
   idx=0
   while [[ $idx -lt ${#steps[@]} ]]; do
     msg="${steps[$idx]}"
-    _record_timeline "${phase_map[$idx]:-rescue_boot_status_visible}" "started" "$msg" "$msg"
+    _record_timeline "${phase_map[$idx]:-rescue_boot_status_visible}" "started" "$msg" "$msg" "reason_code=plan_load_failed"
     write_state "$idx" "$msg"
     show_tty "$msg" 0
     idx=$((idx + 1))

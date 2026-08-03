@@ -34,3 +34,6 @@
 | PI-RS-USB-UPDATER-001 Atomic Payload + Version Sync (1.10.0.16) | GRÜN | Updater gehärtet; Stick **1.10.0.16** atomar; keine manuelle Metadatenkorrektur |
 | PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | GELB | review_required — Operator TUI ok; Timeline ohne tui_mode_selected |
 | PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | ROT | Session `20260712_225944_boot` — Capture ~10,5 s; kein console_owner=tui |
+| PI-RS-HW-PKG-001 Firmware/Microcode Package Sync | GRÜN | `setuphelfer.list.chroot` mit `RESCUE_REQUIRED_PACKAGE_POLICY_V2.json` synchronisiert (+microcode); `parted`/`ntfs-3g` bewusst draußen (Forbidden-Package-Gate) |
+| PI-RS-PERIPHERAL-DISCOVERY-001 Peripherie/Treiber-Katalog | GELB | Code + Tests grün (`rescue_peripheral_discovery.py`, `driver_catalog.py`); kein physischer Mehrgeräte-Nachweis |
+| PI-RS-ARM64-PI-BOOT-FEASIBILITY-001 | ROT | Nur Machbarkeitsskizze (`docs/architecture/RESCUE_ARM64_RASPBERRY_PI_BOOT_FEASIBILITY.md`); kein Build, kein Code |
