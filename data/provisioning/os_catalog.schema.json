@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://setuphelfer.local/schema/os_catalog.schema.json",
+  "title": "Setuphelfer target-OS provisioning catalog entry",
+  "description": "PI-RS-HW-COMPAT-PROVISION-001 Phase 13. download_enabled must stay false in this phase for every entry.",
+  "type": "object",
+  "required": [
+    "image_id", "display_name", "distribution", "release", "architecture", "image_type",
+    "official_source", "download_enabled", "signature_required", "minimum_target_bytes",
+    "supported_platforms", "supported_boot_modes", "installation_method", "support_status"
+  ],
+  "properties": {
+    "image_id": { "type": "string" },
+    "display_name": { "type": "string" },
+    "distribution": { "type": "string" },
+    "release": { "type": "string" },
+    "architecture": { "type": "string", "enum": ["x86_64", "aarch64", "armv7", "unknown"] },
+    "image_type": { "type": "string", "enum": ["iso", "raw_image", "compressed_raw", "netboot"] },
+    "official_source": { "type": "string" },
+    "download_enabled": { "type": "boolean", "const": false },
+    "sha256": { "type": ["string", "null"] },
+    "signature_required": { "type": "boolean" },
+    "signature_type": { "type": ["string", "null"] },
+    "minimum_target_bytes": { "type": "integer", "minimum": 0 },
+    "supported_platforms": { "type": "array", "items": { "type": "string" } },
+    "supported_boot_modes": { "type": "array", "items": { "type": "string" } },
+    "installation_method": { "type": "string" },
+    "support_status": { "type": "string", "enum": ["verified", "experimental", "future", "blocked"] },
+    "known_issues": { "type": "array", "items": { "type": "string" } },
+    "last_verified_at": { "type": ["string", "null"] }
+  }
+}
