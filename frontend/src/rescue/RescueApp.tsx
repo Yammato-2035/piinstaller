@@ -7,6 +7,7 @@ import { RescueBootStatusPanel } from './RescueBootStatus';
 import { RescueDashboard } from './RescueDashboard';
 import { RescueDataRescuePanel } from './RescueDataRescuePanel';
 import { RescueEvidencePanel } from './RescueEvidencePanel';
+import { RescueHardwarePanel } from './RescueHardwarePanel';
 import { RescueLinuxInstallPanel } from './RescueLinuxInstallPanel';
 import { RescueLinuxMigrationPanel } from './RescueLinuxMigrationPanel';
 import { RescueNetworkPanel } from './RescueNetworkPanel';
@@ -217,6 +218,17 @@ export const RescueApp: React.FC = () => {
             onBack={goMenu}
           >
             <RescueLinuxInstallPanel locale={locale} />
+          </RescueSectionPage>
+        );
+      case 'hardware':
+        return (
+          <RescueSectionPage
+            titleKey="nav.hardware.title"
+            subtitleKey="nav.hardware.subtitle"
+            locale={locale}
+            onBack={goMenu}
+          >
+            <RescueHardwarePanel locale={locale} />
           </RescueSectionPage>
         );
       case 'settings':

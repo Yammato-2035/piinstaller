@@ -39,6 +39,10 @@
     "system": {
       "title": "System",
       "subtitle": "Status, Logs und Diagnose-Übersicht."
+    },
+    "hardware": {
+      "title": "Hardware",
+      "subtitle": "Hardware-Erkennung, Treiberstatus, Raspberry Pi und 64-GB-Stick-Kapazitaet."
     }
   },
   "branding": {
@@ -275,6 +279,51 @@
       "planSystemDisk": "Systemlaufwerk",
       "planPartitions": "Vorgesehene Partitionierung",
       "planStatus": "Status"
+    },
+    "hardware": {
+      "intro": "Erkennung ist keine Funktionsgarantie. Diese Uebersicht zeigt den erkannten Zustand, nicht den garantierten Betrieb.",
+      "loading": "Hardware wird erkannt...",
+      "loadError": "Hardware-Erkennung teilweise nicht verfuegbar.",
+      "unavailable": "Keine belastbaren Daten verfuegbar.",
+      "cpuTitle": "CPU und Plattform",
+      "architecture": "Architektur",
+      "virtualization": "Virtualisierung verfuegbar",
+      "microcode": "Microcode-Status",
+      "raspberryPiSoc": "Raspberry-Pi-SoC",
+      "gpuTitle": "Grafik",
+      "disabledByCmdline": "deaktiviert durch Kernelparameter",
+      "mainboardTitle": "Mainboard und Chipsatz",
+      "systemVendor": "Systemhersteller",
+      "systemProduct": "Systemprodukt",
+      "platformClass": "Plattformklasse",
+      "chipset": "Chipsatz",
+      "reviewRequired": "Pruefung erforderlich",
+      "usbTitle": "USB-Geraete",
+      "composite": "zusammengesetztes Geraet",
+      "inputTitle": "Tastatur und Maus",
+      "printerScannerTitle": "Drucker und Scanner",
+      "printerScannerHint": "Kein Testdruck und kein Scan ohne Operatoraktion. Nur Treiberplan anzeigen, keine Installation.",
+      "technology": "Technologie",
+      "color": "Farbfaehigkeit",
+      "scanner": "Scanner",
+      "raspberryPiTitle": "Raspberry Pi",
+      "notARaspberryPi": "Kein Raspberry Pi erkannt.",
+      "model": "Modell",
+      "soc": "SoC",
+      "compatibility": "Kompatibilitaet",
+      "carrierTitle": "64-GB-Stick-Kapazitaet",
+      "recommendedStrategy": "Empfohlene Strategie",
+      "carrierBytesLabel": "Tatsaechliche Mediengroesse (Bytes)",
+      "carrierPreviewButton": "Kapazitaetsplan anzeigen",
+      "layoutStatus": "Layout-Status",
+      "usableCapacity": "Nutzbare Kapazitaet",
+      "reservedCapacity": "Reservierte Kapazitaet",
+      "maxCachedImages": "Maximal zwischengespeicherte Images",
+      "osTitle": "Betriebssysteme",
+      "osExperimental": "Experimentell",
+      "osFuture": "Geplant (future)",
+      "osVerified": "Verifiziert",
+      "noWriteDisclaimer": "Diese Entwicklungsphase erstellt nur einen Installationsplan. Es werden keine Datentraeger beschrieben."
     }
   },
   "migration": {

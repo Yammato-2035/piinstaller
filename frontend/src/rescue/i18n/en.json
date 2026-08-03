@@ -39,6 +39,10 @@
     "system": {
       "title": "System",
       "subtitle": "Status, logs and diagnostics overview."
+    },
+    "hardware": {
+      "title": "Hardware",
+      "subtitle": "Hardware detection, driver status, Raspberry Pi and 64 GB stick capacity."
     }
   },
   "branding": {
@@ -275,6 +279,51 @@
       "planSystemDisk": "System drive",
       "planPartitions": "Planned partitioning",
       "planStatus": "Status"
+    },
+    "hardware": {
+      "intro": "Detection is not a guarantee of function. This overview shows the detected state, not guaranteed operation.",
+      "loading": "Detecting hardware...",
+      "loadError": "Hardware detection partially unavailable.",
+      "unavailable": "No reliable data available.",
+      "cpuTitle": "CPU and platform",
+      "architecture": "Architecture",
+      "virtualization": "Virtualization available",
+      "microcode": "Microcode status",
+      "raspberryPiSoc": "Raspberry Pi SoC",
+      "gpuTitle": "Graphics",
+      "disabledByCmdline": "disabled by kernel parameter",
+      "mainboardTitle": "Mainboard and chipset",
+      "systemVendor": "System vendor",
+      "systemProduct": "System product",
+      "platformClass": "Platform class",
+      "chipset": "Chipset",
+      "reviewRequired": "Review required",
+      "usbTitle": "USB devices",
+      "composite": "composite device",
+      "inputTitle": "Keyboard and mouse",
+      "printerScannerTitle": "Printers and scanners",
+      "printerScannerHint": "No test print and no scan without operator action. Driver plan preview only, no installation.",
+      "technology": "Technology",
+      "color": "Color capability",
+      "scanner": "Scanner",
+      "raspberryPiTitle": "Raspberry Pi",
+      "notARaspberryPi": "No Raspberry Pi detected.",
+      "model": "Model",
+      "soc": "SoC",
+      "compatibility": "Compatibility",
+      "carrierTitle": "64 GB stick capacity",
+      "recommendedStrategy": "Recommended strategy",
+      "carrierBytesLabel": "Actual media size (bytes)",
+      "carrierPreviewButton": "Show capacity plan",
+      "layoutStatus": "Layout status",
+      "usableCapacity": "Usable capacity",
+      "reservedCapacity": "Reserved capacity",
+      "maxCachedImages": "Max cached images",
+      "osTitle": "Operating systems",
+      "osExperimental": "Experimental",
+      "osFuture": "Planned (future)",
+      "osVerified": "Verified",
+      "noWriteDisclaimer": "This development phase only creates an installation plan. No storage medium is written to."
     }
   },
   "migration": {

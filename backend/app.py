@@ -2650,6 +2650,25 @@ except Exception:
     )
 
 try:
+    from api.routes.rescue_hardware import router as rescue_hardware_router
+    from api.routes.rescue_peripherals import router as rescue_peripherals_router
+    from api.routes.rescue_platform import router as rescue_platform_router
+    from api.routes.rescue_carrier import router as rescue_carrier_router
+    from api.routes.rescue_provisioning import router as rescue_provisioning_router
+
+    app.include_router(rescue_hardware_router)
+    app.include_router(rescue_peripherals_router)
+    app.include_router(rescue_platform_router)
+    app.include_router(rescue_carrier_router)
+    app.include_router(rescue_provisioning_router)
+except Exception:
+    logger.exception(
+        "PI-RS-HW-COMPAT-PROVISION-001 Hardware-/Provisioning-Router konnten nicht "
+        "registriert werden; /api/rescue/hardware, /peripherals, /platform, /carrier, "
+        "/provision fehlen dann (404)."
+    )
+
+try:
     from api.routes.diagnostics import router as diagnostics_router
     app.include_router(diagnostics_router)
 except ImportError:

@@ -278,6 +278,10 @@
     "system": {
       "subtitle": "État, journaux et diagnostics.",
       "title": "Système"
+    },
+    "hardware": {
+      "title": "Materiel",
+      "subtitle": "Detection materielle, statut des pilotes, Raspberry Pi et capacite de la cle 64 Go."
     }
   },
   "network": {
@@ -545,6 +549,51 @@
       "searching": "Recherche des disques…",
       "windowsParts": "Partitions Windows",
       "writeBlocked": "Écriture bloquée (write_allowed=false)."
+    },
+    "hardware": {
+      "intro": "La detection ne garantit pas le fonctionnement. Cet apercu montre l'etat detecte, pas le fonctionnement garanti.",
+      "loading": "Detection du materiel en cours...",
+      "loadError": "Detection materielle partiellement indisponible.",
+      "unavailable": "Aucune donnee fiable disponible.",
+      "cpuTitle": "CPU et plateforme",
+      "architecture": "Architecture",
+      "virtualization": "Virtualisation disponible",
+      "microcode": "Statut du microcode",
+      "raspberryPiSoc": "SoC Raspberry Pi",
+      "gpuTitle": "Graphique",
+      "disabledByCmdline": "desactive par parametre noyau",
+      "mainboardTitle": "Carte mere et chipset",
+      "systemVendor": "Fabricant du systeme",
+      "systemProduct": "Produit systeme",
+      "platformClass": "Classe de plateforme",
+      "chipset": "Chipset",
+      "reviewRequired": "Verification requise",
+      "usbTitle": "Peripheriques USB",
+      "composite": "peripherique composite",
+      "inputTitle": "Clavier et souris",
+      "printerScannerTitle": "Imprimantes et scanners",
+      "printerScannerHint": "Aucune impression de test et aucun scan sans action de l'operateur. Apercu du plan de pilote uniquement, pas d'installation.",
+      "technology": "Technologie",
+      "color": "Capacite couleur",
+      "scanner": "Scanner",
+      "raspberryPiTitle": "Raspberry Pi",
+      "notARaspberryPi": "Aucun Raspberry Pi detecte.",
+      "model": "Modele",
+      "soc": "SoC",
+      "compatibility": "Compatibilite",
+      "carrierTitle": "Capacite de la cle 64 Go",
+      "recommendedStrategy": "Strategie recommandee",
+      "carrierBytesLabel": "Taille reelle du support (octets)",
+      "carrierPreviewButton": "Afficher le plan de capacite",
+      "layoutStatus": "Statut de la disposition",
+      "usableCapacity": "Capacite utilisable",
+      "reservedCapacity": "Capacite reservee",
+      "maxCachedImages": "Images en cache max.",
+      "osTitle": "Systemes d'exploitation",
+      "osExperimental": "Experimental",
+      "osFuture": "Prevu (future)",
+      "osVerified": "Verifie",
+      "noWriteDisclaimer": "Cette phase de developpement ne cree qu'un plan d'installation. Aucun support de stockage n'est ecrit."
     }
   },
   "settings": {

@@ -9,13 +9,24 @@ export type RescueNavTileId =
   | 'network'
   | 'partitions'
   | 'linux_install'
+  | 'hardware'
   | 'settings'
   | 'system';
 
 export interface RescueNavTileDef {
   id: RescueNavTileId;
   menuId?: RescueMenuItemId;
-  icon: 'backup' | 'rescue' | 'migration' | 'analyze' | 'network' | 'partition' | 'install' | 'settings' | 'system';
+  icon:
+    | 'backup'
+    | 'rescue'
+    | 'migration'
+    | 'analyze'
+    | 'network'
+    | 'partition'
+    | 'install'
+    | 'hardware'
+    | 'settings'
+    | 'system';
   titleKey: string;
   subtitleKey: string;
   uiOnly: boolean;
@@ -71,6 +82,13 @@ export const RESCUE_NAV_TILES: RescueNavTileDef[] = [
     icon: 'install',
     titleKey: 'nav.linuxInstall.title',
     subtitleKey: 'nav.linuxInstall.subtitle',
+    uiOnly: true,
+  },
+  {
+    id: 'hardware',
+    icon: 'hardware',
+    titleKey: 'nav.hardware.title',
+    subtitleKey: 'nav.hardware.subtitle',
     uiOnly: true,
   },
   {

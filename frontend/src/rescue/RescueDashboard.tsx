@@ -13,6 +13,7 @@ const tileIcon: Record<string, string> = {
   network: '📶',
   partition: '🧩',
   install: '🐧',
+  hardware: '🛠️',
   settings: '⚙️',
   system: '🖥️',
 };

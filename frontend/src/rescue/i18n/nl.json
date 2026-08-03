@@ -278,6 +278,10 @@
     "system": {
       "subtitle": "Status, logs en diagnostiek.",
       "title": "Systeem"
+    },
+    "hardware": {
+      "title": "Hardware",
+      "subtitle": "Hardwaredetectie, driverstatus, Raspberry Pi en 64 GB-stickcapaciteit."
     }
   },
   "network": {
@@ -545,6 +549,51 @@
       "searching": "Schijven worden gezocht…",
       "windowsParts": "Windows-partities",
       "writeBlocked": "Schrijfacties geblokkeerd (write_allowed=false)."
+    },
+    "hardware": {
+      "intro": "Detectie is geen garantie voor functioneren. Dit overzicht toont de gedetecteerde status, niet de gegarandeerde werking.",
+      "loading": "Hardware wordt gedetecteerd...",
+      "loadError": "Hardwaredetectie deels niet beschikbaar.",
+      "unavailable": "Geen betrouwbare gegevens beschikbaar.",
+      "cpuTitle": "CPU en platform",
+      "architecture": "Architectuur",
+      "virtualization": "Virtualisatie beschikbaar",
+      "microcode": "Microcode-status",
+      "raspberryPiSoc": "Raspberry Pi SoC",
+      "gpuTitle": "Grafisch",
+      "disabledByCmdline": "uitgeschakeld door kernelparameter",
+      "mainboardTitle": "Moederbord en chipset",
+      "systemVendor": "Systeemfabrikant",
+      "systemProduct": "Systeemproduct",
+      "platformClass": "Platformklasse",
+      "chipset": "Chipset",
+      "reviewRequired": "Controle vereist",
+      "usbTitle": "USB-apparaten",
+      "composite": "samengesteld apparaat",
+      "inputTitle": "Toetsenbord en muis",
+      "printerScannerTitle": "Printers en scanners",
+      "printerScannerHint": "Geen testafdruk en geen scan zonder actie van de operator. Alleen driverplan-voorbeeld, geen installatie.",
+      "technology": "Technologie",
+      "color": "Kleurmogelijkheid",
+      "scanner": "Scanner",
+      "raspberryPiTitle": "Raspberry Pi",
+      "notARaspberryPi": "Geen Raspberry Pi gedetecteerd.",
+      "model": "Model",
+      "soc": "SoC",
+      "compatibility": "Compatibiliteit",
+      "carrierTitle": "64 GB-stickcapaciteit",
+      "recommendedStrategy": "Aanbevolen strategie",
+      "carrierBytesLabel": "Werkelijke mediagrootte (bytes)",
+      "carrierPreviewButton": "Capaciteitsplan tonen",
+      "layoutStatus": "Layoutstatus",
+      "usableCapacity": "Bruikbare capaciteit",
+      "reservedCapacity": "Gereserveerde capaciteit",
+      "maxCachedImages": "Max. gecachte images",
+      "osTitle": "Besturingssystemen",
+      "osExperimental": "Experimenteel",
+      "osFuture": "Gepland (future)",
+      "osVerified": "Geverifieerd",
+      "noWriteDisclaimer": "Deze ontwikkelingsfase maakt alleen een installatieplan. Er wordt geen opslagmedium beschreven."
     }
   },
   "settings": {

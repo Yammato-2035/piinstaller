@@ -23,4 +23,4 @@ export const rescueTheme = {
   fontSizeButton: 22,
 } as const;
 
-export const RESCUE_TILE_COUNT = 9;
+export const RESCUE_TILE_COUNT = 10;
