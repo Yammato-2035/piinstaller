@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "project": "PI-RS-HW-BASELINE-DIAG-I18N-002",
+  "phase": 1,
+  "base_branch": "origin/pi-rs-hw-compat-provision-001",
+  "base_head": "dfa9ae18726026470e01d0af150d92aa431fd319",
+  "areas": {
+    "memory_baseline": {
+      "existing_implementation": "none",
+      "maturity": "not_started",
+      "duplication_risk": "none",
+      "next_action": "create backend/core/memory_baseline_diagnostics.py"
+    },
+    "cpu_baseline": {
+      "existing_implementation": "backend/core/cpu_platform_detection.py (inventory only)",
+      "maturity": "inventory_only_no_health_checks",
+      "duplication_risk": "low_if_reused_as_input",
+      "next_action": "create backend/core/cpu_baseline_diagnostics.py, reuse cpu_platform_detection.py"
+    },
+    "gpu_baseline": {
+      "existing_implementation": "backend/core/gpu_detection.py, backend/core/gpu_driver_resolver.py",
+      "maturity": "detection_and_driver_plan_only",
+      "duplication_risk": "low_if_reused_as_input",
+      "next_action": "create backend/core/gpu_baseline_diagnostics.py, reuse build_gpu_report()"
+    },
+    "storage_baseline": {
+      "existing_implementation": "backend/core/storage_facade.py (device listing), backend/core/rescue_msi_diagnostics.py, backend/modules/inspect_storage.py (coarse SMART signals)",
+      "maturity": "partial_coarse_no_attribute_level_parsing",
+      "duplication_risk": "medium_avoided_by_new_normalizer_module",
+      "next_action": "create storage_health_normalizer.py, storage_baseline_diagnostics.py, hdd_/sata_ssd_/nvme_baseline_diagnostics.py"
+    },
+    "hardware_baseline_gate": {
+      "existing_implementation": "none (other gates exist: restore-preview, backup-guard, iso-build-gate, safety_facade.py -- different scope)",
+      "maturity": "not_started",
+      "duplication_risk": "none",
+      "next_action": "create backend/rescue/hardware_baseline_gate.py as additive layer in front of safety_facade.py, never bypassing it"
+    },
+    "four_language_doc_pattern": {
+      "existing_implementation": "docs/*_DE.md/_EN.md file-suffix convention (FR/NL missing); frontend/src/rescue/i18n/{de,en,fr,nl}.json already fully four-language",
+      "maturity": "de_en_complete_fr_nl_missing_for_docs; ui_i18n_structure_already_four_language",
+      "duplication_risk": "none_if_convention_followed",
+      "next_action": "extend existing convention, no new competing structure"
+    },
+    "dcc_status_and_telemetry_redaction": {
+      "existing_implementation": "backend/core/telemetry_redaction_contract.py, backend/core/hardware_dcc_status.py, backend/core/dcc_status_facade.py",
+      "maturity": "pattern_established_in_prior_phase",
+      "duplication_risk": "none_if_pattern_followed",
+      "next_action": "extend redaction pattern to new baseline telemetry fields"
+    }
+  },
+  "no_existing_function_duplicated": true
+}
