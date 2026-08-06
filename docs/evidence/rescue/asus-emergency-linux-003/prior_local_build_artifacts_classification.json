@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "path": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+      "exists": false,
+      "size": 0,
+      "reuse_allowed": false,
+      "classification": "absent"
+    },
+    {
+      "path": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/live-build/setuphelfer-rescue-live/binary.iso",
+      "exists": false,
+      "size": 0,
+      "reuse_allowed": false,
+      "classification": "absent"
+    },
+    {
+      "path": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/filesystem.squashfs",
+      "exists": false,
+      "size": 0,
+      "reuse_allowed": false,
+      "classification": "absent"
+    },
+    {
+      "path": "/home/volker/piinstaller/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+      "exists": true,
+      "size": 1428160512,
+      "reuse_allowed": false,
+      "classification": "foreign_worktree_iso_forbidden_reuse"
+    }
+  ]
+}

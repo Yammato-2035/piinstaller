@@ -1,0 +1,9 @@
+status=build_dependencies_present
+lb=/usr/bin/lb
+xorriso=/usr/bin/xorriso
+mksquashfs=/usr/bin/mksquashfs
+unsquashfs=/usr/bin/unsquashfs
+grub-mkrescue=/usr/bin/grub-mkrescue
+rsvg-convert=/usr/bin/rsvg-convert
+convert=/usr/bin/convert
+isohybrid=/usr/bin/isohybrid

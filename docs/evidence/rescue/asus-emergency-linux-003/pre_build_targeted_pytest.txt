@@ -1,0 +1,13 @@
+........................................................................ [ 22%]
+........................................................................ [ 44%]
+......s..s.............................................................. [ 67%]
+...................................................s.................... [ 89%]
+s..s..s...........................                                       [100%]
+=============================== warnings summary ===============================
+../.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434
+  /home/volker/.local/lib/python3.12/site-packages/_pytest/config/__init__.py:1434: PytestConfigWarning: Unknown config option: asyncio_default_fixture_loop_scope
+  
+    self._warn_or_fail_if_strict(f"Unknown config option: {key}\n")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+316 passed, 6 skipped, 1 warning in 17.17s

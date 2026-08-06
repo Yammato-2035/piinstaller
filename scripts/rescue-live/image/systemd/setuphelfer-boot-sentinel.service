@@ -1,14 +1,15 @@
 [Unit]
 Description=Setuphelfer boot stage sentinel (ASUS emergency campaign)
-Documentation=docs/evidence/rescue/asus-emergency-linux-003/ASUS_ROG_OPEN_TEST_MATRIX.md
+Documentation=file:///opt/setuphelfer-rescue/docs/evidence/rescue/asus-emergency-linux-003/ASUS_ROG_OPEN_TEST_MATRIX.md
 After=local-fs.target
 Before=setuphelfer-rescue-state.service
-ConditionPathExists=/opt/setuphelfer/backend/rescue/boot_stage_sentinel.py
+ConditionPathExists=/opt/setuphelfer-rescue/backend/rescue/boot_stage_sentinel.py
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Environment=PYTHONPATH=/opt/setuphelfer/backend
+Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend
+Environment=SETUPHELFER_ASUS_PROFILE=ASUS-00
 ExecStart=/usr/bin/python3 -c "from rescue.boot_stage_sentinel import new_boot_stage_state, mark_stage_reached, persist_boot_stage_state; from pathlib import Path; import os; rid=os.environ.get('SETUPHELFER_RUN_ID','unknown'); st=new_boot_stage_state(run_id=rid, boot_profile=os.environ.get('SETUPHELFER_ASUS_PROFILE','ASUS-00')); mark_stage_reached(st,'systemd_started'); persist_boot_stage_state(st, Path('/run/setuphelfer/boot_stage_state.json'))"
 
 [Install]

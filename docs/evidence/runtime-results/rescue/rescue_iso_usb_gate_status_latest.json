@@ -1,5 +1,5 @@
 {
-  "schema_version": 35,
+  "schema_version": 1,
   "classified_at": "2026-07-05T12:30:00+02:00",
   "classification": "usb_present_sda_verified_iso_rebuild_still_blocked",
   "workspace_version": "1.9.18.3",
@@ -8,7 +8,7 @@
   "iso_build_blocked_reason": "blocked_requires_operator_sudo_policy",
   "iso_build_lb_exit": 30,
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_sha256": "c70cdcfa329aae9b32909d4cada84dcb0d5b4433a298e7dc1a9b6b2b66631428",
+  "iso_sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473",
   "iso_size_bytes": 683671552,
   "iso_squashfs_has_1_7_9_0_autostart_unit": false,
   "includes_chroot_has_1_7_9_0_autostart_unit": true,
@@ -43,10 +43,18 @@
     {
       "id": "RESCUE_START_ASSISTANT_AUTOSTART_NOT_VALIDATED",
       "severity": "high",
-      "summary_de": "SquashFS im bestehenden ISO enthält noch nicht die aktuelle Autostart-Unit."
+      "summary_de": "SquashFS im bestehenden ISO enth\u00e4lt noch nicht die aktuelle Autostart-Unit."
     }
   ],
-  "next_operator_step_de": "Stick /dev/sda ist verifiziert. Nächster Schritt: interaktives Terminal für ISO-Rebuild (sudo clean + lb build, LB_EXIT=0) oder Operator-Auswahl im DCC für /dev/sda bestätigen.",
+  "next_operator_step_de": "Stick /dev/sda ist verifiziert. N\u00e4chster Schritt: interaktives Terminal f\u00fcr ISO-Rebuild (sudo clean + lb build, LB_EXIT=0) oder Operator-Auswahl im DCC f\u00fcr /dev/sda best\u00e4tigen.",
   "next_operator_step_en": "Stick /dev/sda verified. Next: interactive terminal for ISO rebuild (sudo clean + lb build, LB_EXIT=0) or confirm /dev/sda in DCC operator selection.",
-  "next_prompt_id": "RESCUE_START_ASSISTANT_AUTOSTART_REBUILD_FAILURE_TRIAGE"
+  "next_prompt_id": "RESCUE_START_ASSISTANT_AUTOSTART_REBUILD_FAILURE_TRIAGE",
+  "iso_verified": true,
+  "uefi_boot_ready": true,
+  "usb_stick_written": "no",
+  "project_version": "1.10.2.0",
+  "rescue_payload_version": "1.10.0.17",
+  "run_id": "asus-carrier-004-20260806T195318Z",
+  "updated_at": "2026-08-06T21:08:41.953538+00:00",
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004"
 }

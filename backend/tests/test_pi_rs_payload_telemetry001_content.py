@@ -20,11 +20,11 @@ class PayloadTelemetry001ContentTests(unittest.TestCase):
         self.assertTrue(result["unsquashfs_ok"])
         self.assertTrue(result["lab_modules_present"], result["lab_modules"])
         self.assertTrue(result["lab_scripts_present"], result["lab_scripts"])
-        self.assertEqual(result["version_in_payload"], "1.10.0.16")
+        self.assertEqual(result["version_in_payload"], "1.10.0.17")
         self.assertTrue(result["content_ok"])
 
     def test_version_file_path(self) -> None:
-        expected = Path("build/rescue/filesystem.squashfs.repacked-1.10.0.16")
+        expected = Path("build/rescue/filesystem.squashfs.repacked-1.10.0.17")
         self.assertEqual(default_repacked_squashfs_path().name, expected.name)
 
 

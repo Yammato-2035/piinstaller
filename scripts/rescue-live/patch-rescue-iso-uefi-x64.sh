@@ -195,6 +195,9 @@ BOOTAPPEND="$(awk '
 ' "$LIVE_CFG")"
 [[ -n "$BOOTAPPEND" ]] || fail_xorriso "could not parse bootappend from live.cfg"
 
+GRUB_SNIPPET="${SCRIPT_DIR}/image/setuphelfer-rescue-grub-menu-snippet.cfg"
+[[ -f "$GRUB_SNIPPET" ]] || fail_xorriso "missing GRUB menu snippet: ${GRUB_SNIPPET}"
+
 cat >"$GRUB_CFG" <<EOF
 set timeout=5
 set default=0
@@ -204,6 +207,53 @@ menuentry "Setuphelfer Rescue Live" {
   initrd /live/initrd.img
 }
 EOF
+# Official Setuphelfer + ASUS profile entries (must survive UEFI remaster).
+cat "$GRUB_SNIPPET" >>"$GRUB_CFG"
+grep -q 'ASUS-00 FORENSIC TUI SAFE' "$GRUB_CFG" \
+  || fail_xorriso "ASUS-00 menuentry missing after GRUB snippet append"
+grep -q 'ASUS-RECOVERY FORCED TUI FALLBACK' "$GRUB_CFG" \
+  || fail_xorriso "ASUS-RECOVERY menuentry missing after GRUB snippet append"
+
+# Ensure BIOS Isolinux path also exposes ASUS profiles when absent.
+if ! grep -q 'setuphelfer-asus-00' "$LIVE_CFG"; then
+  cat >>"$LIVE_CFG" <<'ASUSMENU'
+
+label setuphelfer-asus-00
+	menu label ASUS-00 FORENSIC TUI SAFE
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-00 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+
+label setuphelfer-asus-01
+	menu label ASUS-01 AMD DISCOVERY
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-01 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+
+label setuphelfer-asus-02
+	menu label ASUS-02 AMD GUI
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-02 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+
+label setuphelfer-asus-03
+	menu label ASUS-03 HYBRID OPEN DRIVER DIAGNOSTIC
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer setuphelfer_asus_profile=ASUS-03 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+
+label setuphelfer-asus-04
+	menu label ASUS-04 NVIDIA MODULE COMPATIBILITY
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_asus_profile=ASUS-04 setuphelfer_nvidia_diag_only=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+
+label setuphelfer-asus-05
+	menu label ASUS-05 FULL GUI CANDIDATE
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 setuphelfer_asus_profile=ASUS-05 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+
+label setuphelfer-asus-recovery
+	menu label ASUS-RECOVERY FORCED TUI FALLBACK
+	kernel /live/vmlinuz
+	append initrd=/live/initrd.img boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-RECOVERY setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+ASUSMENU
+fi
 
 grub-mkstandalone \
   --format=x86_64-efi \

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "status": "passed",
+  "run_id": "asus-carrier-004-20260806T195318Z",
+  "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473",
+  "iso_size_bytes": 1443889152,
+  "project_version": "1.10.2.0",
+  "rescue_payload_version": "1.10.0.17",
+  "bundle_source_head": "2deb694b",
+  "profile": "standard",
+  "lb_exit": 0,
+  "uefi_validate_exit": 0,
+  "squashfs_validate_exit": 0,
+  "asus_grub_profiles_present": true,
+  "asus_isolinux_profiles_present": true,
+  "asus_modules_in_squashfs": true,
+  "sentinel_units_in_squashfs": true,
+  "foreign_iso_reused": false,
+  "usb_write_allowed": false
+}

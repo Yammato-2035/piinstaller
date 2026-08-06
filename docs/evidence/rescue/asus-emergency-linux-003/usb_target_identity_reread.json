@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "phase": 13,
+  "generated_at": "2026-08-06T21:07:05Z",
+  "operator_confirmation_1": {
+    "accepted": true,
+    "path": "/dev/sda",
+    "identifier": "Intenso Ultra Line",
+    "phrase": "BEST\u00c4TIGUNG 1: USB-ZIEL KORREKT"
+  },
+  "status": "identity_confirmed",
+  "write_allowed": false,
+  "core_diffs": [],
+  "mount_changed": false,
+  "previous_fingerprint": "ce2e34b7f5ea4e41",
+  "current": {
+    "path": "/dev/sda",
+    "size_bytes": 63333990400,
+    "model": "Ultra Line",
+    "vendor": "Intenso",
+    "transport": "usb",
+    "removable": true,
+    "labels": [
+      "Linux Mint 22.3 Cinnamon 64-bit",
+      "writable"
+    ],
+    "mountpoints": [
+      "/media/volker/Linux Mint 22.3 Cinnamon 64-bit",
+      "/media/volker/writable"
+    ],
+    "partition_count": 3,
+    "local_fingerprint": "ce2e34b7f5ea4e41",
+    "is_nvme": false,
+    "root_source": "/dev/nvme1n1p2",
+    "is_system_disk": false
+  },
+  "current_partitions": [
+    {
+      "name": "sda1",
+      "size_bytes": 3091628032,
+      "fstype": "iso9660",
+      "label": "Linux Mint 22.3 Cinnamon 64-bit",
+      "mountpoints": [
+        "/media/volker/Linux Mint 22.3 Cinnamon 64-bit"
+      ]
+    },
+    {
+      "name": "sda2",
+      "size_bytes": 5242880,
+      "fstype": "vfat",
+      "label": null,
+      "mountpoints": []
+    },
+    {
+      "name": "sda3",
+      "size_bytes": 60240691200,
+      "fstype": "ext4",
+      "label": "writable",
+      "mountpoints": [
+        "/media/volker/writable"
+      ]
+    }
+  ]
+}

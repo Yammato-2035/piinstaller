@@ -1,0 +1,37 @@
+
+> pi-installer-frontend@1.10.2.0 prebuild
+> node sync-version.js
+
+
+> pi-installer-frontend@1.10.2.0 build
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+Browserslist: browsers data (caniuse-lite) is 7 months old. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+✓ 2769 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                     0.76 kB │ gzip:   0.45 kB
+dist/assets/cloud-D0Irq4uu.png                    176.34 kB
+dist/assets/backup-Cvy3szEI.png                   177.42 kB
+dist/assets/security-DQIps6Yu.png                 181.65 kB
+dist/assets/docker-Bouj5Ypp.png                   184.57 kB
+dist/assets/start-BiHirY5B.png                    188.74 kB
+dist/assets/debug-ByhlNQ8G.png                    202.46 kB
+dist/assets/network-DiowLT9I.png                  243.25 kB
+dist/assets/install-B3H7y0T1.png                  249.39 kB
+dist/assets/warning-Bcjgl66I.png                  292.36 kB
+dist/assets/tutorial-Rvi9XONP.png                 300.07 kB
+dist/assets/index-k45vD0PV.css                    125.04 kB │ gzip:  20.14 kB
+dist/assets/tauri-screenshots-stub-c6IcRXg-.js      0.17 kB │ gzip:   0.15 kB
+dist/assets/index-BohpeamJ.js                   3,100.12 kB │ gzip: 797.79 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 5.50s

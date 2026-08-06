@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "project_version": "1.10.2.0",
+  "rescue_payload_version": "1.10.0.17",
+  "baseline": {
+    "passed": 4048,
+    "failed": 9,
+    "skipped": 29
+  },
+  "current": {
+    "passed": 4070,
+    "failed": 1,
+    "skipped": 29,
+    "exit_code": 1
+  },
+  "remaining_failures": [
+    {
+      "test": "TestMsiWindowsRoutesReadonlyV1::test_capabilities_handler_scope",
+      "file": "test_msi_windows_routes_readonly_v1.py",
+      "identical_to_baseline_failure_4": true,
+      "cause": "asyncio_event_loop_flake",
+      "isolated_rerun_passed": 5,
+      "build_relevant": false,
+      "write_relevant": false,
+      "asus_relevant": false,
+      "telemetry_relevant": false,
+      "safety_relevant": false
+    }
+  ],
+  "frontend": {
+    "typecheck_exit": 2,
+    "vitest_failed": 2,
+    "vitest_passed": 172,
+    "vitest_failures_match_baseline_002": true,
+    "build_exit": 0
+  },
+  "runtime_gate": {
+    "workspace_version_ok": true,
+    "api_project_version": "1.9.21.2",
+    "backend_version_gate_exit": 14,
+    "profile_gate": "project_version_mismatch",
+    "module_boundaries_status": "review_required"
+  },
+  "USB_WRITE_ALLOWED_regression": true,
+  "USB_WRITE_ALLOWED_final": false,
+  "status": "passed_with_known_flake_only"
+}

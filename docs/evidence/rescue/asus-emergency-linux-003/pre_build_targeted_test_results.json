@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "project_version": "1.10.2.0",
+  "rescue_payload_version": "1.10.0.17",
+  "passed": 316,
+  "skipped": 6,
+  "failed": 0,
+  "exit_code": 0,
+  "status": "passed",
+  "log": "pre_build_targeted_pytest.txt"
+}

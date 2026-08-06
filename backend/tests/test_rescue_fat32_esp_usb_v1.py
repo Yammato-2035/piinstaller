@@ -84,7 +84,11 @@ class RescueFat32EspUsbTests(unittest.TestCase):
             cfg = fat32.generate_fat32_esp_grub_cfg()
             result = validate_fat32_esp_grub_cfg(cfg, mount_root=root)
             self.assertTrue(result["ok"], result["errors"])
-            self.assertEqual(result["boot_menu_entries"], 5)
+            # 5 classic Setuphelfer entries + ASUS-00..05 + ASUS-RECOVERY
+            self.assertEqual(result["boot_menu_entries"], 12)
+            self.assertIn("ASUS-00 FORENSIC TUI SAFE", cfg)
+            self.assertIn("setuphelfer_asus_profile=ASUS-00", cfg)
+            self.assertIn("ASUS-RECOVERY FORCED TUI FALLBACK", cfg)
 
     def test_fat32_esp_grub_verify_fails_missing_kernel(self) -> None:
         from core.rescue_fat32_esp_usb_verify import (

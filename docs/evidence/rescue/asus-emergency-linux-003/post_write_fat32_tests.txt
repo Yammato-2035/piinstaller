@@ -1,0 +1,13 @@
+....F..................................................                  [100%]
+=================================== FAILURES ===================================
+_________ RescueFat32EspUsbTests.test_fat32_esp_grub_cfg_staging_paths _________
+
+self = <backend.tests.test_rescue_fat32_esp_usb_v1.RescueFat32EspUsbTests testMethod=test_fat32_esp_grub_cfg_staging_paths>
+
+>   ???
+E   AssertionError: 12 != 5
+
+/tmp/piinstaller-asus-emergency-linux-telemetry-003/backend/tests/test_rescue_fat32_esp_usb_v1.py:87: AssertionError
+=========================== short test summary info ============================
+FAILED backend/tests/test_rescue_fat32_esp_usb_v1.py::RescueFat32EspUsbTests::test_fat32_esp_grub_cfg_staging_paths
+1 failed, 54 passed in 0.25s

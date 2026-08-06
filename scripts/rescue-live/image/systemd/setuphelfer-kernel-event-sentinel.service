@@ -1,12 +1,12 @@
 [Unit]
 Description=Setuphelfer kernel event sentinel (bounded dmesg excerpt)
 After=setuphelfer-boot-sentinel.service
-ConditionPathExists=/opt/setuphelfer/backend/rescue/kernel_event_sentinel.py
+ConditionPathExists=/opt/setuphelfer-rescue/backend/rescue/kernel_event_sentinel.py
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Environment=PYTHONPATH=/opt/setuphelfer/backend
+Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend
 ExecStart=/usr/bin/python3 -c "from rescue.kernel_event_sentinel import collect_dmesg_excerpt; from pathlib import Path; import json; Path('/run/setuphelfer').mkdir(parents=True, exist_ok=True); Path('/run/setuphelfer/kernel_excerpt.json').write_text(json.dumps({'lines': collect_dmesg_excerpt(max_lines=100)})+'\\n')"
 
 [Install]

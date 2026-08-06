@@ -1,0 +1,247 @@
+src/App.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/App.tsx(218,22): error TS2367: This comparison appears to be unintentional because the types '"error" | "dashboard" | "webserver" | "experience"' and '"start"' have no overlap.
+src/App.tsx(233,10): error TS6133: 'sudoPasswordReady' is declared but its value is never read.
+src/App.tsx(486,13): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(527,13): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(540,13): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(547,31): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(551,30): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(555,62): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(563,13): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(570,34): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(572,28): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(580,13): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/App.tsx(624,13): error TS2322: Type '(page: Page) => void' is not assignable to type '(page: string) => void'.
+  Types of parameters 'page' and 'page' are incompatible.
+    Type 'string' is not assignable to type 'Page'.
+src/components/ApiRuntimeConsistencyBanner.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/AppIcon.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/AppLanguageSwitcher.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/FirstRunWizard.tsx(36,10): error TS6133: 'savingProfile' is declared but its value is never read.
+src/components/PartitionGraphicLayout.tsx(127,56): error TS2367: This comparison appears to be unintentional because the types 'PartitionVisualRole' and '"data"' have no overlap.
+src/components/PartitionManagerPhase2.test.ts(5,30): error TS2307: Cannot find module 'node:fs' or its corresponding type declarations.
+src/components/PartitionManagerPhase2.test.ts(6,25): error TS2307: Cannot find module 'node:path' or its corresponding type declarations.
+src/components/PartitionManagerPhase2.test.ts(282,38): error TS2304: Cannot find name '__dirname'.
+src/components/PartitionManagerPhase2.test.ts(344,38): error TS2304: Cannot find name '__dirname'.
+src/components/RadioPlayer.tsx(9,7): error TS6133: 'COLS' is declared but its value is never read.
+src/components/RadioPlayer.tsx(10,7): error TS6133: 'TOTAL_FAVORITE_SLOTS' is declared but its value is never read.
+src/components/RadioPlayer.tsx(257,105): error TS6133: 'backendError' is declared but its value is never read.
+src/components/RadioPlayer.tsx(493,9): error TS6133: 'takeScreenshot' is declared but its value is never read.
+src/components/RadioPlayer.tsx(707,11): error TS2322: Type '((forStationId?: string | undefined) => Promise<void>) | (() => void)' is not assignable to type 'MouseEventHandler<HTMLButtonElement> | undefined'.
+  Type '(forStationId?: string) => Promise<void>' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+    Types of parameters 'forStationId' and 'event' are incompatible.
+      Type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to type 'string'.
+src/components/ScreenshotDocCard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/ScreenshotDocCard.tsx(61,31): error TS2347: Untyped function calls may not accept type arguments.
+src/components/Sidebar.tsx(63,3): error TS6133: 't' is declared but its value is never read.
+src/components/Sidebar.tsx(108,9): error TS6133: 'identitySubtitle' is declared but its value is never read.
+src/components/Sidebar.tsx(114,10): error TS6133: 'uiLang' is declared but its value is never read.
+src/components/Skeleton.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/companions/companionAssets.ts(4,3): error TS6133: 'getCompanionBaseDisplayUrl' is declared but its value is never read.
+src/components/companions/companionAssets.ts(10,3): error TS6133: 'COMPANION_VARIANT_BUNDLED_PNG_URL' is declared but its value is never read.
+src/components/dev-dashboard/AIExportPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/CockpitBackupProgressPanel.tsx(5,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/ControlCenterOverviewHeader.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/ControlCenterSectionTabs.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/ControlCenterSectionTabs.tsx(70,9): error TS2741: Property '$TFunctionBrand' is missing in type '(key: string, opts?: Record<string, unknown> | undefined) => string' but required in type 'TFunction<"translation", undefined>'.
+src/components/dev-dashboard/DccDeployOptPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccDeployOptPanel.tsx(43,11): error TS6133: 'wsVer' is declared but its value is never read.
+src/components/dev-dashboard/DccDeveloperTokenCard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccErrorBoundary.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccGovernanceContextBanner.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccGovernanceContextBanner.tsx(27,14): error TS2339: Property 'workspaceAheadOfRuntime' does not exist on type 'DccRuntimeStatusModel'.
+src/components/dev-dashboard/DccGovernanceContextBanner.tsx(35,14): error TS2339: Property 'workspaceAheadOfRuntime' does not exist on type 'DccRuntimeStatusModel'.
+src/components/dev-dashboard/DccRuntimeStatusPanel.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccVisibilityRoadmapSection.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccVisibilityRoadmapSection.tsx(17,9): error TS6133: 'inProgress' is declared but its value is never read.
+src/components/dev-dashboard/DccVisibleResultsPanel.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DccWorkspaceHandoffCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DeployStatusPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(51,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(53,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(55,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(57,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(59,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(61,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(63,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(92,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(94,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/DocumentationDiagnosticsCard.tsx(96,54): error TS2322: Type '{}' is not assignable to type 'ReactI18NextChildren | Iterable<ReactI18NextChildren>'.
+src/components/dev-dashboard/LabSessionsPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/ManualCommandRunsPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/NotificationPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/PartitionsDashboardCard.tsx(5,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RecentEvidenceFeedPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RescueAgentPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RescueBuildLogPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RescueBuildPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RescueDeveloperPipelineCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RescueStickBoard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/RescueTelemetryLanProxyToolbox.tsx(4,15): error TS2305: Module '"../../lib/devDashboard/dccCompactStatus"' has no exported member 'DccCompactRescueTelemetryLanProxy'.
+src/components/dev-dashboard/RoadmapDrawer.test.ts(213,87): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Property '$TFunctionBrand' is missing in type '(key: string) => string' but required in type 'TFunction<"translation", undefined>'.
+src/components/dev-dashboard/RoadmapDrawer.test.ts(222,87): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Property '$TFunctionBrand' is missing in type '(key: string) => string' but required in type 'TFunction<"translation", undefined>'.
+src/components/dev-dashboard/RoadmapDrawer.test.ts(230,87): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Property '$TFunctionBrand' is missing in type '(key: string) => string' but required in type 'TFunction<"translation", undefined>'.
+src/components/dev-dashboard/RoadmapDrawer.test.ts(239,87): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Property '$TFunctionBrand' is missing in type '(key: string) => string' but required in type 'TFunction<"translation", undefined>'.
+src/components/dev-dashboard/RoadmapDrawer.test.ts(247,87): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Property '$TFunctionBrand' is missing in type '(key: string) => string' but required in type 'TFunction<"translation", undefined>'.
+src/components/dev-dashboard/RoadmapDrawer.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/StandaloneModeBanner.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/dev-dashboard/UpdateStatusCard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/devserver/DevelopmentServerPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/devserver/DevelopmentServerPanelView.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/components/partitions/PartitionDeviceSidebar.tsx(72,7): error TS6133: 'ROLE_ORDER' is declared but its value is never read.
+src/components/rescue/NetworkTelemetryStatusPanel.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/rescue/RescueLiveSetupMenu.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/RemoteView.tsx(6,8): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/RemoteView.tsx(17,36): error TS6133: 'setCurrentPage' is declared but its value is never read.
+src/features/remote/components/EqControl.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/components/LogViewer.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/components/PresetGrid.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/components/StatusCard.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/pages/DashboardPage.tsx(6,8): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/pages/ModulePage.tsx(6,8): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/pages/PairPage.tsx(6,8): error TS6133: 'React' is declared but its value is never read.
+src/features/remote/pages/PairPage.tsx(7,20): error TS7016: Could not find a declaration file for module 'qrcode'. '/home/volker/piinstaller-asus-emergency-linux-telemetry-003/frontend/node_modules/qrcode/lib/index.js' implicitly has an 'any' type.
+  Try `npm i --save-dev @types/qrcode` if it exists or add a new declaration (.d.ts) file containing `declare module 'qrcode';`
+src/lib/devDashboard/buildLimitedLiveDashboard.ts(5,1): error TS6133: 'capabilitiesForSource' is declared but its value is never read.
+src/lib/devDashboard/dccBootState.ts(139,66): error TS2339: Property 'errorReason' does not exist on type '{ kind: "allowed"; } | { kind: "error"; errorReason: "inconsistent_or_unknown"; }'.
+  Property 'errorReason' does not exist on type '{ kind: "allowed"; }'.
+src/lib/devDashboard/governanceMatrix.ts(45,31): error TS6133: 'source' is declared but its value is never read.
+src/lib/devDashboard/governanceMatrix.ts(56,9): error TS6133: 'deployStatus' is declared but its value is never read.
+src/lib/devDashboard/loadDevDashboard.ts(162,9): error TS2345: Argument of type '{ source: "unavailable"; dashboard: DashboardPayload; modules: never[]; evidenceIndex: null; apiReachable: false; offlineReason: string; metaPrompt: string; capabilities: DevDashboardCapabilities; }' is not assignable to parameter of type 'DevDashboardLoadResult'.
+  Property 'localApiReachable' is missing in type '{ source: "unavailable"; dashboard: DashboardPayload; modules: never[]; evidenceIndex: null; apiReachable: false; offlineReason: string; metaPrompt: string; capabilities: DevDashboardCapabilities; }' but required in type 'DevDashboardLoadResult'.
+src/lib/devDashboard/loadDevDashboard.ts(178,7): error TS2345: Argument of type '{ source: "snapshot" | "unavailable" | "standalone_workspace"; dashboard: DashboardPayload; modules: ModuleRow[]; evidenceIndex: { status: string; gates: Record<...> | undefined; }; ... 4 more ...; capabilities: DevDashboardCapabilities; }' is not assignable to parameter of type 'DevDashboardLoadResult'.
+  Property 'localApiReachable' is missing in type '{ source: "snapshot" | "unavailable" | "standalone_workspace"; dashboard: DashboardPayload; modules: ModuleRow[]; evidenceIndex: { status: string; gates: Record<...> | undefined; }; ... 4 more ...; capabilities: DevDashboardCapabilities; }' but required in type 'DevDashboardLoadResult'.
+src/lib/devDashboard/loadDevDashboard.ts(219,7): error TS2345: Argument of type '{ source: "unavailable"; dashboard: DashboardPayload; modules: never[]; evidenceIndex: null; apiReachable: false; offlineReason: string; metaPrompt: string; capabilities: DevDashboardCapabilities; }' is not assignable to parameter of type 'DevDashboardLoadResult'.
+  Property 'localApiReachable' is missing in type '{ source: "unavailable"; dashboard: DashboardPayload; modules: never[]; evidenceIndex: null; apiReachable: false; offlineReason: string; metaPrompt: string; capabilities: DevDashboardCapabilities; }' but required in type 'DevDashboardLoadResult'.
+src/lib/devDashboard/loadDevDashboard.ts(245,5): error TS2345: Argument of type '{ source: "snapshot" | "unavailable" | "standalone_workspace"; dashboard: DashboardPayload; modules: ModuleRow[]; evidenceIndex: { status: string; gates: Record<...> | undefined; }; ... 4 more ...; capabilities: DevDashboardCapabilities; }' is not assignable to parameter of type 'DevDashboardLoadResult'.
+  Property 'localApiReachable' is missing in type '{ source: "snapshot" | "unavailable" | "standalone_workspace"; dashboard: DashboardPayload; modules: ModuleRow[]; evidenceIndex: { status: string; gates: Record<...> | undefined; }; ... 4 more ...; capabilities: DevDashboardCapabilities; }' but required in type 'DevDashboardLoadResult'.
+src/lib/devDashboard/rescueStickUsbGate.test.ts(7,19): error TS2339: Property 'iso_verified' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.test.ts(8,19): error TS2339: Property 'uefi_boot_ready' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.test.ts(9,19): error TS2339: Property 'usb_stick_written' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.ts(26,23): error TS2339: Property 'iso_status' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.ts(27,25): error TS2339: Property 'iso_verified' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.ts(28,27): error TS2339: Property 'uefi_boot_ready' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.ts(31,16): error TS2339: Property 'iso_boot_proven_vm' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/rescueStickUsbGate.ts(34,31): error TS2339: Property 'usb_stick_written' does not exist on type '{ schema_version: number; classified_at: string; classification: string; workspace_version: string; build_tree_prepared_for_1_7_9_0: boolean; iso_rebuilt_for_start_assistant_autostart: boolean; ... 28 more ...; next_prompt_id: string; }'.
+src/lib/devDashboard/windowsInspectSchema.test.ts(1,30): error TS2307: Cannot find module 'node:fs' or its corresponding type declarations.
+src/lib/devDashboard/windowsInspectSchema.test.ts(2,25): error TS2307: Cannot find module 'node:path' or its corresponding type declarations.
+src/lib/devDashboard/windowsInspectSchema.test.ts(5,26): error TS2304: Cannot find name '__dirname'.
+src/lib/devDashboard/windowsRescueInspectReport.ts(50,25): error TS2339: Property 'server_ack_id' does not exist on type '{ required: boolean; local_report_hash: null; server_ack_required: boolean; ack_status: string; hash_match: null; }'.
+src/lib/devDashboard/windowsRescueTelemetry.ts(67,85): error TS2367: This comparison appears to be unintentional because the types '"unknown" | "unlocked" | "suspended"' and '"locked"' have no overlap.
+src/lib/partition/partitionMockupTheme.ts(40,14): error TS2741: Property 'windows_system' is missing in type '{ system: { shell: string; selected: string; iconWrap: string; icon: string; label: string; }; backup: { shell: string; selected: string; iconWrap: string; icon: string; label: string; }; rescue: { shell: string; selected: string; iconWrap: string; icon: string; label: string; }; other: { ...; }; }' but required in type 'Record<DiskRole, { shell: string; selected: string; iconWrap: string; icon: string; label: string; }>'.
+src/pages/BackupRestore.tsx(177,10): error TS6133: 'toastFromApi' is declared but its value is never read.
+src/pages/BackupRestore.tsx(1499,9): error TS6133: 'deleteBackup' is declared but its value is never read.
+src/pages/BackupRestore.tsx(1534,7): error TS2345: Argument of type '(sudoPassword: string) => Promise<void>' is not assignable to parameter of type '(pwd?: string | undefined) => Promise<void>'.
+  Types of parameters 'sudoPassword' and 'pwd' are incompatible.
+    Type 'string | undefined' is not assignable to type 'string'.
+      Type 'undefined' is not assignable to type 'string'.
+src/pages/BackupRestore.tsx(3030,35): error TS6133: 'backupFile' is declared but its value is never read.
+src/pages/ControlCenter.tsx(958,5): error TS6133: 'opts' is declared but its value is never read.
+src/pages/Dashboard.tsx(300,20): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+src/pages/Dashboard.tsx(534,50): error TS2322: Type '20' is not assignable to type '16 | 24 | 32 | 48 | 64 | undefined'.
+src/pages/Dashboard.tsx(536,55): error TS2322: Type '20' is not assignable to type '16 | 24 | 32 | 48 | 64 | undefined'.
+src/pages/Dashboard.tsx(686,68): error TS2322: Type '26' is not assignable to type '16 | 24 | 32 | 48 | 64 | undefined'.
+src/pages/Dashboard.tsx(1727,66): error TS18048: 'percent' is possibly 'undefined'.
+src/pages/Dashboard.tsx(2256,64): error TS6133: 'status' is declared but its value is never read.
+src/pages/DevDashboardBody.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+src/pages/DevelopmentDashboard.tsx(229,16): error TS2741: Property 'dashboard' is missing in type '{ t: TFunction<"translation", undefined>; }' but required in type 'CockpitPanelProps'.
+src/pages/Documentation.tsx(124,24): error TS6133: 'systemLabelPossessive' is declared but its value is never read.
+src/pages/DsiRadioSettings.tsx(16,82): error TS6133: 'setCurrentPage' is declared but its value is never read.
+src/pages/HomeAutomationSetup.tsx(2,16): error TS6133: 'Zap' is declared but its value is never read.
+src/pages/HomeAutomationSetup.tsx(317,9): error TS2322: Type '{ isOpen: boolean; onClose: () => void; onSubmit: (sudoPassword: string) => Promise<void>; }' is not assignable to type 'IntrinsicAttributes & SudoPasswordModalProps'.
+  Property 'isOpen' does not exist on type 'IntrinsicAttributes & SudoPasswordModalProps'. Did you mean 'open'?
+src/pages/MailServerSetup.tsx(5,1): error TS6133: 'fetchApi' is declared but its value is never read.
+src/pages/MailServerSetup.tsx(120,26): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/MailServerSetup.tsx(150,32): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/MonitoringDashboard.tsx(55,11): error TS2580: Cannot find name 'process'. Do you need to install type definitions for node? Try `npm i --save-dev @types/node`.
+src/pages/MusicBoxSetup.tsx(3,17): error TS6133: 'Radio' is declared but its value is never read.
+src/pages/MusicBoxSetup.tsx(3,24): error TS6133: 'Headphones' is declared but its value is never read.
+src/pages/NASSetup.tsx(2,21): error TS6133: 'Server' is declared but its value is never read.
+src/pages/NASSetup.tsx(2,29): error TS6133: 'Folder' is declared but its value is never read.
+src/pages/NASSetup.tsx(2,37): error TS6133: 'Users' is declared but its value is never read.
+src/pages/PeripheryScan.tsx(946,18): error TS2304: Cannot find name 'Usb'.
+src/pages/RaspberryPiConfig.tsx(3,10): error TS6133: 'Settings' is declared but its value is never read.
+src/pages/RaspberryPiConfig.tsx(57,10): error TS6133: 'configOptions' is declared but its value is never read.
+src/pages/RaspberryPiConfig.tsx(63,10): error TS6133: 'selectedOption' is declared but its value is never read.
+src/pages/RaspberryPiConfig.tsx(63,26): error TS6133: 'setSelectedOption' is declared but its value is never read.
+src/pages/RaspberryPiConfig.tsx(223,5): error TS6133: 'opts' is declared but its value is never read.
+src/pages/RaspberryPiConfig.tsx(344,38): error TS2554: Expected 1 arguments, but got 2.
+src/pages/RaspberryPiConfig.tsx(466,15): error TS2322: Type '(retryAfterSudo?: boolean) => Promise<void>' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+  Types of parameters 'retryAfterSudo' and 'event' are incompatible.
+    Type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to type 'boolean | undefined'.
+src/pages/RaspberryPiConfig.tsx(495,71): error TS2552: Cannot find name 'getSudoPassword'. Did you mean 'storeSudoPassword'?
+src/pages/RaspberryPiConfig.tsx(530,71): error TS2552: Cannot find name 'getSudoPassword'. Did you mean 'storeSudoPassword'?
+src/pages/SecuritySetup.tsx(31,10): error TS6133: 'installedPackages' is declared but its value is never read.
+src/pages/SecuritySetup.tsx(400,28): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/SecuritySetup.tsx(405,28): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/SecuritySetup.tsx(410,28): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/SecuritySetup.tsx(415,28): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/SecuritySetup.tsx(420,28): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/SettingsPage.tsx(5,47): error TS6133: 'XCircle' is declared but its value is never read.
+src/pages/SettingsPage.tsx(56,14): error TS6133: 'i18n' is declared but its value is never read.
+src/pages/SettingsPage.tsx(145,9): error TS6133: 'refreshNotificationSettings' is declared but its value is never read.
+src/pages/SettingsPage.tsx(538,5): error TS6133: 'opts' is declared but its value is never read.
+src/pages/SettingsPage.tsx(601,38): error TS2554: Expected 1 arguments, but got 2.
+src/pages/SettingsPage.tsx(692,56): error TS2322: Type '18' is not assignable to type '16 | 24 | 32 | 48 | 64 | undefined'.
+src/pages/UserManagement.tsx(3,31): error TS6133: 'Lock' is declared but its value is never read.
+src/pages/UserManagement.tsx(161,7): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/pages/UserManagement.tsx(170,9): error TS2322: Type 'string | null' is not assignable to type 'string'.
+  Type 'null' is not assignable to type 'string'.
+src/pages/UserManagement.tsx(204,9): error TS6133: 'getRoleColor' is declared but its value is never read.
+src/pages/UserManagement.tsx(214,9): error TS6133: 'getRoleLabel' is declared but its value is never read.
+src/pages/UserManagement.tsx(341,27): error TS2322: Type '(forceSkipTest?: boolean) => Promise<void>' is not assignable to type 'MouseEventHandler<HTMLButtonElement>'.
+  Types of parameters 'forceSkipTest' and 'event' are incompatible.
+    Type 'MouseEvent<HTMLButtonElement, MouseEvent>' is not assignable to type 'boolean | undefined'.
+src/pages/WebServerSetup.tsx(3,17): error TS6133: 'Settings' is declared but its value is never read.
+src/pages/WebServerSetup.tsx(573,32): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/WebServerSetup.tsx(578,32): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/pages/WebServerSetup.tsx(584,32): error TS7006: Parameter 'v' implicitly has an 'any' type.
+src/rescue/RescueAnalyzePanel.tsx(6,1): error TS6133: 'theme' is declared but its value is never read.
+src/rescue/RescueAnalyzePanel.tsx(28,29): error TS2352: Conversion of type 'SystemIdentity' to type 'Record<string, unknown>' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Index signature for type 'string' is missing in type 'SystemIdentity'.
+src/rescue/RescueBackupPanel.tsx(55,28): error TS6133: 'cloud' is declared but its value is never read.
+src/rescue/RescueBrandingHeader.tsx(3,1): error TS6133: 't' is declared but its value is never read.
+src/rescue/RescueEvidenceStatusPanel.tsx(9,8): error TS2307: Cannot find module './rescueOperatorApi' or its corresponding type declarations.
+src/rescue/RescueEvidenceStatusPanel.tsx(18,8): error TS2307: Cannot find module './rescueMonitoringApi' or its corresponding type declarations.
+src/rescue/RescueEvidenceStatusPanel.tsx(126,47): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/rescue/RescueEvidenceStatusPanel.tsx(198,58): error TS7006: Parameter 'f' implicitly has an 'any' type.
+src/rescue/RescueLinuxInstallPanel.tsx(15,51): error TS2339: Property 'linux_install' does not exist on type '{ backup_execute?: boolean | undefined; restore_execute?: boolean | undefined; restore_preview?: boolean | undefined; }'.
+src/rescue/RescueNetworkPanel.tsx(267,36): error TS2322: Type 'RescueLocale' is not assignable to type '"de" | "en" | undefined'.
+  Type '"fr"' is not assignable to type '"de" | "en" | undefined'.
+src/rescue/RescueOperatorChecklistPanel.tsx(2,37): error TS2307: Cannot find module './rescueOperatorApi' or its corresponding type declarations.
+src/rescue/RescueOperatorChecklistPanel.tsx(3,38): error TS2307: Cannot find module './rescueOperatorMode' or its corresponding type declarations.
+src/rescue/RescueOperatorChecklistPanel.tsx(18,14): error TS7006: Parameter 'data' implicitly has an 'any' type.
+src/rescue/RescuePowerButton.tsx(8,16): error TS6133: 'confirmLabel' is declared but its value is never read.
+src/rescue/RescueStartCenter.tsx(89,35): error TS2339: Property 'maxWidth' does not exist on type 'RescueLayoutProfile'.

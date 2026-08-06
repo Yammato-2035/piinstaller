@@ -382,14 +382,24 @@ def generate_fat32_esp_grub_cfg(
         )
 
     base_live = "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1"
+    asus_live = (
+        "boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 "
+        "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1"
+    )
     lines = [
         "set timeout=15",
         "set timeout_style=menu",
+        # ASUS-00 is the first menuentry (forensic TUI safe default for this campaign).
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
         *generate_grub_cfg_failsafe_plain_lines(),
         "",
+        entry(
+            "ASUS-00 FORENSIC TUI SAFE",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
+            "setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-00",
+        ),
         entry(
             "Setuphelfer starten - sicherer Textmodus",
             f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1",
@@ -410,6 +420,38 @@ def generate_fat32_esp_grub_cfg(
             "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)",
             f"{base_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 "
             "pci=noaer nouveau.modeset=0 nomodeset",
+        ),
+        entry(
+            "ASUS-01 AMD DISCOVERY",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer "
+            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau "
+            "setuphelfer_asus_profile=ASUS-01",
+        ),
+        entry(
+            "ASUS-02 AMD GUI",
+            f"{asus_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer "
+            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau "
+            "setuphelfer_asus_profile=ASUS-02",
+        ),
+        entry(
+            "ASUS-03 HYBRID OPEN DRIVER DIAGNOSTIC",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer "
+            "setuphelfer_asus_profile=ASUS-03",
+        ),
+        entry(
+            "ASUS-04 NVIDIA MODULE COMPATIBILITY",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 "
+            "setuphelfer_asus_profile=ASUS-04 setuphelfer_nvidia_diag_only=1",
+        ),
+        entry(
+            "ASUS-05 FULL GUI CANDIDATE",
+            f"{asus_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
+            "setuphelfer_asus_profile=ASUS-05",
+        ),
+        entry(
+            "ASUS-RECOVERY FORCED TUI FALLBACK",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
+            "setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-RECOVERY",
         ),
         'menuentry "Neustart" { reboot }',
         'menuentry "Ausschalten" { halt }',

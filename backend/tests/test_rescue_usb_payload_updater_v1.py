@@ -17,8 +17,8 @@ from core import rescue_usb_payload_atomic_update as atomic  # noqa: E402
 from core.rescue_fat32_esp_usb_writer import sha256_file  # noqa: E402
 
 EXPECTED_SHA = "cada647ccc11a545a8b4eb6f42deb8745bdedcd5b1662e738c96d68c987621b5"
-EXPECTED_VERSION = "1.10.0.16"
-PAYLOAD = Path(__file__).resolve().parents[2] / "build/rescue/filesystem.squashfs.repacked-1.10.0.16"
+EXPECTED_VERSION = "1.10.0.17"
+PAYLOAD = Path(__file__).resolve().parents[2] / "build/rescue/filesystem.squashfs.repacked-1.10.0.17"
 
 
 class RescueUsbPayloadUpdaterV1Tests(unittest.TestCase):

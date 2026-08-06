@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "base": "83126971b342062f4420028d8381afeb0f730060",
+  "head": "2deb694bd80f3d2a29899a67d862b7b7c9c022f5",
+  "file_count": 63,
+  "controlled_iso_required_reasons": [
+    "no_iso_or_squashfs_in_worktree",
+    "new_systemd_units_must_be_installed_in_live_image",
+    "asus_boot_profiles_require_bootloader_cmdline_entries",
+    "cannot_prove_kernel_initramfs_match_for_repack_fallback"
+  ],
+  "components": [
+    {"component": "boot_stage_sentinel", "file": "backend/rescue/boot_stage_sentinel.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "hardware_state_sentinel", "file": "backend/rescue/hardware_state_sentinel.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "kernel_event_sentinel", "file": "backend/rescue/kernel_event_sentinel.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "device_lifecycle_sentinel", "file": "backend/rescue/device_lifecycle_sentinel.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "driver_failure_resolver", "file": "backend/rescue/driver_failure_resolver.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "boot_comparison_engine", "file": "backend/rescue/boot_comparison_engine.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "asus_boot_profiles", "file": "backend/rescue/asus_boot_profiles.py", "payload": true, "initramfs": false, "bootloader": true, "tested": true},
+    {"component": "telemetry_spooler", "file": "backend/rescue/telemetry_spooler.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "diagnostics_forwarding_contract", "file": "backend/rescue/diagnostics_forwarding_contract.py", "payload": true, "initramfs": false, "bootloader": false, "tested": true},
+    {"component": "operator_dashboard_boot_view", "file": "backend/rescue/operator_dashboard_boot_view.py", "payload": true, "initramfs": false, "bootloader": false, "tested": "smoke"},
+    {"component": "systemd_units", "file": "scripts/rescue-live/image/systemd/setuphelfer-*-sentinel*.service", "payload": true, "initramfs": false, "bootloader": false, "tested": false, "build_integrated": true},
+    {"component": "asus_api_routes", "file": null, "payload": false, "initramfs": false, "bootloader": false, "tested": false, "gap": true},
+    {"component": "asus_i18n_four_languages", "file": null, "payload": false, "initramfs": false, "bootloader": false, "tested": false, "gap": true},
+    {"component": "grub_asus_menu_entries", "file": "scripts/rescue-live/prepare-controlled-live-build-tree.sh + image/setuphelfer-rescue-grub-menu-snippet.cfg", "payload": true, "initramfs": false, "bootloader": true, "tested": false, "build_integrated": true, "gap": false},
+    {"component": "live_build_prepare_integration", "file": "scripts/rescue-live/prepare-controlled-live-build-tree.sh", "payload": true, "initramfs": false, "bootloader": true, "tested": false, "build_integrated": true}
+  ]
+}

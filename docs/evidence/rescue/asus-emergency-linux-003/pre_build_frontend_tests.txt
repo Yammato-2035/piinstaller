@@ -1,0 +1,106 @@
+
+> pi-installer-frontend@1.10.2.0 test
+> vitest run --run
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+
+ RUN  v3.2.6 /home/volker/piinstaller-asus-emergency-linux-telemetry-003/frontend
+
+ ✓ src/lib/devDashboard/windowsInspectSchema.test.ts (5 tests) 5ms
+ ✓ src/utils/backupCreateBody.test.ts (3 tests) 3ms
+ ✓ src/dcc/visibility/runtimeStatusModel.test.ts (5 tests) 4ms
+ ✓ src/lib/devDashboard/statusComponentMigrationH6.test.ts (4 tests) 4ms
+ ✓ src/components/dev-dashboard/statusComponentMigrationH4.test.ts (3 tests) 3ms
+ ✓ src/utils/backupJobProgressDisplay.test.ts (7 tests) 6ms
+ ✓ src/lib/devDashboard/statusComponentMigrationH7.test.ts (5 tests) 4ms
+ ✓ src/lib/devDashboard/dccGate.test.ts (7 tests) 4ms
+ ✓ src/lib/devDashboard/rescueUsbOperatorToolbox.test.ts (5 tests) 7ms
+ ✓ src/lib/devDashboard/windowsRescueTelemetry.test.ts (11 tests) 6ms
+ ✓ src/components/dev-dashboard/statusComponentMigrationH3.test.ts (3 tests) 8ms
+ ✓ src/lib/devDashboard/statusComponentMigrationH5.test.ts (5 tests) 4ms
+ ✓ src/lib/devDashboard/governanceMatrix.test.ts (4 tests) 8ms
+ ✓ src/lib/devDashboard/dccBootState.test.ts (9 tests) 5ms
+ ✓ src/lib/devDashboard/roadmapFilter.test.ts (4 tests) 4ms
+ ✓ src/pages/devDashboardFilters.test.ts (4 tests) 5ms
+ ✓ src/lib/devDashboard/governanceHistory.test.ts (2 tests) 7ms
+ ✓ src/viewmodels/statusViewModel.test.ts (12 tests) 5ms
+ ✓ src/api.apiBase.test.ts (4 tests) 234ms
+ ✓ src/lib/devDashboard/windowsRescueInspectReport.test.ts (3 tests) 8ms
+ ✓ src/components/AppLanguageSwitcher.test.ts (1 test) 10ms
+ ✓ src/lib/devDashboard/buildStandaloneDashboard.test.ts (7 tests) 7ms
+ ✓ src/dcc/visibility/changelogModel.test.ts (4 tests) 5ms
+stderr | src/lib/devDashboard/dccCompactOverviewPanel.test.ts > DccCompactOverviewPanel > renders compact tiles without raw dump by default
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
+
+ ✓ src/components/devserver/DevelopmentServerPanel.test.ts (4 tests) 14ms
+ ✓ src/lib/devDashboard/dccCompactOverviewPanel.test.ts (2 tests) 11ms
+ ✓ src/lib/devDashboard/dccCompactStatus.test.ts (1 test) 2ms
+ ✓ src/trafficLight/trafficLightModel.test.ts (3 tests) 3ms
+ ✓ src/lib/devDashboard/loadDevDashboard.test.ts (4 tests) 33ms
+ ✓ src/components/dev-dashboard/RoadmapDrawer.test.ts (5 tests) 38ms
+ ❯ src/lib/devDashboard/rescueStickUsbGate.test.ts (2 tests | 2 failed) 8ms
+   × rescueStickUsbGate > loads gate status with UEFI ready but USB not written 5ms
+     → expected undefined to be true // Object.is equality
+   × rescueStickUsbGate > blocks windows inspect until USB boot with stick blockers 2ms
+     → expected false to be true // Object.is equality
+stderr | src/lib/devDashboard/rescueTelemetryLanProxy.test.ts > DccCompactOverviewPanel rescue telemetry LAN tile > shows green when proxy running and lan health ok
+react-i18next:: useTranslation: You will need to pass in an i18next instance by using initReactI18next { code: 'NO_I18NEXT_INSTANCE' }
+
+ ✓ src/components/dev-dashboard/StandaloneModeBanner.test.ts (1 test) 6ms
+ ✓ src/lib/devDashboard/rescueTelemetryLanProxy.test.ts (5 tests) 12ms
+ ✓ src/components/dev-dashboard/ControlCenterOverview.test.ts (4 tests) 12ms
+stdout | src/components/PartitionManagerPhase2.test.ts
+🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+stdout | src/pages/DevDashboardBody.test.ts
+🌐 i18next is made possible by our own product, Locize — consider powering your project with managed localization (AI, CDN, integrations): https://locize.com 💙
+
+ ✓ src/pages/DevDashboardBody.test.ts (9 tests) 47ms
+ ✓ src/components/PartitionManagerPhase2.test.ts (17 tests) 33ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/devDashboard/rescueStickUsbGate.test.ts > rescueStickUsbGate > loads gate status with UEFI ready but USB not written
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected: 
+true
+
++ Received: 
+undefined
+
+ ❯ src/lib/devDashboard/rescueStickUsbGate.test.ts:7:33
+      5|   it('loads gate status with UEFI ready but USB not written', () => {
+      6|     const status = loadRescueIsoUsbGateStatus()
+      7|     expect(status.iso_verified).toBe(true)
+       |                                 ^
+      8|     expect(status.uefi_boot_ready).toBe(true)
+      9|     expect(status.usb_stick_written).toBe('no')
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/lib/devDashboard/rescueStickUsbGate.test.ts > rescueStickUsbGate > blocks windows inspect until USB boot with stick blockers
+AssertionError: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ src/lib/devDashboard/rescueStickUsbGate.test.ts:16:30
+     14|     const vm = buildRescueStickGateViewModel()
+     15|     expect(vm.windowsInspectExecutable).toBe(false)
+     16|     expect(vm.uefiBootReady).toBe(true)
+       |                              ^
+     17|     expect(vm.blockers).toContain('RESCUE_STICK_NOT_WRITTEN')
+     18|     expect(vm.blockers).toContain('RESCUE_USB_BOOT_NOT_VALIDATED_ON_TA…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 34 passed (35)
+      Tests  2 failed | 172 passed (174)
+   Start at  21:49:46
+   Duration  1.45s (transform 4.79s, setup 0ms, collect 11.00s, tests 574ms, environment 6ms, prepare 6.23s)
+

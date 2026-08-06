@@ -1,15 +1,13 @@
 {
-  "selected_device": "/dev/sdb",
+  "selected_device": "/dev/sda",
   "selected_model": "Ultra Line",
-  "selected_serial": "24111412110212",
+  "selected_serial": null,
   "selected_size": "59G",
-  "previous_label": "SETUPHELFER_RESCUE",
-  "previous_fstype": "iso9660",
-  "previous_mountpoints": [
-    "/media/gabriel/SETUPHELFER_RESCUE"
-  ],
+  "previous_label": null,
+  "previous_fstype": null,
+  "previous_mountpoints": [],
   "iso_path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
-  "iso_sha256": "09b9482a4ef18e2abf091edace794fc6baa27398f44b26e131db87ca855e0879",
+  "iso_sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473",
   "operator_confirmations": {
     "confirm_correct_usb": true,
     "confirm_data_destruction": true,
@@ -19,11 +17,13 @@
   },
   "confirmation_phrase_matched": true,
   "write_allowed": true,
-  "generated_dd_command": "sudo dd if=\"build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso\" of=\"/dev/sdb\" bs=16M status=progress conv=fsync",
-  "created_at": "2026-06-06T11:41:48.273186+00:00",
+  "generated_dd_command": "sudo dd if=\"build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso\" of=\"/dev/sda\" bs=16M status=progress conv=fsync",
+  "created_at": "2026-08-06T21:08:42.248542+00:00",
   "secrets_exposed": false,
   "dd_execution_allowed": false,
   "blockers": [],
   "errors": [],
-  "setuphelfer_rescue_detected": true
+  "setuphelfer_rescue_detected": false,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "local_fingerprint": "ce2e34b7f5ea4e41"
 }

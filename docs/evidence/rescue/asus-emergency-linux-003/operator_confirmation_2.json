@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "phase": 14,
+  "operator_confirmation_2": {
+    "accepted": true,
+    "phrase": "JA, DEN ANGEZEIGTEN EXTERNEN USB-STICK VOLLST\u00c4NDIG \u00dcBERSCHREIBEN"
+  },
+  "identity_match": true,
+  "write_allowed": true,
+  "current": {
+    "path": "/dev/sda",
+    "size_bytes": 63333990400,
+    "vendor": "Intenso",
+    "model": "Ultra Line",
+    "transport": "usb",
+    "removable": true,
+    "fp": "ce2e34b7f5ea4e41",
+    "mounts": [
+      "/media/volker/Linux Mint 22.3 Cinnamon 64-bit",
+      "/media/volker/writable"
+    ],
+    "is_system": false,
+    "is_nvme": false
+  },
+  "generated_at": "2026-08-06T21:08:10Z"
+}

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "status": "physical_carrier_written_and_verified",
+  "write_executed": true,
+  "write_exit": 0,
+  "started_at": "2026-08-06T21:08:48Z",
+  "completed_at": "2026-08-06T21:10:26Z",
+  "target_path": "/dev/sda",
+  "target_fingerprint": "ce2e34b7f5ea4e41",
+  "iso_sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473",
+  "fat_uuid": "7EA0-B29E",
+  "evidence_dir": "docs/evidence/runtime-results/rescue/fat32_esp_write_20260806_210852",
+  "verify_exit": 0,
+  "project_version": "1.10.2.0",
+  "rescue_payload_version": "1.10.0.17",
+  "labels": ["SETUPHELFER", "SETUP_LOGS"],
+  "asus_grub_default": "ASUS-00 FORENSIC TUI SAFE",
+  "asus_profiles_on_esp": ["ASUS-00", "ASUS-01", "ASUS-02", "ASUS-03", "ASUS-04", "ASUS-05", "ASUS-RECOVERY"],
+  "nvme_touched": false,
+  "internal_disk_touched": false
+}

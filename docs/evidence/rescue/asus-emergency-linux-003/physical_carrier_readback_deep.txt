@@ -1,0 +1,101 @@
+=== lsblk ===
+NAME   SIZE TYPE FSTYPE LABEL       PARTLABEL          MOUNTPOINTS
+sda     59G disk                                       
+├─sda1   4G part vfat   SETUPHELFER SETUPHELFER_RESCUE /tmp/asus-carrier-rb.WKfpUw
+└─sda2  55G part vfat   SETUP_LOGS  SETUPHELFER_LOGS   
+=== ESP top ===
+insgesamt 120
+drwxr-xr-x  6 root root  4096 Jan  1  1970 .
+drwxrwxrwt 28 root root 98304 Aug  6 23:10 ..
+drwxr-xr-x  3 root root  4096 Aug  6 23:09 boot
+drwxr-xr-x  3 root root  4096 Aug  6 23:09 EFI
+drwxr-xr-x  2 root root  4096 Aug  6 23:09 live
+drwxr-xr-x  3 root root  4096 Aug  6 23:09 setuphelfer
+=== VERSION carriers ===
+{
+  "generated_at": "2026-08-06T19:45:00Z",
+  "project_version": "1.10.2.0",
+  "release_stage": "internal_testing",
+  "schema_version": 1,
+  "version_source_of_truth": true,
+  "version_track": "pi_rs_asus_emergency_linux_telemetry_003"
+}
+
+{
+    "built_at": "2026-08-06T21:08:50.585258+00:00",
+    "iso_path": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+    "iso_sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473",
+    "writer_mode": "fat32_esp",
+    "bootx64_source": "grub_mkstandalone",
+    "bootx64_embedded_bootstrap": true,
+    "bootx64_iso_copied": false,
+    "bootx64_modules_requested": [
+        "part_gpt",
+        "fat",
+        "search",
+        "search_fs_uuid",
+        "search_label",
+        "normal",
+        "linux",
+        "gzio",
+        "configfile",
+        "boot",
+        "gfxterm",
+        "gfxmenu",
+        "jpeg",
+        "png",
+        "all_video",
+        "efi_gop",
+        "efi_uga",
+        "video",
+        "font"
+    ],
+    "grub_theme_staged": {
+        "theme_dir": "boot/grub/themes/setuphelfer",
+        "staged_files": [
+            "boot/grub/themes/setuphelfer/theme.txt",
+            "boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.jpg",
+            "boot/grub/themes/setuphelfer/unicode.pf2"
+        ],
+        "background_present": true,
+        "background_format": "jpeg",
+        "background_staged_name": "setuphelfer-boot-menu-de.jpg",
+        "font_present": true,
+=== GRUB ASUS ===
+22:menuentry "Setuphelfer starten - sicherer Textmodus" {
+27:menuentry "Setuphelfer starten - grafische Oberflaeche" {
+32:menuentry "Diagnose sammeln und auf Stick speichern" {
+37:menuentry "Hardware- und WLAN-Diagnose" {
+42:menuentry "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)" {
+47:menuentry "Neustart" { reboot }
+48:menuentry "Ausschalten" { halt }
+menuentry_count=7
+=== BOOTX64 ===
+-rwxr-xr-x 1 root root 3866624 Aug  6 23:09 /tmp/asus-carrier-rb.WKfpUw/EFI/BOOT/BOOTX64.EFI
+=== live payload ===
+insgesamt 1328532
+drwxr-xr-x 2 root root       4096 Aug  6 23:09 .
+drwxr-xr-x 6 root root       4096 Jan  1  1970 ..
+-rwxr-xr-x 1 root root 1296773120 Aug  6 23:09 filesystem.squashfs
+-rwxr-xr-x 1 root root   55404710 Aug  6 23:09 initrd.img
+-rwxr-xr-x 1 root root    8226752 Aug  6 23:09 vmlinuz
+=== squashfs VERSION + ASUS modules ===
+1.10.2.0
+OK_boot_stage_sentinel
+OK_hardware_state_sentinel
+OK_kernel_event_sentinel
+OK_device_lifecycle_sentinel
+OK_driver_failure_resolver
+OK_boot_comparison_engine
+OK_asus_boot_profiles
+OK_telemetry_spooler
+OK_setuphelfer-boot-sentinel
+OK_setuphelfer-hardware-sentinel
+OK_setuphelfer-kernel-event-sentinel
+OK_setuphelfer-telemetry-spooler
+OK_setuphelfer-autocapture-finalizer
+=== ISO SHA match in evidence ===
+iso_sha256 ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473
+match True
+NAME FSTYPE FSVER LABEL      UUID                                 FSAVAIL FSUSE% MOUNTPOINTS
+sda2 vfat   FAT32 SETUP_LOGS 7EAD-908B                                           

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "carrier_capacity_status": "passed",
+  "target_safety_status": "review_required",
+  "write_allowed": false,
+  "reasons": [
+    "target_currently_mounted_linux_mint_live_media",
+    "awaiting_operator_confirmation_1",
+    "awaiting_identity_reread",
+    "awaiting_operator_confirmation_2"
+  ],
+  "iso_size_bytes": 1443889152,
+  "target_size_bytes": 63333990400,
+  "reserve_bytes_required": 2147483648,
+  "target_path": "/dev/sda",
+  "target_fingerprint": "ce2e34b7f5ea4e41",
+  "not_system_disk": true,
+  "not_nvme": true,
+  "transport_usb": true,
+  "removable": true
+}

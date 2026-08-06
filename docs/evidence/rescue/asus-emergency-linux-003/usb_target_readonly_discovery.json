@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-CARRIER-BUILD-WRITE-004",
+  "generated_at": "2026-08-06T20:54:36Z",
+  "status": "single_candidate_found",
+  "write_allowed": false,
+  "root_source": "/dev/nvme1n1p2",
+  "iso": {
+    "path": "build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+    "size_bytes": 1443889152,
+    "sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473"
+  },
+  "candidate_count": 1,
+  "candidates": [
+    {
+      "path": "/dev/sda",
+      "name": "sda",
+      "size_bytes": 63333990400,
+      "size_gib": 58.98,
+      "model": "Ultra Line",
+      "vendor": "Intenso",
+      "transport": "usb",
+      "removable": true,
+      "is_nvme": false,
+      "is_system_disk": false,
+      "in_64gb_class": true,
+      "mounted": true,
+      "mountpoints": [
+        "/media/volker/writable",
+        "/media/volker/Linux Mint 22.3 Cinnamon 64-bit"
+      ],
+      "labels": [
+        "Linux Mint 22.3 Cinnamon 64-bit",
+        "writable"
+      ],
+      "partition_count": 3,
+      "local_fingerprint": "ce2e34b7f5ea4e41",
+      "serial_present": true,
+      "carrier_hints": [],
+      "safety_notes": [
+        "currently_mounted"
+      ]
+    }
+  ],
+  "inventory_redacted": [
+    {
+      "path": "/dev/sda",
+      "name": "sda",
+      "size_bytes": 63333990400,
+      "size_gib": 58.98,
+      "model": "Ultra Line",
+      "vendor": "Intenso",
+      "transport": "usb",
+      "removable": true,
+      "is_nvme": false,
+      "is_system_disk": false,
+      "in_64gb_class": true,
+      "mounted": true,
+      "mountpoints": [
+        "/media/volker/writable",
+        "/media/volker/Linux Mint 22.3 Cinnamon 64-bit"
+      ],
+      "labels": [
+        "Linux Mint 22.3 Cinnamon 64-bit",
+        "writable"
+      ],
+      "partition_count": 3,
+      "local_fingerprint": "ce2e34b7f5ea4e41",
+      "serial_present": true,
+      "carrier_hints": []
+    },
+    {
+      "path": "/dev/nvme1n1",
+      "name": "nvme1n1",
+      "size_bytes": 2000398934016,
+      "size_gib": 1863.02,
+      "model": "Samsung SSD 980 PRO 2TB",
+      "vendor": "",
+      "transport": "nvme",
+      "removable": false,
+      "is_nvme": true,
+      "is_system_disk": true,
+      "in_64gb_class": false,
+      "mounted": true,
+      "mountpoints": [
+        "/",
+        "/boot/efi"
+      ],
+      "labels": [],
+      "partition_count": 2,
+      "local_fingerprint": "4daa11d8c9bd0253",
+      "serial_present": true,
+      "carrier_hints": []
+    },
+    {
+      "path": "/dev/nvme0n1",
+      "name": "nvme0n1",
+      "size_bytes": 2000398934016,
+      "size_gib": 1863.02,
+      "model": "Samsung SSD 980 PRO 2TB",
+      "vendor": "",
+      "transport": "nvme",
+      "removable": false,
+      "is_nvme": true,
+      "is_system_disk": false,
+      "in_64gb_class": false,
+      "mounted": false,
+      "mountpoints": [],
+      "labels": [],
+      "partition_count": 6,
+      "local_fingerprint": "15b24decbcc05584",
+      "serial_present": true,
+      "carrier_hints": []
+    }
+  ],
+  "carrier_capacity_status": "passed",
+  "target_safety_status": "review_required"
+}

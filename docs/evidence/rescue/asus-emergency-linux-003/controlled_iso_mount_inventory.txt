@@ -1,0 +1,26 @@
+=== ISO tree (top) ===
+insgesamt 131
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 .
+drwxrwxrwt 59 root root 98304 Aug  6 21:59 ..
+dr-xr-xr-x  1 root root  2048 Aug  6 21:53 boot
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 .disk
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 dists
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 EFI
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 isolinux
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 live
+dr-xr-xr-x  1 root root  2048 Aug  6 21:59 pool
+-r--r--r--  1 root root 15168 Aug  6 21:59 SHA256SUMS
+=== live ===
+insgesamt 1328687
+dr-xr-xr-x 1 root root       2048 Aug  6 21:59 .
+dr-xr-xr-x 1 root root       2048 Aug  6 21:59 ..
+-r--r--r-- 1 root root      21054 Aug  6 21:59 filesystem.packages
+-r--r--r-- 1 root root        125 Aug  6 21:59 filesystem.packages-remove
+-r--r--r-- 1 root root 1296773120 Aug  6 21:59 filesystem.squashfs
+-r--r--r-- 1 root root   55404710 Aug  6 21:59 initrd.img
+-r--r--r-- 1 root root     144312 Aug  6 21:59 memtest
+-r--r--r-- 1 root root    8226752 Aug  6 21:59 vmlinuz
+=== EFI ===
+/tmp/asus-iso-ro.IafMym/EFI/BOOT/BOOTX64.EFI
+=== GRUB ASUS ===
+=== VERSION files on ISO medium ===

@@ -1,0 +1,32 @@
+=== squashfs VERSION ===
+1.10.2.0
+=== squashfs version.json ===
+{
+  "generated_at": "2026-08-06T19:45:00Z",
+  "project_version": "1.10.2.0",
+  "release_stage": "internal_testing",
+  "schema_version": 1,
+  "version_source_of_truth": true,
+  "version_track": "pi_rs_asus_emergency_linux_telemetry_003"
+}
+=== squashfs rescue_payload_version.json ===
+=== ASUS modules present ===
+OK boot_stage_sentinel
+OK hardware_state_sentinel
+OK kernel_event_sentinel
+OK device_lifecycle_sentinel
+OK driver_failure_resolver
+OK boot_comparison_engine
+OK asus_boot_profiles
+OK telemetry_spooler
+OK diagnostics_forwarding_contract
+OK operator_dashboard_boot_view
+=== systemd units ===
+OK setuphelfer-boot-sentinel
+OK setuphelfer-hardware-sentinel
+OK setuphelfer-kernel-event-sentinel
+OK setuphelfer-telemetry-spooler
+OK setuphelfer-autocapture-finalizer
+=== MANIFEST snippet ===
+{'source_head': '2deb694b', 'file_count': None, 'project_version': None, 'created_at': '2026-08-06T19:53:25.824948+00:00'}
+keys ['component', 'created_at', 'files', 'files_count', 'forbidden_scan', 'no_real_build_execution', 'rescue_temp_runtime', 'schema_version', 'source_head']

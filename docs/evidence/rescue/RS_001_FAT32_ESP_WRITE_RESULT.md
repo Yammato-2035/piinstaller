@@ -1,19 +1,19 @@
 # RS-001 FAT32-ESP USB Write Result
 
-**Updated:** 2026-06-15T20:20:35.507845+00:00
-**Evidence dir:** `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917`
+**Updated:** 2026-08-06T21:10:26.094584+00:00
+**Evidence dir:** `/home/volker/piinstaller-asus-emergency-linux-telemetry-003/docs/evidence/runtime-results/rescue/fat32_esp_write_20260806_210852`
 
 ## Summary
 
 | Field | Value |
 |-------|-------|
-| target_device | `/dev/sdb` |
-| target_partition | `/dev/sdb1` |
+| target_device | `/dev/sda` |
+| target_partition | `/dev/sda1` |
 | write_executed | `True` |
 | write_status | `success` |
 | verify_status | `success` |
 | evidence_status | `complete` |
-| fat_uuid | `E4B4-9CD6` |
+| fat_uuid | `7EA0-B29E` |
 | rs001_status | `red` |
 
 **rs001_reason:** USB written and verified, hardware boot not yet proven
@@ -27,10 +27,10 @@
 
 ## Artifacts
 
-- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917/plan.json`
-- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917/write_steps.log`
-- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_20260615_201917/verify.log`
-- `/home/volker/piinstaller/docs/evidence/runtime-results/rescue/fat32_esp_write_latest.json`
+- `/home/volker/piinstaller-asus-emergency-linux-telemetry-003/docs/evidence/runtime-results/rescue/fat32_esp_write_20260806_210852/plan.json`
+- `/home/volker/piinstaller-asus-emergency-linux-telemetry-003/docs/evidence/runtime-results/rescue/fat32_esp_write_20260806_210852/write_steps.log`
+- `/home/volker/piinstaller-asus-emergency-linux-telemetry-003/docs/evidence/runtime-results/rescue/fat32_esp_write_20260806_210852/verify.log`
+- `/home/volker/piinstaller-asus-emergency-linux-telemetry-003/docs/evidence/runtime-results/rescue/fat32_esp_write_latest.json`
 
 ## Hardware boot
 

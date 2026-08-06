@@ -1,12 +1,12 @@
 [Unit]
 Description=Setuphelfer telemetry spooler init (offline-first)
 After=local-fs.target
-ConditionPathExists=/opt/setuphelfer/backend/rescue/telemetry_spooler.py
+ConditionPathExists=/opt/setuphelfer-rescue/backend/rescue/telemetry_spooler.py
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-Environment=PYTHONPATH=/opt/setuphelfer/backend
+Environment=PYTHONPATH=/opt/setuphelfer-rescue/backend
 ExecStart=/usr/bin/python3 -c "from rescue.telemetry_spooler import resolve_campaign_spool_dir, init_spool_layout; import os; d=resolve_campaign_spool_dir(run_id=os.environ.get('SETUPHELFER_RUN_ID','boot')); init_spool_layout(d)"
 
 [Install]

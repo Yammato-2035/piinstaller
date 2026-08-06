@@ -1,0 +1,5 @@
+ISO=build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso
+ISO_SHA256=c14101c66b2a8f6c5e2f2f93f6c66a48517c8107f33927445d073cda61b581ee
+ISO_SIZE=1443889152
+RUN_ID=asus-carrier-004-20260806T195318Z
+OWNER=root:root

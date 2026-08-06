@@ -1,0 +1,36 @@
+=== GRUB ASUS entries ===
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:22:menuentry "ASUS-00 FORENSIC TUI SAFE" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:23:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-00 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:26:menuentry "ASUS-01 AMD DISCOVERY" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:27:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-01 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:30:menuentry "ASUS-02 AMD GUI" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:31:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-02 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:34:menuentry "ASUS-03 HYBRID OPEN DRIVER DIAGNOSTIC" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:35:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer setuphelfer_asus_profile=ASUS-03 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:38:menuentry "ASUS-04 NVIDIA MODULE COMPATIBILITY" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:39:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_asus_profile=ASUS-04 setuphelfer_nvidia_diag_only=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:42:menuentry "ASUS-05 FULL GUI CANDIDATE" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:43:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 setuphelfer_asus_profile=ASUS-05 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:46:menuentry "ASUS-RECOVERY FORCED TUI FALLBACK" {
+build/rescue/live-build/setuphelfer-rescue-live/config/bootloaders/grub-efi/setuphelfer-grub-menu-snippet.cfg:47:	linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-RECOVERY setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1
+=== systemd units ===
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-autocapture-finalizer.service
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-boot-sentinel.service
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-hardware-sentinel.service
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-kernel-event-sentinel.service
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/etc/systemd/system/setuphelfer-telemetry-spooler.service
+=== rescue modules ===
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/asus_boot_profiles.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/boot_comparison_engine.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/boot_stage_sentinel.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/device_lifecycle_sentinel.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/diagnostics_forwarding_contract.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/driver_failure_resolver.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/hardware_state_sentinel.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/kernel_event_sentinel.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/operator_dashboard_boot_view.py
+build/rescue/live-build/setuphelfer-rescue-live/config/includes.chroot/opt/setuphelfer-rescue/backend/rescue/telemetry_spooler.py
+=== version carriers ===
+1.10.2.0
+1.10.2.0
+1.10.0.17

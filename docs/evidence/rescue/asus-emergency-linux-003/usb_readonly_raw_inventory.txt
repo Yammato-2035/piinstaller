@@ -1,0 +1,22 @@
+=== lsblk (no serial) ===
+NAME        PATH           TYPE   SIZE MODEL                   VENDOR   TRAN   RM HOTPLUG LABEL                           FSTYPE  MOUNTPOINTS
+sda         /dev/sda       disk    59G Ultra Line              Intenso  usb     1       1 Linux Mint 22.3 Cinnamon 64-bit iso9660 
+├─sda1      /dev/sda1      part   2,9G                                          1       1 Linux Mint 22.3 Cinnamon 64-bit iso9660 /media/volker/Linux Mint 22.3 Cinnamon 64-bit
+├─sda2      /dev/sda2      part     5M                                          1       1                                 vfat    
+└─sda3      /dev/sda3      part  56,1G                                          1       1 writable                        ext4    /media/volker/writable
+nvme1n1     /dev/nvme1n1   disk   1,8T Samsung SSD 980 PRO 2TB          nvme    0       0                                         
+├─nvme1n1p1 /dev/nvme1n1p1 part   512M                                  nvme    0       0                                 vfat    /boot/efi
+└─nvme1n1p2 /dev/nvme1n1p2 part   1,8T                                  nvme    0       0                                 ext4    /
+nvme0n1     /dev/nvme0n1   disk   1,8T Samsung SSD 980 PRO 2TB          nvme    0       0                                         
+├─nvme0n1p1 /dev/nvme0n1p1 part   757M                                  nvme    0       0                                 ntfs    
+├─nvme0n1p2 /dev/nvme0n1p2 part 512,1M                                  nvme    0       0                                 vfat    
+├─nvme0n1p3 /dev/nvme0n1p3 part    16M                                  nvme    0       0                                         
+├─nvme0n1p4 /dev/nvme0n1p4 part 928,8G                                  nvme    0       0                                 ntfs    
+├─nvme0n1p5 /dev/nvme0n1p5 part   924M                                  nvme    0       0                                 ntfs    
+└─nvme0n1p6 /dev/nvme0n1p6 part   931G                                  nvme    0       0                                 ntfs    
+=== findmnt / ===
+/dev/nvme1n1p2 /      ext4
+=== sys removable ===
+sda removable=1 model=UltraLine vendor=Intenso
+nvme0n1 removable=0 model=SamsungSSD980PRO2TB vendor=
+nvme1n1 removable=0 model=SamsungSSD980PRO2TB vendor=

@@ -1,0 +1,118 @@
+=== boot tree ===
+/tmp/asus-iso-ro.tJRX8t/boot/grub/efi.img
+/tmp/asus-iso-ro.tJRX8t/boot/grub/grub.cfg
+/tmp/asus-iso-ro.tJRX8t/boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.jpg
+/tmp/asus-iso-ro.tJRX8t/boot/grub/themes/setuphelfer/theme.txt
+/tmp/asus-iso-ro.tJRX8t/boot/grub/themes/setuphelfer/unicode.pf2
+=== search ASUS in boot/EFI/isolinux ===
+=== grub cfgs ===
+/tmp/asus-iso-ro.tJRX8t/boot/grub/grub.cfg
+/tmp/asus-iso-ro.tJRX8t/isolinux/install.cfg
+/tmp/asus-iso-ro.tJRX8t/isolinux/isolinux.cfg
+/tmp/asus-iso-ro.tJRX8t/isolinux/live.cfg
+/tmp/asus-iso-ro.tJRX8t/isolinux/menu.cfg
+/tmp/asus-iso-ro.tJRX8t/isolinux/stdmenu.cfg
+=== SHA256SUMS head ===
+This file contains the list of sha256 checksums of all files on this medium.
+
+You can verify them automatically with the 'integrity-check' boot parameter,
+or, manually with: 'sha256sum -c SHA256SUMS'.
+
+
+01f5a456a564281bf5ad6d9d1e36928ef5f849c6ed4678318c221b325c21e968  ./boot/grub/themes/setuphelfer/setuphelfer-boot-menu-de.jpg
+fdb9eddde19aa3b5e984ce296a5fc0223ef284f7785416d69c574d498eacaa9b  ./boot/grub/themes/setuphelfer/theme.txt
+662eb86fc1ea89635e4bba8413590b79eb714ade5a2b5a5aa3dc5cf5f53a4463  ./boot/grub/themes/setuphelfer/unicode.pf2
+4e9994e95971ccb082ef327cec4af4c70cfe038ad4e8bfaac8e8df8f8b6f450c  ./.disk/archive_trace
+902639ef49eb79f111a64d4a7fed2da4b76f92d4b26381042b8b600d23769d88  ./.disk/info
+e4067980f03e4bfca08a0844ee3fc48825dccb6eb97bc5cb5f8a0ed833c0efc6  ./dists/bookworm/main/binary-amd64/Packages
+ed24904480f42cc082df18307e99e3cbc2869ec97fbd3d41b422ec74d46e4694  ./dists/bookworm/main/binary-amd64/Packages.gz
+077683206341ab60a39bf176b8c559762577f107014bd0e4a1781c5edbad2126  ./isolinux/bootlogo
+4610daaffd8f02d90e4a4a336ec37c2ad7025582b533b7d2e0cca73f0a50b3cd  ./isolinux/install.cfg
+e65594e4cb2287c2844ef5a8674db6b882938c4e0ed9a90a89ea2b7c415b8f55  ./isolinux/isolinux.cfg
+714faf7d286cd9d47c045c9e8dc614b509b1babc3bb39c095922974a0a62dddf  ./isolinux/ldlinux.c32
+591db797691f4704a492d036dc70d3595d022fb49bcace8585b75c0c0680b101  ./isolinux/libcom32.c32
+4d3d45d98b84921690ed2e035156ec6156d19e012536e46bbc9e0533dc58c8b4  ./isolinux/libmenu.c32
+293877c867ec6af7f05261cbbfbfd031e6f71e809e31b44cf7755b721b9caa94  ./isolinux/libutil.c32
+=== .disk ===
+insgesamt 5
+dr-xr-xr-x 1 root root 2048 Aug  6 21:59 .
+dr-xr-xr-x 1 root root 2048 Aug  6 21:59 ..
+-r--r--r-- 1 root root   29 Aug  6 21:59 archive_trace
+-r--r--r-- 1 root root   82 Aug  6 21:59 info
+Thu Aug  6 14:19:40 UTC 2026
+Debian GNU/Linux  "Bookworm" - Official Snapshot amd64 LIVE Binary 20260806-21:59
+=== payload version in squashfs listing ===
+-rw-r--r-- root/root                 6 2026-07-02 21:03 squashfs-root/etc/debian_version
+-rw-rw-r-- root/root                 9 2026-08-06 21:47 squashfs-root/opt/setuphelfer-rescue/VERSION
+-rw-rw-r-- root/root              3192 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/api/routes/version.py
+-rw-rw-r-- root/root               834 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/app_bootstrap/version_router_diagnostics.py
+-rw-rw-r-- root/root              1234 2026-08-06 21:47 squashfs-root/opt/setuphelfer-rescue/backend/core/rescue_payload_version.py
+-rw-rw-r-- root/root              3590 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/core/rescue_payload_version_carriers.py
+-rw-rw-r-- root/root              6754 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/core/version_consistency.py
+-rw-rw-r-- root/root              7073 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/core/version_projection.py
+-rw-rw-r-- root/root              3019 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/core/versioning.py
+-rw-rw-r-- root/root              5412 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/deploy/routes_versioning.py
+-rw-rw-r-- root/root              6515 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/deploy/runner_version_consistency_check.py
+-rw-rw-r-- root/root              8825 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/deploy/runner_version_governance.py
+-rw-rw-r-- root/root              6425 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/deploy/runner_version_source_of_truth_check.py
+-rw-rw-r-- root/root              2322 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/tools/check_packaging_version_gate.py
+-rw-rw-r-- root/root              1544 2026-08-06 21:08 squashfs-root/opt/setuphelfer-rescue/backend/tools/check_version_consistency.py
+-rw-r--r-- root/root               278 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/PIL/__pycache__/_version.cpython-311.pyc
+-rw-r--r-- root/root                87 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/PIL/_version.py
+-rw-r--r-- root/root               161 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/anyio-4.14.2.dist-info/scm_version.json
+-rw-r--r-- root/root              3898 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/attr/__pycache__/_version_info.cpython-311.pyc
+-rw-r--r-- root/root              2222 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/attr/_version_info.py
+-rw-r--r-- root/root               209 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/attr/_version_info.pyi
+-rw-r--r-- root/root               414 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/charset_normalizer/__pycache__/version.cpython-311.pyc
+-rw-r--r-- root/root               115 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/charset_normalizer/version.py
+-rw-r--r-- root/root               212 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/dotenv/__pycache__/version.cpython-311.pyc
+-rw-r--r-- root/root                22 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/dotenv/version.py
+-rw-r--r-- root/root               213 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/h11/__pycache__/_version.cpython-311.pyc
+-rw-r--r-- root/root               686 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/h11/_version.py
+-rw-r--r-- root/root               218 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/httptools/__pycache__/_version.cpython-311.pyc
+-rw-r--r-- root/root               575 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/httptools/_version.py
+-rw-r--r-- root/root               315 2026-08-06 21:58 squashfs-root/opt/setuphelfer-rescue/backend/venv/lib/python3.11/site-packages/httpx/__pycache__/__version__.cpython-311.pyc
+=== commit in bundle MANIFEST ===
+{
+    "schema_version": "1.0",
+    "component": "rescue_temp_runtime_bundle_manifest",
+    "created_at": "2026-08-06T19:53:25.824948+00:00",
+    "source_head": "2deb694b",
+    "files_count": 794,
+    "files": [
+        {
+            "path": "README_RESCUE_TEMP_RUNTIME.md",
+            "size_bytes": 364,
+            "sha256": "daa20fd0460100a3b9c90cd6f07c318415bffbb0bcdac107af675dd9d2159e13"
+        },
+        {
+            "path": "VERSION",
+            "size_bytes": 9,
+            "sha256": "19276e12895153d5535849d7ffa853abe7609ce7216db78836af6b5eebf16241"
+        },
+        {
+            "path": "backend/=0.100",
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+            "path": "backend/=0.24",
+            "size_bytes": 0,
+            "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+            "path": "backend/=2.5",
+            "size_bytes": 1682,
+            "sha256": "d17f01e07e3b8f704db1da4544a1342ce53b1dd256a998e8fd6e378673c62fe3"
+        },
+        {
+            "path": "backend/ARCH_PLACEHOLDER",
+            "size_bytes": 435,
+            "sha256": "cf9b7c9812e73e59beebe258ac7fdff5bfc4c2665e8ffe03d545cd482bc86c87"
+        },
+        {
+            "path": "backend/__init__.py",
+            "size_bytes": 77,
+=== HEAD now ===
+2deb694bd80f3d2a29899a67d862b7b7c9c022f5
+2deb694b
