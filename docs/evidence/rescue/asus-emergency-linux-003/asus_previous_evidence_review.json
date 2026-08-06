@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "task": "PI-RS-ASUS-EMERGENCY-LINUX-TELEMETRY-003",
+  "phase": 1,
+  "generated_at": "2026-08-06T19:10:00Z",
+  "workspace": "/tmp/piinstaller-asus-emergency-linux-telemetry-003",
+  "branch": "pi-rs-asus-emergency-linux-telemetry-003",
+  "base_head": "83126971b342062f4420028d8381afeb0f730060",
+  "predecessor_status": "implemented_baseline_diagnostics_and_four_language_docs_pending_physical_extended_tests",
+  "parallel_workspace_read_only": "/home/volker/piinstaller",
+  "parallel_branch_note": "wip/rescue-stick-extension holds detailed G513QM modules/evidence not merged into 83126971",
+  "findings": [
+    {
+      "finding": "model_asus_rog_strix_g513qm",
+      "source": "data/hardware/hardware_compat_catalog.json#asus-rog-strix-g513qm",
+      "still_valid": "partial",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "dmi_product_G513QM",
+      "source": "hardware_compat_catalog match.dmi_product",
+      "still_valid": "unconfirmed_on_this_carrier_run",
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "hybrid_graphics_ryzen_rtx3060",
+      "source": "docs/hardware/g513qm-windows-precheck.md (parallel workspace)",
+      "still_valid": "hypothesis_doc_only",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "bios_335_escalation_recommendation",
+      "source": "g513qm-windows-precheck.md (parallel)",
+      "still_valid": "documented_escalation_only",
+      "recheck_required": true,
+      "risk": "high_if_flashed_here_forbidden"
+    },
+    {
+      "finding": "bios_331_historical_claim",
+      "source": "prompt assumption; no solid proof on 83126971",
+      "still_valid": false,
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "host_sample_bios_G713PI_334",
+      "source": "hardware_inventory_host_sample_20260802.json (parallel)",
+      "still_valid": false,
+      "recheck_required": false,
+      "risk": "high_if_confused_with_G513QM",
+      "note": "different ASUS model"
+    },
+    {
+      "finding": "amd_first_boot_profiles",
+      "source": "rescue_g513qm_boot_profile.py / lab_boot (parallel)",
+      "still_valid": "code_on_parallel_branch_only",
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "nvidia_nouveau_blacklist_in_amd_profiles",
+      "source": "G513QM_NVIDIA_BLACKLIST (parallel)",
+      "still_valid": "code_on_parallel_branch_only",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "nomodeset_emergency_tui",
+      "source": "g513qm_emergency_menu_append + MSI safe tiers",
+      "still_valid": "pattern_known",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "amdgpu_modeset_0_forbidden_in_baseline",
+      "source": "cmdline_forbids_amdgpu_modeset_zero (parallel)",
+      "still_valid": "policy_on_parallel_branch",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "proprietary_nvidia_modules_missing_for_live_kernel",
+      "source": "kernel pin + vermagic gates (parallel); MSI catalog nouveau conflict",
+      "still_valid": "likely",
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "kernel_basis_debian_6_1_target_6_8_not_implemented",
+      "source": "config/rescue/g513qm_kernel_pin.json (parallel)",
+      "still_valid": "repo_policy_parallel",
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "two_internal_nvme",
+      "source": "windows_inspect sample 2x2TB_NVMe (generic); prompt",
+      "still_valid": "unproven_for_G513QM_on_83126971",
+      "recheck_required": true,
+      "risk": "critical"
+    },
+    {
+      "finding": "samsung_970_evo_plus_2tb",
+      "source": "prompt / operator assumption; no confirmed G513QM capture on 83126971",
+      "still_valid": false,
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "windows_linux_partition_layout",
+      "source": "generic inspect samples",
+      "still_valid": "unproven_for_device",
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "black_screen_or_hardlock_on_amdgpu_probe",
+      "source": "g513qm-diagnostic-20260727*.md classifications not_conclusive",
+      "still_valid": "inconclusive_capture",
+      "recheck_required": true,
+      "risk": "high"
+    },
+    {
+      "finding": "tui_path_previously_working",
+      "source": "emergency profile design + MSI TUI history",
+      "still_valid": "partial",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "autocapture_hardware_binding",
+      "source": "rescue_g513qm_capture.py (parallel); netconsole without MODPROBE marker",
+      "still_valid": "incomplete",
+      "recheck_required": true,
+      "risk": "medium"
+    },
+    {
+      "finding": "hardware_baseline_1_10_1_0_code",
+      "source": "PI_RS_HW_BASELINE_DIAG_I18N_002_FINAL_REPORT.md",
+      "still_valid": true,
+      "recheck_required": true,
+      "risk": "low_for_suite_high_without_physical_run",
+      "note": "code present; physical ASUS run pending"
+    },
+    {
+      "finding": "detailed_g513qm_evidence_pending_merge",
+      "source": "hardware_compat_catalog known_issues",
+      "still_valid": true,
+      "recheck_required": true,
+      "risk": "medium"
+    }
+  ],
+  "rules": [
+    "Do not promote recheck_required findings to still_valid without ASUS-00 physical evidence",
+    "BIOS flash forbidden in this campaign",
+    "Never identify write targets by nvme0/nvme1 order alone"
+  ]
+}

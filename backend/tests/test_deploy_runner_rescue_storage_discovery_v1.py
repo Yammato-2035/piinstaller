@@ -35,7 +35,8 @@ class DeployRunnerRescueStorageDiscoveryV1Tests(unittest.TestCase):
     def test_plan_and_execute_mock_lsblk(self) -> None:
         build_rescue_storage_discovery_plan(explicit_overwrite=True)
         with mock.patch(
-            "core.storage_facade.build_storage_inventory_snapshot",
+            # Runner binds the symbol locally via `from core.storage_facade import …`.
+            "deploy.runner_rescue_storage_discovery.build_storage_inventory_snapshot",
             return_value={
                 "status": "ok",
                 "lsblk_rows": [{"name": "nvme0n1p1", "type": "part", "fstype": "vfat", "uuid": "AAA"}],

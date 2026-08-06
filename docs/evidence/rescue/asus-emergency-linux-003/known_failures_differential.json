@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "task": "PI-RS-ASUS-EMERGENCY-LINUX-TELEMETRY-003",
+  "phase": 2,
+  "generated_at": "2026-08-06T19:20:00Z",
+  "head": "83126971b342062f4420028d8381afeb0f730060",
+  "full_suite": {
+    "passed": 4048,
+    "failed": 9,
+    "skipped": 29,
+    "new_regression_vs_83126971": false,
+    "matches_baseline_002_phase19_counts": true
+  },
+  "USB_WRITE_ALLOWED": true,
+  "status": "usb_write_allowed_after_remediation",
+  "critical_path_green": {
+    "baseline_hardware_redaction_writer_safety": {
+      "passed": 296,
+      "skipped": 1
+    },
+    "fat32_writer_and_stick_acceptance": {
+      "passed": 24
+    }
+  },
+  "failures": [
+    {
+      "id": 1,
+      "test": "TestAppRouterSliceE8::test_handlers_are_get_only_for_e8",
+      "file": "backend/tests/test_app_router_slice_e8.py",
+      "cause": "expected 10 @router.get, actual 11",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": false,
+        "safety": false
+      },
+      "physical_test_acceptable": true
+    },
+    {
+      "id": 2,
+      "test": "TestAppRouterSliceE8::test_readonly_router_has_nine_get_handlers_total",
+      "file": "backend/tests/test_app_router_slice_e8.py",
+      "cause": "expected 10 GET routes, actual 11",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": false,
+        "safety": false
+      },
+      "physical_test_acceptable": true
+    },
+    {
+      "id": 3,
+      "test": "DeployRunnerRescueStorageDiscoveryV1Tests::test_plan_and_execute_mock_lsblk",
+      "file": "backend/tests/test_deploy_runner_rescue_storage_discovery_v1.py",
+      "cause": "mock patches core.storage_facade symbol; runner uses local import; host UUID conflicts yield review_required",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": true,
+        "telemetry": false,
+        "safety": false,
+        "storage_identity": true
+      },
+      "physical_test_acceptable": false,
+      "blocks_usb_write": true
+    },
+    {
+      "id": 4,
+      "test": "TestMsiWindowsRoutesReadonlyV1::test_capabilities_handler_scope",
+      "file": "backend/tests/test_msi_windows_routes_readonly_v1.py",
+      "cause": "asyncio event loop flake in full suite; isolated 5/5 pass",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": false,
+        "safety": false
+      },
+      "physical_test_acceptable": true
+    },
+    {
+      "id": 5,
+      "test": "PayloadTelemetry001ContentTests::test_version_file_path",
+      "file": "backend/tests/test_pi_rs_payload_telemetry001_content.py",
+      "cause": "stale squashfs pin 1.10.0.15 vs artifact 1.10.0.16",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": true,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": true,
+        "safety": false
+      },
+      "physical_test_acceptable": false,
+      "blocks_usb_write": true
+    },
+    {
+      "id": 6,
+      "test": "PayloadTelemetry001NoSecretsTests::test_check_script_passes_on_workspace",
+      "file": "backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py",
+      "cause": "scripts/check-rescue-payload-no-secrets.sh not executable (git 100644)",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": true,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": true,
+        "safety": false
+      },
+      "physical_test_acceptable": false,
+      "blocks_usb_write": true
+    },
+    {
+      "id": 7,
+      "test": "PayloadTelemetry001ScriptsTests::test_workspace_scripts_executable",
+      "file": "backend/tests/test_pi_rs_payload_telemetry001_scripts.py",
+      "cause": "lab-rs-tel-send001-preview.sh not executable",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": true,
+        "safety": false
+      },
+      "physical_test_acceptable": false,
+      "blocks_usb_write": true
+    },
+    {
+      "id": 8,
+      "test": "test_project_version_bumped_for_pi_rs_tel_003",
+      "file": "backend/tests/test_pi_rs_tel003_version_bump.py",
+      "cause": "historical pin 1.9.19.5 vs project 1.10.1.0",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": true,
+        "safety": false
+      },
+      "physical_test_acceptable": "conditional",
+      "blocks_usb_write": true
+    },
+    {
+      "id": 9,
+      "test": "Tel004VersionBumpTests::test_project_version_is_1_9_19_5",
+      "file": "backend/tests/test_pi_rs_tel004_version_bump.py",
+      "cause": "historical pin 1.9.19.5 vs project 1.10.1.0",
+      "on_83126971": true,
+      "on_dfa9ae18": true,
+      "touches": {
+        "rescue_build": false,
+        "usb_write": false,
+        "boot": false,
+        "hardware": false,
+        "telemetry": true,
+        "safety": false
+      },
+      "physical_test_acceptable": "conditional",
+      "blocks_usb_write": true
+    }
+  ],
+  "remediation_required_before_usb_write": [
+    "fix deploy runner test mock to patch deploy.runner_rescue_storage_discovery.build_storage_inventory_snapshot",
+    "restore executable bits on telemetry/payload check scripts",
+    "update stale payload squashfs pin and TEL-003/004 version pins to current policy"
+  ],
+  "remediation_applied_at": "2026-08-06T19:14:22Z",
+  "post_remediation": {
+    "previously_failing_files": {
+      "passed": 23,
+      "skipped": 2,
+      "failed": 0
+    },
+    "critical_path": {
+      "passed": 296,
+      "skipped": 1,
+      "failed": 0
+    },
+    "note": "MSI full-suite flake may still appear intermittently; isolated green; not write-path"
+  }
+}

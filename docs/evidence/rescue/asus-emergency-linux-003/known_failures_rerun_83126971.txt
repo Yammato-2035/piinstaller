@@ -1,0 +1,84 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.1.1, pluggy-1.6.0 -- /home/volker/piinstaller/.venv/bin/python
+cachedir: .pytest_cache
+rootdir: /tmp/piinstaller-asus-emergency-linux-telemetry-003/backend
+configfile: pytest.ini
+plugins: asyncio-1.4.0, anyio-4.13.0
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+collecting ... collected 25 items
+
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_app_py_includes_router_and_no_duplicate_handlers PASSED [  4%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_app_py_line_count_reduced_after_e8 PASSED [  8%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_delegates_to_facade_for_e8_routes PASSED [ 12%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_handlers_are_get_only_for_e8 FAILED [ 16%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_no_subprocess_or_dashboard_aggregation PASSED [ 20%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_public_paths_and_methods_unchanged PASSED [ 24%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_readonly_router_has_nine_get_handlers_total FAILED [ 28%]
+backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_router_imports_without_side_effects PASSED [ 32%]
+backend/tests/test_deploy_runner_rescue_storage_discovery_v1.py::DeployRunnerRescueStorageDiscoveryV1Tests::test_plan_and_execute_mock_lsblk FAILED [ 36%]
+backend/tests/test_deploy_runner_rescue_storage_discovery_v1.py::DeployRunnerRescueStorageDiscoveryV1Tests::test_uuid_conflict_review PASSED [ 40%]
+backend/tests/test_msi_windows_routes_readonly_v1.py::TestMsiWindowsRoutesReadonlyV1::test_capabilities_handler_scope PASSED [ 44%]
+backend/tests/test_msi_windows_routes_readonly_v1.py::TestMsiWindowsRoutesReadonlyV1::test_capabilities_route PASSED [ 48%]
+backend/tests/test_msi_windows_routes_readonly_v1.py::TestMsiWindowsRoutesReadonlyV1::test_no_forbidden_routes PASSED [ 52%]
+backend/tests/test_msi_windows_routes_readonly_v1.py::TestMsiWindowsRoutesReadonlyV1::test_no_msi_routes_in_app_py PASSED [ 56%]
+backend/tests/test_msi_windows_routes_readonly_v1.py::TestMsiWindowsRoutesReadonlyV1::test_three_readonly_routes PASSED [ 60%]
+backend/tests/test_pi_rs_payload_telemetry001_content.py::PayloadTelemetry001ContentTests::test_content_module_markers_defined SKIPPEDry-003/build/rescue/filesystem.squashfs.repacked-1.10.0.16) [ 64%]
+backend/tests/test_pi_rs_payload_telemetry001_content.py::PayloadTelemetry001ContentTests::test_version_file_path FAILED [ 68%]
+backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py::PayloadTelemetry001NoSecretsTests::test_check_script_passes_on_workspace FAILED [ 72%]
+backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py::PayloadTelemetry001NoSecretsTests::test_squashfs_listing_has_no_token_filename SKIPPED [ 76%]
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py::PayloadTelemetry001ScriptsTests::test_lab_modules_importable PASSED [ 80%]
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py::PayloadTelemetry001ScriptsTests::test_preview_remains_gate_protected_without_token PASSED [ 84%]
+backend/tests/test_pi_rs_payload_telemetry001_scripts.py::PayloadTelemetry001ScriptsTests::test_workspace_scripts_executable FAILED [ 88%]
+backend/tests/test_pi_rs_tel003_version_bump.py::test_project_version_bumped_for_pi_rs_tel_003 FAILED [ 92%]
+backend/tests/test_pi_rs_tel004_version_bump.py::Tel004VersionBumpTests::test_old_patch_not_default_in_version_json PASSED [ 96%]
+backend/tests/test_pi_rs_tel004_version_bump.py::Tel004VersionBumpTests::test_project_version_is_1_9_19_5 FAILED [100%]
+
+=================================== FAILURES ===================================
+E   AssertionError: 11 != 10
+/usr/lib/python3.12/unittest/case.py:878: AssertionError: 11 != 10
+E   AssertionError: 11 != 10
+/usr/lib/python3.12/unittest/case.py:878: AssertionError: 11 != 10
+E   AssertionError: 'review_required' != 'ok'
+    - review_required
+    + ok
+/usr/lib/python3.12/unittest/case.py:715: AssertionError: 'review_required' != 'ok'
+E   AssertionError: 'filesystem.squashfs.repacked-1.10.0.16' != 'filesystem.squashfs.repacked-1.10.0.15'
+    - filesystem.squashfs.repacked-1.10.0.16
+    ?                                      ^
+    + filesystem.squashfs.repacked-1.10.0.15
+    ?                                      ^
+/usr/lib/python3.12/unittest/case.py:715: AssertionError: 'filesystem.squashfs.repacked-1.10.0.16' != 'filesystem.squashfs.repacked-1.10.0.15'
+E   PermissionError: [Errno 13] Permission denied: '/tmp/piinstaller-asus-emergency-linux-telemetry-003/scripts/check-rescue-payload-no-secrets.sh'
+/usr/lib/python3.12/subprocess.py:1955: PermissionError: [Errno 13] Permission denied: '/tmp/piinstaller-asus-emergency-linux-telemetry-003/scripts/check-rescue-payload-no-secrets.sh'
+E   AssertionError: False is not true : lab-rs-tel-send001-preview.sh
+/usr/lib/python3.12/unittest/case.py:727: AssertionError: False is not true : lab-rs-tel-send001-preview.sh
+E   AssertionError: assert '1.10.1.0' == '1.9.19.5'
+      
+      - 1.9.19.5
+      + 1.10.1.0
+/tmp/piinstaller-asus-emergency-linux-telemetry-003/backend/tests/test_pi_rs_tel003_version_bump.py:10: AssertionError: assert '1.10.1.0' == '1.9.19.5'
+E   AssertionError: '1.10.1.0' != '1.9.19.5'
+    - 1.10.1.0
+    + 1.9.19.5
+/usr/lib/python3.12/unittest/case.py:715: AssertionError: '1.10.1.0' != '1.9.19.5'
+=========================== short test summary info ============================
+FAILED backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_handlers_are_get_only_for_e8 - AssertionError: 11 != 10
+FAILED backend/tests/test_app_router_slice_e8.py::TestAppRouterSliceE8::test_readonly_router_has_nine_get_handlers_total - AssertionError: 11 != 10
+FAILED backend/tests/test_deploy_runner_rescue_storage_discovery_v1.py::DeployRunnerRescueStorageDiscoveryV1Tests::test_plan_and_execute_mock_lsblk - AssertionError: 'review_required' != 'ok'
+- review_required
++ ok
+FAILED backend/tests/test_pi_rs_payload_telemetry001_content.py::PayloadTelemetry001ContentTests::test_version_file_path - AssertionError: 'filesystem.squashfs.repacked-1.10.0.16' != 'filesystem.squashfs.repacked-1.10.0.15'
+- filesystem.squashfs.repacked-1.10.0.16
+?                                      ^
++ filesystem.squashfs.repacked-1.10.0.15
+?                                      ^
+FAILED backend/tests/test_pi_rs_payload_telemetry001_no_secrets.py::PayloadTelemetry001NoSecretsTests::test_check_script_passes_on_workspace - PermissionError: [Errno 13] Permission denied: '/tmp/piinstaller-asus-emergency-linux-telemetry-003/scripts/check-rescue-payload-no-secrets.sh'
+FAILED backend/tests/test_pi_rs_payload_telemetry001_scripts.py::PayloadTelemetry001ScriptsTests::test_workspace_scripts_executable - AssertionError: False is not true : lab-rs-tel-send001-preview.sh
+FAILED backend/tests/test_pi_rs_tel003_version_bump.py::test_project_version_bumped_for_pi_rs_tel_003 - AssertionError: assert '1.10.1.0' == '1.9.19.5'
+  
+  - 1.9.19.5
+  + 1.10.1.0
+FAILED backend/tests/test_pi_rs_tel004_version_bump.py::Tel004VersionBumpTests::test_project_version_is_1_9_19_5 - AssertionError: '1.10.1.0' != '1.9.19.5'
+- 1.10.1.0
++ 1.9.19.5
+=================== 8 failed, 15 passed, 2 skipped in 0.65s ====================
