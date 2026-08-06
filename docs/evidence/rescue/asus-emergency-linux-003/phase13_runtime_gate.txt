@@ -1,0 +1,2 @@
+check-runtime-deploy-gate: LEGACY_GATE_NON_PROFILE_AWARE — /api/dev-dashboard/status HTTP 404
+check-runtime-deploy-gate: dev-dashboard 404 erwartet im Profil release — Profil-Gate: check-runtime-profile-deploy-gate.sh
