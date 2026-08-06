@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "head": "8672de4ca2239256895dc6a75c0ce86cc59c605b",
+  "classification": "ephemeral_test_and_runtime_evidence_side_effects",
+  "action": "quarantined_then_restored_tracked_to_HEAD",
+  "modified_tracked_quarantined": [
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT.json",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_DE.md",
+    "docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md",
+    "docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json",
+    "docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json",
+    "docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_latest.redacted.json",
+    "docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json"
+  ],
+  "untracked_quarantined": [
+    "backend/docs/evidence/runtime-results/hardware/5e634eeebc6c40d4bbefb02c00d10866/hardware_inventory.json",
+    "backend/docs/evidence/runtime-results/hardware/5e634eeebc6c40d4bbefb02c00d10866/hardware_inventory_summary.json",
+    "docs/evidence/runtime-results/handoff/rescue_storage_discovery_plan.json",
+    "docs/evidence/runtime-results/handoff/rescue_storage_discovery_result.json",
+    "docs/evidence/runtime-results/hardware/e8d0157a82db4919841d4e65a9b70b52/hardware_inventory.json",
+    "docs/evidence/runtime-results/hardware/e8d0157a82db4919841d4e65a9b70b52/hardware_inventory_summary.json",
+    "docs/evidence/runtime-results/hardware/fec60bdaa26b43dcbca6ada7ece2ba35/hardware_inventory.json",
+    "docs/evidence/runtime-results/hardware/fec60bdaa26b43dcbca6ada7ece2ba35/hardware_inventory_summary.json",
+    "docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/8f6b931e-7db8-45f6-a7f7-2f9b6bfba860.redacted.json",
+    "docs/evidence/runtime-results/rescue-lab-telemetry/offline-queue-preview/queue_preview_items/e40c3fd1-8e91-467f-acdb-34c0e10a676a.redacted.json"
+  ],
+  "write_path_relevant": false
+}

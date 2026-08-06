@@ -1,0 +1,43 @@
+diff --git a/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json b/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json
+index 1ae58a54..e45362c4 100644
+--- a/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json
++++ b/docs/evidence/runtime-results/rescue/live_build_dpkg_preflight_latest.json
+@@ -1,22 +1,26 @@
+ {
+   "schema_version": 1,
+   "phase": "live_build_dpkg_preflight",
+-  "build_root": "build/rescue/live-build/setuphelfer-rescue-live",
+-  "status": "ok",
+-  "exit_code": 0,
+-  "summary": "DPKG preflight ok; chroot enth\u00e4lt dpkg und start-stop-daemon",
++  "build_root": "/tmp/tmppkrowp8p/build-tree",
++  "status": "dangerous_path_override",
++  "exit_code": 14,
++  "summary": "PATH-/dpkg-Override im Build-Tree gefunden",
+   "expected_path": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+-  "chroot_status": "present",
+-  "issues": [],
+-  "dangerous_matches": [],
++  "chroot_status": "missing",
++  "issues": [
++    "/tmp/tmppkrowp8p/build-tree/config/includes.chroot/etc/systemd/system/evil.service:2:Environment=PATH=/opt/evil"
++  ],
++  "dangerous_matches": [
++    "/tmp/tmppkrowp8p/build-tree/config/includes.chroot/etc/systemd/system/evil.service:2:Environment=PATH=/opt/evil"
++  ],
+   "forbidden_package_matches": [],
+   "checks": {
+     "build_tree_exists": true,
+-    "auto_config_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/config",
+-    "auto_build_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/build",
+-    "auto_clean_path": "build/rescue/live-build/setuphelfer-rescue-live/auto/clean",
+-    "package_list_path": "build/rescue/live-build/setuphelfer-rescue-live/config/package-lists/setuphelfer.list.chroot",
+-    "chroot_path": "build/rescue/live-build/setuphelfer-rescue-live/chroot",
++    "auto_config_path": "/tmp/tmppkrowp8p/build-tree/auto/config",
++    "auto_build_path": "/tmp/tmppkrowp8p/build-tree/auto/build",
++    "auto_clean_path": "/tmp/tmppkrowp8p/build-tree/auto/clean",
++    "package_list_path": "/tmp/tmppkrowp8p/build-tree/config/package-lists/setuphelfer.list.chroot",
++    "chroot_path": "/tmp/tmppkrowp8p/build-tree/chroot",
+     "expected_path": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+   }
+ }

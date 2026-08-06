@@ -1,0 +1,13 @@
+diff --git a/docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md b/docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md
+index 0a89b976..9edd3f26 100644
+--- a/docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md
++++ b/docs/evidence/lab-acceptance/LAB_ACCEPTANCE_REPORT_EN.md
+@@ -1,7 +1,7 @@
+ # LAB ACCEPTANCE REPORT (EN)
+ 
+ - Report-ID: `RUNNER_LAB_ACCEPTANCE_REPORT_V1`
+-- Generated: `2026-05-15T17:13:23.540576+00:00`
++- Generated: `2026-08-06T19:10:56.503118+00:00`
+ - Acceptance Status: `blocked`
+ - Operator Decision Required: `True`
+ 

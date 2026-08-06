@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "phase": "live_build_dpkg_preflight",
+  "build_root": "/tmp/tmppkrowp8p/build-tree",
+  "status": "dangerous_path_override",
+  "exit_code": 14,
+  "summary": "PATH-/dpkg-Override im Build-Tree gefunden",
+  "expected_path": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+  "chroot_status": "missing",
+  "issues": [
+    "/tmp/tmppkrowp8p/build-tree/config/includes.chroot/etc/systemd/system/evil.service:2:Environment=PATH=/opt/evil"
+  ],
+  "dangerous_matches": [
+    "/tmp/tmppkrowp8p/build-tree/config/includes.chroot/etc/systemd/system/evil.service:2:Environment=PATH=/opt/evil"
+  ],
+  "forbidden_package_matches": [],
+  "checks": {
+    "build_tree_exists": true,
+    "auto_config_path": "/tmp/tmppkrowp8p/build-tree/auto/config",
+    "auto_build_path": "/tmp/tmppkrowp8p/build-tree/auto/build",
+    "auto_clean_path": "/tmp/tmppkrowp8p/build-tree/auto/clean",
+    "package_list_path": "/tmp/tmppkrowp8p/build-tree/config/package-lists/setuphelfer.list.chroot",
+    "chroot_path": "/tmp/tmppkrowp8p/build-tree/chroot",
+    "expected_path": "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+  }
+}

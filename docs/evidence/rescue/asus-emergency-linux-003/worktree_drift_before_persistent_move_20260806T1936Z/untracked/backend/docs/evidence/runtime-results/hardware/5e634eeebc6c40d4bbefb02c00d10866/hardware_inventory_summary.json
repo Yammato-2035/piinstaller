@@ -1,0 +1,20 @@
+{
+  "schema_version": "hardware-inventory-summary.v1",
+  "run_id": "5e634eeebc6c40d4bbefb02c00d10866",
+  "collected_at": "2026-08-06T19:11:20+00:00",
+  "platform_class": "unknown",
+  "architecture": "unknown",
+  "is_raspberry_pi": false,
+  "device_count": 132,
+  "device_count_by_class": {
+    "pci": 41,
+    "usb": 18,
+    "platform": 40,
+    "input": 22,
+    "network": 11
+  },
+  "device_count_by_operational_status": {
+    "detected": 132
+  },
+  "capability_missing_tools": []
+}

@@ -1,0 +1,71 @@
+diff --git a/docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json b/docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json
+index f260754c..a6ded22c 100644
+--- a/docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json
++++ b/docs/evidence/runtime-results/handoff/legacy_identifier_inventory.json
+@@ -3,6 +3,30 @@
+     "active_runtime_identifier": 400
+   },
+   "findings": [
++    {
++      "classification": "active_runtime_identifier",
++      "line": 14,
++      "path": "docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md",
++      "tokens": [
++        "piinstaller"
++      ]
++    },
++    {
++      "classification": "active_runtime_identifier",
++      "line": 252,
++      "path": "docs/evidence/runtime-results/handoff/BR001_operator_final_execution_handoff.md",
++      "tokens": [
++        "piinstaller"
++      ]
++    },
++    {
++      "classification": "active_runtime_identifier",
++      "line": 4,
++      "path": "docs/evidence/runtime-results/handoff/deploy_drift_recovery_br001_prereq_2026-05-15.json",
++      "tokens": [
++        "piinstaller"
++      ]
++    },
+     {
+       "classification": "active_runtime_identifier",
+       "line": 3,
+@@ -3234,34 +3258,10 @@
+       "tokens": [
+         "pi-installer"
+       ]
+-    },
+-    {
+-      "classification": "active_runtime_identifier",
+-      "line": 2857,
+-      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+-      "tokens": [
+-        "PI_INSTALLER_"
+-      ]
+-    },
+-    {
+-      "classification": "active_runtime_identifier",
+-      "line": 2866,
+-      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+-      "tokens": [
+-        "pi-installer"
+-      ]
+-    },
+-    {
+-      "classification": "active_runtime_identifier",
+-      "line": 2875,
+-      "path": "docs/evidence/runtime-results/handoff/legacy_identifier_hotspot_analysis.json",
+-      "tokens": [
+-        "pi-installer"
+-      ]
+     }
+   ],
+   "findings_truncated": true,
+-  "generated_at": "2026-05-15T17:13:25Z",
++  "generated_at": "2026-08-06T19:11:10Z",
+   "inventory_schema_version": 1,
+   "inventory_status": "review_required",
+   "scan_targets": [

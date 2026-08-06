@@ -1,0 +1,222 @@
+{
+  "backup_target_candidates": [],
+  "blkid_excerpt": "/dev/nvme0n1p1: UUID=\"94A7-F964\" BLOCK_SIZE=\"512\" TYPE=\"vfat\" PARTLABEL=\"EFI System Partition\" PARTUUID=\"77f82df5-80d6-488a-bedd-f59adcebf229\"\n/dev/nvme0n1p2: UUID=\"57b5dd3e-2461-41f2-821a-3c81ed058dcd\" BLOCK_SIZE=\"4096\" TYPE=\"ext4\" PARTUUID=\"29829f22-1ffd-485c-8252-7325d2777229\"\n/dev/nvme1n1p4: BLOCK_SIZE=\"512\" UUID=\"0252FA5552FA4CC3\" TYPE=\"ntfs\" PARTUUID=\"4e960810-d4ec-11ef-910b-00410e6a0272\"\n/dev/nvme1n1p2: UUID=\"A8E5-5B95\" BLOCK_SIZE=\"512\" TYPE=\"vfat\" PARTUUID=\"4e96080e-d4ec-11ef-910b-00410e6a0272\"\n/dev/nvme1n1p5: BLOCK_SIZE=\"512\" UUID=\"5E9888B698888DE9\" TYPE=\"ntfs\" PARTUUID=\"18b4ea06-6574-40e7-86c2-b464941990a3\"\n/dev/nvme1n1p1: BLOCK_SIZE=\"512\" UUID=\"6268DDF068DDC349\" TYPE=\"ntfs\" PARTUUID=\"4e96080d-d4ec-11ef-910b-00410e6a0272\"\n/dev/nvme1n1p6: BLOCK_SIZE=\"512\" UUID=\"242CFF0B2CFED730\" TYPE=\"ntfs\" PARTLABEL=\"Basi\" PARTUUID=\"32363638-3735-6431-2d64-3465622d3131\"\n/dev/sda2: SEC_TYPE=\"msdos\" UUID=\"695F-F85A\" BLOCK_SIZE=\"512\" TYPE=\"vfat\" PARTUUID=\"24a1e612-02\"\n/dev/sda3: LABEL=\"writable\" UUID=\"7ca74e2d-05b5-4082-91d4-f3cb7ae2bdbd\" BLOCK_SIZE=\"4096\" TYPE=\"ext4\" PARTUUID=\"24a1e612-03\"\n/dev/sda1: BLOCK_SIZE=\"2048\" UUID=\"2026-01-08-18-32-58-00\" LABEL=\"Linux Mint 22.3 Cinnamon 64-bit\" TYPE=\"iso9660\" PARTUUID=\"24a1e612-01\"\n",
+  "classification": {
+    "flags": {
+      "backup_candidate": false,
+      "btrfs": false,
+      "crypto_luks": false,
+      "efi_system_partition": false,
+      "linux_fs": true,
+      "ntfs": true,
+      "nvme": true,
+      "sata": true,
+      "sd": false,
+      "system_disk_candidate": true,
+      "usb": true,
+      "xfs": false
+    },
+    "row_count": 14,
+    "uuid_conflicts": [
+      "2026-01-08-18-32-58-00"
+    ]
+  },
+  "evaluation": {
+    "flags": {
+      "backup_candidate": false,
+      "btrfs": false,
+      "crypto_luks": false,
+      "efi_system_partition": false,
+      "linux_fs": true,
+      "ntfs": true,
+      "nvme": true,
+      "sata": true,
+      "sd": false,
+      "system_disk_candidate": true,
+      "usb": true,
+      "xfs": false
+    },
+    "readonly_analysis_only": true,
+    "rescue_storage_discovery_eval_status": "review_required",
+    "uuid_conflicts": [
+      "2026-01-08-18-32-58-00"
+    ]
+  },
+  "generated_at": "2026-08-06T19:10:33Z",
+  "lsblk_excerpt": "{\n   \"blockdevices\": [\n      {\n         \"name\": \"sda\",\n         \"type\": \"disk\",\n         \"fstype\": \"iso9660\",\n         \"label\": \"Linux Mint 22.3 Cinnamon 64-bit\",\n         \"uuid\": \"2026-01-08-18-32-58-00\",\n         \"mountpoint\": null,\n         \"size\": \"59G\",\n         \"model\": \"Ultra Line\",\n         \"tran\": \"usb\",\n         \"children\": [\n            {\n               \"name\": \"sda1\",\n               \"type\": \"part\",\n               \"fstype\": \"iso9660\",\n               \"label\": \"Linux Mint 22.3 Cinnamon 64-bit\",\n               \"uuid\": \"2026-01-08-18-32-58-00\",\n               \"mountpoint\": \"/media/volker/Linux Mint 22.3 Cinnamon 64-bit\",\n               \"size\": \"2,9G\",\n               \"model\": null,\n               \"tran\": null\n            },{\n               \"name\": \"sda2\",\n               \"type\": \"part\",\n               \"fstype\": \"vfat\",\n               \"label\": null,\n               \"uuid\": \"695F-F85A\",\n               \"mountpoint\": null,\n               \"size\": \"5M\",\n               \"model\": null,\n               \"tran\": null\n            },{\n               \"name\": \"sda3\",\n               \"type\": \"part\",\n               \"fstype\": \"ext4\",\n               \"label\": \"writable\",\n               \"uuid\": \"7ca74e2d-05b5-4082-91d4-f3cb7ae2bdbd\",\n               \"mountpoint\": \"/media/volker/writable\",\n               \"size\": \"56,1G\",\n               \"model\": null,\n               \"tran\": null\n            }\n         ]\n      },{\n         \"name\": \"nvme1n1\",\n         \"type\": \"disk\",\n         \"fstype\": null,\n         \"label\": null,\n         \"uuid\": null,\n         \"mountpoint\": null,\n         \"size\": \"1,8T\",\n         \"model\": \"Samsung SSD 980 PRO 2TB\",\n         \"tran\": \"nvme\",\n         \"children\": [\n            {\n               \"name\": \"nvme1n1p1\",\n               \"type\": \"part\",\n               \"fstype\": \"ntfs\",\n               \"label\": null,\n               \"uuid\": \"6268DDF068DDC349\",\n               \"mountpoint\": null,\n               \"size\": \"757M\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            },{\n               \"name\": \"nvme1n1p2\",\n               \"type\": \"part\",\n               \"fstype\": \"vfat\",\n               \"label\": null,\n               \"uuid\": \"A8E5-5B95\",\n               \"mountpoint\": null,\n               \"size\": \"512,1M\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            },{\n               \"name\": \"nvme1n1p3\",\n               \"type\": \"part\",\n               \"fstype\": null,\n               \"label\": null,\n               \"uuid\": null,\n               \"mountpoint\": null,\n               \"size\": \"16M\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            },{\n               \"name\": \"nvme1n1p4\",\n               \"type\": \"part\",\n               \"fstype\": \"ntfs\",\n               \"label\": null,\n               \"uuid\": \"0252FA5552FA4CC3\",\n               \"mountpoint\": null,\n               \"size\": \"928,8G\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            },{\n               \"name\": \"nvme1n1p5\",\n               \"type\": \"part\",\n               \"fstype\": \"ntfs\",\n               \"label\": null,\n               \"uuid\": \"5E9888B698888DE9\",\n               \"mountpoint\": null,\n               \"size\": \"924M\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            },{\n               \"name\": \"nvme1n1p6\",\n               \"type\": \"part\",\n               \"fstype\": \"ntfs\",\n               \"label\": null,\n               \"uuid\": \"242CFF0B2CFED730\",\n               \"mountpoint\": null,\n               \"size\": \"931G\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            }\n         ]\n      },{\n         \"name\": \"nvme0n1\",\n         \"type\": \"disk\",\n         \"fstype\": null,\n         \"label\": null,\n         \"uuid\": null,\n         \"mountpoint\": null,\n         \"size\": \"1,8T\",\n         \"model\": \"Samsung SSD 980 PRO 2TB\",\n         \"tran\": \"nvme\",\n         \"children\": [\n            {\n               \"name\": \"nvme0n1p1\",\n               \"type\": \"part\",\n               \"fstype\": \"vfat\",\n               \"label\": null,\n               \"uuid\": \"94A7-F964\",\n               \"mountpoint\": \"/boot/efi\",\n               \"size\": \"512M\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            },{\n               \"name\": \"nvme0n1p2\",\n               \"type\": \"part\",\n               \"fstype\": \"ext4\",\n               \"label\": null,\n               \"uuid\": \"57b5dd3e-2461-41f2-821a-3c81ed058dcd\",\n               \"mountpoint\": \"/\",\n               \"size\": \"1,8T\",\n               \"model\": null,\n               \"tran\": \"nvme\"\n            }\n         ]\n      }\n   ]\n}\n",
+  "lsblk_rows": [
+    {
+      "fstype": "iso9660",
+      "label": "Linux Mint 22.3 Cinnamon 64-bit",
+      "model": "Ultra Line",
+      "mountpoint": null,
+      "name": "sda",
+      "size": "59G",
+      "tran": "usb",
+      "type": "disk",
+      "uuid": "2026-01-08-18-32-58-00"
+    },
+    {
+      "fstype": "iso9660",
+      "label": "Linux Mint 22.3 Cinnamon 64-bit",
+      "model": null,
+      "mountpoint": "/media/volker/Linux Mint 22.3 Cinnamon 64-bit",
+      "name": "sda1",
+      "size": "2,9G",
+      "tran": null,
+      "type": "part",
+      "uuid": "2026-01-08-18-32-58-00"
+    },
+    {
+      "fstype": "vfat",
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "sda2",
+      "size": "5M",
+      "tran": null,
+      "type": "part",
+      "uuid": "695F-F85A"
+    },
+    {
+      "fstype": "ext4",
+      "label": "writable",
+      "model": null,
+      "mountpoint": "/media/volker/writable",
+      "name": "sda3",
+      "size": "56,1G",
+      "tran": null,
+      "type": "part",
+      "uuid": "7ca74e2d-05b5-4082-91d4-f3cb7ae2bdbd"
+    },
+    {
+      "fstype": null,
+      "label": null,
+      "model": "Samsung SSD 980 PRO 2TB",
+      "mountpoint": null,
+      "name": "nvme1n1",
+      "size": "1,8T",
+      "tran": "nvme",
+      "type": "disk",
+      "uuid": null
+    },
+    {
+      "fstype": "ntfs",
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "nvme1n1p1",
+      "size": "757M",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "6268DDF068DDC349"
+    },
+    {
+      "fstype": "vfat",
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "nvme1n1p2",
+      "size": "512,1M",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "A8E5-5B95"
+    },
+    {
+      "fstype": null,
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "nvme1n1p3",
+      "size": "16M",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": null
+    },
+    {
+      "fstype": "ntfs",
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "nvme1n1p4",
+      "size": "928,8G",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "0252FA5552FA4CC3"
+    },
+    {
+      "fstype": "ntfs",
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "nvme1n1p5",
+      "size": "924M",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "5E9888B698888DE9"
+    },
+    {
+      "fstype": "ntfs",
+      "label": null,
+      "model": null,
+      "mountpoint": null,
+      "name": "nvme1n1p6",
+      "size": "931G",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "242CFF0B2CFED730"
+    },
+    {
+      "fstype": null,
+      "label": null,
+      "model": "Samsung SSD 980 PRO 2TB",
+      "mountpoint": null,
+      "name": "nvme0n1",
+      "size": "1,8T",
+      "tran": "nvme",
+      "type": "disk",
+      "uuid": null
+    },
+    {
+      "fstype": "vfat",
+      "label": null,
+      "model": null,
+      "mountpoint": "/boot/efi",
+      "name": "nvme0n1p1",
+      "size": "512M",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "94A7-F964"
+    },
+    {
+      "fstype": "ext4",
+      "label": null,
+      "model": null,
+      "mountpoint": "/",
+      "name": "nvme0n1p2",
+      "size": "1,8T",
+      "tran": "nvme",
+      "type": "part",
+      "uuid": "57b5dd3e-2461-41f2-821a-3c81ed058dcd"
+    }
+  ],
+  "rescue_storage_discovery_result_schema_version": 1,
+  "restore_target_candidates": [
+    {
+      "device_hint": "sda3",
+      "fstype": "ext4",
+      "mountpoint": "/media/volker/writable",
+      "readonly_analysis": true,
+      "role": "restore_source_candidate"
+    },
+    {
+      "device_hint": "nvme0n1p2",
+      "fstype": "ext4",
+      "mountpoint": "/",
+      "readonly_analysis": true,
+      "role": "restore_source_candidate"
+    }
+  ],
+  "storage_facade_status": "review_required",
+  "strict_mode": "rescue_live_storage_readonly"
+}

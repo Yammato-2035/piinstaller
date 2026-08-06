@@ -1,0 +1,11 @@
+diff --git a/docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json b/docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+index a47221fd..2eb275e1 100644
+--- a/docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
++++ b/docs/evidence/pi_rs_tel_001_rescue_lab_telemetry_send_flow/rescue_lab_payload_synthetic_example.redacted.json
+@@ -19,5 +19,5 @@
+     "contains_ip_addresses": false,
+     "production_ready": false
+   },
+-  "created_at": "2026-07-05T14:11:46Z"
++  "created_at": "2026-08-06T19:11:49Z"
+ }

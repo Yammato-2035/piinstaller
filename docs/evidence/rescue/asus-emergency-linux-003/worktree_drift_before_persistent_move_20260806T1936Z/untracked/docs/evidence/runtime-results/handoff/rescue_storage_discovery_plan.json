@@ -1,0 +1,62 @@
+{
+  "allowed_readonly_commands": [
+    {
+      "args": [
+        "-J",
+        "-o",
+        "NAME,TYPE,FSTYPE,LABEL,UUID,MOUNTPOINT,SIZE,MODEL,TRAN"
+      ],
+      "cmd": "lsblk"
+    },
+    {
+      "cmd": "blkid"
+    },
+    {
+      "args": [
+        "-J"
+      ],
+      "cmd": "findmnt"
+    }
+  ],
+  "classification_targets": [
+    "nvme",
+    "sata",
+    "usb",
+    "sd",
+    "efi_system_partition",
+    "linux_fs",
+    "ntfs",
+    "btrfs",
+    "xfs",
+    "crypto_luks",
+    "backup_candidate",
+    "system_disk_candidate"
+  ],
+  "facade_contract": {
+    "classified_devices": "core.storage_facade.list_classified_block_devices_for_inspect",
+    "devices_for_api": "core.storage_facade.list_devices_for_api",
+    "facade_contract_version": 1,
+    "implementation_note": "lsblk/blkid/findmnt only inside core facades",
+    "lsblk_tree": "core.storage_facade.get_lsblk_json_tree",
+    "mount_inventory": "core.mount_facade.build_mount_inventory_snapshot",
+    "mounts_flat": "core.mount_facade.discover_mounts_flat",
+    "physical_disks": "core.storage_facade.list_physical_disk_paths",
+    "storage_inventory": "core.storage_facade.build_storage_inventory_snapshot"
+  },
+  "forbidden": [
+    "mkfs",
+    "fdisk",
+    "parted",
+    "dd",
+    "wipefs",
+    "mount",
+    "-o",
+    "rw",
+    "fsck",
+    "--repair"
+  ],
+  "generated_at": "2026-08-06T19:10:33Z",
+  "rescue_storage_discovery_plan_schema_version": 1,
+  "storage_facade": "core.storage_facade.build_storage_inventory_snapshot",
+  "strict_mode": "rescue_live_storage_readonly"
+}
