@@ -2669,6 +2669,16 @@ except Exception:
     )
 
 try:
+    from api.routes.rescue_hardware_baseline import router as rescue_hardware_baseline_router
+
+    app.include_router(rescue_hardware_baseline_router)
+except Exception:
+    logger.exception(
+        "PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware-Baseline-Router konnte nicht "
+        "registriert werden; /api/rescue/hardware/baseline/* fehlt dann (404)."
+    )
+
+try:
     from api.routes.diagnostics import router as diagnostics_router
     app.include_router(diagnostics_router)
 except ImportError:
