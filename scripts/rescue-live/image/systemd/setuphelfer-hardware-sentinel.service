@@ -1,0 +1,14 @@
+[Unit]
+Description=Setuphelfer hardware state sentinel
+After=setuphelfer-boot-sentinel.service
+Wants=setuphelfer-boot-sentinel.service
+ConditionPathExists=/opt/setuphelfer/backend/rescue/hardware_state_sentinel.py
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Environment=PYTHONPATH=/opt/setuphelfer/backend
+ExecStart=/usr/bin/python3 -c "from pathlib import Path; Path('/run/setuphelfer').mkdir(parents=True, exist_ok=True); Path('/run/setuphelfer/hardware_sentinel.ready').write_text('ok\\n')"
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,652 @@
+{
+  "schema_version": 1,
+  "task": "PI-RS-ASUS-EMERGENCY-LINUX-TELEMETRY-003",
+  "phase": 3,
+  "generated_at": "2026-08-06T19:14:44Z",
+  "device_target": "ASUS ROG Strix G513QM",
+  "binding_status": "not_bound_pending_asus_00",
+  "status_vocabulary": [
+    "planned",
+    "detected",
+    "driver_bound",
+    "firmware_loaded",
+    "operational_probe_passed",
+    "limited",
+    "failed",
+    "unavailable",
+    "not_tested"
+  ],
+  "first_boot_profile": "ASUS-00_FORENSIC_TUI_SAFE",
+  "checks": [
+    {
+      "area": "platform",
+      "item": "dmi_manufacturer",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "dmi_model",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "baseboard",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "bios_version",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "bios_date",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "uefi_mode",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "secure_boot_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "acpi_errors",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "pcie_aer_errors",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "platform",
+      "item": "iommu_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "cpu_identity",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "cores_threads",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "microcode_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "mce_hardware_errors",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "temperature",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "throttling",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "cpu",
+      "item": "short_cpu_probe",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "memory",
+      "item": "total_capacity",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "memory",
+      "item": "available_capacity",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "memory",
+      "item": "dmi_modules",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "memory",
+      "item": "edac_mce_findings",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "memory",
+      "item": "oom_history",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "memory",
+      "item": "bounded_quick_probe",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "amd_gpu",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "nvidia_gpu",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "boot_vga",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "bound_drivers",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "candidate_modules",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "drm_cards",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "render_nodes",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "connectors",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "internal_display",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "external_display",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "firmware_messages",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "nomodeset",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "amdgpu_modeset",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "nouveau_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "nvidia_module_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "kernel_module_compatibility",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "gpu",
+      "item": "gui_capability",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "nvme_controller_a",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "nvme_controller_b",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "namespace_a",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "namespace_b",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "model_identity",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "capacity",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "firmware",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "pcie_link",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "temperature",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "critical_warning",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "available_spare",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "percentage_used",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "media_data_integrity_errors",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "error_log_entries",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "unsafe_shutdowns",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "controller_resets",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "kernel_io_errors",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "partition_tables",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "windows_disk_identity",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "linux_test_disk_candidate",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "storage",
+      "item": "no_nvme0_nvme1_order_only_binding",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "ethernet",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "wlan",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "bluetooth",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "rfkill",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "firmware",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "driver",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "link_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "dhcp",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "dns",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "https",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "telemetry_server",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "network",
+      "item": "diagnostics_server",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "internal_keyboard",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "touchpad",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "usb_keyboard",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "usb_mouse",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "usb_controllers",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "usb2_ports",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "usb3_ports",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "webcam",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "audio",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "microphone",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "speakers",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "card_reader_if_present",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "input_peripherals",
+      "item": "battery_ac_status",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "firmware_handoff",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "kernel_start",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "initramfs",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "root_filesystem",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "udev",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "hardware_baseline",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "network",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "telemetry",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "graphical_target",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "chromium_or_setuphelfer_ui",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "shutdown",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "boot_runtime",
+      "item": "reboot",
+      "status": "not_tested",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "campaign_prep",
+      "item": "hardware_baseline_code_1_10_1_0",
+      "status": "planned",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "campaign_prep",
+      "item": "asus_boot_profiles_as_code",
+      "status": "planned",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "campaign_prep",
+      "item": "boot_stage_sentinels",
+      "status": "planned",
+      "notes": "awaiting ASUS-00 physical evidence"
+    },
+    {
+      "area": "campaign_prep",
+      "item": "telemetry_spool",
+      "status": "planned",
+      "notes": "awaiting ASUS-00 physical evidence"
+    }
+  ],
+  "counts": {
+    "total": 102,
+    "by_status": {
+      "not_tested": 98,
+      "planned": 4
+    },
+    "by_area": {
+      "platform": 10,
+      "cpu": 7,
+      "memory": 6,
+      "gpu": 17,
+      "storage": 21,
+      "network": 12,
+      "input_peripherals": 13,
+      "boot_runtime": 12,
+      "campaign_prep": 4
+    }
+  }
+}

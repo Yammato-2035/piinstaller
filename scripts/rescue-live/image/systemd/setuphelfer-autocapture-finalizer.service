@@ -1,0 +1,13 @@
+[Unit]
+Description=Setuphelfer autocapture finalizer (checksums + run manifest)
+After=setuphelfer-telemetry-spooler.service
+Wants=setuphelfer-telemetry-spooler.service
+ConditionPathExists=/opt/setuphelfer/backend/rescue/telemetry_spooler.py
+
+[Service]
+Type=oneshot
+Environment=PYTHONPATH=/opt/setuphelfer/backend
+ExecStart=/usr/bin/python3 -c "from rescue.telemetry_spooler import resolve_campaign_spool_dir, update_checksums, write_run_manifest; import os; d=resolve_campaign_spool_dir(run_id=os.environ.get('SETUPHELFER_RUN_ID','boot')); write_run_manifest(d, {'run_id': os.environ.get('SETUPHELFER_RUN_ID','boot'), 'profile': os.environ.get('SETUPHELFER_ASUS_PROFILE','ASUS-00')}); update_checksums(d)"
+
+[Install]
+WantedBy=multi-user.target
