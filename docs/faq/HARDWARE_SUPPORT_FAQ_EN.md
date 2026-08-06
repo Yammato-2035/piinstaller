@@ -2,6 +2,7 @@
 
 Short answers about the new hardware detection and provisioning layer
 (PI-RS-HW-COMPAT-PROVISION-001). No marketing language.
+Languages: [Deutsch](HARDWARE_SUPPORT_FAQ_DE.md) · [English](HARDWARE_SUPPORT_FAQ_EN.md) · [Français](HARDWARE_SUPPORT_FAQ_FR.md) · [Nederlands](HARDWARE_SUPPORT_FAQ_NL.md)
 
 ## Does Setuphelfer support my graphics card?
 
@@ -35,13 +36,13 @@ phase.
 No. Raspberry Pi 3, 3B+, 4, 400, CM4, Pi 5, and CM5 are individually
 detected via device-tree data and each receive their own boot-medium and
 OS-compatibility evaluation. Details:
-`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT.md`.
+`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT_EN.md`.
 
 ## Why doesn't the 64 GB stick simply contain every operating system?
 
 Because space is limited. Setuphelfer uses an image catalog with signed
 sources, checksums, and a bounded cache instead of a rigid "everything
-included" image. Details: `docs/rescue-stick/64GB_CARRIER_ARCHITECTURE.md`.
+included" image. Details: `docs/rescue-stick/64GB_CARRIER_ARCHITECTURE_EN.md`.
 
 ## Does this version already install operating systems?
 

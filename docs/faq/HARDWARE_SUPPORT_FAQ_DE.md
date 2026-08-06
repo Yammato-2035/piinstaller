@@ -2,6 +2,7 @@
 
 Kurzantworten zur neuen Hardware-Erkennungs- und Provisionierungsschicht
 (PI-RS-HW-COMPAT-PROVISION-001). Keine Produktwerbung.
+Sprachen: [Deutsch](HARDWARE_SUPPORT_FAQ_DE.md) · [English](HARDWARE_SUPPORT_FAQ_EN.md) · [Français](HARDWARE_SUPPORT_FAQ_FR.md) · [Nederlands](HARDWARE_SUPPORT_FAQ_NL.md)
 
 ## Unterstützt Setuphelfer meine Grafikkarte?
 
