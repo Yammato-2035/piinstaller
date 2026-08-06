@@ -270,4 +270,6 @@ abgesichert. Physische Langzeittests und native Sprachreviews bleiben ausstehend
 
 ## Push-Nachweis
 
-Wird nach `git push -u origin pi-rs-hw-baseline-diag-i18n-002` ergänzt.
+- lokaler End-HEAD (inkl. Abschlussbericht): `f9fd35d8df2113bcffc49e52162aa79fa0d2da84`
+- Remote-HEAD `origin/pi-rs-hw-baseline-diag-i18n-002`: `f9fd35d8df2113bcffc49e52162aa79fa0d2da84`
+- Übereinstimmung: ja
