@@ -1,6 +1,12 @@
 # USB-, Drucker- und Scanner-Unterstützung — Rescue Stick
 
-Stand: PI-RS-HW-COMPAT-PROVISION-001, Phase 19.
+Stand: PI-RS-HW-COMPAT-PROVISION-001 (Phase 19), erweitert um
+PI-RS-HW-BASELINE-DIAG-I18N-002 (Phase 14).
+
+Sprachen: [Deutsch](USB_PRINTER_SCANNER_SUPPORT_DE.md) ·
+[English](USB_PRINTER_SCANNER_SUPPORT_EN.md) ·
+[Français](USB_PRINTER_SCANNER_SUPPORT_FR.md) ·
+[Nederlands](USB_PRINTER_SCANNER_SUPPORT_NL.md)
 
 ## USB-Geräteklassifikation (`backend/core/usb_device_detection.py`)
 

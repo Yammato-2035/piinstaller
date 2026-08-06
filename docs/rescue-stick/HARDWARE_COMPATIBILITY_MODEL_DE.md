@@ -1,6 +1,12 @@
 # Hardware Compatibility Model — Rescue Stick
 
-Stand: PI-RS-HW-COMPAT-PROVISION-001, Phase 19.
+Stand: PI-RS-HW-COMPAT-PROVISION-001 (Phase 19), erweitert um
+PI-RS-HW-BASELINE-DIAG-I18N-002 (Phase 14).
+
+Sprachen: [Deutsch](HARDWARE_COMPATIBILITY_MODEL_DE.md) ·
+[English](HARDWARE_COMPATIBILITY_MODEL_EN.md) ·
+[Français](HARDWARE_COMPATIBILITY_MODEL_FR.md) ·
+[Nederlands](HARDWARE_COMPATIBILITY_MODEL_NL.md)
 
 ## Kernaussage
 
@@ -19,6 +25,9 @@ Ja/Nein-Aussage.
 
 Diese Ampeln sind in `frontend/src/rescue/RescueHardwarePanel.tsx` und
 `frontend/src/rescue/rescue-shell.css` (`.rescue-hw-badge-*`) implementiert.
+Für die separate Hardware-Baseline-Diagnostik (RAM/CPU/GPU/Datenträger) gilt
+eine analoge, aber eigenständige Ampel — siehe
+`HARDWARE_BASELINE_DIAGNOSTICS_DE.md`.
 
 ## Abgedeckte Hardwareklassen
 
@@ -33,9 +42,9 @@ Diese Ampeln sind in `frontend/src/rescue/RescueHardwarePanel.tsx` und
 9. Drucker (`backend/peripherals/printer_detection.py`)
 10. Scanner (`backend/peripherals/scanner_detection.py`)
 11. Raspberry Pi 3–5 (`backend/platforms/raspberry_pi_*.py`) — siehe
-    `RASPBERRY_PI_3_TO_5_SUPPORT.md`
+    `RASPBERRY_PI_3_TO_5_SUPPORT_DE.md`
 12. Multi-Arch-Provisionierungsvorbereitung — siehe
-    `MULTI_ARCH_PROVISIONING_MODEL.md`
+    `MULTI_ARCH_PROVISIONING_MODEL_DE.md`
 
 ## Architekturregel: kein hartcodierter Massenkatalog
 
@@ -50,6 +59,27 @@ Hardware-IDs/Systeminformationen
   → sichere Aktivierungsplanung (backend/core/driver_activation_plan.py, preview-only)
   → nachvollziehbare Verifikation (Evidence-Referenzen, physische Testmatrix)
 ```
+
+## Treiber- und Firmwareauflösung
+
+Die Treiber-/Firmwareauflösung (`backend/core/driver_resolver.py`,
+`backend/core/driver_activation_plan.py`) folgt für jede erkannte
+Geräteklasse derselben Reihenfolge:
+
+1. bereits im laufenden Kernel/Distribution vorhandener Treiber
+2. freier, generischer Treiber aus dem Standardrepository
+3. kuratiertes Herstellerpaket (`data/hardware/hardware_compat_catalog.json`)
+4. proprietärer Treiber — ausschließlich als klar gekennzeichnete,
+   manuell zu bestätigende Option (`driver_type: proprietary_optional`)
+5. `unsupported`/`review_required`, wenn keine der obigen Stufen zutrifft
+
+Firmware wird nach demselben Prinzip behandelt: Vorhandensein wird erkannt
+und bewertet, ein Fehlen wird gemeldet — eine automatische
+Firmware-Aktivierung oder ein automatischer Firmware-Download findet in
+dieser Entwicklungsphase **nicht** statt. Jede Aktivierungsplanung
+(`driver_activation_plan.py`) ist ausschließlich eine Vorschau
+(`preview-only`), niemals ein ausgeführter Schreib- oder
+Installationsvorgang.
 
 ## Beispiel: Multifunktionsgerät
 

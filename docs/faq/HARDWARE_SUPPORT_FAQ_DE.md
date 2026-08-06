@@ -36,14 +36,14 @@ dieser Phase.
 Nein. Raspberry Pi 3, 3B+, 4, 400, CM4, Pi 5 und CM5 werden einzeln über
 Device-Tree-Daten erkannt und erhalten jeweils eigene Bootmedium- und
 OS-Kompatibilitätsbewertungen. Details:
-`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT.md`.
+`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT_DE.md`.
 
 ## Warum enthält der 64-GB-Stick nicht einfach alle Betriebssysteme?
 
 Weil der Platz begrenzt ist. Setuphelfer nutzt einen Imagekatalog mit
 signierten Quellen, Prüfsummen und einem begrenzten Cache statt eines
 starren „Alles-drauf"-Images. Details:
-`docs/rescue-stick/64GB_CARRIER_ARCHITECTURE.md`.
+`docs/rescue-stick/64GB_CARRIER_ARCHITECTURE_DE.md`.
 
 ## Werden mit dieser Version schon Betriebssysteme installiert?
 

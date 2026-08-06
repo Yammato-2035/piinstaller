@@ -1,6 +1,12 @@
 # Raspberry Pi 3 bis 5 — Unterstützungsmodell
 
-Stand: PI-RS-HW-COMPAT-PROVISION-001, Phase 19.
+Stand: PI-RS-HW-COMPAT-PROVISION-001 (Phase 19), erweitert um
+PI-RS-HW-BASELINE-DIAG-I18N-002 (Phase 14).
+
+Sprachen: [Deutsch](RASPBERRY_PI_3_TO_5_SUPPORT_DE.md) ·
+[English](RASPBERRY_PI_3_TO_5_SUPPORT_EN.md) ·
+[Français](RASPBERRY_PI_3_TO_5_SUPPORT_FR.md) ·
+[Nederlands](RASPBERRY_PI_3_TO_5_SUPPORT_NL.md)
 
 ## Kernaussage
 

@@ -1,6 +1,9 @@
 # 64-GB-Carrier-Architektur — Rescue Stick
 
-Stand: PI-RS-HW-COMPAT-PROVISION-001, Phase 19.
+Stand: PI-RS-HW-COMPAT-PROVISION-001 (Phase 19), erweitert um
+PI-RS-HW-BASELINE-DIAG-I18N-002 (Phase 14).
+
+Sprachen: [Deutsch](64GB_CARRIER_ARCHITECTURE_DE.md) · [English](64GB_CARRIER_ARCHITECTURE_EN.md) · [Français](64GB_CARRIER_ARCHITECTURE_FR.md) · [Nederlands](64GB_CARRIER_ARCHITECTURE_NL.md)
 
 ## Kernaussage
 
@@ -19,44 +22,22 @@ Katalog, einen begrenzten Cache und signierte Images statt eines
 
 ### Entscheidung
 
-Da in diesem Repository **kein Beleg** für einen validierten,
-gemeinsamen Boot-Sektor/ESP-Pfad für x86_64 (BIOS/UEFI) **und**
-Raspberry-Pi-SD-/EEPROM-Boot vorliegt, ist **Variante C
-(Orchestrator-Cache)** die spezifikationsgemäße Standardannahme dieser
-Phase. `evaluate_carrier_strategy()` markiert Variante A ausschließlich als
-`decided`, wenn ein Aufrufer explizit `universal_boot_path_evidence=True`
-mit tatsächlichem Beleg übergibt — es wird **nichts angenommen**.
+Da in diesem Repository **kein Beleg** für einen validierten gemeinsamen
+Boot-Sektor/ESP-Pfad für x86_64 (BIOS/UEFI) **und** Raspberry-Pi-SD-/EEPROM-Boot
+vorliegt, ist **Variante C (Orchestrator-Cache)** die spezifikationsgemäße
+Standardannahme. `evaluate_carrier_strategy()` markiert Variante A
+ausschließlich als `decided`, wenn ein Aufrufer explizit
+`universal_boot_path_evidence=True` mit tatsächlichem Beleg übergibt.
 
-Dies ist eine **Phase-19-Dokumentation eines bereits in Phase 12 gefällten,
-evidenzbasierten Zwischenstands** — keine endgültige Produktentscheidung.
-Ein Wechsel zu Variante A wäre jederzeit möglich, sobald ein validierter
-Universal-Bootpfad nachgewiesen ist.
+Dies ist eine evidenzbasierte Zwischenstandsdokumentation — keine endgültige
+Produktentscheidung.
 
 ## Kapazitätsplan (`backend/rescue/carrier_capacity_planner.py`)
 
 Der Plan rechnet **mit tatsächlichen Bytes des Mediums**, nicht mit einer
-pauschalen 64-GB-Annahme:
-
-```json
-{
-  "carrier_size_bytes": 0,
-  "layout_status": "ok|review_required|blocked",
-  "runtime_bytes": 0,
-  "driver_cache_bytes": 0,
-  "image_cache_bytes": 0,
-  "evidence_bytes": 0,
-  "reserved_bytes": 0,
-  "max_cached_images": 0,
-  "recommended_strategy": "universal|split_carriers|orchestrator_cache",
-  "warnings": []
-}
-```
-
-Es wird eine Sicherheitsreserve von **mindestens 10 %** (oder eine
-projektspezifisch begründete größere Reserve) eingeplant. Reale
-Byte-Ermittlung erfolgt über die bestehende `storage_facade`
-(`get_block_device_size_bytes`) — es wird **keine** eigene `lsblk`-Logik
-neu implementiert.
+pauschalen 64-GB-Annahme. Es wird eine Sicherheitsreserve von **mindestens
+10 %** eingeplant. Reale Byte-Ermittlung erfolgt über die bestehende
+`storage_facade` — keine eigene `lsblk`-Logik.
 
 ## Möglicher Carrier-Inhalt (`backend/rescue/carrier_content_catalog.py`)
 
