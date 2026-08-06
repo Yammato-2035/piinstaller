@@ -2,6 +2,7 @@
 
 Stand: PI-RS-HW-COMPAT-PROVISION-001, Phase 19. Zielgruppe: Anwender und
 Support. Kein Marketingtext.
+Sprachen: [Deutsch](HARDWARE_DETECTION_DE.md) · [English](HARDWARE_DETECTION_EN.md) · [Français](HARDWARE_DETECTION_FR.md) · [Nederlands](HARDWARE_DETECTION_NL.md)
 
 ## Was macht der Rettungsstick mit meiner Hardware?
 
@@ -49,14 +50,14 @@ die Scanfunktion aus.
 
 Es gibt keine pauschale Aussage. Jede Kombination aus Board, Architektur,
 Betriebssystem und Bootmedium wird einzeln bewertet. Details siehe
-`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT.md`.
+`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT_DE.md`.
 
 ## Warum passt nicht jedes Betriebssystem-Image auf den 64-GB-Stick?
 
 Ein 64-GB-Stick kann nicht unbegrenzt vollständige Images enthalten.
 Setuphelfer nutzt deshalb einen Katalog signierter Images, einen begrenzten
 Cache und lädt Images bei Bedarf nach, statt alles vorzuinstallieren.
-Details siehe `docs/rescue-stick/64GB_CARRIER_ARCHITECTURE.md`.
+Details siehe `docs/rescue-stick/64GB_CARRIER_ARCHITECTURE_DE.md`.
 
 ## Werden bei dieser Version schon echte Installationen durchgeführt?
 

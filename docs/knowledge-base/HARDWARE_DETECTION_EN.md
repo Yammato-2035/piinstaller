@@ -2,6 +2,7 @@
 
 Status: PI-RS-HW-COMPAT-PROVISION-001, Phase 19. Audience: users and
 support. No marketing language.
+Languages: [Deutsch](HARDWARE_DETECTION_DE.md) · [English](HARDWARE_DETECTION_EN.md) · [Français](HARDWARE_DETECTION_FR.md) · [Nederlands](HARDWARE_DETECTION_NL.md)
 
 ## What does the Rescue Stick do with my hardware?
 
@@ -48,14 +49,14 @@ function.
 
 There is no blanket statement. Every combination of board, architecture,
 operating system, and boot medium is evaluated individually. See
-`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT.md` for details.
+`docs/rescue-stick/RASPBERRY_PI_3_TO_5_SUPPORT_DE.md` for details.
 
 ## Why doesn't every OS image fit on the 64 GB stick?
 
 A single 64 GB stick cannot hold unlimited full OS images. Setuphelfer
 therefore uses a catalog of signed images with a bounded cache and
 downloads images on demand instead of pre-installing everything. See
-`docs/rescue-stick/64GB_CARRIER_ARCHITECTURE.md` for details.
+`docs/rescue-stick/64GB_CARRIER_ARCHITECTURE_DE.md` for details.
 
 ## Does this version already perform real installations?
 
