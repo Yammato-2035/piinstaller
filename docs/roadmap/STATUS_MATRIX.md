@@ -35,3 +35,17 @@
 | PI-RS-MSI-RETEST-003 Physical Boot Retest (1.10.0.16) | GELB | review_required — Operator TUI ok; Timeline ohne tui_mode_selected |
 | PI-RS-MSI-RETEST-003B Late Console Ownership Evidence | ROT | Session `20260712_225944_boot` — Capture ~10,5 s; kein console_owner=tui |
 | PI-RS-HW-COMPAT-PROVISION-001 Hardware-Erkennung/Treiberauflösung | GELB | `implemented_hardware_inventory_and_provisioning_preview_pending_physical_matrix` — Contracts, Detektoren, Resolver, Katalog, Pi 3-5, 64-GB-Carrier-Plan, OS-Katalog, Read-only-APIs, UI, Telemetrie/DCC, 198+ Unit-Tests grün; **keine** physische Hardware verifiziert |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Memory Baseline Diagnostics | GELB | Early read-only RAM checks + bounded quick probe; keine Langzeitverifikation |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 CPU Baseline Diagnostics | GELB | Additive Health-Checks auf `cpu_platform_detection`; keine Stress-Tests |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 GPU Baseline Diagnostics | GELB | Read-only GPU-Baseline; red GPU blockiert GUI nicht Backup |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 HDD Baseline Diagnostics | GELB | Read-only SMART/Health-Normalizer; kein Self-Test-Autostart |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 SATA SSD Baseline Diagnostics | GELB | Read-only SATA-SSD-Baseline; Target-rot nie schreibbar |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 NVMe Baseline Diagnostics | GELB | Read-only NVMe-Baseline; Source-rot bleibt backupfähig |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware Baseline Gate | GELB | Additive Gate-Schicht; umgeht `safety_facade` nie |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware Documentation DE | GELB | `structurally_complete` + `content_reviewed`; `native_review_pending` |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware Documentation EN | GELB | `structurally_complete` + `content_reviewed`; `native_review_pending` |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware Documentation FR | GELB | `structurally_complete` + `content_reviewed`; `native_review_pending` |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware Documentation NL | GELB | `structurally_complete` + `content_reviewed`; `native_review_pending` |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware FAQ DE/EN/FR/NL | GELB | Viersprachige FAQ inkl. Baseline; native Review ausstehend |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Hardware Knowledge Base DE/EN/FR/NL | GELB | KB-Artikelfamilien × 4 Sprachen; native Review ausstehend |
+| PI-RS-HW-BASELINE-DIAG-I18N-002 Physical Extended Tests | GELB | `pending_physical_validation` — keine physischen Langzeittests in dieser Phase |
