@@ -24,6 +24,7 @@ import {
   type RescueUsbFunction,
 } from './rescueHardwareApi';
 import { getRescueDict, tPath, type RescueLocale } from './rescueLocale';
+import { RescueHardwareBaselinePanel } from './RescueHardwareBaselinePanel';
 
 /** Simplified 4-color mapping onto the spec's ampel model (Gruen/Gelb/Rot/Grau). */
 function ampelClass(status: string | undefined | null): 'ok' | 'warn' | 'err' | 'neutral' {
@@ -130,6 +131,8 @@ export const RescueHardwarePanel: React.FC<{ locale: RescueLocale }> = ({ locale
           {error}
         </p>
       ) : null}
+
+      <RescueHardwareBaselinePanel locale={locale} />
 
       <section className="rescue-plan-card">
         <h3>{tPath(dict, 'section.hardware.cpuTitle')}</h3>

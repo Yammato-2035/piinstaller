@@ -324,6 +324,62 @@
       "osFuture": "Geplant (future)",
       "osVerified": "Verifiziert",
       "noWriteDisclaimer": "Diese Entwicklungsphase erstellt nur einen Installationsplan. Es werden keine Datentraeger beschrieben."
+    },
+    "hardwareBaseline": {
+      "title": "Fruehe Hardware-Basisdiagnose",
+      "intro": "Kurzer, sicherer Schnelltest ohne Schreibzugriff. Das Ergebnis ist kein Garantiebeweis fuer fehlerfreie Hardware, sondern zeigt sichtbare Auffaelligkeiten und gibt Empfehlungen fuer ausfuehrlichere Tests.",
+      "loading": "Basisdiagnose wird geladen...",
+      "loadError": "Basisdiagnose konnte nicht ausgefuehrt werden.",
+      "runningLabel": "Laeuft...",
+      "runQuickButton": "Schnelltest starten",
+      "runExtendedPreviewButton": "Erweiterte Vorschau anzeigen",
+      "notRunYet": "Noch kein Basistest durchgefuehrt.",
+      "gateTitle": "Sicherheitsampel fuer diesen Rescue-Lauf",
+      "allowedLabel": "erlaubt",
+      "blockedLabel": "blockiert",
+      "permissionBackup": "Backup (Lesezugriff)",
+      "permissionRestore": "Restore (Wiederherstellung)",
+      "permissionOsInstall": "Betriebssystem-Installation",
+      "permissionGuiMode": "Grafischer Modus (GUI)",
+      "reasonsTitle": "Gruende fuer Blockierung",
+      "warningsTitle": "Warnhinweise",
+      "nextActionsTitle": "Empfohlene naechste Schritte",
+      "durationLabel": "Dauer",
+      "checksRunLabel": "durchgefuehrte Pruefungen",
+      "checksSkippedLabel": "uebersprungene Pruefungen",
+      "findingsTitle": "Befunde",
+      "noFindings": "Keine Auffaelligkeiten festgestellt.",
+      "metricsTitle": "Messwerte",
+      "recommendationsTitle": "Empfehlungen",
+      "extendedTestTitle": "Erweiterter Test",
+      "extendedTestRecommendedLabel": "empfohlen",
+      "extendedTestRequiredLabel": "erforderlich vor Weiterbenutzung",
+      "extendedTestNotStartedDisclaimer": "Dieser erweiterte Test wurde nicht automatisch gestartet und erfordert eine ausdrueckliche Bedienerbestaetigung.",
+      "disclaimerNeverGuaranteed": "Dieser Basistest garantiert nicht, dass die Hardware fehlerfrei ist. Er erkennt nur sichtbare Auffaelligkeiten innerhalb kurzer Zeit.",
+      "status": {
+        "no_immediate_issue_detected": "Keine unmittelbare Auffaelligkeit",
+        "immediate_issue_detected": "Unmittelbare Auffaelligkeit erkannt",
+        "degraded": "Eingeschraenkt",
+        "review_required": "Pruefung erforderlich",
+        "extended_test_recommended": "Erweiterter Test empfohlen",
+        "extended_test_required": "Erweiterter Test erforderlich",
+        "test_unavailable": "Test nicht verfuegbar",
+        "not_tested": "Nicht getestet"
+      },
+      "subsystem": {
+        "memory": "Arbeitsspeicher (RAM)",
+        "cpu": "Prozessor (CPU)",
+        "gpu": "Grafik (GPU)",
+        "hdd": "Festplatte (HDD)",
+        "sata_ssd": "SATA/SAS-SSD",
+        "nvme": "NVMe-SSD"
+      },
+      "gateStatus": {
+        "passed": "Bestanden",
+        "review_required": "Pruefung erforderlich",
+        "blocked": "Blockiert",
+        "incomplete": "Unvollstaendig"
+      }
     }
   },
   "migration": {

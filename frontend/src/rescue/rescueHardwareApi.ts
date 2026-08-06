@@ -123,6 +123,83 @@ export interface RescueOsCatalogEntry {
   download_enabled: boolean;
 }
 
+/**
+ * PI-RS-HW-BASELINE-DIAG-I18N-002 Phase 13 — early hardware baseline types.
+ *
+ * Every fetch below targets a read-only route or a bounded "quick" probe
+ * from Phase 12 (/api/rescue/hardware/baseline/*). None of these routes
+ * write to disk, change a driver, install a package, or start a SMART
+ * self-test.
+ */
+
+export interface RescueBaselineMetric {
+  name: string;
+  value: unknown;
+  unit: string | null;
+  source: string | null;
+}
+
+export interface RescueBaselineFinding {
+  code: string;
+  severity: 'green' | 'yellow' | 'red' | 'gray';
+  message: string | null;
+  evidence: string[];
+}
+
+export interface RescueBaselineExtendedTest {
+  recommended: boolean;
+  required: boolean;
+  test_type: string | null;
+  estimated_duration: string | null;
+  operator_confirmation_required: boolean;
+}
+
+export interface RescueBaselineSubsystemResult {
+  subsystem: 'memory' | 'cpu' | 'gpu' | 'hdd' | 'sata_ssd' | 'nvme';
+  status: string;
+  severity: 'green' | 'yellow' | 'red' | 'gray';
+  started_at: string | null;
+  completed_at: string | null;
+  duration_ms: number;
+  checks_run: string[];
+  checks_skipped: string[];
+  metrics: Record<string, RescueBaselineMetric>;
+  findings: RescueBaselineFinding[];
+  recommendations: string[];
+  extended_test: RescueBaselineExtendedTest;
+  evidence: string[];
+  device_id?: string;
+}
+
+export interface RescueBaselineGate {
+  status: 'passed' | 'review_required' | 'blocked' | 'incomplete';
+  memory_status: string;
+  cpu_status: string;
+  gpu_status: string;
+  storage_status: string;
+  backup_allowed: boolean;
+  restore_allowed: boolean;
+  os_installation_allowed: boolean;
+  gui_mode_allowed: boolean;
+  reasons: string[];
+  warnings: string[];
+  required_next_actions: string[];
+}
+
+export interface RescueBaselineResult {
+  schema_version: string;
+  run_id: string;
+  collected_at: string;
+  mode: 'quick' | 'extended_preview';
+  subsystems: RescueBaselineSubsystemResult[];
+  gate: RescueBaselineGate;
+  total_duration_ms: number;
+}
+
+export type RescueBaselineStatusResponse =
+  | { has_run: false }
+  | { has_run: true; run_id: string; collected_at: string; mode: string; gate: RescueBaselineGate };
+
 async function getJson<T>(url: string): Promise<T> {
   const res = await fetch(url, { cache: 'no-store' });
   if (!res.ok) throw new Error(`request_failed:${res.status}`);
@@ -189,4 +266,16 @@ export async function postCarrierLayoutPreview(carrierSizeBytes: number): Promis
 
 export async function fetchProvisioningCatalog(): Promise<{ entries: RescueOsCatalogEntry[] }> {
   return getJson('/api/rescue/provision/catalog');
+}
+
+export async function fetchHardwareBaselineStatus(): Promise<RescueBaselineStatusResponse> {
+  return getJson('/api/rescue/hardware/baseline/status');
+}
+
+export async function postHardwareBaselineQuick(): Promise<RescueBaselineResult> {
+  return postJson('/api/rescue/hardware/baseline/quick', {});
+}
+
+export async function postHardwareBaselineExtendedPreview(): Promise<RescueBaselineResult> {
+  return postJson('/api/rescue/hardware/baseline/extended-preview', {});
 }

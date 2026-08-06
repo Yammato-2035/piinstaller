@@ -594,6 +594,62 @@
       "osFuture": "Prevu (future)",
       "osVerified": "Verifie",
       "noWriteDisclaimer": "Cette phase de developpement ne cree qu'un plan d'installation. Aucun support de stockage n'est ecrit."
+    },
+    "hardwareBaseline": {
+      "title": "Verification precoce du materiel (baseline)",
+      "intro": "Test rapide et sans danger, sans acces en ecriture. Le resultat ne prouve pas que le materiel est exempt de defaut ; il indique des anomalies visibles et recommande si un test plus long est utile.",
+      "loading": "Chargement de la verification baseline...",
+      "loadError": "La verification baseline n'a pas pu etre executee.",
+      "runningLabel": "En cours...",
+      "runQuickButton": "Lancer le test rapide",
+      "runExtendedPreviewButton": "Afficher l'apercu du test etendu",
+      "notRunYet": "Aucune verification baseline n'a encore ete executee.",
+      "gateTitle": "Feu de securite pour cette session de secours",
+      "allowedLabel": "autorise",
+      "blockedLabel": "bloque",
+      "permissionBackup": "Sauvegarde (acces en lecture)",
+      "permissionRestore": "Restauration",
+      "permissionOsInstall": "Installation du systeme d'exploitation",
+      "permissionGuiMode": "Mode graphique (GUI)",
+      "reasonsTitle": "Raisons du blocage",
+      "warningsTitle": "Avertissements",
+      "nextActionsTitle": "Prochaines etapes recommandees",
+      "durationLabel": "Duree",
+      "checksRunLabel": "verifications effectuees",
+      "checksSkippedLabel": "verifications ignorees",
+      "findingsTitle": "Constatations",
+      "noFindings": "Aucune anomalie detectee.",
+      "metricsTitle": "Mesures",
+      "recommendationsTitle": "Recommandations",
+      "extendedTestTitle": "Test etendu",
+      "extendedTestRecommendedLabel": "recommande",
+      "extendedTestRequiredLabel": "requis avant toute utilisation ulterieure",
+      "extendedTestNotStartedDisclaimer": "Ce test etendu n'a pas ete demarre automatiquement et necessite une confirmation explicite de l'operateur.",
+      "disclaimerNeverGuaranteed": "Cette verification baseline ne garantit pas que le materiel est exempt de defaut. Elle detecte uniquement des anomalies visibles en peu de temps.",
+      "status": {
+        "no_immediate_issue_detected": "Aucun probleme immediat detecte",
+        "immediate_issue_detected": "Probleme immediat detecte",
+        "degraded": "Degrade",
+        "review_required": "Examen requis",
+        "extended_test_recommended": "Test etendu recommande",
+        "extended_test_required": "Test etendu requis",
+        "test_unavailable": "Test indisponible",
+        "not_tested": "Non teste"
+      },
+      "subsystem": {
+        "memory": "Memoire (RAM)",
+        "cpu": "Processeur (CPU)",
+        "gpu": "Carte graphique (GPU)",
+        "hdd": "Disque dur (HDD)",
+        "sata_ssd": "SSD SATA/SAS",
+        "nvme": "SSD NVMe"
+      },
+      "gateStatus": {
+        "passed": "Reussi",
+        "review_required": "Examen requis",
+        "blocked": "Bloque",
+        "incomplete": "Incomplet"
+      }
     }
   },
   "settings": {

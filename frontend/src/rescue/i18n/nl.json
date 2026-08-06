@@ -594,6 +594,62 @@
       "osFuture": "Gepland (future)",
       "osVerified": "Geverifieerd",
       "noWriteDisclaimer": "Deze ontwikkelingsfase maakt alleen een installatieplan. Er wordt geen opslagmedium beschreven."
+    },
+    "hardwareBaseline": {
+      "title": "Vroege hardware-basiscontrole",
+      "intro": "Korte, veilige snelle test zonder schrijftoegang. Het resultaat is geen bewijs dat de hardware foutvrij is; het toont zichtbare afwijkingen en adviseert of een langere test zinvol is.",
+      "loading": "Basiscontrole wordt geladen...",
+      "loadError": "Basiscontrole kon niet worden uitgevoerd.",
+      "runningLabel": "Bezig...",
+      "runQuickButton": "Snelle test uitvoeren",
+      "runExtendedPreviewButton": "Uitgebreide voorbeeldweergave tonen",
+      "notRunYet": "Er is nog geen basiscontrole uitgevoerd.",
+      "gateTitle": "Veiligheidssignaal voor deze reddingssessie",
+      "allowedLabel": "toegestaan",
+      "blockedLabel": "geblokkeerd",
+      "permissionBackup": "Back-up (alleen-lezen toegang)",
+      "permissionRestore": "Herstel",
+      "permissionOsInstall": "Installatie besturingssysteem",
+      "permissionGuiMode": "Grafische modus (GUI)",
+      "reasonsTitle": "Redenen voor blokkering",
+      "warningsTitle": "Waarschuwingen",
+      "nextActionsTitle": "Aanbevolen vervolgstappen",
+      "durationLabel": "Duur",
+      "checksRunLabel": "controles uitgevoerd",
+      "checksSkippedLabel": "controles overgeslagen",
+      "findingsTitle": "Bevindingen",
+      "noFindings": "Geen afwijkingen gedetecteerd.",
+      "metricsTitle": "Metingen",
+      "recommendationsTitle": "Aanbevelingen",
+      "extendedTestTitle": "Uitgebreide test",
+      "extendedTestRecommendedLabel": "aanbevolen",
+      "extendedTestRequiredLabel": "vereist voor verder gebruik",
+      "extendedTestNotStartedDisclaimer": "Deze uitgebreide test is niet automatisch gestart en vereist expliciete bevestiging van de operator.",
+      "disclaimerNeverGuaranteed": "Deze basiscontrole garandeert niet dat de hardware foutvrij is. Ze detecteert alleen zichtbare afwijkingen binnen korte tijd.",
+      "status": {
+        "no_immediate_issue_detected": "Geen direct probleem gedetecteerd",
+        "immediate_issue_detected": "Direct probleem gedetecteerd",
+        "degraded": "Verminderd",
+        "review_required": "Beoordeling vereist",
+        "extended_test_recommended": "Uitgebreide test aanbevolen",
+        "extended_test_required": "Uitgebreide test vereist",
+        "test_unavailable": "Test niet beschikbaar",
+        "not_tested": "Niet getest"
+      },
+      "subsystem": {
+        "memory": "Geheugen (RAM)",
+        "cpu": "Processor (CPU)",
+        "gpu": "Grafische kaart (GPU)",
+        "hdd": "Harde schijf (HDD)",
+        "sata_ssd": "SATA/SAS SSD",
+        "nvme": "NVMe SSD"
+      },
+      "gateStatus": {
+        "passed": "Geslaagd",
+        "review_required": "Beoordeling vereist",
+        "blocked": "Geblokkeerd",
+        "incomplete": "Onvolledig"
+      }
     }
   },
   "settings": {

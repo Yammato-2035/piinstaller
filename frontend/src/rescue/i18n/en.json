@@ -324,6 +324,62 @@
       "osFuture": "Planned (future)",
       "osVerified": "Verified",
       "noWriteDisclaimer": "This development phase only creates an installation plan. No storage medium is written to."
+    },
+    "hardwareBaseline": {
+      "title": "Early hardware baseline check",
+      "intro": "Short, safe quick test with no write access. The result is not proof that the hardware is fault-free; it shows visible anomalies and recommends whether a longer test is worthwhile.",
+      "loading": "Loading baseline check...",
+      "loadError": "Baseline check could not be run.",
+      "runningLabel": "Running...",
+      "runQuickButton": "Run quick check",
+      "runExtendedPreviewButton": "Show extended preview",
+      "notRunYet": "No baseline check has been run yet.",
+      "gateTitle": "Safety traffic light for this rescue run",
+      "allowedLabel": "allowed",
+      "blockedLabel": "blocked",
+      "permissionBackup": "Backup (read access)",
+      "permissionRestore": "Restore",
+      "permissionOsInstall": "Operating system installation",
+      "permissionGuiMode": "Graphical mode (GUI)",
+      "reasonsTitle": "Reasons for blocking",
+      "warningsTitle": "Warnings",
+      "nextActionsTitle": "Recommended next steps",
+      "durationLabel": "Duration",
+      "checksRunLabel": "checks run",
+      "checksSkippedLabel": "checks skipped",
+      "findingsTitle": "Findings",
+      "noFindings": "No anomalies detected.",
+      "metricsTitle": "Measurements",
+      "recommendationsTitle": "Recommendations",
+      "extendedTestTitle": "Extended test",
+      "extendedTestRecommendedLabel": "recommended",
+      "extendedTestRequiredLabel": "required before further use",
+      "extendedTestNotStartedDisclaimer": "This extended test was not started automatically and requires explicit operator confirmation.",
+      "disclaimerNeverGuaranteed": "This baseline check does not guarantee that the hardware is fault-free. It only detects visible anomalies within a short time.",
+      "status": {
+        "no_immediate_issue_detected": "No immediate issue detected",
+        "immediate_issue_detected": "Immediate issue detected",
+        "degraded": "Degraded",
+        "review_required": "Review required",
+        "extended_test_recommended": "Extended test recommended",
+        "extended_test_required": "Extended test required",
+        "test_unavailable": "Test unavailable",
+        "not_tested": "Not tested"
+      },
+      "subsystem": {
+        "memory": "Memory (RAM)",
+        "cpu": "Processor (CPU)",
+        "gpu": "Graphics (GPU)",
+        "hdd": "Hard disk (HDD)",
+        "sata_ssd": "SATA/SAS SSD",
+        "nvme": "NVMe SSD"
+      },
+      "gateStatus": {
+        "passed": "Passed",
+        "review_required": "Review required",
+        "blocked": "Blocked",
+        "incomplete": "Incomplete"
+      }
     }
   },
   "migration": {
