@@ -3,6 +3,12 @@ CPU baseline diagnostics — early, read-only risk check.
 
 PI-RS-HW-BASELINE-DIAG-I18N-002 Phase 4.
 
+Deliberate parallel path (see docs/evidence/rescue/hardware-baseline-002/
+HARDWARE_BASELINE_IST_AUDIT.md): ``core.hardware_discovery`` remains the
+display-oriented inventory facade; this module reuses
+``core.cpu_platform_detection`` for inventory and only adds baseline *health*
+checks. It does not replace ``hardware_discovery``.
+
 Builds on ``core.cpu_platform_detection`` (CPU/SoC inventory, architecture,
 virtualization, microcode, thermal *zone names*) — this module does not
 re-parse ``lscpu``/``cpuinfo`` itself, it only adds:

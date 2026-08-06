@@ -3,6 +3,12 @@ Memory (RAM) baseline diagnostics — early, read-only risk check.
 
 PI-RS-HW-BASELINE-DIAG-I18N-002 Phase 3.
 
+Deliberate parallel path (see docs/evidence/rescue/hardware-baseline-002/
+HARDWARE_BASELINE_IST_AUDIT.md): ``core.hardware_discovery`` remains the
+display-oriented inventory facade for the product app; this module adds
+baseline *health* checks (EDAC/MCE/OOM, bounded quick probe) and does not
+replace or duplicate that discovery facade.
+
 Four independent, additive checks, all read-only except the bounded quick
 memory probe (which only ever allocates and immediately releases a small,
 capped Python buffer — never a system-level memtest):
