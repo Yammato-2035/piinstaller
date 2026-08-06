@@ -1,0 +1,112 @@
+{
+  "phase": 19,
+  "task": "PI-RS-HW-BASELINE-DIAG-I18N-002",
+  "generated_at": "2026-08-06T18:55:17Z",
+  "workspace": "/home/volker/piinstaller-hw-baseline-diag-i18n-002",
+  "branch": "pi-rs-hw-baseline-diag-i18n-002",
+  "base_commit": "dfa9ae18",
+  "head_at_report": "c216d31d",
+  "gates": {
+    "runtime_deploy_gate": {
+      "exit": 0,
+      "note": "LEGACY_GATE_NON_PROFILE_AWARE; no live /opt success claimed"
+    },
+    "module_boundaries": {
+      "exit": 0,
+      "status": "review_required",
+      "baseline_new_logic_hits": 0,
+      "note": "memory/cpu docstring parallel-path fix applied; remaining findings pre-existing"
+    },
+    "hardware_doc_i18n": {
+      "exit": 0,
+      "structurally_complete": true,
+      "content_reviewed": true,
+      "native_review_pending": true
+    },
+    "version_consistency": {
+      "ok": true
+    },
+    "public_private_boundary": {
+      "exit": 0
+    },
+    "private_import_boundaries": {
+      "exit": 0,
+      "status": "review_required",
+      "note": "pre-existing rescue_direct_lsblk warnings"
+    },
+    "openapi_baseline": {
+      "baseline_routes": 9,
+      "methods": "GET/POST-preview only",
+      "forbidden_write_route_hits": 0
+    }
+  },
+  "tests": {
+    "new_baseline_suite": {
+      "passed": 213,
+      "failed": 0
+    },
+    "hardware_group": {
+      "passed": 405,
+      "failed": 0,
+      "files": 32
+    },
+    "rescue_group": {
+      "passed": 702,
+      "skipped": 23,
+      "failed": 0,
+      "note": "run with /home/volker/piinstaller/.venv (httpx)"
+    },
+    "telemetry_redaction_and_api": {
+      "passed": 55,
+      "failed": 0
+    },
+    "full_backend_suite": {
+      "passed": 4048,
+      "failed": 9,
+      "skipped": 29,
+      "predecessor_reference": "3450 passed on compat-001 with httpx exclusion; this run used venv+httpx so collection is larger",
+      "failures_vs_base_dfa9ae18": "same 8 persistent failures reproduced on detached base; msi event-loop flake passes in isolation on both"
+    },
+    "frontend_tsc": {
+      "error_count": 194,
+      "errors_in_baseline_files": 0,
+      "note": "pre-existing"
+    },
+    "frontend_vitest": {
+      "failed": 2,
+      "passed": 172,
+      "note": "rescueStickUsbGate.test.ts unchanged vs base; pre-existing"
+    },
+    "frontend_build": {
+      "exit": 0,
+      "tool": "vite"
+    }
+  },
+  "failure_classification": [
+    {
+      "test": "test_app_router_slice_e8 (2)",
+      "class": "preexisting",
+      "evidence": "11!=10 also on dfa9ae18"
+    },
+    {
+      "test": "test_deploy_runner_rescue_storage_discovery_v1",
+      "class": "preexisting",
+      "evidence": "review_required!=ok on dfa9ae18"
+    },
+    {
+      "test": "test_pi_rs_payload_telemetry001_* (3)",
+      "class": "preexisting_env",
+      "evidence": "squashfs pin / script +x / permission on worktree; same on dfa9ae18"
+    },
+    {
+      "test": "test_pi_rs_tel003/004_version_bump (2)",
+      "class": "preexisting",
+      "evidence": "pin 1.9.19.5 vs branch 1.10.0.0; same on dfa9ae18"
+    },
+    {
+      "test": "test_msi_windows_routes_readonly_v1",
+      "class": "preexisting_flake",
+      "evidence": "event loop only in full suite; 5/5 pass isolated on branch and base"
+    }
+  ]
+}
