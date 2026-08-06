@@ -1,0 +1,72 @@
+=== STEP: wipefs_probe ===
++ sudo wipefs --no-act /dev/sda
+DEVICE OFFSET TYPE    UUID                   LABEL
+sda    0x8001 iso9660 2026-01-08-18-32-58-00 Linux Mint 22.3 Cinnamon 64-bit
+sda    0x1fe  dos                            
+sda    0x200  gpt                            
+sda    0x0    mac                            
+OK: wipefs_probe
+=== STEP: wipefs_full ===
++ sudo wipefs -a /dev/sda
+/dev/sda: 5 Bytes wurden an Position 0x00008001 gelöscht (iso9660): 43 44 30 30 31
+/dev/sda: 2 Bytes wurden an Position 0x000001fe gelöscht (dos): 55 aa
+/dev/sda: 8 Bytes wurden an Position 0x00000200 gelöscht (gpt): 45 46 49 20 50 41 52 54
+/dev/sda: 2 Bytes wurden an Position 0x00000000 gelöscht (mac): 45 52
+/dev/sda: ioctl wird aufgerufen, um die Partitionstabelle neu einzulesen: Erfolg
+OK: wipefs_full
+=== STEP: sgdisk_zap ===
++ sudo sgdisk --zap-all /dev/sda
+Creating new GPT entries in memory.
+GPT data structures destroyed! You may now partition the disk using fdisk or
+other utilities.
+OK: sgdisk_zap
+=== STEP: sgdisk_create_esp ===
++ sudo sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:SETUPHELFER_RESCUE /dev/sda
+Creating new GPT entries in memory.
+The operation has completed successfully.
+OK: sgdisk_create_esp
+=== STEP: sgdisk_create_logs ===
++ sudo sgdisk -n 2:0:0 -t 2:0700 -c 2:SETUPHELFER_LOGS /dev/sda
+The operation has completed successfully.
+OK: sgdisk_create_logs
+=== STEP: partprobe ===
++ sudo partprobe /dev/sda
+OK: partprobe
+=== STEP: udev_settle ===
++ sudo udevadm settle --timeout=30
+OK: udev_settle
+=== STEP: mkfs_vfat ===
++ sudo mkfs.vfat -F 32 -n SETUPHELFER /dev/sda1
+mkfs.fat 4.2 (2021-01-31)
+OK: mkfs_vfat
+=== STEP: mkfs_logs ===
++ sudo mkfs.vfat -F 32 -n SETUP_LOGS /dev/sda2
+mkfs.fat 4.2 (2021-01-31)
+OK: mkfs_logs
+=== STEP: partprobe_after_mkfs ===
++ sudo partprobe /dev/sda
+OK: partprobe_after_mkfs
+=== STEP: udev_settle_after_mkfs ===
++ sudo udevadm settle --timeout=30
+OK: udev_settle_after_mkfs
+FAT_UUID=7EA0-B29E
+=== STEP: patch_grub_uuid ===
++ /home/volker/piinstaller-asus-emergency-linux-telemetry-003/scripts/rescue-live/patch-fat32-esp-grub-for-uuid.sh --staging /home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging --fat-uuid 7EA0-B29E
+OK: patched grub.cfg at /home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging/boot/grub/grub.cfg
+4:search --no-floppy --fs-uuid 7EA0-B29E --set=root
+6:  search --no-floppy --label SETUPHELFER --set=root
+OK: patch_grub_uuid
+=== STEP: mount_esp ===
++ sudo mount /dev/sda1 /tmp/tmp.0kJyWATdXI
+OK: mount_esp
+=== STEP: rsync_staging ===
++ bash -lc sudo rsync -r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times --exclude='.sqtmp/' "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging/" "/tmp/tmp.0kJyWATdXI/"
+              0   0%    0,00kB/s    0:00:00 (xfr#0, to-chk=15/21)         32.768   0%    0,00kB/s    0:00:00        3.866.624   0%  522,32MB/s    0:00:00 (xfr#1, to-chk=14/21)      3.866.624   0%  522,32MB/s    0:00:00 (xfr#1, to-chk=14/21)      3.868.557   0%  522,58MB/s    0:00:00 (xfr#2, to-chk=12/21)      4.061.849   0%  480,30MB/s    0:00:00 (xfr#3, to-chk=9/21)       4.062.352   0%  480,36MB/s    0:00:00 (xfr#4, to-chk=8/21)      6.474.158   0%  472,54MB/s    0:00:00 (xfr#5, to-chk=7/21)    524.044.718  38%  499,74MB/s    0:00:01    1.045.449.134  76%  498,74MB/s    0:00:00    1.303.247.278  95%  495,95MB/s    0:00:02 (xfr#6, to-chk=6/21)  1.358.651.988  99%  495,29MB/s    0:00:02 (xfr#7, to-chk=5/21)  1.366.878.740  99%  495,26MB/s    0:00:02 (xfr#8, to-chk=4/21)  1.366.879.112  99%  495,26MB/s    0:00:02 (xfr#9, to-chk=2/21)  1.366.881.681  99%  495,26MB/s    0:00:02 (xfr#10, to-chk=1/21)  1.366.881.919 100%  495,26MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,26MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,26MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,26MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,26MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,26MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,07MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,07MB/s    0:00:02 (xfr#11, to-chk=0/21)  1.366.881.919 100%  495,07MB/s    0:00:02 (xfr#11, to-chk=0/21)
+OK: rsync_staging
+=== STEP: sync ===
++ sync
+OK: sync
+=== STEP: umount_esp ===
++ sudo umount /tmp/tmp.0kJyWATdXI
+OK: umount_esp
+OK: verify_fat32_esp

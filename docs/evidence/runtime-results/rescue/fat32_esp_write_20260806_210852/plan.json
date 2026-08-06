@@ -1,0 +1,97 @@
+{
+  "schema_version": 2,
+  "mode": "write_prepared",
+  "writer": "fat32_esp",
+  "iso_path": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/live-build/setuphelfer-rescue-live/binary.hybrid.iso",
+  "iso_sha256": "ce3258f945ea2f973414ed6bdca29f884be9415f66e06a0e9110e6d6b0f87473",
+  "target_device": "/dev/sda",
+  "gpt_partition_name": "SETUPHELFER_RESCUE",
+  "fat_volume_label": "SETUPHELFER",
+  "esp_size_mib": 4096,
+  "partition_layout": {
+    "table": "GPT",
+    "partitions": [
+      {
+        "number": 1,
+        "type": "EFI System (EF00)",
+        "fstype": "vfat",
+        "gpt_partition_name": "SETUPHELFER_RESCUE",
+        "fat_volume_label": "SETUPHELFER",
+        "size_mib": 4096,
+        "contents": [
+          "EFI/BOOT/BOOTX64.EFI",
+          "boot/grub/grub.cfg",
+          "live/vmlinuz",
+          "live/initrd.img",
+          "live/filesystem.squashfs",
+          "setuphelfer/rescue/version.json",
+          "setuphelfer/rescue/evidence.json"
+        ]
+      }
+    ],
+    "optional_data_partition": {
+      "planned": true,
+      "write_in_v1": false,
+      "gpt_partition_name": "SETUPHELFER_DATA",
+      "purpose": "config/logs/telemetry-spool"
+    }
+  },
+  "staging_dir": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging",
+  "staging_layout": null,
+  "staging_error": null,
+  "safety": {
+    "target_device": "/dev/sda",
+    "dry_run": false,
+    "blocked": false,
+    "blockers": [],
+    "errors": [],
+    "device_row": {
+      "device": "/dev/sda",
+      "name": "sda",
+      "size": "59G",
+      "model": "Ultra Line",
+      "serial": null,
+      "transport": "usb",
+      "removable": true,
+      "partitions": [],
+      "mountpoints": [],
+      "fstypes": [
+        "ext4",
+        "iso9660",
+        "vfat"
+      ],
+      "setuphelfer_rescue_detected": false,
+      "setuphelfer_rescue_warning": null,
+      "previous_setuphelfer_version": null,
+      "selectable": true,
+      "blocked_reason": null,
+      "read_only": true
+    },
+    "write_allowed": true,
+    "secrets_exposed": false
+  },
+  "operator_evidence_path": "docs/evidence/runtime-results/rescue/usb_operator_selection_latest.json",
+  "confirm_phrase_required": "WRITE SETUPHELFER FAT32 ESP USB",
+  "destructive_actions": [
+    "wipefs --no-act (log stale signatures on parent device)",
+    "wipefs -a (full rebuild) OR wipefs -a -t iso9660 (repair stale dd signature)",
+    "sgdisk --zap-all",
+    "sgdisk -n 1:0:+4096MiB -t 1:EF00 -c 1:SETUPHELFER_RESCUE",
+    "partprobe + udevadm settle (after partition)",
+    "mkfs.vfat -F 32 -n SETUPHELFER",
+    "verify vfat + fat label on ${TARGET}1 via blkid -p (sudo)",
+    "sudo rsync -r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times --exclude='.sqtmp/' \"/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging/\" \"${MNT}/\""
+  ],
+  "signature_wipe": {
+    "probe": "sudo wipefs --no-act ${TARGET}",
+    "full_rebuild": "sudo wipefs -a ${TARGET}",
+    "repair_stale_iso9660": "sudo wipefs -a -t iso9660 ${TARGET}"
+  },
+  "staging_copy_command": "sudo rsync -r --delete --info=progress2 --no-owner --no-group --no-perms --omit-dir-times --exclude='.sqtmp/' \"/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging/\" \"${MNT}/\"",
+  "staging_copy_exclude": [
+    ".sqtmp/"
+  ],
+  "fat32_copy_note": "FAT32 stores no Unix owner/group/permissions; do not use rsync -a on ESP.",
+  "write_executed": false,
+  "secrets_exposed": false
+}

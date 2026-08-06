@@ -1,0 +1,16 @@
+=== pre_lsblk ===
+NAME   PATH       SIZE MODEL      SERIAL         TRAN TYPE FSTYPE  PARTTYPENAME       MOUNTPOINTS
+sda    /dev/sda    59G Ultra Line [REDACTED_SERIAL] usb  disk iso9660                    
+├─sda1 /dev/sda1  2,9G                                part iso9660 Empty              
+├─sda2 /dev/sda2    5M                                part vfat    EFI (FAT-12/16/32) 
+└─sda3 /dev/sda3 56,1G                                part ext4    Linux              
+NAME PATH       SIZE TYPE FSTYPE  PARTTYPENAME MOUNTPOINTS
+sda1 /dev/sda1  2,9G part iso9660 Empty        
+=== pre_wipefs ===
+DEVICE OFFSET TYPE    UUID                   LABEL
+sda    0x8001 iso9660 2026-01-08-18-32-58-00 Linux Mint 22.3 Cinnamon 64-bit
+sda    0x1fe  dos                            
+sda    0x200  gpt                            
+sda    0x0    mac                            
+=== pre_sgdisk ===
+Invalid partition data!

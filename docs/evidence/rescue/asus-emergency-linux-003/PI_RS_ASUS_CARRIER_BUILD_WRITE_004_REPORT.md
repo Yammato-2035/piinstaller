@@ -10,8 +10,8 @@ Stand: 2026-08-06T21:15Z
 | 2 | neuer persistenter Worktree | `/home/volker/piinstaller-asus-emergency-linux-telemetry-003` |
 | 3 | Branch | `pi-rs-asus-emergency-linux-telemetry-003` |
 | 4 | Ausgangs-HEAD | `8672de4c…` (Auftrag) / Quarantäne-Basis `2deb694b` |
-| 5 | End-HEAD | nach Commit dieses Laufs (siehe git log) |
-| 6 | Remote-HEAD | nach Push (siehe origin) |
+| 5 | End-HEAD | `bd41e1ccaac60c58cfce35d12ad9de4a940fe10f` |
+| 6 | Remote-HEAD | `bd41e1ccaac60c58cfce35d12ad9de4a940fe10f` |
 | 7 | Version | Projekt **1.10.2.0**, Payload **1.10.0.17** |
 | 8 | bekannte neun Fehler | auf 1 Flake reduziert (MSI Event-Loop) |
 | 9 | neue Fehler | keine Suite-Regression im physischen Pfad |
