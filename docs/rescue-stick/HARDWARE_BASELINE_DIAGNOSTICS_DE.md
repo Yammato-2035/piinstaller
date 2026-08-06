@@ -15,9 +15,9 @@ Verwandt: [Hardware Compatibility Model (DE)](HARDWARE_COMPATIBILITY_MODEL_DE.md
 ## 1. Zweck der frühen Hardware-Baseline
 
 Die frühe Hardware-Baseline ist ein **kurzer, sicherer Risikocheck** beim Start
-des Rettungssystems. Sie prüft Arbeitsspeicher, CPU, GPU und Massenspeicher auf
-Hinweise für akute Probleme — bevor Backup, Restore, OS-Installation oder GUI
-genutzt werden.
+des Setuphelfer-Rettungssystems. Sie prüft Arbeitsspeicher, CPU, GPU und
+Massenspeicher auf Hinweise für akute Probleme — bevor Backup, Restore,
+OS-Installation oder GUI genutzt werden.
 
 Sie ersetzt weder Memtest86+, noch SMART-Selbsttests, noch Stress-Benchmarks.
 Vertragliche Grundlage: `backend/core/hardware_baseline_contracts.py`.
