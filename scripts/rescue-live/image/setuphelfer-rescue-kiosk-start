@@ -79,11 +79,13 @@ fi
 
 if [[ -z "${DISPLAY:-}" && ! -d /tmp/.X11-unix ]]; then
   if command -v startx >/dev/null 2>&1 && [[ -x /etc/X11/xinit/xinitrc || -f "${HOME:-/root}/.xinitrc" ]]; then
-    _write_kiosk_evidence "yellow" "starting_x_via_startx" "$_browser" "xinit"
+    _kiosk_vt="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
+    _write_kiosk_evidence "yellow" "starting_x_via_startx" "$_browser" "xinit_vt${_kiosk_vt}"
     ( sleep "$TIMEOUT_SEC" && kill -ALRM $$ ) &
     _alarm_pid=$!
     trap 'kill "$_alarm_pid" 2>/dev/null || true; _on_timeout' ALRM
-    exec startx /usr/local/sbin/setuphelfer-rescue-kiosk-start -- "$@"
+    # Explicit vtN — do not rely on openvt allocating tty2 (getty race).
+    exec startx /usr/local/sbin/setuphelfer-rescue-kiosk-start -- "vt${_kiosk_vt}" "$@"
   fi
   _write_kiosk_evidence "yellow" "display_not_ready" "$_browser" "fallback_tui"
   if [[ -x "$UI_LAUNCH" ]]; then

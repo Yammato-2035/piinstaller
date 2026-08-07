@@ -88,6 +88,16 @@ for candidate in w3m links links2 lynx; do
 done
 
 if [[ -n "$GRAPHICAL_BROWSER" ]]; then
+  # PI-RS-ASUS-ROOTCAUSE-006: never start Chromium without X/DISPLAY gate.
+  if ! setuphelfer_rescue_graphical_browser_start_allowed; then
+    echo "chromium_blocked_no_display_or_gate" >>"$LOG_RUN"
+    write_status "failed" "failed" "gui.chromium_started_without_display" "$GRAPHICAL_BROWSER" false false true
+    # Fall through to text fallback — do not exec chromium.
+    GRAPHICAL_BROWSER=""
+  fi
+fi
+
+if [[ -n "$GRAPHICAL_BROWSER" ]]; then
   write_status "kiosk" "ready" "graphical_browser_starting" "$GRAPHICAL_BROWSER" true true true
   if [[ -c /dev/tty1 ]]; then chvt 1 2>/dev/null || true; fi
   BROWSER_ARGS=(--kiosk --app="$UI_URL")

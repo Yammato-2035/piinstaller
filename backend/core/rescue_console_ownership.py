@@ -18,6 +18,8 @@ _VALID_STATES = frozenset(
         "tui_owned",
         "gui_transition",
         "gui_owned",
+        "fallback_tui",
+        "unknown",
         "shutdown",
     }
 )
@@ -49,7 +51,7 @@ def build_console_ownership_state(
         raise ValueError(f"invalid_console_owner:{owner}")
     if lifecycle_state not in _VALID_STATES:
         raise ValueError(f"invalid_lifecycle_state:{lifecycle_state}")
-    tui_owned = lifecycle_state in {"tui_initializing", "tui_owned"}
+    tui_owned = lifecycle_state in {"tui_initializing", "tui_owned", "fallback_tui"}
     return {
         "schema_version": CONSOLE_OWNERSHIP_SCHEMA_VERSION,
         "tty": "tty1",
@@ -130,8 +132,10 @@ def transition_console_owner(
         "boot_progress": "boot_progress",
         "tui_initializing": "tui",
         "tui_owned": "tui",
+        "fallback_tui": "tui",
         "gui_transition": "gui",
         "gui_owned": "gui",
+        "unknown": "none",
         "shutdown": "none",
     }
     owner = owner_map.get(lifecycle_state, "boot_progress")

@@ -82,7 +82,6 @@ for script in \
   setuphelfer-rescue-ui-launch \
   setuphelfer-rescue-kiosk-start \
   setuphelfer-rescue-backend-start.sh \
-  setuphelfer-rescue-gui-start.sh \
   setuphelfer-rescue-state-write \
   setuphelfer-rescue-evidence-spool-sync \
   setuphelfer-rescue-start-assistant \
@@ -97,9 +96,17 @@ for script in \
   setuphelfer-rescue-msi-rs011b-collect; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script}"
 done
-for script in setuphelfer-rescue-gui-watchdog.sh setuphelfer-rescue-entrypoint.sh setuphelfer-rescue-tui.sh; do
+for script in \
+  setuphelfer-rescue-gui-start.sh \
+  setuphelfer-rescue-gui-watchdog.sh \
+  setuphelfer-rescue-entrypoint.sh \
+  setuphelfer-rescue-tui.sh \
+  setuphelfer-rescue-startx-forensic.sh; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script%.sh}"
 done
+# keep .sh name too for entrypoint dual-path lookup
+install -m 0755 "${IMAGE}/setuphelfer-rescue-startx-forensic.sh" \
+  "${ROOT}/usr/local/sbin/setuphelfer-rescue-startx-forensic.sh"
 install -m 0755 "${REPO_ROOT}/scripts/rescue-live/collect-rescue-runtime-diagnostics.sh" \
   "${ROOT}/usr/local/sbin/collect-rescue-runtime-diagnostics"
 for py in setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-plan-builder.py setuphelfer-rescue-live-medium-check.py; do

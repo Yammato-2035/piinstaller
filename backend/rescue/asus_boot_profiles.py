@@ -23,6 +23,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "Safe text-mode boot with full baseline capture and telemetry spool",
         "expected_outcome": "tui_ready_baseline_complete_telemetry_queued_or_sent",
         "cmdline_extra": (
+            "setuphelfer_start_assistant=1 "
             "setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
             "setuphelfer_collect_diagnostics=1 nomodeset "
             "setuphelfer_asus_profile=ASUS-00 "
@@ -42,6 +43,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "Removing nomodeset/amdgpu.modeset=0 enables AMD DRM path without forcing GUI",
         "expected_outcome": "amdgpu_bound_drm_cards_present_gui_not_forced",
         "cmdline_extra": (
+            f"setuphelfer_start_assistant=1 "
             f"setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer {_NVIDIA_BLACKLIST} "
             "setuphelfer_asus_profile=ASUS-01 "
             "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0"
@@ -61,6 +63,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "Internal display works via AMD DRM when ASUS-01 DRM gate is green",
         "expected_outcome": "drm_ready_and_rescue_ui_or_controlled_tui_fallback",
         "cmdline_extra": (
+            f"setuphelfer_start_assistant=1 "
             f"setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer "
             f"{_NVIDIA_BLACKLIST} setuphelfer_asus_profile=ASUS-02 "
             "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0"
@@ -81,6 +84,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "AMD remains primary; NVIDIA open/nouveau only if module present and unblocked",
         "expected_outcome": "hybrid_inventory_without_proprietary_nvidia",
         "cmdline_extra": (
+            "setuphelfer_start_assistant=1 "
             "setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer "
             "setuphelfer_asus_profile=ASUS-03 "
             "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0"
@@ -101,6 +105,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "Diagnose proprietary NVIDIA module/kernel compatibility without installing",
         "expected_outcome": "nvidia_compat_report_no_install",
         "cmdline_extra": (
+            "setuphelfer_start_assistant=1 "
             "setuphelfer_mode=text setuphelfer_kiosk=0 "
             "setuphelfer_asus_profile=ASUS-04 setuphelfer_nvidia_diag_only=1 "
             "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0"
@@ -121,6 +126,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "Consistent AMD/NVIDIA findings from ASUS-01..04 allow a GUI candidate boot",
         "expected_outcome": "gui_candidate_or_documented_block",
         "cmdline_extra": (
+            "setuphelfer_start_assistant=1 "
             "setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 "
             "setuphelfer_asus_profile=ASUS-05 "
             "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0"
@@ -140,6 +146,7 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "hypothesis": "Always-bootable forensic TUI fallback",
         "expected_outcome": "tui_boot_always",
         "cmdline_extra": (
+            "setuphelfer_start_assistant=1 "
             "setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
             "setuphelfer_collect_diagnostics=1 nomodeset "
             "setuphelfer_asus_profile=ASUS-RECOVERY "
@@ -154,6 +161,81 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "allowed_deviations": [],
         "primary_variable": "forced_tui_recovery",
         "must_remain_bootable": True,
+    },
+    # PI-RS-ASUS-ROOTCAUSE-TELEMETRY-006 — TUI first, then forensic X, then controlled GUI.
+    "ASUS-TUI-BASELINE": {
+        "title": "ASUS-TUI-BASELINE (006 reference)",
+        "hypothesis": "Stable text rescue with AMD modeset, no GUI/Chromium/startx autostart",
+        "expected_outcome": "asus_tui_baseline_stable",
+        "cmdline_extra": (
+            f"setuphelfer_start_assistant=1 "
+            f"setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 "
+            f"setuphelfer_gui_watchdog=0 pci=noaer {_NVIDIA_BLACKLIST} "
+            "setuphelfer_asus_profile=ASUS-TUI-BASELINE "
+            "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 "
+            "setuphelfer_telemetry_opt_in=1"
+        ),
+        "allows_gui": False,
+        "allows_startx": False,
+        "allows_chromium": False,
+        "allows_proprietary_nvidia": False,
+        "telemetry_required": True,
+        "capture_required": True,
+        "timeout_sec": 900,
+        "fallback_profile": "ASUS-RECOVERY",
+        "allowed_deviations": ["network_offline_queued_telemetry"],
+        "primary_variable": "tui_baseline_reference_006",
+        "forbids_cmdline": ["setuphelfer_mode=gui", "setuphelfer_kiosk=1"],
+    },
+    "ASUS-XORG-FORENSIC": {
+        "title": "ASUS-XORG-FORENSIC (006 startx only)",
+        "hypothesis": "Controlled startx→Xorg→X-socket without Chromium",
+        "expected_outcome": "xorg_display_ready_or_classified_fail",
+        "cmdline_extra": (
+            f"setuphelfer_start_assistant=1 "
+            f"setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_xorg_forensic=1 "
+            f"setuphelfer_gui_watchdog=0 pci=noaer {_NVIDIA_BLACKLIST} "
+            "setuphelfer_asus_profile=ASUS-XORG-FORENSIC "
+            "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 "
+            "setuphelfer_telemetry_opt_in=1"
+        ),
+        "allows_gui": False,
+        "allows_startx": True,
+        "allows_chromium": False,
+        "allows_proprietary_nvidia": False,
+        "telemetry_required": True,
+        "capture_required": True,
+        "timeout_sec": 600,
+        "fallback_profile": "ASUS-TUI-BASELINE",
+        "allowed_deviations": ["xorg_failed_with_forensic_evidence"],
+        "primary_variable": "startx_xorg_socket_only",
+        "forbids_cmdline": ["nomodeset", "amdgpu.modeset=0", "setuphelfer_mode=gui"],
+        "requires_prior_profiles": ["ASUS-TUI-BASELINE"],
+    },
+    "ASUS-GUI-CONTROLLED": {
+        "title": "ASUS-GUI-CONTROLLED (006 after xorg_display_ready)",
+        "hypothesis": "Chromium only after Xorg display ready + ports/backend ready",
+        "expected_outcome": "gui_browser_once_or_blocked_with_gate",
+        "cmdline_extra": (
+            f"setuphelfer_start_assistant=1 "
+            f"setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_controlled=1 "
+            f"setuphelfer_gui_watchdog=1 pci=noaer {_NVIDIA_BLACKLIST} "
+            "setuphelfer_asus_profile=ASUS-GUI-CONTROLLED "
+            "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 "
+            "setuphelfer_telemetry_opt_in=1"
+        ),
+        "allows_gui": True,
+        "allows_startx": True,
+        "allows_chromium": True,
+        "allows_proprietary_nvidia": False,
+        "telemetry_required": True,
+        "capture_required": True,
+        "timeout_sec": 600,
+        "fallback_profile": "ASUS-TUI-BASELINE",
+        "allowed_deviations": ["gui_timeout_falls_back_to_tui"],
+        "primary_variable": "controlled_chromium_after_xorg",
+        "forbids_cmdline": ["nomodeset", "amdgpu.modeset=0"],
+        "requires_prior_profiles": ["ASUS-TUI-BASELINE", "ASUS-XORG-FORENSIC"],
     },
 }
 

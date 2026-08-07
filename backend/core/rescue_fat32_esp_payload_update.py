@@ -19,7 +19,14 @@ from core.rescue_usb_payload_atomic_update import build_atomic_esp_evidence_json
 
 CONFIRM_PHRASE_PAYLOAD_UPDATE = "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD"
 
+# Primary lab stick (historical). ASUS carrier-004 Intenso Ultra Line is also allowlisted.
 EXPECTED_USB_SERIAL = "24111412110686"
+EXPECTED_USB_SERIALS = frozenset(
+    {
+        "24111412110686",
+        "24111412110212",  # PI-RS-ASUS-CARRIER-BUILD-WRITE-004 fingerprint ce2e34b7f5ea4e41
+    }
+)
 EXPECTED_USB_MODEL_SUBSTR = "Ultra Line"
 MIN_USB_SIZE_GIB = 50
 
@@ -99,7 +106,7 @@ def validate_payload_update_target_probe(
         blockers.append("NOT_EFI_SYSTEM_PARTITION")
     if gpt and gpt != GPT_PARTITION_NAME:
         blockers.append("GPT_PARTNAME_MISMATCH")
-    if serial and serial != EXPECTED_USB_SERIAL:
+    if serial and serial not in EXPECTED_USB_SERIALS:
         blockers.append("SERIAL_MISMATCH")
     if model and EXPECTED_USB_MODEL_SUBSTR.lower() not in model.lower():
         blockers.append("MODEL_MISMATCH")

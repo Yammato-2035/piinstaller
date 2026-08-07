@@ -382,19 +382,30 @@ def generate_fat32_esp_grub_cfg(
         )
 
     base_live = "boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1"
+    # Must include setuphelfer_start_assistant=1 — start-assistant.service is gated on
+    # ConditionKernelCommandLine=setuphelfer_start_assistant=1; without it the live
+    # system drops to a bare console (no TUI).
     asus_live = (
         "boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 "
+        "setuphelfer_start_assistant=1 "
         "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1"
     )
+    nvidia_bl = "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau"
     lines = [
         "set timeout=15",
         "set timeout_style=menu",
-        # ASUS-00 is the first menuentry (forensic TUI safe default for this campaign).
+        # PI-RS-ASUS-ROOTCAUSE-006: default ASUS-TUI-BASELINE (index 0) — no GUI autostart.
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
         *generate_grub_cfg_failsafe_plain_lines(),
         "",
+        entry(
+            "ASUS-TUI-BASELINE (006 reference, no GUI)",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 "
+            f"setuphelfer_gui_watchdog=0 pci=noaer {nvidia_bl} "
+            "setuphelfer_asus_profile=ASUS-TUI-BASELINE",
+        ),
         entry(
             "ASUS-00 FORENSIC TUI SAFE",
             f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 "
@@ -424,14 +435,24 @@ def generate_fat32_esp_grub_cfg(
         entry(
             "ASUS-01 AMD DISCOVERY",
             f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer "
-            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau "
-            "setuphelfer_asus_profile=ASUS-01",
+            f"{nvidia_bl} setuphelfer_asus_profile=ASUS-01",
         ),
         entry(
-            "ASUS-02 AMD GUI",
+            "ASUS-XORG-FORENSIC (006 startx only, no Chromium)",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_xorg_forensic=1 "
+            f"setuphelfer_gui_watchdog=0 pci=noaer {nvidia_bl} "
+            "setuphelfer_asus_profile=ASUS-XORG-FORENSIC",
+        ),
+        entry(
+            "ASUS-02 AMD GUI (legacy, not default)",
             f"{asus_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer "
-            "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau "
-            "setuphelfer_asus_profile=ASUS-02",
+            f"{nvidia_bl} setuphelfer_asus_profile=ASUS-02",
+        ),
+        entry(
+            "ASUS-GUI-CONTROLLED (006 after xorg ready)",
+            f"{asus_live} setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_controlled=1 "
+            f"setuphelfer_gui_watchdog=1 pci=noaer {nvidia_bl} "
+            "setuphelfer_asus_profile=ASUS-GUI-CONTROLLED",
         ),
         entry(
             "ASUS-03 HYBRID OPEN DRIVER DIAGNOSTIC",

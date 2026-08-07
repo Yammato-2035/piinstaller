@@ -157,7 +157,9 @@ _tui_main_menu() {
 setuphelfer_rescue_ensure_state_dir
 setuphelfer_rescue_init_boot_session || true
 setuphelfer_rescue_console_owner_transition "tui_initializing" "tui_start" || true
+setuphelfer_rescue_quiet_console_for_tui 2>/dev/null || true
 setuphelfer_rescue_shield_console_early "tui_start" || true
+setuphelfer_rescue_console_owner_transition "tui_owned" "tui_start" || true
 setuphelfer_rescue_tui_mark_active
 setuphelfer_rescue_console_owner_transition "tui_owned" "tui_owned" || true
 setuphelfer_rescue_write_boot_state "tui_start"

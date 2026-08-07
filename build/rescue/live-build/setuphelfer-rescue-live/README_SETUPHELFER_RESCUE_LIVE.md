@@ -1,7 +1,7 @@
 # Setuphelfer Rescue Live — Controlled Build Tree
 
-- Source HEAD: 937ece3
-- Bundle MANIFEST sha256: 1ad9eaef8390af939e21ee06d18766ce9f1101b9eeefee866038a03cf7ca58dd
+- Source HEAD: 2deb694b
+- Bundle MANIFEST sha256: a4199d576417cab4a648f74712ca654eae374c0b83f9bbf8dfdb236df8b18d6d
 - **real_iso_build_allowed:** false
 - **usb_write_allowed:** false
 

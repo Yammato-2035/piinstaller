@@ -200,7 +200,10 @@ class MsiGui003ShellGuardTests(unittest.TestCase):
 
 class MsiGui003VersionTests(unittest.TestCase):
     def test_payload_version_is_current(self) -> None:
-        self.assertEqual(rescue_payload_version(), "1.10.0.17")
+        import json
+        from pathlib import Path as _P
+        canon = json.loads((_P(__file__).resolve().parents[2] / "config/version.json").read_text(encoding="utf-8"))["project_version"]
+        self.assertEqual(rescue_payload_version(), canon)
 
 
 class MsiGui003SimulatedBootTests(unittest.TestCase):

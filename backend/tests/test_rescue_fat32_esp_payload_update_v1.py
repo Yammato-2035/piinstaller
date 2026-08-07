@@ -84,6 +84,15 @@ class RescueFat32EspPayloadUpdateTests(unittest.TestCase):
         self.assertTrue(probe["write_allowed"])
         self.assertFalse(probe["partition_rewritten"])
 
+    def test_asus_carrier_serial_is_allowlisted(self) -> None:
+        probe = self._safe_probe(serial="24111412110212")
+        self.assertFalse(probe["blocked"], probe)
+        self.assertNotIn("SERIAL_MISMATCH", probe["blockers"])
+
+    def test_unknown_serial_blocked(self) -> None:
+        probe = self._safe_probe(serial="00000000000000")
+        self.assertIn("SERIAL_MISMATCH", probe["blockers"])
+
     def test_script_has_no_destructive_partition_commands(self) -> None:
         text = SCRIPT.read_text(encoding="utf-8")
         hits = payload.script_has_forbidden_destructive_commands(text)

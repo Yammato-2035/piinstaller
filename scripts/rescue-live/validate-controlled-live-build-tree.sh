@@ -182,6 +182,37 @@ if [ -f "$_START_ASSIST" ]; then
   grep -q 'setuphelfer_kiosk=1' "$_START_ASSIST" \
     || fail_missing "setuphelfer-rescue-start-assistant must gate the graphical kiosk behind setuphelfer_kiosk=1 (text TUI default, no blank screen)"
 fi
+_UI_UNIT="$BUILD_ROOT/config/includes.chroot/etc/systemd/system/setuphelfer-rescue-ui.service"
+if [ -f "$_UI_UNIT" ]; then
+  grep -q 'ConditionKernelCommandLine=setuphelfer_kiosk=1' "$_UI_UNIT" \
+    || fail_missing "setuphelfer-rescue-ui.service must be gated on setuphelfer_kiosk=1 (ASUS-00 text must not claim tty1)"
+  _ui_cond_count="$(grep -c '^ConditionKernelCommandLine=' "$_UI_UNIT" || true)"
+  [[ "$_ui_cond_count" -eq 1 ]] \
+    || fail_missing "setuphelfer-rescue-ui.service must have exactly one ConditionKernelCommandLine (systemd ORs multiples)"
+  grep -qE 'SuccessExitStatus=.*\b5\b' "$_UI_UNIT" \
+    || fail_missing "setuphelfer-rescue-ui.service must treat gui-start text-skip (exit 5) as success"
+  grep -qE 'SuccessExitStatus=.*\b0\b' "$_UI_UNIT" \
+    || fail_missing "setuphelfer-rescue-ui.service must treat defer-to-assistant (exit 0) as success"
+  ! grep -q '^ExecStartPre=' "$_UI_UNIT" \
+    || fail_missing "setuphelfer-rescue-ui.service must not use ExecStartPre (restart storm vs start-assistant)"
+  ! grep -q '^TTYPath=' "$_UI_UNIT" \
+    || fail_missing "setuphelfer-rescue-ui.service must not claim TTYPath (SIGHUP kills start-assistant)"
+fi
+if [[ -e "$BUILD_ROOT/config/includes.chroot/etc/systemd/system/multi-user.target.wants/setuphelfer-rescue-ui.service" ]]; then
+  fail_missing "setuphelfer-rescue-ui.service must not be in multi-user.target.wants (assistant owns console)"
+fi
+for _req in \
+  setuphelfer-rescue-gui-start \
+  setuphelfer-rescue-gui-watchdog \
+  setuphelfer-rescue-entrypoint \
+  setuphelfer-rescue-tui \
+  setuphelfer-rescue-backend-start.sh; do
+  [[ -f "$BUILD_ROOT/config/includes.chroot/usr/local/sbin/${_req}" ]] \
+    || fail_missing "includes.chroot missing /usr/local/sbin/${_req} (ASUS-02 GUI chain)"
+done
+_GUI_START="$BUILD_ROOT/config/includes.chroot/usr/local/sbin/setuphelfer-rescue-gui-start"
+grep -q 'deferred_to_start_assistant' "$_GUI_START" \
+  || fail_missing "setuphelfer-rescue-gui-start must defer when setuphelfer_start_assistant=1"
 grep -qx 'systemd' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \
   || fail_missing "setuphelfer.list.chroot must list systemd"
 grep -qx 'systemd-sysv' "$BUILD_ROOT/config/package-lists/setuphelfer.list.chroot" \

@@ -26,6 +26,15 @@ EOF
   setuphelfer_rescue_mirror_evidence_file "$GUI_STATUS" "setuphelfer/evidence/boot/gui-autostart.json" 2>/dev/null || true
 }
 
+# ASUS-02/GUI menus set both setuphelfer_kiosk=1 (starts this unit on tty1) and
+# setuphelfer_start_assistant=1 (start-assistant → entrypoint → gui-watchdog → TUI
+# fallback on tty1). Dual ownership + Restart=on-failure storm-locks the console
+# ("Failed to start setuphelfer-rescue-ui.service", no GUI, no TUI). Defer cleanly.
+if setuphelfer_rescue_cmdline_has_start_assistant; then
+  write_gui_status "skipped" "deferred_to_start_assistant" "assistant_owned"
+  exit 0
+fi
+
 if ! setuphelfer_rescue_should_start_gui; then
   write_gui_status "skipped" "text_mode_default" "text"
   exit 5

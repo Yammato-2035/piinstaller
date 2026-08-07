@@ -281,9 +281,18 @@ setuphelfer_rescue_cmdline_has_flag() {
 }
 
 setuphelfer_rescue_msi_compat_active() {
-  setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_compat=1" \
-    || setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_profile=1" \
-    || setuphelfer_rescue_cmdline_has_flag "pci=noaer"
+  if setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_compat=1" \
+    || setuphelfer_rescue_cmdline_has_flag "setuphelfer_msi_profile=1"; then
+    return 0
+  fi
+  # pci=noaer is also used on ASUS profiles (AER noise); do not treat ASUS as MSI-compat.
+  if setuphelfer_rescue_cmdline_has_flag "pci=noaer"; then
+    if grep -Eq '(^| )setuphelfer_asus_profile=' /proc/cmdline 2>/dev/null; then
+      return 1
+    fi
+    return 0
+  fi
+  return 1
 }
 
 setuphelfer_rescue_safe_ui_active() {
@@ -622,8 +631,19 @@ EOF
 
 setuphelfer_rescue_gui_failure_code() {
   local raw="${1:-unknown_gui_failure}"
+  local marker="/run/setuphelfer/gui-vt-last-error"
   case "$raw" in
-    startx_not_started)
+    startx_not_started|unknown_gui_failure)
+      if [[ -f "$marker" ]] && grep -q 'openvt_console_2_not_released' "$marker" 2>/dev/null; then
+        printf 'openvt_console_2_not_released'
+        return 0
+      fi
+      if [[ -f "${SETUPHELFER_GUI_CHAIN_LOG:-/run/setuphelfer/gui-start.log}" ]] \
+        && grep -Eiq 'Konsole .* nicht freigegeben|could not (deallocate|release) console|OPENVT_FAIL' \
+          "${SETUPHELFER_GUI_CHAIN_LOG:-/run/setuphelfer/gui-start.log}" 2>/dev/null; then
+        printf 'openvt_console_2_not_released'
+        return 0
+      fi
       if setuphelfer_rescue_msi_compat_active; then
         printf 'openvt_console_2_not_released'
         return 0
@@ -1088,7 +1108,27 @@ setuphelfer_rescue_boot_state_path() {
   printf '%s/boot_state.json' "$SETUPHELFER_RESCUE_STATE_DIR"
 }
 
+setuphelfer_rescue_tui_baseline_active() {
+  grep -Eq '(^| )setuphelfer_tui_baseline=1( |$)' /proc/cmdline 2>/dev/null \
+    || grep -Eq '(^| )setuphelfer_asus_profile=ASUS-TUI-BASELINE( |$)' /proc/cmdline 2>/dev/null
+}
+
+setuphelfer_rescue_xorg_forensic_active() {
+  grep -Eq '(^| )setuphelfer_xorg_forensic=1( |$)' /proc/cmdline 2>/dev/null \
+    || grep -Eq '(^| )setuphelfer_asus_profile=ASUS-XORG-FORENSIC( |$)' /proc/cmdline 2>/dev/null
+}
+
 setuphelfer_rescue_should_start_gui() {
+  # PI-RS-ASUS-ROOTCAUSE-006: TUI-first / forensic profiles never auto-start full GUI/Chromium.
+  if setuphelfer_rescue_tui_baseline_active; then
+    return 1
+  fi
+  if setuphelfer_rescue_xorg_forensic_active; then
+    return 1
+  fi
+  if grep -Eq '(^| )setuphelfer_gui_watchdog=0( |$)' /proc/cmdline 2>/dev/null; then
+    return 1
+  fi
   if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
     setuphelfer_rescue_write_gui_blocked_msi_status false
     return 1
@@ -1102,6 +1142,15 @@ setuphelfer_rescue_should_start_gui() {
     return 0
   fi
   return 1
+}
+
+# Chromium may start only after X socket + DISPLAY + explicit gate file.
+setuphelfer_rescue_graphical_browser_start_allowed() {
+  [[ "${SETUPHELFER_GRAPHICAL_BROWSER_START_ALLOWED:-0}" == "1" ]] || return 1
+  [[ -n "${DISPLAY:-}" ]] || return 1
+  [[ -d /tmp/.X11-unix ]] || return 1
+  ls /tmp/.X11-unix/X* >/dev/null 2>&1 || return 1
+  return 0
 }
 
 setuphelfer_rescue_write_boot_state() {
@@ -1232,7 +1281,7 @@ setuphelfer_rescue_gui_chain_log_xorg_artifacts() {
 
 # RS-P2G: GUI health probes, TUI marker, kiosk VT helpers.
 SETUPHELFER_RESCUE_TUI_ACTIVE_FILE="${SETUPHELFER_RESCUE_TUI_ACTIVE_FILE:-/run/setuphelfer/rescue-tui-active}"
-SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-2}"
+SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
 
 setuphelfer_rescue_tui_mark_active() {
   mkdir -p /run/setuphelfer 2>/dev/null || true
@@ -1379,37 +1428,119 @@ setuphelfer_rescue_gui_health_ok() {
   return 0
 }
 
+# Free kiosk VT held by getty — stop only, never mask (mask triggers daemon-reload and
+# SIGHUP/tears down start-assistant / GUI chain on ASUS live boots).
+setuphelfer_rescue_release_kiosk_vt() {
+  local vt="$1"
+  [[ "$vt" =~ ^[0-9]+$ ]] || return 1
+  [[ "$vt" -ge 2 && "$vt" -le 12 ]] || return 1
+  setuphelfer_rescue_gui_chain_log "VT_RELEASE" "vt=${vt} mode=stop_no_mask"
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl stop "getty@tty${vt}.service" 2>/dev/null || true
+    systemctl stop "serial-getty@tty${vt}.service" 2>/dev/null || true
+  fi
+  pkill -f "agetty .*tty${vt}" 2>/dev/null || true
+  if command -v fuser >/dev/null 2>&1 && [[ -c "/dev/tty${vt}" ]]; then
+    fuser -k "/dev/tty${vt}" 2>/dev/null || true
+  fi
+  if command -v deallocvt >/dev/null 2>&1; then
+    deallocvt "$vt" 2>/dev/null || true
+  fi
+  sleep 0.2
+  return 0
+}
+
+setuphelfer_rescue_run_on_kiosk_vt_direct() {
+  local vt="$1"
+  shift
+  [[ -c "/dev/tty${vt}" ]] || return 1
+  export SETUPHELFER_RESCUE_KIOSK_VT="$vt"
+  setuphelfer_rescue_gui_chain_log "STARTX_VT_EXEC" "vt=${vt} cmd=$*"
+  setuphelfer_rescue_x11_log "STARTX_VT_EXEC" "vt=${vt} cmd=$*"
+  # Do not chvt before X — keeps TUI visible if startx fails; Xorg switches via vtN.
+  if command -v setsid >/dev/null 2>&1; then
+    setsid -w env SETUPHELFER_RESCUE_KIOSK_VT="$vt" "$@" </dev/null >>"${SETUPHELFER_GUI_START_LOG:-/run/setuphelfer/gui-start.log}" 2>&1
+    return $?
+  fi
+  env SETUPHELFER_RESCUE_KIOSK_VT="$vt" "$@" </dev/null >>"${SETUPHELFER_GUI_START_LOG:-/run/setuphelfer/gui-start.log}" 2>&1
+  return $?
+}
+
 setuphelfer_rescue_run_on_kiosk_vt() {
-  local vt="$SETUPHELFER_RESCUE_KIOSK_VT" _rc=0
+  # VT7 is traditional X / usually without getty; VT2 races getty@tty2 (ASUS-02).
+  local preferred="${SETUPHELFER_RESCUE_KIOSK_VT:-7}" _rc=0 try_vt=""
+  local -a candidates=()
   if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
     setuphelfer_rescue_gui_chain_log "GUI_VT_BLOCKED" "reason=msi_compat_nomodeset openvt=false chvt=false"
     setuphelfer_rescue_x11_log "GUI_VT_BLOCKED" "reason=msi_compat_nomodeset"
     return 1
   fi
-  if command -v openvt >/dev/null 2>&1; then
-    setuphelfer_rescue_gui_chain_log "OPENVT_START" "vt=${vt} cmd=$*"
-    setuphelfer_rescue_x11_log "OPENVT_START" "vt=${vt} cmd=$*"
-    openvt -f -s -w -c "$vt" -- "$@"
+  candidates=("$preferred")
+  for try_vt in 7 8 3 4 5 6 2; do
+    [[ "$try_vt" == "$preferred" ]] && continue
+    candidates+=("$try_vt")
+  done
+  for try_vt in "${candidates[@]}"; do
+    setuphelfer_rescue_release_kiosk_vt "$try_vt" || true
+    export SETUPHELFER_RESCUE_KIOSK_VT="$try_vt"
+    # Prefer startx with explicit vtN — openvt -c2 fails with getty and mask caused reload.
+    setuphelfer_rescue_run_on_kiosk_vt_direct "$try_vt" "$@"
     _rc=$?
     if [[ "$_rc" -eq 0 ]]; then
-      setuphelfer_rescue_gui_chain_log "OPENVT_OK" "vt=${vt} exit=0"
-      setuphelfer_rescue_x11_log "OPENVT_OK" "vt=${vt} exit=0"
-    else
-      setuphelfer_rescue_gui_chain_log "OPENVT_FAIL" "vt=${vt} exit=${_rc}"
-      setuphelfer_rescue_x11_log "OPENVT_FAIL" "vt=${vt} exit=${_rc}"
+      setuphelfer_rescue_gui_chain_log "STARTX_VT_OK" "vt=${try_vt}"
+      return 0
     fi
-    return "$_rc"
+    setuphelfer_rescue_gui_chain_log "VT_TRY_FAIL" "vt=${try_vt} exit=${_rc}"
+    if setuphelfer_rescue_x11_ready; then
+      setuphelfer_rescue_gui_chain_log "STARTX_VT_PARTIAL" "vt=${try_vt} x11=ready"
+      return 0
+    fi
+  done
+  # Last resort: openvt without -s (no mask). Stderr stays in gui-start.log via caller redirect.
+  if command -v openvt >/dev/null 2>&1; then
+    for try_vt in "${candidates[@]}"; do
+      setuphelfer_rescue_release_kiosk_vt "$try_vt" || true
+      export SETUPHELFER_RESCUE_KIOSK_VT="$try_vt"
+      setuphelfer_rescue_gui_chain_log "OPENVT_FALLBACK_START" "vt=${try_vt} cmd=$*"
+      openvt -f -w -c "$try_vt" -- "$@" >>"${SETUPHELFER_GUI_START_LOG:-/run/setuphelfer/gui-start.log}" 2>&1
+      _rc=$?
+      if [[ "$_rc" -eq 0 ]] || setuphelfer_rescue_x11_ready; then
+        setuphelfer_rescue_gui_chain_log "OPENVT_FALLBACK_OK" "vt=${try_vt} exit=${_rc}"
+        return 0
+      fi
+      setuphelfer_rescue_gui_chain_log "OPENVT_FAIL" "vt=${try_vt} exit=${_rc}"
+    done
   fi
-  if [[ -c "/dev/tty${vt}" ]]; then
-    chvt "$vt" 2>/dev/null || true
-    setuphelfer_rescue_gui_chain_log "CHVT_EXEC" "vt=${vt} cmd=$*"
-    setuphelfer_rescue_x11_log "CHVT_EXEC" "vt=${vt} cmd=$*"
-    "$@"
-    return $?
-  fi
-  setuphelfer_rescue_gui_chain_log "TTY_UNAVAILABLE" "vt=${vt}"
-  setuphelfer_rescue_x11_log "TTY_UNAVAILABLE" "vt=${vt}"
+  mkdir -p /run/setuphelfer 2>/dev/null || true
+  printf 'openvt_console_2_not_released\n' >/run/setuphelfer/gui-vt-last-error 2>/dev/null || true
+  setuphelfer_rescue_gui_chain_log "TTY_UNAVAILABLE" "preferred=${preferred} tried=${candidates[*]}"
+  setuphelfer_rescue_x11_log "TTY_UNAVAILABLE" "preferred=${preferred}"
   return 1
+}
+
+setuphelfer_rescue_quiet_console_for_tui() {
+  if command -v dmesg >/dev/null 2>&1; then
+    dmesg --console-off 2>/dev/null || dmesg -n 1 2>/dev/null || true
+  fi
+  if [[ -w /proc/sys/kernel/printk ]]; then
+    printf '1 4 1 7\n' >/proc/sys/kernel/printk 2>/dev/null || true
+  fi
+  if command -v systemctl >/dev/null 2>&1; then
+    systemctl set-log-level warning 2>/dev/null || true
+  fi
+}
+
+setuphelfer_rescue_restore_tty1_after_gui_fail() {
+  chvt 1 2>/dev/null || true
+  setuphelfer_rescue_quiet_console_for_tui
+  setuphelfer_rescue_shield_console_early "gui_fallback_tui" || true
+  if [[ -c /dev/tty1 ]]; then
+    if command -v setterm >/dev/null 2>&1; then
+      setterm -term linux -cursor on -blank poke -clear reset </dev/null >/dev/tty1 2>/dev/null || true
+    fi
+    printf '\033[?25h\033[0m\033[2J\033[H' >/dev/tty1 2>/dev/null || true
+  fi
+  setuphelfer_rescue_console_owner_transition "fallback_tui" "gui_fallback_tui" || true
 }
 
 setuphelfer_rescue_prepare_x11_env() {

@@ -1,21 +1,24 @@
 [Unit]
 Description=Setuphelfer Rescue React Shell (offline-first)
-After=local-fs.target setuphelfer-rescue-state.service setuphelfer-backend.service
+After=local-fs.target setuphelfer-rescue-state.service setuphelfer-backend.service setuphelfer-rescue-start-assistant.service
 Wants=setuphelfer-backend.service
 ConditionPathExists=/usr/share/setuphelfer/rescue/ui/rescue.html
+# Graphical kiosk is opt-in only (single ConditionKernelCommandLine — multiple are ORed).
+ConditionKernelCommandLine=setuphelfer_kiosk=1
+# Do NOT claim TTYPath=/dev/tty1. On ASUS-02 both this unit and start-assistant
+# used to bind tty1; systemd TTYVHangup then SIGHUPs the assistant → headless hang
+# (no GUI, no TUI). GUI runs on VT2 via gui-watchdog/openvt; assistant owns tty1.
 
 [Service]
-Type=simple
+Type=oneshot
+RemainAfterExit=yes
 Environment=TERM=linux
-ExecStartPre=/usr/local/sbin/setuphelfer-rescue-backend-start.sh
 ExecStart=/usr/local/sbin/setuphelfer-rescue-gui-start
-Restart=on-failure
-RestartSec=5
-StandardInput=tty
-StandardOutput=tty
-TTYPath=/dev/tty1
-TTYReset=yes
-TTYVHangup=yes
+# 0 = deferred to start-assistant; 5 = text-mode skip.
+SuccessExitStatus=0 5
+StandardInput=null
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

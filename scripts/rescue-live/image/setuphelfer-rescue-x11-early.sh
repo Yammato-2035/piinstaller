@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=setuphelfer-rescue-common.sh
 source "${SCRIPT_DIR}/setuphelfer-rescue-common.sh"
 
-KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-2}"
+KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
 HOLD="${SCRIPT_DIR}/setuphelfer-rescue-x11-hold"
 STATUS="/run/setuphelfer/x11-early.json"
 
@@ -54,10 +54,20 @@ fi
 setuphelfer_rescue_gui_chain_log "X11_EARLY_START" "vt=${KIOSK_VT} hold=${HOLD}"
 setuphelfer_rescue_x11_log "X11_EARLY_START" "vt=${KIOSK_VT}"
 
-if command -v openvt >/dev/null 2>&1; then
+if command -v setuphelfer_rescue_release_kiosk_vt >/dev/null 2>&1; then
+  setuphelfer_rescue_release_kiosk_vt "$KIOSK_VT" || true
+elif command -v systemctl >/dev/null 2>&1; then
+  # stop only — never mask (daemon-reload tears down GUI chain)
+  systemctl stop "getty@tty${KIOSK_VT}.service" 2>/dev/null || true
+fi
+# Prefer startx with explicit vtN; openvt only as non-blocking helper.
+if command -v startx >/dev/null 2>&1; then
+  startx "$HOLD" -- ":0" "vt${KIOSK_VT}" >>"${SETUPHELFER_X11_LAUNCH_LOG:-/run/setuphelfer/x11-launch.log}" 2>&1 &
+elif command -v openvt >/dev/null 2>&1; then
   openvt -f -c "$KIOSK_VT" -- startx "$HOLD" -- ":0" "vt${KIOSK_VT}" >>"${SETUPHELFER_X11_LAUNCH_LOG:-/run/setuphelfer/x11-launch.log}" 2>&1 &
 else
-  startx "$HOLD" -- ":0" "vt${KIOSK_VT}" >>"${SETUPHELFER_X11_LAUNCH_LOG:-/run/setuphelfer/x11-launch.log}" 2>&1 &
+  _write_status "failed" "startx_and_openvt_missing"
+  exit 1
 fi
 _xpid=$!
 setuphelfer_rescue_gui_chain_log "X11_EARLY_FORKED" "pid=${_xpid}"

@@ -14,7 +14,8 @@ KIOSK="${SCRIPT_DIR}/setuphelfer-rescue-kiosk-start"
 UI_STATUS="/run/setuphelfer/rescue-ui-status.json"
 
 export SETUPHELFER_RESCUE_GUI_STRICT=1
-export SETUPHELFER_RESCUE_KIOSK_VT=2
+# VT7: traditional graphical VT, avoids getty@tty2 race (ASUS-02 openvt fail).
+export SETUPHELFER_RESCUE_KIOSK_VT="${SETUPHELFER_RESCUE_KIOSK_VT:-7}"
 export SETUPHELFER_RESCUE_UI_GRAPHICAL_ONLY=1
 
 mkdir -p /run/setuphelfer "$(dirname "$LOG")" 2>/dev/null || true
@@ -88,7 +89,7 @@ _fail() {
   setuphelfer_rescue_gui_chain_log "GUI_WATCHDOG_RETURN" "RESULT=1 code=${classified}"
   setuphelfer_rescue_mirror_gui_forensic_logs
   if ! setuphelfer_rescue_should_disable_gui_for_msi_compat; then
-    chvt 1 2>/dev/null || true
+    setuphelfer_rescue_restore_tty1_after_gui_fail
   fi
   return 1
 }
@@ -119,13 +120,13 @@ if [[ ! -c /dev/tty1 ]]; then
   setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=missing"
   return $(_fail "tty_unavailable")
 fi
-if setuphelfer_rescue_tty1_clear_allowed 2>/dev/null; then
-  setuphelfer_rescue_blank_fb_tty 1
-fi
-chvt "$SETUPHELFER_RESCUE_KIOSK_VT" 2>/dev/null || true
-setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=blanked kiosk_vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
+# Do not chvt away from tty1 before VT release/openvt succeeds — getty@tty2 previously
+# left operators on a blank/login VT with neither GUI nor TUI.
+rm -f /run/setuphelfer/gui-vt-last-error 2>/dev/null || true
+setuphelfer_rescue_console_owner_transition "gui_transition" "gui_watchdog_start" || true
+setuphelfer_rescue_gui_chain_log "CHECK_TTY" "tty1=kept_until_openvt kiosk_vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
 
-# RS-P2G: kiosk on dedicated VT with controlling terminal (openvt), not background on watchdog shell.
+# RS-P2G: release getty on kiosk VT, then openvt (with alternate VT / chvt fallback).
 setuphelfer_rescue_gui_chain_log "KIOSK_FOREGROUND_VT" "vt=${SETUPHELFER_RESCUE_KIOSK_VT}"
 setuphelfer_rescue_run_on_kiosk_vt "$KIOSK" >>"$LOG" 2>&1 &
 _kpid=$!
@@ -147,7 +148,12 @@ while [[ "$_elapsed" -lt "$TIMEOUT_SEC" ]]; do
 
   if setuphelfer_rescue_gui_health_ok "$STABLE_SEC"; then
     _health_rc=0
+    setuphelfer_rescue_console_owner_transition "gui_owned" "gui_health_ok" || true
     setuphelfer_rescue_gui_chain_log "GUI_HEALTH_OK" "stable_sec=${STABLE_SEC} elapsed_sec=${_elapsed}"
+    # Blank tty1 only after GUI is proven stable (avoids headless black screen on openvt fail).
+    if setuphelfer_rescue_tty1_clear_allowed 2>/dev/null; then
+      setuphelfer_rescue_blank_fb_tty 1
+    fi
     break
   fi
   _health_rc=$?
