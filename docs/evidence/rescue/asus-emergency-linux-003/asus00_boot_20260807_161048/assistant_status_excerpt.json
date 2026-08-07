@@ -1,0 +1,419 @@
+{
+  "/run/setuphelfer-rescue/media-check.json": {
+    "checked_at": "2026-08-07T16:09:42Z",
+    "squashfs_path": "/run/live/medium/live/filesystem.squashfs",
+    "medium_root": "/run/live/medium",
+    "medium_mode": "fat32_esp",
+    "squashfs_read_ok": true,
+    "spot_checks_ok": false,
+    "spot_check_failures": [
+      "usr/bin/nmcli",
+      "usr/bin/curl",
+      "usr/local/sbin/setuphelfer-rescue-telemetry-push",
+      "usr/local/sbin/setuphelfer-rescue-telemetry-build-payload.py",
+      "usr/local/sbin/setuphelfer-rescue-network-onboarding",
+      "usr/local/sbin/setuphelfer-rescue-start-assistant",
+      "usr/share/setuphelfer/rescue/boot-branding.txt"
+    ],
+    "required_files_ok": true,
+    "required_files_missing": [],
+    "squashfs_hash_ok": true,
+    "expected_squashfs_sha256": "7431fbe374f6385446c1bb5b125b1caec9117fe1dc7801dd1add2569d46de7c1",
+    "actual_squashfs_sha256": "7431fbe374f6385446c1bb5b125b1caec9117fe1dc7801dd1add2569d46de7c1",
+    "live_media_runtime_stable": true,
+    "evidence_status": "complete",
+    "operator_hints": [],
+    "error_code": null,
+    "secrets_exposed": false
+  },
+  "/run/setuphelfer-rescue/start-assistant-status.json": {
+    "schema_version": 1,
+    "updated_at": "2026-08-07T16:10:13Z",
+    "phase": "main_menu",
+    "mode": "--boot-trigger",
+    "autostart": false,
+    "cmdline_start_assistant": true,
+    "tty1_prepared": true,
+    "media_ok": true,
+    "network_ok": true,
+    "telemetry_ok": false,
+    "last_ack_id": null,
+    "last_error_code": null,
+    "exit_code": 0,
+    "secrets_exposed": false
+  },
+  "/run/setuphelfer-rescue/wizard-state.json": {
+    "schema_version": 1,
+    "updated_at": "2026-08-07T16:10:45Z",
+    "step": "main_menu",
+    "selected_action": "diagnostics",
+    "expert_mode": false,
+    "media_check": {
+      "checked_at": "2026-08-07T16:09:42Z",
+      "squashfs_path": "/run/live/medium/live/filesystem.squashfs",
+      "medium_root": "/run/live/medium",
+      "medium_mode": "fat32_esp",
+      "squashfs_read_ok": true,
+      "spot_checks_ok": false,
+      "spot_check_failures": [
+        "usr/bin/nmcli",
+        "usr/bin/curl",
+        "usr/local/sbin/setuphelfer-rescue-telemetry-push",
+        "usr/local/sbin/setuphelfer-rescue-telemetry-build-payload.py",
+        "usr/local/sbin/setuphelfer-rescue-network-onboarding",
+        "usr/local/sbin/setuphelfer-rescue-start-assistant",
+        "usr/share/setuphelfer/rescue/boot-branding.txt"
+      ],
+      "required_files_ok": true,
+      "required_files_missing": [],
+      "squashfs_hash_ok": true,
+      "expected_squashfs_sha256": "7431fbe374f6385446c1bb5b125b1caec9117fe1dc7801dd1add2569d46de7c1",
+      "actual_squashfs_sha256": "7431fbe374f6385446c1bb5b125b1caec9117fe1dc7801dd1add2569d46de7c1",
+      "live_media_runtime_stable": true,
+      "evidence_status": "complete",
+      "operator_hints": [],
+      "error_code": null,
+      "secrets_exposed": false
+    },
+    "network_onboarding": {
+      "checked_at": "2026-08-07T16:10:05Z",
+      "mode": "--non-interactive",
+      "config_source": "ethernet_connected",
+      "offline_mode": false,
+      "networkmanager_active": true,
+      "wifi_connected": false,
+      "default_route_present": true,
+      "telemetry_health_ok": true,
+      "telemetry_health_url": "https://telemetrie.setuphelfer.de/v1/telemetry/health",
+      "wifi_ssid_configured": false,
+      "error_code": null,
+      "return_to_menu": false,
+      "ip_addr": [
+        {
+          "ifindex": 1,
+          "ifname": "lo",
+          "flags": [
+            "LOOPBACK",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 65536,
+          "qdisc": "noqueue",
+          "operstate": "UNKNOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "loopback",
+          "address": "00:00:00:00:00:00",
+          "broadcast": "00:00:00:00:00:00",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "127.0.0.1",
+              "prefixlen": 8,
+              "scope": "host",
+              "label": "lo",
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            },
+            {
+              "family": "inet6",
+              "local": "::1",
+              "prefixlen": 128,
+              "scope": "host",
+              "noprefixroute": true,
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 2,
+          "ifname": "enp2s0",
+          "flags": [
+            "BROADCAST",
+            "MULTICAST",
+            "UP",
+            "LOWER_UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "fq_codel",
+          "operstate": "UP",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "ether",
+          "address": "04:42:1a:cf:2b:97",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "addr_info": [
+            {
+              "family": "inet",
+              "local": "192.168.178.103",
+              "prefixlen": 24,
+              "broadcast": "192.168.178.255",
+              "scope": "global",
+              "dynamic": true,
+              "noprefixroute": true,
+              "label": "enp2s0",
+              "valid_life_time": 863970,
+              "preferred_life_time": 863970
+            },
+            {
+              "family": "inet6",
+              "local": "2a00:6020:4191:d300:1363:4876:52f1:2800",
+              "prefixlen": 64,
+              "scope": "global",
+              "dynamic": true,
+              "noprefixroute": true,
+              "valid_life_time": 3249,
+              "preferred_life_time": 3249
+            },
+            {
+              "family": "inet6",
+              "local": "fd87:fe51:17e7:0:7d1f:6c9b:1555:e581",
+              "prefixlen": 64,
+              "scope": "global",
+              "dynamic": true,
+              "noprefixroute": true,
+              "valid_life_time": 7171,
+              "preferred_life_time": 3571
+            },
+            {
+              "family": "inet6",
+              "local": "fe80::1443:5a30:8784:28ca",
+              "prefixlen": 64,
+              "scope": "link",
+              "noprefixroute": true,
+              "valid_life_time": 4294967295,
+              "preferred_life_time": 4294967295
+            }
+          ]
+        },
+        {
+          "ifindex": 3,
+          "ifname": "wlp3s0",
+          "flags": [
+            "NO-CARRIER",
+            "BROADCAST",
+            "MULTICAST",
+            "UP"
+          ],
+          "mtu": 1500,
+          "qdisc": "noqueue",
+          "operstate": "DOWN",
+          "group": "default",
+          "txqlen": 1000,
+          "link_type": "ether",
+          "address": "e6:8d:43:f0:9e:58",
+          "broadcast": "ff:ff:ff:ff:ff:ff",
+          "permaddr": "90:e8:68:51:fb:85",
+          "addr_info": []
+        }
+      ],
+      "ip_route": [
+        {
+          "dst": "default",
+          "gateway": "192.168.178.1",
+          "dev": "enp2s0",
+          "protocol": "dhcp",
+          "prefsrc": "192.168.178.103",
+          "metric": 100,
+          "flags": []
+        },
+        {
+          "dst": "192.168.178.0/24",
+          "dev": "enp2s0",
+          "protocol": "kernel",
+          "scope": "link",
+          "prefsrc": "192.168.178.103",
+          "metric": 100,
+          "flags": []
+        }
+      ],
+      "secrets_exposed": false
+    },
+    "disk_discovery": {
+      "schema_version": 1,
+      "checked_at": "2026-08-07T16:10:10Z",
+      "read_only": true,
+      "secrets_exposed": false,
+      "rescue_medium": {
+        "is_live": true,
+        "medium_path": "/run/live/medium",
+        "labels": [
+          "SETUPHELFER_RESCUE",
+          "SETUPHELFER"
+        ]
+      },
+      "devices": [
+        {
+          "name": "loop0",
+          "path": "/dev/loop0",
+          "type": "loop",
+          "size_bytes": "1.2G",
+          "model": null,
+          "serial": null,
+          "tran": null,
+          "rm": false,
+          "fstype": "squashfs",
+          "label": null,
+          "mountpoints": [
+            "/usr/lib/live/mount/rootfs/filesystem.squashfs",
+            "/run/live/rootfs/filesystem.squashfs"
+          ],
+          "classification": "unknown",
+          "read_only_recommended": false
+        },
+        {
+          "name": "sda",
+          "path": "/dev/sda",
+          "type": "disk",
+          "size_bytes": "59G",
+          "model": "Ultra Line",
+          "serial": "24111412110212",
+          "tran": "usb",
+          "rm": true,
+          "fstype": null,
+          "label": null,
+          "mountpoints": [
+            null
+          ],
+          "classification": "rescue_stick",
+          "read_only_recommended": true
+        },
+        {
+          "name": "sda1",
+          "path": "/dev/sda1",
+          "type": "part",
+          "size_bytes": "4G",
+          "model": null,
+          "serial": null,
+          "tran": null,
+          "rm": true,
+          "fstype": "vfat",
+          "label": "SETUPHELFER",
+          "mountpoints": [
+            "/usr/lib/live/mount/medium",
+            "/run/live/medium"
+          ],
+          "classification": "rescue_stick",
+          "read_only_recommended": true
+        },
+        {
+          "name": "sda2",
+          "path": "/dev/sda2",
+          "type": "part",
+          "size_bytes": "55G",
+          "model": null,
+          "serial": null,
+          "tran": null,
+          "rm": true,
+          "fstype": "vfat",
+          "label": "SETUP_LOGS",
+          "mountpoints": [
+            "/run/setuphelfer/esp-rw"
+          ],
+          "classification": "unknown",
+          "read_only_recommended": false
+        },
+        {
+          "name": "nvme0n1",
+          "path": "/dev/nvme0n1",
+          "type": "disk",
+          "size_bytes": "1.8T",
+          "model": "Samsung SSD 970 EVO Plus 2TB",
+          "serial": "S4J4NM0R806241F",
+          "tran": "nvme",
+          "rm": false,
+          "fstype": null,
+          "label": null,
+          "mountpoints": [
+            null
+          ],
+          "classification": "internal_disk",
+          "read_only_recommended": true
+        },
+        {
+          "name": "nvme0n1p1",
+          "path": "/dev/nvme0n1p1",
+          "type": "part",
+          "size_bytes": "16M",
+          "model": null,
+          "serial": null,
+          "tran": "nvme",
+          "rm": false,
+          "fstype": null,
+          "label": null,
+          "mountpoints": [
+            null
+          ],
+          "classification": "unknown_partition",
+          "read_only_recommended": true
+        },
+        {
+          "name": "nvme0n1p2",
+          "path": "/dev/nvme0n1p2",
+          "type": "part",
+          "size_bytes": "1.8T",
+          "model": null,
+          "serial": null,
+          "tran": "nvme",
+          "rm": false,
+          "fstype": "ntfs",
+          "label": null,
+          "mountpoints": [
+            null
+          ],
+          "classification": "windows_data_or_system",
+          "read_only_recommended": true
+        },
+        {
+          "name": "nvme1n1",
+          "path": "/dev/nvme1n1",
+          "type": "disk",
+          "size_bytes": "1.8T",
+          "model": "Samsung SSD 970 EVO Plus 2TB",
+          "serial": "S4J4NX0RA13125Y",
+          "tran": "nvme",
+          "rm": false,
+          "fstype": null,
+          "label": null,
+          "mountpoints": [
+            null
+          ],
+          "classification": "unknown_disk",
+          "read_only_recommended": true
+        }
+      ],
+      "blkid_summary_lines": 6,
+      "smartctl_available": true,
+      "recommendation": {
+        "recommended_next_action": "backup_before_repair_or_install",
+        "risks": [],
+        "has_windows_system": true,
+        "has_linux_system": false,
+        "has_external_backup_disk": false,
+        "internal_system_candidates": [
+          "/dev/nvme0n1"
+        ],
+        "rescue_stick_paths": [
+          "/dev/sda",
+          "/dev/sda1"
+        ]
+      }
+    },
+    "action_plan": {
+      "schema_version": 1,
+      "execution_allowed": false,
+      "requires_operator_confirmation_phrase": true,
+      "media_stable_required": true,
+      "secrets_exposed": false,
+      "repair_plan": {
+        "summary_de": "Reparatur-Plan (nur Vorschau): read-only Diagnose, konservative NTFS-Hinweise, keine riskante ntfsfix-Automatik.",
+        "recommended_first_step_de": "Backup erstellen, dann Expertenmodus",
+        "write_actions": [],
+        "execution": "blocked_until_backup_acknowledged"
+      }
+    },
+    "write_actions_allowed": false,
+    "secrets_exposed": false
+  }
+}

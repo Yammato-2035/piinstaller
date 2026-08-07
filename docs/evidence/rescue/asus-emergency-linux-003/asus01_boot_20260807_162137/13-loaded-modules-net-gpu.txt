@@ -1,0 +1,21 @@
+iwlmvm                385024  0
+iwlwifi               360448  1 iwlmvm
+amdgpu               9633792  0
+btrtl                  28672  1 btusb
+bluetooth             925696  6 btrtl,btmtk,btintel,btbcm,btusb
+mac80211             1175552  4 mt76,iwlmvm,mt7921_common,mt76_connac_lib
+gpu_sched              53248  1 amdgpu
+drm_buddy              20480  1 amdgpu
+drm_display_helper    184320  1 amdgpu
+cec                    61440  1 drm_display_helper
+drm_ttm_helper         16384  1 amdgpu
+ttm                    94208  2 amdgpu,drm_ttm_helper
+cfg80211             1155072  6 mt76,iwlmvm,iwlwifi,mac80211,mt7921_common,mt76_connac_lib
+drm_kms_helper        212992  4 drm_display_helper,amdgpu
+i2c_algo_bit           16384  1 amdgpu
+drm                   614400  8 gpu_sched,drm_kms_helper,drm_display_helper,drm_buddy,amdgpu,drm_ttm_helper,ttm
+rfkill                 40960  6 iwlmvm,asus_wmi,bluetooth,cfg80211
+r8169                  98304  0
+mdio_devres            16384  1 r8169
+libphy                180224  3 r8169,mdio_devres,realtek
+video                  65536  2 asus_wmi,amdgpu

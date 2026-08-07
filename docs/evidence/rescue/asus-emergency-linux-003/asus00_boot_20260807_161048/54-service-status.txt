@@ -1,0 +1,97 @@
+===== setuphelfer-backend =====
+● setuphelfer-backend.service - Setuphelfer Rescue Backend
+     Loaded: loaded (/etc/systemd/system/setuphelfer-backend.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-07 16:09:37 UTC; 1min 13s ago
+   Main PID: 1892 (python3)
+      Tasks: 6 (limit: 37652)
+     Memory: 130.4M
+        CPU: 2.612s
+     CGroup: /system.slice/setuphelfer-backend.service
+             └─1892 /opt/setuphelfer-rescue/backend/venv/bin/python3 -m uvicorn app:app --host 127.0.0.1 --port 8000 --workers 1
+
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: INFO:     Started server process [1892]
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: INFO:     Waiting for application startup.
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: [debug] write_event failed: [Errno 2] No such file or directory: '/root/.cache/piinstaller/logs/piinstaller.debug.jsonl'
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: [debug] write_event failed: [Errno 2] No such file or directory: '/root/.cache/piinstaller/logs/piinstaller.debug.jsonl'
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: ERROR:app:Config write failed: [Errno 2] No such file or directory: '/etc/setuphelfer/config.json'
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: WARNING:app:Remote-DB init failed (remote feature may be disabled): [Errno 30] Read-only file system: '/etc/setuphelfer'
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: INFO:app:Config ready: path=/etc/setuphelfer/config.json device_id=64f75e229b084c9ba6a74a4a748e9743 first_run=True
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: INFO:app:OLED-Autostart: OLED-Anzeige deaktiviert.
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: INFO:     Application startup complete.
+Aug 07 16:09:40 setuphelfer-rescue start-backend-localonly.sh[1892]: INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+
+===== setuphelfer =====
+● setuphelfer.service - Setuphelfer Rescue Web UI
+     Loaded: loaded (/etc/systemd/system/setuphelfer.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-07 16:09:37 UTC; 1min 13s ago
+   Main PID: 1893 (python3)
+      Tasks: 1 (limit: 37652)
+     Memory: 12.3M
+        CPU: 143ms
+     CGroup: /system.slice/setuphelfer.service
+             └─1893 python3 /opt/setuphelfer-rescue/scripts/serve-frontend-production.py --root /opt/setuphelfer-rescue/frontend/dist --host 127.0.0.1 --port 3001
+
+Aug 07 16:09:37 setuphelfer-rescue systemd[1]: Started setuphelfer.service - Setuphelfer Rescue Web UI.
+Aug 07 16:09:37 setuphelfer-rescue start-ui-localonly.sh[1893]: Rescue temp runtime: UI http://127.0.0.1:3001/ (local-only)
+Aug 07 16:09:37 setuphelfer-rescue start-ui-localonly.sh[1893]: Serving SPA from /opt/setuphelfer-rescue/frontend/dist at http://127.0.0.1:3001/
+
+===== setuphelfer-rescue-media-check =====
+● setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-media-check.service; enabled; preset: enabled)
+     Active: active (exited) since Fri 2026-08-07 16:09:42 UTC; 1min 9s ago
+    Process: 1660 ExecStart=/usr/local/sbin/setuphelfer-rescue-media-check (code=exited, status=0/SUCCESS)
+   Main PID: 1660 (code=exited, status=0/SUCCESS)
+        CPU: 1.980s
+
+Aug 07 16:09:28 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check...
+Aug 07 16:09:42 setuphelfer-rescue systemd[1]: Finished setuphelfer-rescue-media-check.service - Setuphelfer Rescue Live Media Check.
+
+===== setuphelfer-rescue-start-assistant =====
+● setuphelfer-rescue-start-assistant.service - Setuphelfer Rescue Start Assistant
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-start-assistant.service; enabled; preset: enabled)
+     Active: activating (start) since Fri 2026-08-07 16:09:42 UTC; 1min 9s ago
+    Process: 1921 ExecStartPre=/bin/sh -c for i in $(seq 1 45); do [ -c /dev/tty1 ] && chvt 1 2>/dev/null && exit 0; sleep 1; done; exit 0 (code=exited, status=0/SUCCESS)
+   Main PID: 1929 (setuphelfer-res)
+      Tasks: 3 (limit: 37652)
+     Memory: 18.0M
+        CPU: 1.677s
+     CGroup: /system.slice/setuphelfer-rescue-start-assistant.service
+             ├─1929 /bin/bash /usr/local/sbin/setuphelfer-rescue-start-assistant --boot-trigger
+             ├─2854 /bin/bash /usr/local/sbin/setuphelfer-rescue-start-assistant --boot-trigger
+             └─2855 whiptail --title "Setuphelfer Rettungsstick" --menu "Was möchten Sie tun?" 20 78 12 backup "Dateien sichern / Backup erstellen (Plan)" restore "Letztes Backup wiederherstellen (Plan)" repair "Fehler prüfen / Reparaturvorschlag (Plan)" install "System neu installieren (Plan)" diagnostics "Nur Diagnosebericht" expert "Expertenmodus (Shell-Hinweis)" quit "Assistent beenden"
+
+Aug 07 16:09:42 setuphelfer-rescue systemd[1]: Starting setuphelfer-rescue-start-assistant.service - Setuphelfer Rescue Start Assistant...
+Aug 07 16:10:05 setuphelfer-rescue rfkill[2292]: unblock set for type wifi
+
+===== setuphelfer-rescue-ui =====
+○ setuphelfer-rescue-ui.service - Setuphelfer Rescue React Shell (offline-first)
+     Loaded: loaded (/etc/systemd/system/setuphelfer-rescue-ui.service; enabled; preset: enabled)
+     Active: inactive (dead)
+  Condition: start condition failed at Fri 2026-08-07 16:09:42 UTC; 1min 8s ago
+             └─ ConditionKernelCommandLine=setuphelfer_kiosk=1 was not met
+
+Aug 07 16:09:42 setuphelfer-rescue systemd[1]: setuphelfer-rescue-ui.service - Setuphelfer Rescue React Shell (offline-first) was skipped because of an unmet condition check (ConditionKernelCommandLine=setuphelfer_kiosk=1).
+
+===== NetworkManager =====
+● NetworkManager.service - Network Manager
+     Loaded: loaded (/lib/systemd/system/NetworkManager.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2026-08-07 16:09:28 UTC; 1min 22s ago
+       Docs: man:NetworkManager(8)
+   Main PID: 1695 (NetworkManager)
+      Tasks: 3 (limit: 37652)
+     Memory: 13.0M
+        CPU: 468ms
+     CGroup: /system.slice/NetworkManager.service
+             └─1695 /usr/sbin/NetworkManager --no-daemon
+
+Aug 07 16:09:34 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118974.8222] manager: NetworkManager state is now CONNECTED_SITE
+Aug 07 16:09:34 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118974.8223] device (enp2s0): Activation: successful, device activated.
+Aug 07 16:09:34 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118974.8225] manager: NetworkManager state is now CONNECTED_GLOBAL
+Aug 07 16:09:34 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118974.8334] dhcp6 (enp2s0): activation: beginning transaction (timeout in 45 seconds)
+Aug 07 16:09:34 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118974.8337] policy: set 'Kabelgebundene Verbindung 1' (enp2s0) as default for IPv6 routing and DNS
+Aug 07 16:09:34 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118974.8346] dhcp6 (enp2s0): state changed new lease
+Aug 07 16:09:37 setuphelfer-rescue NetworkManager[1695]: <info>  [1786118977.6431] manager: startup complete
+Aug 07 16:10:04 setuphelfer-rescue NetworkManager[1695]: <info>  [1786119004.3882] audit: op="device-managed" interface="wlp3s0" ifindex=3 args="true" pid=2233 uid=0 result="success"
+Aug 07 16:10:04 setuphelfer-rescue NetworkManager[1695]: <info>  [1786119004.4069] audit: op="device-managed" interface="wlp3s0" ifindex=3 args="true" pid=2244 uid=0 result="success"
+Aug 07 16:10:05 setuphelfer-rescue NetworkManager[1695]: <info>  [1786119005.4343] audit: op="radio-control" arg="wireless-enabled:on" pid=2288 uid=0 result="success"
+

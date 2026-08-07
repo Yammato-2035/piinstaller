@@ -1,0 +1,25 @@
+{
+  "status": "carrier_update_verified",
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-TELEMETRY-006",
+  "timestamp_utc": "2026-08-07T20:20:38Z",
+  "target": {
+    "device": "/dev/sda",
+    "fingerprint": "ce2e34b7f5ea4e41",
+    "serial": "24111412110212",
+    "vendor": "Intenso",
+    "model": "Ultra Line"
+  },
+  "squashfs_sha256": "4629ca614c98a290626508d835c905246739b55f90fe02c393ab93b7641d7866",
+  "grub_boot_sha256": "15497518ea3632eeb728f4e417ee629b9d69f0e89e0ab884ee25a257d38c9d66",
+  "grub_efi_sha256": "15497518ea3632eeb728f4e417ee629b9d69f0e89e0ab884ee25a257d38c9d66",
+  "expected_squashfs_sha256": "4629ca614c98a290626508d835c905246739b55f90fe02c393ab93b7641d7866",
+  "expected_grub_sha256": "15497518ea3632eeb728f4e417ee629b9d69f0e89e0ab884ee25a257d38c9d66",
+  "old_squashfs_sha256": "a68baa316413e66bbb56602536f0cf268249c98993d437ca07f2a6a44b692fcd",
+  "payload_version": "1.10.3.0",
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "setup_logs_preserved": true,
+  "next_boot_profile_required": "ASUS-TUI-BASELINE",
+  "xorg_forensic_allowed": false,
+  "gui_acceptance": false
+}

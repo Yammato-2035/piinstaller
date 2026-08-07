@@ -1,0 +1,27 @@
+[Unit]
+Description=Setuphelfer Rescue React Shell (offline-first)
+After=local-fs.target setuphelfer-rescue-state.service setuphelfer-backend.service
+Wants=setuphelfer-backend.service
+ConditionPathExists=/usr/share/setuphelfer/rescue/ui/rescue.html
+# Graphical kiosk is opt-in only (single ConditionKernelCommandLine — multiple are ORed).
+# ASUS-00 / text profiles use start-assistant on tty1; without this gate, gui-start
+# exits 5 and Restart=on-failure storm-locks the console.
+ConditionKernelCommandLine=setuphelfer_kiosk=1
+
+[Service]
+Type=simple
+Environment=TERM=linux
+ExecStartPre=/usr/local/sbin/setuphelfer-rescue-backend-start.sh
+ExecStart=/usr/local/sbin/setuphelfer-rescue-gui-start
+# gui-start exits 5 when text mode is selected (belt-and-suspenders vs. Condition).
+SuccessExitStatus=5
+Restart=on-failure
+RestartSec=5
+StandardInput=tty
+StandardOutput=tty
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+
+[Install]
+WantedBy=multi-user.target

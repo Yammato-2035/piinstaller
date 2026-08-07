@@ -1,0 +1,43 @@
+{
+  "profile": "ASUS-00",
+  "stamp_utc": "20260807_161048",
+  "product": "ROG Strix G513QM",
+  "bios": "G513QM.331",
+  "cpu": "AMD Ryzen 9 5900HX",
+  "asus_00_gate": "passed_baseline",
+  "gui_expected": false,
+  "drm_framebuffer": "EFI VGA only",
+  "gpus": {
+    "nvidia_ga106m": {
+      "pci": "01:00.0",
+      "driver_in_use": null,
+      "modules_present": [
+        "nouveau"
+      ]
+    },
+    "amd_cezanne": {
+      "pci": "06:00.0",
+      "driver_in_use": null,
+      "modules_present": [
+        "amdgpu"
+      ],
+      "amdgpu_loaded": false
+    }
+  },
+  "root_cause_display_under_asus00": "nomodeset_forensic_profile_blocks_kms",
+  "network": {
+    "ethernet": "up_dhcp",
+    "wifi_hw": "mt7921e_ok_disconnected"
+  },
+  "storage": {
+    "nvme0": "Samsung 970 EVO Plus 2TB",
+    "nvme1": "Samsung 970 EVO Plus 2TB",
+    "writes_to_nvme": false
+  },
+  "telemetry": {
+    "health_ok": true,
+    "push_ack": false
+  },
+  "next_profile": "ASUS-01",
+  "next_hypothesis": "amdgpu_bind_without_nomodeset_nvidia_blacklisted"
+}

@@ -1,0 +1,98 @@
+set timeout=15
+set timeout_style=menu
+set default=0
+search --no-floppy --fs-uuid 7EA0-B29E --set=root
+if [ -z "$root" ]; then
+  search --no-floppy --label SETUPHELFER --set=root
+fi
+if [ -z "$root" ]; then
+  set root=($cmdpath)
+fi
+
+insmod efi_gop
+insmod efi_uga
+insmod gfxterm
+terminal_output gfxterm
+terminal_input gfxterm
+set gfxmode=auto
+set gfxpayload=keep
+set menu_color_normal=white/black
+set menu_color_highlight=black/white
+
+menuentry "ASUS-TUI-BASELINE (006 reference, no GUI)" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-00 FORENSIC TUI SAFE" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-00
+  initrd /live/initrd.img
+}
+
+menuentry "Setuphelfer starten - sicherer Textmodus" {
+  linux /live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1
+  initrd /live/initrd.img
+}
+
+menuentry "Setuphelfer starten - grafische Oberflaeche" {
+  linux /live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1
+  initrd /live/initrd.img
+}
+
+menuentry "Diagnose sammeln und auf Stick speichern" {
+  linux /live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=diagnostics setuphelfer_kiosk=0 setuphelfer_collect_diagnostics=1
+  initrd /live/initrd.img
+}
+
+menuentry "Hardware- und WLAN-Diagnose" {
+  linux /live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=hardware setuphelfer_kiosk=0 setuphelfer_wifi_diag=1
+  initrd /live/initrd.img
+}
+
+menuentry "Setuphelfer MSI/NVIDIA Kompatibilitaetsmodus (Text)" {
+  linux /live/vmlinuz boot=live components setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_msi_compat=1 pci=noaer nouveau.modeset=0 nomodeset
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-01 AMD DISCOVERY" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-01
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-XORG-FORENSIC (006 startx only, no Chromium)" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_xorg_forensic=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-XORG-FORENSIC
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-02 AMD GUI (legacy, not default)" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-02
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-GUI-CONTROLLED (006 after xorg ready)" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_controlled=1 setuphelfer_gui_watchdog=1 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-GUI-CONTROLLED
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-03 HYBRID OPEN DRIVER DIAGNOSTIC" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 pci=noaer setuphelfer_asus_profile=ASUS-03
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-04 NVIDIA MODULE COMPATIBILITY" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_asus_profile=ASUS-04 setuphelfer_nvidia_diag_only=1
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-05 FULL GUI CANDIDATE" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=gui setuphelfer_kiosk=1 setuphelfer_gui_watchdog=1 setuphelfer_asus_profile=ASUS-05
+  initrd /live/initrd.img
+}
+
+menuentry "ASUS-RECOVERY FORCED TUI FALLBACK" {
+  linux /live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-RECOVERY
+  initrd /live/initrd.img
+}
+
+menuentry "Neustart" { reboot }
+menuentry "Ausschalten" { halt }

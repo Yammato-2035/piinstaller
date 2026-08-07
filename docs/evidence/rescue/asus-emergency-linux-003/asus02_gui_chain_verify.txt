@@ -1,0 +1,11 @@
+OK: EFI/BOOT/BOOTX64.EFI
+OK: boot/grub/grub.cfg
+OK: live/vmlinuz
+OK: live/initrd.img
+OK: live/filesystem.squashfs
+OK: setuphelfer/rescue/boot-branding.txt
+OK: grub failsafe text mode default menu
+OK: grub.cfg FAT root search and kernel/initrd paths
+OK: standalone BOOTX64.EFI (grub_mkstandalone, differs from ISO)
+filesystem.squashfs size_bytes=1296781312
+OK: FAT32 ESP rescue USB verified read-only on /dev/sda1 mount=/media/volker/SETUPHELFER1 fat_label=SETUPHELFER gpt_name=SETUPHELFER_RESCUE

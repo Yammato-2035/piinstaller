@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "gui_status": "openvt_console_2_not_released",
+  "gui_reason": "openvt_console_2_not_released",
+  "operator_next_action": "use_text_mode",
+  "tui_preserved": true,
+  "production_ready": false,
+  "tui_rerendered_after_gui_failure": true
+}

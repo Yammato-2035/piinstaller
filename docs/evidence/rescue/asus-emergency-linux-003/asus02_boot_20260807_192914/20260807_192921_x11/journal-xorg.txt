@@ -1,0 +1,1 @@
+Aug 07 19:28:09 setuphelfer-rescue live-config[660]:  xinit keyboard-configuration util-linux login xserver-xorgls: Zugriff auf '/usr/lib/nvidia/legacy-*/nvidia.ids' nicht möglich: Datei oder Verzeichnis nicht gefunden

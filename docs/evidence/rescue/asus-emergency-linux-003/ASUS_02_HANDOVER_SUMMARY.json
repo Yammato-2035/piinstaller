@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "report": "ASUS_02_HANDOVER_ABSCHLUSSBERICHT",
+  "timestamp_utc": "2026-08-07T19:30:00Z",
+  "verdict": "asus02_gui_failed_tui_degraded_not_production_ready",
+  "production_ready": false,
+  "fake_green": false,
+  "workspace": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003",
+  "branch": "pi-rs-asus-emergency-linux-telemetry-003",
+  "git_head": "b425097ba06b8a889ab95a2feb1ebcf5525ff7fa",
+  "project_version": "1.10.2.0",
+  "stick_squashfs_sha256": "a68baa316413e66bbb56602536f0cf268249c98993d437ca07f2a6a44b692fcd",
+  "last_boot_stamp": "20260807_192914",
+  "profile": "ASUS-02",
+  "gui_error_code": "startx_not_started",
+  "operator_observed": {
+    "gui": false,
+    "tui": true,
+    "tui_visually_corrupted_by_console_messages": true
+  },
+  "hardware": {
+    "product": "ROG Strix G513QM",
+    "bios": "G513QM.331",
+    "drm": "amdgpudrmfb eDP-1 connected"
+  },
+  "next_root_causes_open": [
+    "startx/Xorg exits without creating /tmp/.X11-unix or Xorg.0.log",
+    "early chromium without DISPLAY + UI port Address already in use",
+    "backend /api/version 503 during GUI chain",
+    "console ownership stuck gui_transition; many auto services compete with TUI",
+    "boot-diagnostics timer fires every ~15s during boot"
+  ]
+}

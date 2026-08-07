@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "operation": "fat32_esp_live_payload_update",
+  "mode": "execute",
+  "target_device": "/dev/sda",
+  "target_partition": "/dev/sda1",
+  "new_squashfs": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/build/rescue/fat32-esp-staging/live/filesystem.squashfs",
+  "new_squashfs_sha256": "4629ca614c98a290626508d835c905246739b55f90fe02c393ab93b7641d7866",
+  "payload_paths": [
+    "live/filesystem.squashfs"
+  ],
+  "atomic_squashfs": ".sqtmp/filesystem.squashfs.new \u2192 live/filesystem.squashfs",
+  "safety": {
+    "target_device": "/dev/sda",
+    "target_partition": "/dev/sda1",
+    "blocked": false,
+    "blockers": [],
+    "write_allowed": true,
+    "partition_rewritten": false,
+    "filesystem_reformatted": false,
+    "secrets_exposed": false,
+    "setup_logs_sibling": {
+      "parent_device": "/dev/sda",
+      "setup_logs_label": "SETUP_LOGS",
+      "sibling_setup_logs_detected": true,
+      "blockers": [],
+      "blocked": false
+    }
+  },
+  "blocked": false,
+  "blockers": [],
+  "payload_update_executed": false,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false
+}

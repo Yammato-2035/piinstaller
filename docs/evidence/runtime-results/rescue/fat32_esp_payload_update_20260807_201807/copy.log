@@ -1,0 +1,19 @@
+OLD_SQUASHFS_SHA256=a68baa316413e66bbb56602536f0cf268249c98993d437ca07f2a6a44b692fcd
+OLD_METADATA_VERSION=1.10.2.0
+STEP: mkdir_sqtmp
+OK: mkdir_sqtmp
+STEP: cp_squashfs_new
+OK: cp_squashfs_new
+{"metadata_prepared": true, "project_version": "1.10.3.0"}
+SKIP: prev backup already exists: /tmp/tmp.wpmbmazblX/live/filesystem.squashfs.prev-1.10.2.0
+STEP: mv_squashfs_atomic
+OK: mv_squashfs_atomic
+STICK_SQUASHFS_SHA256_AFTER=4629ca614c98a290626508d835c905246739b55f90fe02c393ab93b7641d7866
+STEP: cp_evidence_json
+OK: cp_evidence_json
+STEP: cp_version_json
+OK: cp_version_json
+STEP: cleanup_sqtmp
+OK: cleanup_sqtmp
+OK: staging artifacts cleaned
+OK: verify with expected squashfs hash

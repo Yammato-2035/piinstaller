@@ -1,0 +1,5 @@
+=== post_lsblk.txt ===
+NAME   PATH      SIZE MODEL      SERIAL         TRAN TYPE FSTYPE LABEL       PARTTYPENAME         MOUNTPOINTS
+sda    /dev/sda   59G Ultra Line 24111412110212 usb  disk                                         
+├─sda1 /dev/sda1   4G                                part vfat   SETUPHELFER EFI System           
+└─sda2 /dev/sda2  55G                                part vfat   SETUP_LOGS  Microsoft basic data 

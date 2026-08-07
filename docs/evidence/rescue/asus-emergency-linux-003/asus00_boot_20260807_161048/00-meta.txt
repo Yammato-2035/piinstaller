@@ -1,0 +1,10 @@
+stamp_utc=20260807_161048
+phase=boot
+persistent_to_stick=true
+esp_base=/run/setuphelfer/esp-rw
+uptime=91.48 1364.18
+cmdline=BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_safe_ui=1 setuphelfer_collect_diagnostics=1 nomodeset setuphelfer_asus_profile=ASUS-00
+uname=Linux setuphelfer-rescue 6.1.0-52-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.180-1 (2026-08-03) x86_64 GNU/Linux
+product=ROG Strix G513QM_G513QM
+board=G513QM
+bios=G513QM.331

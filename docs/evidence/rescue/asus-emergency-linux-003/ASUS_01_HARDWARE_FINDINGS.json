@@ -1,0 +1,31 @@
+{
+  "profile": "ASUS-01",
+  "stamp_utc": "20260807_162137",
+  "product": "ROG Strix G513QM",
+  "asus_01_gate": "passed",
+  "hypothesis": "Removing nomodeset enables AMD DRM without forcing GUI",
+  "expected_outcome": "amdgpu_bound_drm_cards_present_gui_not_forced",
+  "result": {
+    "amdgpu_bound": true,
+    "pci": "06:00.0",
+    "framebuffer": "amdgpudrmfb",
+    "connectors": {
+      "eDP-1": "connected",
+      "HDMI-A-1": "disconnected"
+    },
+    "nouveau_loaded": false,
+    "nvidia_driver_in_use": null,
+    "gui_forced": false,
+    "tui_phase": "main_menu",
+    "atpx_switcheroo_detected": true
+  },
+  "compare_asus00": {
+    "framebuffer_was": "EFI VGA",
+    "framebuffer_now": "amdgpudrmfb",
+    "amdgpu_was_bound": false,
+    "amdgpu_now_bound": true
+  },
+  "verdict": "Internal panel path works via AMD iGPU KMS. Display hardware is not dead; ASUS-00 black/text-only was nomodeset by design.",
+  "next_profile": "ASUS-02",
+  "next_hypothesis": "GUI/kiosk on AMD DRM path"
+}

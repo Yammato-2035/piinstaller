@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "gui_status": "startx_not_started",
+  "gui_reason": "startx_not_started",
+  "operator_next_action": "use_text_mode",
+  "tui_preserved": true,
+  "production_ready": false,
+  "tui_rerendered_after_gui_failure": true
+}
