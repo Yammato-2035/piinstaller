@@ -1,5 +1,31 @@
 # Status Matrix — Master Phase Beta/Telemetry/Rescue
 
+## PI-RS-ASUS-AUTONOMOUS-DIAG-INSTALL-007 — Hauptziele
+
+| Ziel | Status | Evidence / Notes |
+|------|--------|------------------|
+| A. Autonomous Rescue Diagnostics | `partial` | High-info orchestrator + allowlisted remediation; physical Boot3 pending |
+| B. High-Information Boot | `implemented` | `backend/rescue/high_information_boot_orchestrator.py` — fixture-tested; physical pending |
+| C. Telemetry Diagnostic Loop | `partial` | Local case builder + spool contracts; IONOS live ACK pending physical |
+| D. ASUS Linux Installation | `planned` | Install readiness + dual confirm gates only; **no** internal NVMe write yet |
+| E. Persistent Linux Hardware Lab | `planned` | Depends on D + post-install boot evidence |
+| F. Driver/Firmware Resolution | `implemented` | Gap engine + intentional profile state; physical validation pending |
+| G. Remote Diagnostic Case Correlation | `partial` | Case schema + ranking preview; server correlation pending ACK |
+| H. Parallel Agent Development | `implemented` | Scoped agent file lists for 007 foundation |
+
+### Milestones 007
+
+| Milestone | Status | Blockers | Next acceptance |
+|-----------|--------|----------|-----------------|
+| MILESTONE A — ASUS Autonomous Rescue Diagnostics | `partial` | Boot3 high-info physical | Stages complete + TUI survives Xorg probe fail |
+| MILESTONE B — IONOS Telemetry Loop | `blocked` | TLS/proxy historically flaky; need live ACK | `accepted` + `case_id` + forwarding status |
+| MILESTONE C — Diagnostic Case Correlation | `partial` | Needs ≥2 high-info boots on same payload | persistent/intermittent/resolved labels |
+| MILESTONE D — Linux NVMe Installation | `planned` | Operator dual confirm + readiness=ready | Controlled install on Linux target only |
+| MILESTONE E — Persistent ASUS Hardware Lab | `planned` | Depends on D | Boot from Linux NVMe + telemetry |
+| MILESTONE F — GPU/NVIDIA Stabilization | `partial` | NVIDIA still profile-disabled until planned test | Separate nouveau/proprietary decision |
+| MILESTONE G — Cross-Device Generalization | `planned` | ASUS path first | Reuse orchestrator on non-ASUS |
+| MILESTONE H — Raspberry Pi 3–5 Physical Matrix | `planned` | Separate campaign | Physical matrix entries |
+
 | Bereich | Status | Evidence |
 |---------|--------|----------|
 | Rescue Package Policy V2 | GRÜN | `docs/evidence/rescue/RESCUE_REQUIRED_PACKAGE_POLICY_V2.json` |

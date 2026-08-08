@@ -1,0 +1,13 @@
+{
+  "campaign": "PI-RS-ASUS-AUTONOMOUS-DIAG-INSTALL-007",
+  "status": "payload_built_verified_local",
+  "rescue_payload_version": "1.10.6.0",
+  "squashfs_path": "build/rescue/filesystem.squashfs.repacked-1.10.6.0",
+  "squashfs_sha256": "4521968ef8df2e3d35bc44210e3345a0056cfe595a31472720398d95370b57ec",
+  "grub_sha256": "fcc66db6f32231d0875e57e4732320185d28eedad1649c939199a16bb7cc0ec6",
+  "default_grub_entry": "ASUS-TUI-BASELINE-HIGHINFO",
+  "usb_written": false,
+  "boot3_executed": false,
+  "linux_install_executed": false,
+  "writes_allowed": false
+}
