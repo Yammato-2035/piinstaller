@@ -1,0 +1,618 @@
+{
+  "campaign": "PI-RS-ASUS-HIGHINFO-PHYSICAL-008",
+  "generated_at": "2026-08-08T10:41:02.319877+00:00",
+  "boot3_id": "20260808_103635",
+  "kernel_boot_id": "9abd33f8-aacd-4012-aa66-bfb52a8e16d3",
+  "payload": "1.10.6.0",
+  "profile": "ASUS-TUI-BASELINE-HIGHINFO",
+  "statuses_claimed": {
+    "carrier_1_10_6_0_verified": true,
+    "asus_highinfo_boot_physically_passed": "partial",
+    "asus_xorg_rootcause_identified": true,
+    "asus_xorg_display_ready": false,
+    "asus_live_telemetry_confirmed": false,
+    "asus_diagnostic_case_confirmed": "local_only",
+    "asus_linux_install_ready": "blocked"
+  },
+  "tui": {
+    "stable": true,
+    "console_owner": "tui_owned",
+    "failed_units": 0
+  },
+  "xorg": {
+    "primary_failure_area": "startx_not_invoked_or_evidence_not_persisted",
+    "confidence": 0.88,
+    "xorg_display_ready": false,
+    "startx_proven": false,
+    "note": "gui-fallback.json is stale (2026-08-07). Boot3 has no Xorg.0.log and no mirrored highinfo/startx forensic artifacts."
+  },
+  "hardware": {
+    "cpu": "review_required(microcode)",
+    "ram": "no_immediate_issue_detected",
+    "amd": "operational_edp_connected",
+    "nvidia": "intentional_blacklist",
+    "nvme_smart": "incomplete",
+    "network": "drivers_ok_no_uplink_proven"
+  },
+  "telemetry": {
+    "ingest_status": "not_proven",
+    "correlation_id": null,
+    "case_id": null
+  },
+  "install_readiness": {
+    "schema_version": "linux-install-readiness.v1",
+    "readiness_version": 1,
+    "linux_install_readiness": "blocked",
+    "windows_device": {
+      "identity_hash": "84d4cc6f1c6b0cb7",
+      "disk_id_redacted": "disk:84d4cc6f1c6b0cb7",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "capacity_bytes": 2000398934016,
+      "pci_path": "pci-0000:04:00.0",
+      "role_hint": "windows",
+      "stable": true
+    },
+    "linux_target": {
+      "identity_hash": "c637055cc164eacf",
+      "disk_id_redacted": "disk:c637055cc164eacf",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "capacity_bytes": 2000398934016,
+      "pci_path": "pci-0000:05:00.0",
+      "role_hint": "linux_target",
+      "stable": true
+    },
+    "memory_status": "no_immediate_issue_detected",
+    "cpu_status": "review_required",
+    "image_verified": false,
+    "efi_plan_isolated": true,
+    "reasons": [
+      "Installation image is not verified.",
+      "CPU baseline status requires review: review_required."
+    ],
+    "blockers": [
+      "image_not_verified"
+    ],
+    "writes_allowed": false,
+    "read_only": true
+  },
+  "install_plan": {
+    "schema_version": 1,
+    "nvme_write_allowed": false,
+    "linux_install_readiness": "blocked",
+    "blockers": [
+      "image_not_verified"
+    ],
+    "reasons": [
+      "Installation image is not verified.",
+      "CPU baseline status requires review: review_required."
+    ],
+    "distribution_recommendation": {
+      "preferred_order": [
+        "Ubuntu LTS",
+        "Linux Mint",
+        "Debian Stable"
+      ],
+      "download_allowed": false,
+      "image_verified": false,
+      "reason": "AMD-first; require catalog SHA before write; CPU microcode + NVMe SMART still review"
+    },
+    "windows_device": {
+      "identity_hash": "84d4cc6f1c6b0cb7",
+      "disk_id_redacted": "disk:84d4cc6f1c6b0cb7",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "capacity_bytes": 2000398934016,
+      "pci_path": "pci-0000:04:00.0",
+      "role_hint": "windows",
+      "stable": true
+    },
+    "linux_target": {
+      "identity_hash": "c637055cc164eacf",
+      "disk_id_redacted": "disk:c637055cc164eacf",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "capacity_bytes": 2000398934016,
+      "pci_path": "pci-0000:05:00.0",
+      "role_hint": "linux_target",
+      "stable": true
+    },
+    "target_observation": {
+      "nvme0n1_serial_hash": "84d4cc6f1c6b0cb7",
+      "nvme0n1_role": "windows_source_candidate",
+      "nvme1n1_serial_hash": "c637055cc164eacf",
+      "nvme1n1_role": "linux_target_candidate_unpartitioned"
+    },
+    "windows_protection": {
+      "efi_change_required": false,
+      "write_forbidden": true
+    },
+    "nvidia_driver_plan": {
+      "A_amd_only": {
+        "recommended_now": true,
+        "reason": "amdgpu+eDP operational"
+      },
+      "B_nouveau": {
+        "recommended_now": false,
+        "reason": "blacklisted in HIGHINFO"
+      },
+      "C_proprietary": {
+        "recommended_now": false,
+        "reason": "needs Secure Boot/DKMS plan; no auto install"
+      }
+    }
+  },
+  "driver_gap_report": {
+    "engine_version": 1,
+    "schema_version": "driver-firmware-gap-report.v1",
+    "kernel_release": "6.1.0-52-amd64",
+    "secure_boot_enabled": null,
+    "cmdline": "setuphelfer_highinfo=1 setuphelfer_xorg_probe=1 modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau",
+    "devices": [
+      {
+        "hardware_id": "pci:0000:06:00.0",
+        "modalias": "pci:v00001002d00001638",
+        "expected_module": "amdgpu",
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "amdgpu",
+        "firmware_file_present": true,
+        "package_candidates": [
+          "firmware-amd-graphics"
+        ],
+        "risk": "low",
+        "confidence": 0.85,
+        "status": "operational",
+        "device_class": null,
+        "vendor_id": "1002",
+        "product_id": "1638",
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=pci:0000:06:00.0 required_driver=amdgpu present=True loaded=True reason=driver_amdgpu_loaded",
+        "recommended_next_action": "continue_operational_probe"
+      },
+      {
+        "hardware_id": "pci:0000:01:00.0",
+        "modalias": "pci:v000010DEd00002520",
+        "expected_module": "nvidia",
+        "module_present": true,
+        "module_loaded": false,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [
+          "nvidia-driver"
+        ],
+        "risk": "low",
+        "confidence": 0.9,
+        "status": "driver_intentionally_disabled",
+        "device_class": "gpu",
+        "vendor_id": "10de",
+        "product_id": "2520",
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [
+          "modprobe.blacklist=nvidia",
+          "modprobe.blacklist=nvidia_drm",
+          "modprobe.blacklist=nvidia_modeset",
+          "modprobe.blacklist=nvidia_uvm",
+          "modprobe.blacklist=nouveau"
+        ],
+        "technical_summary": "device=pci:0000:01:00.0 required_driver=nvidia present=True loaded=False reason=module_nvidia_blacklisted_by_cmdline_or_modprobe",
+        "recommended_next_action": "review_blacklist_for_nvidia_only_if_profile_allows",
+        "operational_validation": "not_tested"
+      },
+      {
+        "hardware_id": "pci:0000:03:00.0",
+        "modalias": "",
+        "expected_module": "mt7921e",
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "low",
+        "confidence": 0.85,
+        "status": "operational",
+        "device_class": null,
+        "vendor_id": "14c3",
+        "product_id": "7961",
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=pci:0000:03:00.0 required_driver=mt7921e present=True loaded=True reason=driver_mt7921e_loaded",
+        "recommended_next_action": "continue_operational_probe"
+      },
+      {
+        "hardware_id": "pci:0000:02:00.0",
+        "modalias": "",
+        "expected_module": "r8169",
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "low",
+        "confidence": 0.85,
+        "status": "operational",
+        "device_class": null,
+        "vendor_id": "10ec",
+        "product_id": "8168",
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=pci:0000:02:00.0 required_driver=r8169 present=True loaded=True reason=driver_r8169_loaded",
+        "recommended_next_action": "continue_operational_probe"
+      }
+    ],
+    "gap_count": 0,
+    "status_counts": {
+      "operational": 3,
+      "driver_intentionally_disabled": 1
+    },
+    "writes_allowed": false,
+    "read_only": true
+  },
+  "diagnostic_case": {
+    "run_id": "asus-highinfo-boot3-20260808_103635",
+    "boot_id": "20260808_103635",
+    "payload_version": "1.10.6.0",
+    "kernel": "6.1.0-52-amd64",
+    "boot_profile": "ASUS-TUI-BASELINE-HIGHINFO",
+    "device_binding": null,
+    "findings": [
+      {
+        "code": "tui_stable",
+        "severity": "info",
+        "message": "console_owner=tui_owned"
+      },
+      {
+        "code": "xorg_probe_unproven",
+        "severity": "warning",
+        "message": "No Xorg log / highinfo evidence on SETUP_LOGS"
+      },
+      {
+        "code": "nvidia_intentional_blacklist",
+        "severity": "info"
+      },
+      {
+        "code": "nvme_smart_incomplete",
+        "severity": "warning"
+      },
+      {
+        "code": "telemetry_ack_missing",
+        "severity": "warning"
+      }
+    ],
+    "driver_gaps": [
+      {
+        "hardware_id": "amd-gpu",
+        "modalias": "pci:v00001002d00001638",
+        "expected_module": null,
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "True",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "medium",
+        "confidence": 0.35,
+        "status": "unknown",
+        "device_class": null,
+        "vendor_id": "1002",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=amd-gpu required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution"
+      },
+      {
+        "hardware_id": "nvidia-gpu",
+        "modalias": "pci:v000010DEd00002520",
+        "expected_module": null,
+        "module_present": false,
+        "module_loaded": false,
+        "firmware_request": "",
+        "firmware_file_present": false,
+        "package_candidates": [],
+        "risk": "low",
+        "confidence": 0.9,
+        "status": "driver_intentionally_disabled",
+        "device_class": null,
+        "vendor_id": "10de",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [
+          "modprobe.blacklist=nvidia",
+          "modprobe.blacklist=nvidia_drm",
+          "modprobe.blacklist=nvidia_modeset",
+          "modprobe.blacklist=nvidia_uvm",
+          "modprobe.blacklist=nouveau"
+        ],
+        "technical_summary": "device=nvidia-gpu required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution",
+        "operational_validation": "not_tested"
+      },
+      {
+        "hardware_id": "wlan",
+        "modalias": "",
+        "expected_module": null,
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "medium",
+        "confidence": 0.35,
+        "status": "unknown",
+        "device_class": null,
+        "vendor_id": "14c3",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=wlan required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution"
+      },
+      {
+        "hardware_id": "ethernet",
+        "modalias": "",
+        "expected_module": null,
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "medium",
+        "confidence": 0.35,
+        "status": "unknown",
+        "device_class": null,
+        "vendor_id": "10ec",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=ethernet required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution"
+      }
+    ],
+    "firmware_gaps": [],
+    "hardware_state": {
+      "amd": "operational",
+      "nvidia": "profile_disabled",
+      "wlan_driver": "ok",
+      "wlan_associated": false,
+      "ethernet_link": "down",
+      "nvme1": "unpartitioned"
+    },
+    "previous_boot_comparison": {
+      "persistent_problem": [
+        "gui_false",
+        "nvidia_blacklist",
+        "tui_stable"
+      ],
+      "intermittent_problem": [],
+      "resolved_problem": [
+        "xorg_not_started"
+      ],
+      "new_problem": [
+        "highinfo_evidence_missing",
+        "nvme_smart_incomplete",
+        "telemetry_unproven",
+        "xorg_probe_unproven"
+      ],
+      "boot_count": 3
+    },
+    "primary_failure_area": "driver",
+    "confirmed_findings": [],
+    "hypotheses": [
+      {
+        "id": "startx_not_invoked_or_evidence_not_persisted",
+        "confidence": 0.88
+      },
+      {
+        "id": "xauth_tty",
+        "confidence": 0.25
+      },
+      {
+        "id": "amd_drm",
+        "confidence": 0.08
+      },
+      {
+        "id": "chromium",
+        "confidence": 0.02
+      }
+    ],
+    "missing_drivers": [
+      {
+        "hardware_id": "amd-gpu",
+        "modalias": "pci:v00001002d00001638",
+        "expected_module": null,
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "True",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "medium",
+        "confidence": 0.35,
+        "status": "unknown",
+        "device_class": null,
+        "vendor_id": "1002",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=amd-gpu required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution"
+      },
+      {
+        "hardware_id": "nvidia-gpu",
+        "modalias": "pci:v000010DEd00002520",
+        "expected_module": null,
+        "module_present": false,
+        "module_loaded": false,
+        "firmware_request": "",
+        "firmware_file_present": false,
+        "package_candidates": [],
+        "risk": "low",
+        "confidence": 0.9,
+        "status": "driver_intentionally_disabled",
+        "device_class": null,
+        "vendor_id": "10de",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [
+          "modprobe.blacklist=nvidia",
+          "modprobe.blacklist=nvidia_drm",
+          "modprobe.blacklist=nvidia_modeset",
+          "modprobe.blacklist=nvidia_uvm",
+          "modprobe.blacklist=nouveau"
+        ],
+        "technical_summary": "device=nvidia-gpu required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution",
+        "operational_validation": "not_tested"
+      },
+      {
+        "hardware_id": "wlan",
+        "modalias": "",
+        "expected_module": null,
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "medium",
+        "confidence": 0.35,
+        "status": "unknown",
+        "device_class": null,
+        "vendor_id": "14c3",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=wlan required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution"
+      },
+      {
+        "hardware_id": "ethernet",
+        "modalias": "",
+        "expected_module": null,
+        "module_present": true,
+        "module_loaded": true,
+        "firmware_request": "",
+        "firmware_file_present": true,
+        "package_candidates": [],
+        "risk": "medium",
+        "confidence": 0.35,
+        "status": "unknown",
+        "device_class": null,
+        "vendor_id": "10ec",
+        "product_id": null,
+        "pci_address": null,
+        "kernel_error": null,
+        "kernel_release": "6.1.0-52-amd64",
+        "secure_boot_review_required": false,
+        "intentional_blacklist_evidence": [],
+        "technical_summary": "device=ethernet required_driver=unknown present=False loaded=False reason=no_driver_candidate_resolved_for_device",
+        "recommended_next_action": "capture_modalias_and_lspci_nnk_then_retry_resolution"
+      }
+    ],
+    "missing_firmware": [],
+    "hardware_risks": [],
+    "safe_remediations": [],
+    "install_readiness": "unknown",
+    "next_tests": [
+      "repeat_high_information_boot",
+      "controlled_drm_xorg_probe"
+    ],
+    "confidence": 0.45,
+    "diagnostic_status": "insufficient_evidence",
+    "correlation_id": "20260808_103635"
+  },
+  "correlation": {
+    "persistent_problem": [
+      "gui_false",
+      "nvidia_blacklist",
+      "tui_stable"
+    ],
+    "intermittent_problem": [],
+    "resolved_problem": [
+      "xorg_not_started"
+    ],
+    "new_problem": [
+      "highinfo_evidence_missing",
+      "nvme_smart_incomplete",
+      "telemetry_unproven",
+      "xorg_probe_unproven"
+    ],
+    "boot_count": 3
+  },
+  "root_cause_ranking": [
+    {
+      "id": "startx_not_invoked_or_evidence_not_persisted",
+      "label": "startx/Xorg probe not invoked or evidence not persisted",
+      "confidence": 0.88,
+      "evidence_refs": [
+        "no_xorg_log",
+        "no_highinfo_mirror",
+        "stale_gui_fallback"
+      ],
+      "rank": 1
+    },
+    {
+      "id": "xauth_tty",
+      "label": "Xauth/TTY problem",
+      "confidence": 0.25,
+      "evidence_refs": [
+        "tui_owned"
+      ],
+      "rank": 2
+    },
+    {
+      "id": "amd_drm",
+      "label": "AMD DRM issue",
+      "confidence": 0.08,
+      "evidence_refs": [
+        "edp_connected"
+      ],
+      "rank": 3
+    },
+    {
+      "id": "chromium",
+      "label": "Chromium issue",
+      "confidence": 0.02,
+      "evidence_refs": [
+        "chromium_disabled"
+      ],
+      "rank": 4
+    }
+  ],
+  "nvme_write_allowed": false,
+  "next": [
+    "Fix highinfo/startx evidence mirror to SETUP_LOGS",
+    "Repeat Boot3 with longer dwell for Xorg probe persistence",
+    "Bring up WLAN/Ethernet for IONOS ACK",
+    "Collect real NVMe SMART before install confirm"
+  ]
+}

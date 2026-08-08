@@ -1,0 +1,615 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-TELEMETRY-006",
+  "mode": "quick",
+  "writes_allowed": false,
+  "nvme_writes": false,
+  "smart_self_test_started": false,
+  "status": "ok",
+  "error": null,
+  "result": {
+    "schema_version": "hardware-baseline-result.v1",
+    "run_id": "eb0b2be7abc646a1a5de2d247f727e70",
+    "collected_at": "2026-08-08T10:36:43.318331+00:00",
+    "mode": "quick",
+    "subsystems": [
+      {
+        "subsystem": "memory",
+        "status": "no_immediate_issue_detected",
+        "severity": "green",
+        "started_at": "2026-08-08T10:36:42.958577+00:00",
+        "completed_at": "2026-08-08T10:36:43.183499+00:00",
+        "duration_ms": 224,
+        "checks_run": [
+          "meminfo_inventory",
+          "dmi_ram_module_inventory",
+          "kernel_error_scan",
+          "plausibility_check",
+          "quick_memory_probe"
+        ],
+        "checks_skipped": [],
+        "metrics": {
+          "mem_total_kb": {
+            "name": "mem_total_kb",
+            "value": 32264904,
+            "unit": "kB",
+            "source": "/proc/meminfo"
+          },
+          "mem_available_kb": {
+            "name": "mem_available_kb",
+            "value": 31517224,
+            "unit": "kB",
+            "source": "/proc/meminfo"
+          },
+          "swap_total_kb": {
+            "name": "swap_total_kb",
+            "value": 0,
+            "unit": "kB",
+            "source": "/proc/meminfo"
+          },
+          "swap_free_kb": {
+            "name": "swap_free_kb",
+            "value": 0,
+            "unit": "kB",
+            "source": "/proc/meminfo"
+          },
+          "ram_module_count": {
+            "name": "ram_module_count",
+            "value": 2,
+            "unit": null,
+            "source": null
+          },
+          "ecc_supported": {
+            "name": "ecc_supported",
+            "value": false,
+            "unit": null,
+            "source": null
+          },
+          "edac_corrected_count": {
+            "name": "edac_corrected_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "edac_uncorrected_count": {
+            "name": "edac_uncorrected_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "mce_count": {
+            "name": "mce_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "mce_informational_count": {
+            "name": "mce_informational_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          },
+          "oom_count": {
+            "name": "oom_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "quick_probe_status": {
+            "name": "quick_probe_status",
+            "value": "success",
+            "unit": null,
+            "source": null
+          },
+          "quick_probe_tested_bytes": {
+            "name": "quick_probe_tested_bytes",
+            "value": 134217728,
+            "unit": "bytes",
+            "source": null
+          }
+        },
+        "findings": [
+          {
+            "code": "memory.mce_decoder_enabled",
+            "severity": "gray",
+            "message": "MCE decoder/capability messages present; no real machine-check event classified.",
+            "evidence": [
+              "[    7.360035] MCE: In-kernel MCE decoding enabled."
+            ],
+            "confidence": 0.99,
+            "action_blocking": false,
+            "category": "informational"
+          }
+        ],
+        "recommendations": [],
+        "extended_test": {
+          "recommended": false,
+          "required": false,
+          "test_type": null,
+          "estimated_duration": null,
+          "operator_confirmation_required": true
+        },
+        "evidence": []
+      },
+      {
+        "subsystem": "cpu",
+        "status": "review_required",
+        "severity": "yellow",
+        "started_at": "2026-08-08T10:36:43.183529+00:00",
+        "completed_at": "2026-08-08T10:36:43.210133+00:00",
+        "duration_ms": 26,
+        "checks_run": [
+          "cpu_platform_inventory",
+          "kernel_error_scan",
+          "thermal_zone_read",
+          "quick_cpu_probe"
+        ],
+        "checks_skipped": [],
+        "metrics": {
+          "architecture": {
+            "name": "architecture",
+            "value": "unknown",
+            "unit": null,
+            "source": null
+          },
+          "virtualization_available": {
+            "name": "virtualization_available",
+            "value": false,
+            "unit": null,
+            "source": null
+          },
+          "microcode_status": {
+            "name": "microcode_status",
+            "value": "unknown",
+            "unit": null,
+            "source": null
+          },
+          "is_raspberry_pi_soc": {
+            "name": "is_raspberry_pi_soc",
+            "value": false,
+            "unit": null,
+            "source": null
+          },
+          "machine_check_count": {
+            "name": "machine_check_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "hardware_error_count": {
+            "name": "hardware_error_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "soft_lockup_count": {
+            "name": "soft_lockup_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "hard_lockup_count": {
+            "name": "hard_lockup_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "watchdog_count": {
+            "name": "watchdog_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "max_thermal_zone_temperature_c": {
+            "name": "max_thermal_zone_temperature_c",
+            "value": 49.0,
+            "unit": "C",
+            "source": null
+          },
+          "quick_probe_status": {
+            "name": "quick_probe_status",
+            "value": "success",
+            "unit": null,
+            "source": null
+          },
+          "quick_probe_duration_ms": {
+            "name": "quick_probe_duration_ms",
+            "value": 2,
+            "unit": "ms",
+            "source": null
+          }
+        },
+        "findings": [
+          {
+            "code": "cpu.microcode_review_required",
+            "severity": "yellow",
+            "message": "Microcode status could not be verified from /proc/cpuinfo.",
+            "evidence": []
+          },
+          {
+            "code": "cpu.mce_decoder_enabled",
+            "severity": "gray",
+            "message": "MCE decoder/capability messages present; no real machine-check event classified.",
+            "evidence": [
+              "[    7.360035] MCE: In-kernel MCE decoding enabled."
+            ],
+            "confidence": 0.99,
+            "action_blocking": false,
+            "category": "informational"
+          }
+        ],
+        "recommendations": [
+          "Consider a supervised CPU stability test if instability is observed."
+        ],
+        "extended_test": {
+          "recommended": true,
+          "required": false,
+          "test_type": "cpu_stress",
+          "estimated_duration": "1_to_several_hours",
+          "operator_confirmation_required": true
+        },
+        "evidence": []
+      },
+      {
+        "subsystem": "gpu",
+        "status": "no_immediate_issue_detected",
+        "severity": "green",
+        "started_at": "2026-08-08T10:36:43.210145+00:00",
+        "completed_at": "2026-08-08T10:36:43.223767+00:00",
+        "duration_ms": 13,
+        "checks_run": [
+          "gpu_detection",
+          "render_node_presence",
+          "kernel_error_scan",
+          "optional_display_probes"
+        ],
+        "checks_skipped": [
+          "optional_probe:glxinfo",
+          "optional_probe:eglinfo",
+          "optional_probe:vulkaninfo"
+        ],
+        "metrics": {
+          "gpu_device_count": {
+            "name": "gpu_device_count",
+            "value": 2,
+            "unit": null,
+            "source": null
+          },
+          "render_node_count": {
+            "name": "render_node_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          },
+          "firmware_load_failed_count": {
+            "name": "firmware_load_failed_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "gpu_hang_or_reset_count": {
+            "name": "gpu_hang_or_reset_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "fence_timeout_count": {
+            "name": "fence_timeout_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "expected_reset_count": {
+            "name": "expected_reset_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          },
+          "hybrid_graphics": {
+            "name": "hybrid_graphics",
+            "value": true,
+            "unit": null,
+            "source": null
+          },
+          "probe_glxinfo_available": {
+            "name": "probe_glxinfo_available",
+            "value": false,
+            "unit": null,
+            "source": null
+          },
+          "probe_eglinfo_available": {
+            "name": "probe_eglinfo_available",
+            "value": false,
+            "unit": null,
+            "source": null
+          },
+          "probe_vulkaninfo_available": {
+            "name": "probe_vulkaninfo_available",
+            "value": false,
+            "unit": null,
+            "source": null
+          }
+        },
+        "findings": [
+          {
+            "code": "gpu.expected_reset",
+            "severity": "gray",
+            "message": "Expected GPU initialization/reset message(s) in kernel log (not classified as a defect).",
+            "evidence": [
+              "[    8.414821] amdgpu 0000:06:00.0: amdgpu: MODE2 reset"
+            ],
+            "confidence": 0.92,
+            "action_blocking": false,
+            "category": "informational"
+          },
+          {
+            "code": "gpu.driver_intentionally_disabled",
+            "severity": "gray",
+            "message": "GPU pci:01:00.0 driver intentionally disabled by boot profile/cmdline: modprobe.blacklist=nvidia, modprobe.blacklist=nvidia_drm, modprobe.blacklist=nvidia_modeset, modprobe.blacklist=nvidia_uvm, modprobe.blacklist=nouveau. Operational validation: not_tested.",
+            "evidence": [],
+            "confidence": 0.98,
+            "action_blocking": false,
+            "category": "expected_by_profile"
+          }
+        ],
+        "recommendations": [],
+        "extended_test": {
+          "recommended": false,
+          "required": false,
+          "test_type": null,
+          "estimated_duration": null,
+          "operator_confirmation_required": true
+        },
+        "evidence": []
+      },
+      {
+        "subsystem": "hdd",
+        "status": "no_immediate_issue_detected",
+        "severity": "green",
+        "started_at": "2026-08-08T10:36:43.223782+00:00",
+        "completed_at": "2026-08-08T10:36:43.268064+00:00",
+        "duration_ms": 44,
+        "checks_run": [
+          "smart_overall_health",
+          "smart_attribute_table",
+          "kernel_io_error_scan"
+        ],
+        "checks_skipped": [],
+        "metrics": {
+          "smart_overall_health": {
+            "name": "smart_overall_health",
+            "value": null,
+            "unit": null,
+            "source": null
+          },
+          "kernel_io_error_count": {
+            "name": "kernel_io_error_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "kernel_reset_timeout_count": {
+            "name": "kernel_reset_timeout_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          }
+        },
+        "findings": [],
+        "recommendations": [],
+        "extended_test": {
+          "recommended": false,
+          "required": false,
+          "test_type": null,
+          "estimated_duration": null,
+          "operator_confirmation_required": true
+        },
+        "evidence": [],
+        "device_id": "sda"
+      },
+      {
+        "subsystem": "nvme",
+        "status": "test_unavailable",
+        "severity": "gray",
+        "started_at": "2026-08-08T10:36:43.268086+00:00",
+        "completed_at": "2026-08-08T10:36:43.293849+00:00",
+        "duration_ms": 25,
+        "checks_run": [
+          "nvme_smart_log",
+          "nvme_id_ctrl",
+          "kernel_controller_error_scan"
+        ],
+        "checks_skipped": [],
+        "metrics": {
+          "firmware_version": {
+            "name": "firmware_version",
+            "value": "2B2QEXM7",
+            "unit": null,
+            "source": null
+          },
+          "namespace_count": {
+            "name": "namespace_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          },
+          "kernel_io_error_count": {
+            "name": "kernel_io_error_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "kernel_reset_timeout_count": {
+            "name": "kernel_reset_timeout_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          }
+        },
+        "findings": [
+          {
+            "code": "nvme.incomplete_smart_log",
+            "severity": "gray",
+            "message": "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges).",
+            "evidence": []
+          }
+        ],
+        "recommendations": [],
+        "extended_test": {
+          "recommended": false,
+          "required": false,
+          "test_type": null,
+          "estimated_duration": null,
+          "operator_confirmation_required": true
+        },
+        "evidence": [],
+        "device_id": "nvme0n1"
+      },
+      {
+        "subsystem": "nvme",
+        "status": "test_unavailable",
+        "severity": "gray",
+        "started_at": "2026-08-08T10:36:43.293864+00:00",
+        "completed_at": "2026-08-08T10:36:43.318281+00:00",
+        "duration_ms": 24,
+        "checks_run": [
+          "nvme_smart_log",
+          "nvme_id_ctrl",
+          "kernel_controller_error_scan"
+        ],
+        "checks_skipped": [],
+        "metrics": {
+          "firmware_version": {
+            "name": "firmware_version",
+            "value": "2B2QEXM7",
+            "unit": null,
+            "source": null
+          },
+          "namespace_count": {
+            "name": "namespace_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          },
+          "kernel_io_error_count": {
+            "name": "kernel_io_error_count",
+            "value": 0,
+            "unit": null,
+            "source": null
+          },
+          "kernel_reset_timeout_count": {
+            "name": "kernel_reset_timeout_count",
+            "value": 1,
+            "unit": null,
+            "source": null
+          }
+        },
+        "findings": [
+          {
+            "code": "nvme.incomplete_smart_log",
+            "severity": "gray",
+            "message": "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges).",
+            "evidence": []
+          }
+        ],
+        "recommendations": [],
+        "extended_test": {
+          "recommended": false,
+          "required": false,
+          "test_type": null,
+          "estimated_duration": null,
+          "operator_confirmation_required": true
+        },
+        "evidence": [],
+        "device_id": "nvme1n1"
+      }
+    ],
+    "gate": {
+      "status": "review_required",
+      "memory_status": "no_immediate_issue_detected",
+      "cpu_status": "review_required",
+      "gpu_status": "no_immediate_issue_detected",
+      "storage_status": "test_unavailable",
+      "backup_allowed": true,
+      "restore_allowed": true,
+      "os_installation_allowed": true,
+      "gui_mode_allowed": true,
+      "reasons": [],
+      "warnings": [
+        "cpu baseline reports review_required."
+      ],
+      "required_next_actions": [
+        "Review the flagged findings; extended tests are recommended before heavy use."
+      ],
+      "action_impact": {
+        "backup": "allowed",
+        "restore": "review_required",
+        "os_install": "review_required",
+        "gpu_gui": "allowed"
+      }
+    },
+    "total_duration_ms": 356
+  },
+  "subsystem_summary": [
+    {
+      "subsystem": "memory",
+      "status": "no_immediate_issue_detected",
+      "severity": "green",
+      "device_id": null
+    },
+    {
+      "subsystem": "cpu",
+      "status": "review_required",
+      "severity": "yellow",
+      "device_id": null
+    },
+    {
+      "subsystem": "gpu",
+      "status": "no_immediate_issue_detected",
+      "severity": "green",
+      "device_id": null
+    },
+    {
+      "subsystem": "hdd",
+      "status": "no_immediate_issue_detected",
+      "severity": "green",
+      "device_id": "sda"
+    },
+    {
+      "subsystem": "nvme",
+      "status": "test_unavailable",
+      "severity": "gray",
+      "device_id": "nvme0n1"
+    },
+    {
+      "subsystem": "nvme",
+      "status": "test_unavailable",
+      "severity": "gray",
+      "device_id": "nvme1n1"
+    }
+  ],
+  "gate": {
+    "status": "review_required",
+    "memory_status": "no_immediate_issue_detected",
+    "cpu_status": "review_required",
+    "gpu_status": "no_immediate_issue_detected",
+    "storage_status": "test_unavailable",
+    "backup_allowed": true,
+    "restore_allowed": true,
+    "os_installation_allowed": true,
+    "gui_mode_allowed": true,
+    "reasons": [],
+    "warnings": [
+      "cpu baseline reports review_required."
+    ],
+    "required_next_actions": [
+      "Review the flagged findings; extended tests are recommended before heavy use."
+    ],
+    "action_impact": {
+      "backup": "allowed",
+      "restore": "review_required",
+      "os_install": "review_required",
+      "gpu_gui": "allowed"
+    }
+  }
+}

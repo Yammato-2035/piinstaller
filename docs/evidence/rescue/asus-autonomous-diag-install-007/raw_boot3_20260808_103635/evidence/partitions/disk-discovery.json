@@ -1,0 +1,170 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-08-08T10:37:06Z",
+  "read_only": true,
+  "secrets_exposed": false,
+  "rescue_medium": {
+    "is_live": true,
+    "medium_path": "/run/live/medium",
+    "labels": [
+      "SETUPHELFER_RESCUE",
+      "SETUPHELFER"
+    ]
+  },
+  "devices": [
+    {
+      "name": "loop0",
+      "path": "/dev/loop0",
+      "type": "loop",
+      "size_bytes": "1.2G",
+      "model": null,
+      "serial": null,
+      "tran": null,
+      "rm": false,
+      "fstype": "squashfs",
+      "label": null,
+      "mountpoints": [
+        "/usr/lib/live/mount/rootfs/filesystem.squashfs",
+        "/run/live/rootfs/filesystem.squashfs"
+      ],
+      "classification": "unknown",
+      "read_only_recommended": false
+    },
+    {
+      "name": "sda",
+      "path": "/dev/sda",
+      "type": "disk",
+      "size_bytes": "59G",
+      "model": "Ultra Line",
+      "serial": "24111412110212",
+      "tran": "usb",
+      "rm": true,
+      "fstype": null,
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "classification": "rescue_stick",
+      "read_only_recommended": true
+    },
+    {
+      "name": "sda1",
+      "path": "/dev/sda1",
+      "type": "part",
+      "size_bytes": "4G",
+      "model": null,
+      "serial": null,
+      "tran": null,
+      "rm": true,
+      "fstype": "vfat",
+      "label": "SETUPHELFER",
+      "mountpoints": [
+        "/usr/lib/live/mount/medium",
+        "/run/live/medium"
+      ],
+      "classification": "rescue_stick",
+      "read_only_recommended": true
+    },
+    {
+      "name": "sda2",
+      "path": "/dev/sda2",
+      "type": "part",
+      "size_bytes": "55G",
+      "model": null,
+      "serial": null,
+      "tran": null,
+      "rm": true,
+      "fstype": "vfat",
+      "label": "SETUP_LOGS",
+      "mountpoints": [
+        "/run/setuphelfer/esp-rw"
+      ],
+      "classification": "unknown",
+      "read_only_recommended": false
+    },
+    {
+      "name": "nvme0n1",
+      "path": "/dev/nvme0n1",
+      "type": "disk",
+      "size_bytes": "1.8T",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "serial": "S4J4NM0R806241F",
+      "tran": "nvme",
+      "rm": false,
+      "fstype": null,
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "classification": "internal_disk",
+      "read_only_recommended": true
+    },
+    {
+      "name": "nvme0n1p1",
+      "path": "/dev/nvme0n1p1",
+      "type": "part",
+      "size_bytes": "16M",
+      "model": null,
+      "serial": null,
+      "tran": "nvme",
+      "rm": false,
+      "fstype": null,
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "classification": "unknown_partition",
+      "read_only_recommended": true
+    },
+    {
+      "name": "nvme0n1p2",
+      "path": "/dev/nvme0n1p2",
+      "type": "part",
+      "size_bytes": "1.8T",
+      "model": null,
+      "serial": null,
+      "tran": "nvme",
+      "rm": false,
+      "fstype": "ntfs",
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "classification": "windows_data_or_system",
+      "read_only_recommended": true
+    },
+    {
+      "name": "nvme1n1",
+      "path": "/dev/nvme1n1",
+      "type": "disk",
+      "size_bytes": "1.8T",
+      "model": "Samsung SSD 970 EVO Plus 2TB",
+      "serial": "S4J4NX0RA13125Y",
+      "tran": "nvme",
+      "rm": false,
+      "fstype": null,
+      "label": null,
+      "mountpoints": [
+        null
+      ],
+      "classification": "unknown_disk",
+      "read_only_recommended": true
+    }
+  ],
+  "blkid_summary_lines": 6,
+  "smartctl_available": true,
+  "recommendation": {
+    "recommended_next_action": "backup_before_repair_or_install",
+    "risks": [],
+    "has_windows_system": true,
+    "has_linux_system": false,
+    "has_external_backup_disk": false,
+    "internal_system_candidates": [
+      "/dev/nvme0n1"
+    ],
+    "rescue_stick_paths": [
+      "/dev/sda",
+      "/dev/sda1"
+    ]
+  }
+}

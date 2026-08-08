@@ -17,10 +17,10 @@
 
 | Milestone | Status | Blockers | Next acceptance |
 |-----------|--------|----------|-----------------|
-| MILESTONE A — ASUS Autonomous Rescue Diagnostics | `partial` | Boot3 high-info physical on carrier 1.10.6.0 | Stages complete + TUI survives Xorg probe fail |
-| MILESTONE B — IONOS Telemetry Loop | `blocked` | TLS/proxy historically flaky; need live ACK | `accepted` + `case_id` + forwarding status |
+| MILESTONE A — ASUS Autonomous Rescue Diagnostics | `partial` | Boot3 TUI/HW ok; Xorg/telemetry evidence incomplete | Persist Xorg probe evidence + live ACK |
+| MILESTONE B — IONOS Telemetry Loop | `blocked` | Boot3: no uplink/ACK artifacts on stick | `accepted` + `case_id` + forwarding status |
 | MILESTONE C — Diagnostic Case Correlation | `partial` | Needs ≥2 high-info boots on same payload | persistent/intermittent/resolved labels |
-| MILESTONE D — Linux NVMe Installation | `planned` | Operator dual confirm + readiness=ready | Controlled install on Linux target only |
+| MILESTONE D — Linux NVMe Installation | `planned` | readiness=blocked (image SHA); empty NVMe candidate identified | Verified image + dual confirm |
 | MILESTONE E — Persistent ASUS Hardware Lab | `planned` | Depends on D | Boot from Linux NVMe + telemetry |
 | MILESTONE F — GPU/NVIDIA Stabilization | `partial` | NVIDIA still profile-disabled until planned test | Separate nouveau/proprietary decision |
 | MILESTONE G — Cross-Device Generalization | `planned` | ASUS path first | Reuse orchestrator on non-ASUS |

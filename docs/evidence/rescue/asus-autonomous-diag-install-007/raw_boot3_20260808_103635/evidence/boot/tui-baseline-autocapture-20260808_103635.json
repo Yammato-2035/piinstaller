@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-TELEMETRY-006",
+  "profile": "ASUS-TUI-BASELINE",
+  "stamp_utc": "20260808_103635",
+  "boot_id": "9abd33f8-aacd-4012-aa66-bfb52a8e16d3",
+  "started_at": "2026-08-08T10:36:35Z",
+  "finished_at": "2026-08-08T10:36:43Z",
+  "boot_diagnostics_rc": 0,
+  "runtime_diagnostics_rc": 1,
+  "partitions_preview_rc": 0,
+  "hardware_baseline_rc": 0,
+  "hardware_baseline_status": "ok",
+  "gui_started": false,
+  "startx_started": false,
+  "chromium_started": false,
+  "nvme_writes": false,
+  "smart_self_test_started": false,
+  "partitions_write_allowed": false,
+  "console_owner": "tui_owned",
+  "secrets_exposed": false
+}

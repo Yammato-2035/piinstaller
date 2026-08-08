@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "phase": "evidence_collected",
+  "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_highinfo=1 setuphelfer_xorg_probe=1 setuphelfer_gui_watchdog=0 pci=noaer [REDACTED:hostname]=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE-HIGHINFO setuphelfer_auto_hw_baseline=1",
+  "selected_mode": "text",
+  "kiosk_requested": false,
+  "text_mode_started": true,
+  "gui_requested": false,
+  "backup_execute_allowed": false,
+  "redaction": {
+    "contract_version": 1,
+    "app_db_contains_raw_ip": false,
+    "network_upload_attempted": false
+  },
+  "redacted": true
+}

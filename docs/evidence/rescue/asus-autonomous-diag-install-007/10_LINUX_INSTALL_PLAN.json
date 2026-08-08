@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "nvme_write_allowed": false,
+  "linux_install_readiness": "blocked",
+  "blockers": [
+    "image_not_verified"
+  ],
+  "reasons": [
+    "Installation image is not verified.",
+    "CPU baseline status requires review: review_required."
+  ],
+  "distribution_recommendation": {
+    "preferred_order": [
+      "Ubuntu LTS",
+      "Linux Mint",
+      "Debian Stable"
+    ],
+    "download_allowed": false,
+    "image_verified": false,
+    "reason": "AMD-first; require catalog SHA before write; CPU microcode + NVMe SMART still review"
+  },
+  "windows_device": {
+    "identity_hash": "84d4cc6f1c6b0cb7",
+    "disk_id_redacted": "disk:84d4cc6f1c6b0cb7",
+    "model": "Samsung SSD 970 EVO Plus 2TB",
+    "capacity_bytes": 2000398934016,
+    "pci_path": "pci-0000:04:00.0",
+    "role_hint": "windows",
+    "stable": true
+  },
+  "linux_target": {
+    "identity_hash": "c637055cc164eacf",
+    "disk_id_redacted": "disk:c637055cc164eacf",
+    "model": "Samsung SSD 970 EVO Plus 2TB",
+    "capacity_bytes": 2000398934016,
+    "pci_path": "pci-0000:05:00.0",
+    "role_hint": "linux_target",
+    "stable": true
+  },
+  "target_observation": {
+    "nvme0n1_serial_hash": "84d4cc6f1c6b0cb7",
+    "nvme0n1_role": "windows_source_candidate",
+    "nvme1n1_serial_hash": "c637055cc164eacf",
+    "nvme1n1_role": "linux_target_candidate_unpartitioned"
+  },
+  "windows_protection": {
+    "efi_change_required": false,
+    "write_forbidden": true
+  },
+  "nvidia_driver_plan": {
+    "A_amd_only": {
+      "recommended_now": true,
+      "reason": "amdgpu+eDP operational"
+    },
+    "B_nouveau": {
+      "recommended_now": false,
+      "reason": "blacklisted in HIGHINFO"
+    },
+    "C_proprietary": {
+      "recommended_now": false,
+      "reason": "needs Secure Boot/DKMS plan; no auto install"
+    }
+  }
+}
