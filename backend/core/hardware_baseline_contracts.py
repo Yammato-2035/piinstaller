@@ -119,14 +119,26 @@ class HardwareFinding:
     severity: str = BaselineSeverity.GRAY.value
     message: str | None = None
     evidence: tuple[str, ...] = field(default_factory=tuple)
+    # Optional 006B fields — severity stays the traffic light; action_blocking
+    # separates restore/install impact from informational / expected_by_profile.
+    confidence: float | None = None
+    action_blocking: bool | None = None
+    category: str | None = None  # informational|expected_by_profile|degraded|warning|critical
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        out: dict[str, Any] = {
             "code": self.code,
             "severity": self.severity,
             "message": self.message,
             "evidence": list(self.evidence),
         }
+        if self.confidence is not None:
+            out["confidence"] = self.confidence
+        if self.action_blocking is not None:
+            out["action_blocking"] = self.action_blocking
+        if self.category is not None:
+            out["category"] = self.category
+        return out
 
 
 @dataclass(frozen=True)
@@ -205,6 +217,8 @@ class HardwareBaselineGate:
     reasons: tuple[str, ...] = field(default_factory=tuple)
     warnings: tuple[str, ...] = field(default_factory=tuple)
     required_next_actions: tuple[str, ...] = field(default_factory=tuple)
+    # Severity vs action impact (006B) — operations may stay allowed under yellow review.
+    action_impact: tuple[tuple[str, str], ...] = field(default_factory=tuple)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -220,6 +234,7 @@ class HardwareBaselineGate:
             "reasons": list(self.reasons),
             "warnings": list(self.warnings),
             "required_next_actions": list(self.required_next_actions),
+            "action_impact": dict(self.action_impact),
         }
 
 

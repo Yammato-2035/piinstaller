@@ -79,7 +79,9 @@ def parse_kernel_cmdline(text: str) -> set[str]:
     return set((text or "").split())
 
 
-def detect_disabling_cmdline_params(cmdline_params: set[str], vendor: str) -> list[str]:
+def detect_disabling_cmdline_params(cmdline_params: set[str], vendor: str, *, cmdline_raw: str = "") -> list[str]:
+    from core.kernel_event_classification import detect_intentional_driver_blacklist
+
     found: list[str] = []
     if "nomodeset" in cmdline_params:
         found.append("nomodeset")
@@ -88,7 +90,37 @@ def detect_disabling_cmdline_params(cmdline_params: set[str], vendor: str) -> li
     )
     if vendor_param and vendor_param in cmdline_params:
         found.append(vendor_param)
-    return found
+    # Prefer original cmdline string for modprobe.blacklist=a,b,c parsing.
+    raw = cmdline_raw or " ".join(sorted(cmdline_params))
+    found.extend(detect_intentional_driver_blacklist(raw, vendor))
+    # stable unique order
+    seen: set[str] = set()
+    ordered: list[str] = []
+    for item in found:
+        if item not in seen:
+            seen.add(item)
+            ordered.append(item)
+    return ordered
+
+
+def resolve_drm_card_for_pci(device_id: str, *, sysfs_root: Path | None = None) -> str | None:
+    """Map a PCI GPU device_id (``pci:BB:DD.F`` / ``pci:0000:BB:DD.F``) to DRM cardN."""
+    root = sysfs_root or Path("/")
+    raw = (device_id or "").removeprefix("pci:")
+    candidates = [raw]
+    if re.match(r"^[0-9a-fA-F]{2}:[0-9a-fA-F]{2}\.[0-9a-fA-F]$", raw):
+        candidates.append(f"0000:{raw}")
+    for addr in candidates:
+        drm_dir = root / "sys" / "bus" / "pci" / "devices" / addr / "drm"
+        if not drm_dir.exists():
+            continue
+        try:
+            for entry in sorted(drm_dir.iterdir()):
+                if re.fullmatch(r"card\d+", entry.name):
+                    return entry.name
+        except OSError:
+            continue
+    return None
 
 
 def collect_drm_cards(*, sysfs_root: Path | None = None) -> dict[str, list[dict[str, str]]]:
@@ -140,15 +172,19 @@ def build_gpu_report(
         gpu_type = classify_gpu_type(device, vendor)
         driver_in_use = device.driver.kernel_driver_in_use
         candidates = _GPU_DRIVER_CANDIDATES.get(vendor, ())
-        disabling_params = detect_disabling_cmdline_params(cmdline_params, vendor)
-        # Best-effort: nth GPU maps to nth DRM card by discovery order only (no stable
-        # PCI-address-to-card mapping without extra sysfs walk); kept explicit in report.
-        card_key = f"card{idx}"
+        disabling_params = detect_disabling_cmdline_params(cmdline_params, vendor, cmdline_raw=cmdline_raw)
+        intentional_blacklist = any(p.startswith("modprobe.blacklist=") for p in disabling_params)
+        # Prefer PCI→DRM sysfs mapping; fall back to discovery-order card{idx}.
+        card_key = resolve_drm_card_for_pci(device.device_id, sysfs_root=sysfs_root) or f"card{idx}"
         connectors = drm_cards.get(card_key, [])
         drm_card_present = card_key in drm_cards
         active_connectors = [c for c in connectors if c["status"] == "connected"]
 
-        if disabling_params:
+        operational_validation = "not_tested"
+        if intentional_blacklist and not driver_in_use:
+            gpu_status = "driver_intentionally_disabled"
+            operational_validation = "not_tested"
+        elif disabling_params and not intentional_blacklist:
             gpu_status = "disabled_by_cmdline"
         elif not driver_in_use:
             gpu_status = "driver_missing" if candidates else "unknown"
@@ -158,6 +194,7 @@ def build_gpu_report(
             gpu_status = "limited"
         else:
             gpu_status = "ready"
+            operational_validation = "baseline_connectors_ok"
 
         gui_boot_recommendation = "gui_possible" if gpu_status == "ready" else "safe_tui_only"
         safe_boot_profile = "remove_nomodeset_recommended" if "nomodeset" in disabling_params else "default"
@@ -170,11 +207,13 @@ def build_gpu_report(
                 "product_name": device.product_name,
                 "driver_in_use": driver_in_use,
                 "driver_candidates": list(candidates),
+                "drm_card": card_key,
                 "drm_card_present": drm_card_present,
                 "connectors": connectors,
                 "active_connector_count": len(active_connectors),
                 "disabling_cmdline_params": disabling_params,
                 "gpu_status": gpu_status,
+                "operational_validation": operational_validation,
                 "gui_boot_recommendation": gui_boot_recommendation,
                 "safe_boot_profile": safe_boot_profile,
                 "physical_test_required": True,
@@ -200,6 +239,7 @@ __all__ = [
     "classify_gpu_type",
     "parse_kernel_cmdline",
     "detect_disabling_cmdline_params",
+    "resolve_drm_card_for_pci",
     "collect_drm_cards",
     "build_gpu_report",
     "build_gpu_detection_diagnostics",

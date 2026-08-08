@@ -87,14 +87,20 @@ def scan_kernel_gpu_errors(dmesg_text: str | None = None, *, runner: Runner = No
             missing_tools.append("dmesg")
     text = text or ""
 
+    from core.kernel_event_classification import classify_gpu_reset_dmesg
+
     firmware_missing = len(re.findall(r"failed to load firmware|firmware.*(?:not found|failed)", text, re.IGNORECASE))
-    gpu_hang = len(re.findall(r"GPU HANG|amdgpu.*ring.*timeout|i915.*GPU HANG|nouveau.*fault|Xid", text, re.IGNORECASE))
-    fence_timeout = len(re.findall(r"fence.*timeout|drm.*reset", text, re.IGNORECASE))
+    classified = classify_gpu_reset_dmesg(text)
+    # MODE2 / expected init resets are NOT counted as critical.
+    gpu_hang = int(classified["gpu_hang_or_reset_count"])
+    fence_timeout = int(classified["fence_timeout_count"])
 
     return {
         "firmware_load_failed_count": firmware_missing,
         "gpu_hang_or_reset_count": gpu_hang,
         "fence_timeout_count": fence_timeout,
+        "expected_reset_count": int(classified["expected_reset_count"]),
+        "expected_reset_lines": list(classified["expected_reset_lines"]),
         "missing_tools": missing_tools,
     }
 
@@ -152,9 +158,24 @@ def build_gpu_baseline_result(
     checks_run.append("kernel_error_scan")
     kernel_scan = scan_kernel_gpu_errors(dmesg_text, runner=runner)
     checks_skipped.extend(kernel_scan.get("missing_tools") or [])
-    for key in ("firmware_load_failed_count", "gpu_hang_or_reset_count", "fence_timeout_count"):
-        metrics.append(HardwareMetric(name=key, value=kernel_scan[key]))
+    for key in ("firmware_load_failed_count", "gpu_hang_or_reset_count", "fence_timeout_count", "expected_reset_count"):
+        if key in kernel_scan:
+            metrics.append(HardwareMetric(name=key, value=kernel_scan[key]))
 
+    if kernel_scan.get("expected_reset_count", 0) > 0 and (
+        kernel_scan["gpu_hang_or_reset_count"] == 0 and kernel_scan["fence_timeout_count"] == 0
+    ):
+        findings.append(
+            HardwareFinding(
+                code="gpu.expected_reset",
+                severity=BaselineSeverity.GRAY.value,
+                message="Expected GPU initialization/reset message(s) in kernel log (not classified as a defect).",
+                evidence=tuple(kernel_scan.get("expected_reset_lines") or ())[:5],
+                category="informational",
+                action_blocking=False,
+                confidence=0.92,
+            )
+        )
     has_kernel_error = kernel_scan["gpu_hang_or_reset_count"] > 0 or kernel_scan["fence_timeout_count"] > 0
     if has_kernel_error:
         findings.append(
@@ -162,6 +183,9 @@ def build_gpu_baseline_result(
                 code="gpu.kernel_error_detected",
                 severity=BaselineSeverity.RED.value,
                 message="GPU hang/reset/fence-timeout reported in kernel log.",
+                category="critical",
+                action_blocking=True,
+                confidence=0.93,
             )
         )
     if kernel_scan["firmware_load_failed_count"] > 0:
@@ -184,12 +208,30 @@ def build_gpu_baseline_result(
         if gpu_status == "ready":
             any_ready = True
             continue
-        if gpu_status == "disabled_by_cmdline":
+        if gpu_status == "driver_intentionally_disabled":
+            findings.append(
+                HardwareFinding(
+                    code="gpu.driver_intentionally_disabled",
+                    severity=BaselineSeverity.GRAY.value,
+                    message=(
+                        f"GPU {device_id} driver intentionally disabled by boot profile/cmdline: "
+                        f"{', '.join(entry.get('disabling_cmdline_params') or [])}. "
+                        f"Operational validation: {entry.get('operational_validation', 'not_tested')}."
+                    ),
+                    category="expected_by_profile",
+                    action_blocking=False,
+                    confidence=0.98,
+                )
+            )
+        elif gpu_status == "disabled_by_cmdline":
             findings.append(
                 HardwareFinding(
                     code="gpu.disabled_by_cmdline",
                     severity=BaselineSeverity.YELLOW.value,
                     message=f"GPU {device_id} disabled via kernel cmdline: {', '.join(entry['disabling_cmdline_params'])}.",
+                    category="expected_by_profile",
+                    action_blocking=False,
+                    confidence=0.95,
                 )
             )
         elif gpu_status == "driver_missing":
@@ -198,6 +240,9 @@ def build_gpu_baseline_result(
                     code="gpu.driver_missing",
                     severity=BaselineSeverity.YELLOW.value,
                     message=f"No kernel driver in use for GPU {device_id}.",
+                    category="warning",
+                    action_blocking=False,
+                    confidence=0.9,
                 )
             )
         elif gpu_status == "limited":

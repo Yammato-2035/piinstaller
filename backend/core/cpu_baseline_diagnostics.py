@@ -70,6 +70,8 @@ def _run_tool(argv: list[str], *, runner: Runner = None, timeout: int = 10) -> t
 def scan_kernel_cpu_errors(dmesg_text: str | None = None, *, runner: Runner = None) -> dict[str, Any]:
     """Scan kernel log text for CPU machine-check/hardware-error/lockup/
     watchdog signals. Read-only; a missing ``dmesg`` never crashes this."""
+    from core.kernel_event_classification import classify_mce_dmesg
+
     missing_tools: list[str] = []
     text = dmesg_text
     if text is None:
@@ -78,7 +80,9 @@ def scan_kernel_cpu_errors(dmesg_text: str | None = None, *, runner: Runner = No
             missing_tools.append("dmesg")
     text = text or ""
 
-    machine_check = len(re.findall(r"mce:|Machine Check", text, re.IGNORECASE))
+    mce = classify_mce_dmesg(text)
+    # Real events only — decoder-enabled / capability lines are informational.
+    machine_check = int(mce["mce_event_count"])
     hardware_error = len(re.findall(r"\[Hardware Error\]", text))
     soft_lockup = len(re.findall(r"soft lockup", text, re.IGNORECASE))
     hard_lockup = len(re.findall(r"hard lockup", text, re.IGNORECASE))
@@ -87,6 +91,12 @@ def scan_kernel_cpu_errors(dmesg_text: str | None = None, *, runner: Runner = No
 
     return {
         "machine_check_count": machine_check,
+        "mce_informational_count": int(mce["informational_count"]),
+        "mce_corrected_count": int(mce["mce_corrected_count"]),
+        "mce_uncorrected_count": int(mce["mce_uncorrected_count"]),
+        "mce_informational_lines": list(mce["informational_lines"]),
+        "mce_corrected_lines": list(mce["corrected_lines"]),
+        "mce_uncorrected_lines": list(mce["uncorrected_lines"]),
         "hardware_error_count": hardware_error,
         "soft_lockup_count": soft_lockup,
         "hard_lockup_count": hard_lockup,
@@ -227,12 +237,40 @@ def build_cpu_baseline_result(
     for key in ("machine_check_count", "hardware_error_count", "soft_lockup_count", "hard_lockup_count", "watchdog_count"):
         metrics.append(HardwareMetric(name=key, value=kernel_scan[key]))
 
-    if kernel_scan["machine_check_count"] > 0:
+    if kernel_scan.get("mce_informational_count", 0) > 0 and kernel_scan["machine_check_count"] == 0:
+        findings.append(
+            HardwareFinding(
+                code="cpu.mce_decoder_enabled",
+                severity=BaselineSeverity.GRAY.value,
+                message="MCE decoder/capability messages present; no real machine-check event classified.",
+                evidence=tuple(kernel_scan.get("mce_informational_lines") or ())[:5],
+                category="informational",
+                action_blocking=False,
+                confidence=0.99,
+            )
+        )
+    if kernel_scan.get("mce_uncorrected_count", 0) > 0:
         findings.append(
             HardwareFinding(
                 code="cpu.machine_check_detected",
                 severity=BaselineSeverity.RED.value,
-                message=f"{kernel_scan['machine_check_count']} machine-check event(s) found in kernel log.",
+                message=f"{kernel_scan['mce_uncorrected_count']} uncorrected machine-check event(s) found in kernel log.",
+                evidence=tuple(kernel_scan.get("mce_uncorrected_lines") or ())[:5],
+                category="critical",
+                action_blocking=True,
+                confidence=0.95,
+            )
+        )
+    elif kernel_scan.get("mce_corrected_count", 0) > 0:
+        findings.append(
+            HardwareFinding(
+                code="cpu.machine_check_corrected",
+                severity=BaselineSeverity.YELLOW.value,
+                message=f"{kernel_scan['mce_corrected_count']} corrected machine-check event(s) found in kernel log.",
+                evidence=tuple(kernel_scan.get("mce_corrected_lines") or ())[:5],
+                category="warning",
+                action_blocking=False,
+                confidence=0.9,
             )
         )
     if kernel_scan["hardware_error_count"] > 0 or kernel_scan["hard_lockup_count"] > 0 or kernel_scan["watchdog_count"] > 0:

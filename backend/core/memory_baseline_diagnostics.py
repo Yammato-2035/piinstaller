@@ -41,6 +41,7 @@ from core.hardware_baseline_contracts import (
     HardwareSubsystemResult,
     _utc_now,
 )
+from core.kernel_event_classification import classify_mce_dmesg
 
 MEMORY_BASELINE_DIAGNOSTICS_VERSION = 1
 
@@ -191,13 +192,21 @@ def scan_kernel_memory_errors(dmesg_text: str | None = None, *, runner: Runner =
 
     edac_corrected = len(re.findall(r"EDAC.*correctable error", text, re.IGNORECASE))
     edac_uncorrected = len(re.findall(r"EDAC.*uncorrectable error", text, re.IGNORECASE))
-    mce_count = len(re.findall(r"mce:|Machine Check", text, re.IGNORECASE))
+    mce = classify_mce_dmesg(text)
+    # Real machine-check events only — "MCE decoding enabled" is informational.
+    mce_count = int(mce["mce_event_count"])
     oom_count = len(re.findall(r"Out of memory:|oom-kill", text, re.IGNORECASE))
 
     return {
         "edac_corrected_count": edac_corrected,
         "edac_uncorrected_count": edac_uncorrected,
         "mce_count": mce_count,
+        "mce_informational_count": int(mce["informational_count"]),
+        "mce_corrected_count": int(mce["mce_corrected_count"]),
+        "mce_uncorrected_count": int(mce["mce_uncorrected_count"]),
+        "mce_informational_lines": list(mce["informational_lines"]),
+        "mce_corrected_lines": list(mce["corrected_lines"]),
+        "mce_uncorrected_lines": list(mce["uncorrected_lines"]),
         "oom_count": oom_count,
         "missing_tools": missing_tools,
     }
@@ -342,6 +351,7 @@ def build_memory_baseline_result(
     metrics.append(HardwareMetric(name="edac_corrected_count", value=kernel_scan["edac_corrected_count"]))
     metrics.append(HardwareMetric(name="edac_uncorrected_count", value=kernel_scan["edac_uncorrected_count"]))
     metrics.append(HardwareMetric(name="mce_count", value=kernel_scan["mce_count"]))
+    metrics.append(HardwareMetric(name="mce_informational_count", value=kernel_scan.get("mce_informational_count", 0)))
     metrics.append(HardwareMetric(name="oom_count", value=kernel_scan["oom_count"]))
 
     if kernel_scan["edac_uncorrected_count"] > 0:
@@ -350,14 +360,45 @@ def build_memory_baseline_result(
                 code="memory.kernel_uncorrected_error",
                 severity=BaselineSeverity.RED.value,
                 message=f"{kernel_scan['edac_uncorrected_count']} uncorrected EDAC memory error(s) found in kernel log.",
+                category="critical",
+                action_blocking=True,
+                confidence=0.95,
             )
         )
-    if kernel_scan["mce_count"] > 0:
+    if kernel_scan.get("mce_informational_count", 0) > 0 and kernel_scan["mce_count"] == 0:
+        findings.append(
+            HardwareFinding(
+                code="memory.mce_decoder_enabled",
+                severity=BaselineSeverity.GRAY.value,
+                message="MCE decoder/capability messages present; no real machine-check event classified.",
+                evidence=tuple(kernel_scan.get("mce_informational_lines") or ())[:5],
+                category="informational",
+                action_blocking=False,
+                confidence=0.99,
+            )
+        )
+    if kernel_scan.get("mce_uncorrected_count", 0) > 0:
         findings.append(
             HardwareFinding(
                 code="memory.kernel_uncorrected_error",
                 severity=BaselineSeverity.RED.value,
-                message=f"{kernel_scan['mce_count']} machine-check event(s) found in kernel log.",
+                message=f"{kernel_scan['mce_uncorrected_count']} uncorrected machine-check event(s) found in kernel log.",
+                evidence=tuple(kernel_scan.get("mce_uncorrected_lines") or ())[:5],
+                category="critical",
+                action_blocking=True,
+                confidence=0.95,
+            )
+        )
+    elif kernel_scan.get("mce_corrected_count", 0) > 0:
+        findings.append(
+            HardwareFinding(
+                code="memory.kernel_corrected_mce",
+                severity=BaselineSeverity.YELLOW.value,
+                message=f"{kernel_scan['mce_corrected_count']} corrected machine-check event(s) found in kernel log.",
+                evidence=tuple(kernel_scan.get("mce_corrected_lines") or ())[:5],
+                category="warning",
+                action_blocking=False,
+                confidence=0.9,
             )
         )
     if kernel_scan["edac_corrected_count"] > 0:

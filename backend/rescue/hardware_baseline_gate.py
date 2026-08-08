@@ -126,6 +126,27 @@ def build_hardware_baseline_gate(
     if not gui_mode_allowed:
         required_next_actions.append("Use safe TUI-only mode until the GPU kernel error is reviewed.")
 
+    # Explicit action impact (severity can be yellow/review while restore stays allowed).
+    if not restore_allowed:
+        restore_impact = "blocked"
+    elif any_data_critical_yellow:
+        restore_impact = "review_required"
+    else:
+        restore_impact = "allowed"
+    if not os_installation_allowed:
+        os_impact = "blocked"
+    elif any_data_critical_yellow:
+        os_impact = "review_required"
+    else:
+        os_impact = "allowed"
+    gui_impact = "allowed" if gui_mode_allowed else "blocked"
+    action_impact = (
+        ("backup", "allowed" if backup_allowed else "blocked"),
+        ("restore", restore_impact),
+        ("os_install", os_impact),
+        ("gpu_gui", gui_impact if not _is_not_tested(gpu.status) else "not_applicable"),
+    )
+
     return HardwareBaselineGate(
         status=status,
         memory_status=memory.status,
@@ -139,6 +160,7 @@ def build_hardware_baseline_gate(
         reasons=tuple(reasons),
         warnings=tuple(warnings),
         required_next_actions=tuple(required_next_actions),
+        action_impact=action_impact,
     )
 
 
