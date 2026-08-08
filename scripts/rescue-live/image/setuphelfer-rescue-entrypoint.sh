@@ -49,6 +49,27 @@ if command -v systemctl >/dev/null 2>&1; then
   fi
 fi
 
+# PI-RS-ASUS-ROOTCAUSE-006: unattended evidence + CPU/RAM/NVMe baseline before TUI.
+# One-shot only; timer stays stopped; no GUI/startx/Chromium.
+if setuphelfer_rescue_tui_baseline_active 2>/dev/null; then
+  setuphelfer_rescue_write_boot_state "tui_baseline_autocapture_pending" || true
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-tui-baseline-autocapture.sh" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-tui-baseline-autocapture.sh" || true
+  elif [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-tui-baseline-autocapture" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-tui-baseline-autocapture" || true
+  fi
+fi
+
+# PI-RS-ASUS-AUTONOMOUS-DIAG-INSTALL-007: high-info stages + isolated Xorg probe.
+# Must not start Chromium; must restore TUI ownership afterwards.
+if setuphelfer_rescue_highinfo_active 2>/dev/null; then
+  if [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-highinfo-boot.sh" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-highinfo-boot.sh" || true
+  elif [[ -x "${SCRIPT_DIR}/setuphelfer-rescue-highinfo-boot" ]]; then
+    "${SCRIPT_DIR}/setuphelfer-rescue-highinfo-boot" || true
+  fi
+fi
+
 if setuphelfer_rescue_xorg_forensic_active 2>/dev/null; then
   setuphelfer_rescue_write_boot_state "xorg_forensic_requested"
   setuphelfer_rescue_quiet_console_for_tui 2>/dev/null || true

@@ -173,7 +173,8 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
             f"setuphelfer_gui_watchdog=0 pci=noaer {_NVIDIA_BLACKLIST} "
             "setuphelfer_asus_profile=ASUS-TUI-BASELINE "
             "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 "
-            "setuphelfer_telemetry_opt_in=1"
+            "setuphelfer_telemetry_opt_in=1 "
+            "setuphelfer_auto_hw_baseline=1"
         ),
         "allows_gui": False,
         "allows_startx": False,
@@ -181,10 +182,52 @@ ASUS_PROFILES: dict[str, dict[str, Any]] = {
         "allows_proprietary_nvidia": False,
         "telemetry_required": True,
         "capture_required": True,
+        "auto_hw_baseline": True,
         "timeout_sec": 900,
         "fallback_profile": "ASUS-RECOVERY",
         "allowed_deviations": ["network_offline_queued_telemetry"],
         "primary_variable": "tui_baseline_reference_006",
+        "forbids_cmdline": ["setuphelfer_mode=gui", "setuphelfer_kiosk=1"],
+    },
+    # PI-RS-ASUS-AUTONOMOUS-DIAG-INSTALL-007 — high-info TUI baseline (no Chromium autostart).
+    "ASUS-TUI-BASELINE-HIGHINFO": {
+        "title": "ASUS-TUI-BASELINE-HIGHINFO (007 high-info)",
+        "hypothesis": (
+            "Same stable TUI baseline as ASUS-TUI-BASELINE, plus high-info capture "
+            "(setuphelfer_highinfo / isolated Xorg probe); Chromium is NOT auto-started"
+        ),
+        "expected_outcome": "asus_tui_baseline_highinfo_stable_probe_isolated",
+        "cmdline_extra": (
+            f"setuphelfer_start_assistant=1 "
+            f"setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 "
+            f"setuphelfer_highinfo=1 setuphelfer_xorg_probe=1 "
+            f"setuphelfer_gui_watchdog=0 pci=noaer {_NVIDIA_BLACKLIST} "
+            "setuphelfer_asus_profile=ASUS-TUI-BASELINE-HIGHINFO "
+            "setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 "
+            "setuphelfer_telemetry_opt_in=1 "
+            "setuphelfer_auto_hw_baseline=1"
+        ),
+        "allows_gui": False,
+        "allows_startx": False,
+        "allows_chromium": False,
+        "allows_proprietary_nvidia": False,
+        "xorg_probe_isolated": True,
+        "chromium_autostart": False,
+        "telemetry_required": True,
+        "capture_required": True,
+        "auto_hw_baseline": True,
+        "highinfo": True,
+        "timeout_sec": 900,
+        "fallback_profile": "ASUS-TUI-BASELINE",
+        "allowed_deviations": [
+            "network_offline_queued_telemetry",
+            "xorg_probe_skipped_or_classified_fail",
+        ],
+        "primary_variable": "tui_baseline_highinfo_007",
+        "notes": (
+            "Chromium is NOT auto-started. Xorg probe (setuphelfer_xorg_probe=1) is "
+            "controlled/isolated and must not launch a browser or GUI kiosk."
+        ),
         "forbids_cmdline": ["setuphelfer_mode=gui", "setuphelfer_kiosk=1"],
     },
     "ASUS-XORG-FORENSIC": {

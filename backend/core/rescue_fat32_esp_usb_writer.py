@@ -394,17 +394,25 @@ def generate_fat32_esp_grub_cfg(
     lines = [
         "set timeout=15",
         "set timeout_style=menu",
-        # PI-RS-ASUS-ROOTCAUSE-006: default ASUS-TUI-BASELINE (index 0) — no GUI autostart.
+        # PI-RS-ASUS-AUTONOMOUS-DIAG-INSTALL-007: default HIGHINFO (index 0).
+        # TUI-first + controlled Xorg probe; no Chromium autostart.
         "set default=0",
         *fat32_esp_grub_root_block(fat_uuid=fat_uuid, fat_label=fat_label),
         "",
         *generate_grub_cfg_failsafe_plain_lines(),
         "",
         entry(
+            "ASUS-TUI-BASELINE-HIGHINFO (007 high-info, TUI + Xorg probe)",
+            f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 "
+            f"setuphelfer_highinfo=1 setuphelfer_xorg_probe=1 "
+            f"setuphelfer_gui_watchdog=0 pci=noaer {nvidia_bl} "
+            "setuphelfer_asus_profile=ASUS-TUI-BASELINE-HIGHINFO setuphelfer_auto_hw_baseline=1",
+        ),
+        entry(
             "ASUS-TUI-BASELINE (006 reference, no GUI)",
             f"{asus_live} setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 "
             f"setuphelfer_gui_watchdog=0 pci=noaer {nvidia_bl} "
-            "setuphelfer_asus_profile=ASUS-TUI-BASELINE",
+            "setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_baseline=1",
         ),
         entry(
             "ASUS-00 FORENSIC TUI SAFE",

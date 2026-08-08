@@ -7,6 +7,8 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 PROJECT_VERSION="${SETUPHELFER_REPACK_VERSION:-$(python3 -c "import json; from pathlib import Path; root=Path('${REPO_ROOT}'); payload=root/'config/rescue_payload_version.json'; print(json.loads(payload.read_text(encoding='utf-8')).get('rescue_payload_version') if payload.is_file() else json.loads((root/'config/version.json').read_text(encoding='utf-8')).get('project_version','1.7.10.1'))")}"
 OUT_SQ="${REPO_ROOT}/build/rescue/filesystem.squashfs.repacked-${PROJECT_VERSION}"
 
+die() { echo "ERROR: $*" >&2; exit "${2:-1}"; }
+
 resolve_repack_source_squashfs() {
   python3 - "$1" "$2" <<'PY'
 import subprocess
@@ -44,8 +46,6 @@ else
     || die "no repack source squashfs with usr/bin/chromium found under build/rescue/" 21
 fi
 SUMMARY="${REPO_ROOT}/docs/evidence/runtime-results/rescue/controlled_iso_build_latest_summary.json"
-
-die() { echo "ERROR: $*" >&2; exit "${2:-1}"; }
 
 [[ -f "$SOURCE_SQ" ]] || die "source squashfs missing: $SOURCE_SQ" 22
 command -v unsquashfs >/dev/null || die "unsquashfs missing" 23
@@ -101,12 +101,18 @@ for script in \
   setuphelfer-rescue-gui-watchdog.sh \
   setuphelfer-rescue-entrypoint.sh \
   setuphelfer-rescue-tui.sh \
-  setuphelfer-rescue-startx-forensic.sh; do
+  setuphelfer-rescue-startx-forensic.sh \
+  setuphelfer-rescue-tui-baseline-autocapture.sh \
+  setuphelfer-rescue-highinfo-boot.sh; do
   install -m 0755 "${IMAGE}/${script}" "${ROOT}/usr/local/sbin/${script%.sh}"
 done
 # keep .sh name too for entrypoint dual-path lookup
 install -m 0755 "${IMAGE}/setuphelfer-rescue-startx-forensic.sh" \
   "${ROOT}/usr/local/sbin/setuphelfer-rescue-startx-forensic.sh"
+install -m 0755 "${IMAGE}/setuphelfer-rescue-tui-baseline-autocapture.sh" \
+  "${ROOT}/usr/local/sbin/setuphelfer-rescue-tui-baseline-autocapture.sh"
+install -m 0755 "${IMAGE}/setuphelfer-rescue-highinfo-boot.sh" \
+  "${ROOT}/usr/local/sbin/setuphelfer-rescue-highinfo-boot.sh"
 install -m 0755 "${REPO_ROOT}/scripts/rescue-live/collect-rescue-runtime-diagnostics.sh" \
   "${ROOT}/usr/local/sbin/collect-rescue-runtime-diagnostics"
 for py in setuphelfer-rescue-disk-discovery.py setuphelfer-rescue-plan-builder.py setuphelfer-rescue-live-medium-check.py; do

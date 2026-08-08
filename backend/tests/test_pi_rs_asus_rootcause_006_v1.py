@@ -20,11 +20,14 @@ class AsusRootcause006Tests(unittest.TestCase):
         self.assertFalse(p["allows_gui"])
         self.assertIn("setuphelfer_tui_baseline=1", p["cmdline_extra"])
         self.assertIn("setuphelfer_mode=text", p["cmdline_extra"])
+        self.assertIn("setuphelfer_auto_hw_baseline=1", p["cmdline_extra"])
+        self.assertTrue(p.get("auto_hw_baseline"))
 
     def test_should_start_gui_blocked_helpers_in_common(self) -> None:
         text = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-common.sh").read_text(encoding="utf-8")
         self.assertIn("setuphelfer_rescue_tui_baseline_active", text)
         self.assertIn("setuphelfer_rescue_graphical_browser_start_allowed", text)
+        self.assertIn("setuphelfer_rescue_backend_python", text)
         fn = text.split("setuphelfer_rescue_should_start_gui()")[1].split(
             "setuphelfer_rescue_graphical_browser_start_allowed()"
         )[0]
@@ -36,6 +39,26 @@ class AsusRootcause006Tests(unittest.TestCase):
         self.assertIn("setuphelfer-rescue-boot-diagnostics.timer", text)
         self.assertIn("xorg_forensic", text)
         self.assertIn('setuphelfer_rescue_console_owner_transition "tui_owned"', text)
+        self.assertIn("setuphelfer-rescue-tui-baseline-autocapture", text)
+
+    def test_tui_baseline_autocapture_script_exists(self) -> None:
+        path = REPO / "scripts/rescue-live/image/setuphelfer-rescue-tui-baseline-autocapture.sh"
+        self.assertTrue(path.is_file())
+        text = path.read_text(encoding="utf-8")
+        self.assertIn("run_hardware_baseline", text)
+        self.assertIn('mode="quick"', text)
+        self.assertIn("nvme_writes", text)
+        self.assertIn("boot-diagnostics", text)
+        self.assertIn("setuphelfer_rescue_backend_python", text)
+
+    def test_tui_menu_hides_gui_on_baseline(self) -> None:
+        text = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-tui.sh").read_text(encoding="utf-8")
+        self.assertIn("TUI-Baseline: Auto-Evidence aktiv", text)
+        self.assertIn("setuphelfer_rescue_tui_baseline_active", text)
+        self.assertIn("Partitionshelfer (nur Lesen)", text)
+        # GUI start must be gated
+        fn = text.split("_tui_start_gui()")[1].split("_tui_shell()")[0]
+        self.assertIn("setuphelfer_rescue_should_start_gui", fn)
 
     def test_ui_launch_blocks_chromium_without_gate(self) -> None:
         text = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-ui-launch").read_text(encoding="utf-8")
@@ -96,16 +119,26 @@ class AsusRootcause006Tests(unittest.TestCase):
         cfg = generate_fat32_esp_grub_cfg(fat_label="SETUPHELFER", fat_uuid="ABCD-1234")
         self.assertIn("set default=0", cfg)
         self.assertIn("ASUS-TUI-BASELINE", cfg)
+        self.assertIn("ASUS-TUI-BASELINE-HIGHINFO", cfg)
         self.assertIn("ASUS-XORG-FORENSIC", cfg)
         self.assertIn("setuphelfer_tui_baseline=1", cfg)
-        # First menuentry after failsafe should be TUI baseline.
+        self.assertIn("setuphelfer_highinfo=1", cfg)
+        # First menuentry after failsafe should be HIGHINFO (007 default).
         first = cfg.split("menuentry ")[1]
-        self.assertIn("ASUS-TUI-BASELINE", first)
+        self.assertIn("ASUS-TUI-BASELINE-HIGHINFO", first)
 
     def test_diagnostics_timer_isolated(self) -> None:
         text = (REPO / "scripts/rescue-live/prepare-controlled-live-build-tree.sh").read_text(encoding="utf-8")
         self.assertIn("ConditionKernelCommandLine=!setuphelfer_tui_baseline=1", text)
         self.assertIn("OnBootSec=3min", text)
+
+
+    def test_backend_python_helper_prefers_venv(self) -> None:
+        text = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-common.sh").read_text(encoding="utf-8")
+        self.assertIn("setuphelfer_rescue_backend_python()", text)
+        self.assertIn("venv/bin/python3", text)
+        ac = (REPO / "scripts/rescue-live/image/setuphelfer-rescue-tui-baseline-autocapture.sh").read_text(encoding="utf-8")
+        self.assertIn("setuphelfer_rescue_backend_python", ac)
 
 
 if __name__ == "__main__":

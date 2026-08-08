@@ -30,7 +30,9 @@ _tui_run_wifi_diag() {
   local py="/opt/setuphelfer-rescue/backend"
   local text="WLAN-Diagnose nicht verfügbar (Backend fehlt)."
   if [[ -d "$py" ]]; then
-    text="$(PYTHONPATH="${py}" python3 - <<'PY'
+    local pybin
+    pybin="$(setuphelfer_rescue_backend_python 2>/dev/null || command -v python3 || echo python3)"
+    text="$(PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath 2>/dev/null || echo "$py")" "$pybin" - <<'PY'
 import json
 from core.rescue_wifi_diagnostics import classify_wifi_status
 w = classify_wifi_status()
@@ -104,7 +106,48 @@ _tui_collect_evidence() {
   _tui_msg "Diagnose/Evidence gesammelt.\nPrüfen Sie SETUP_LOGS/setuphelfer/evidence/."
 }
 
+_tui_run_partitions() {
+  whiptail --title "Setuphelfer" --infobox "Partitionshelfer (nur Lesen)…" 8 55 3>&1 1>"$_wt" 2>&3 || true
+  local disc="${SETUPHELFER_RESCUE_STATE_DIR}/disk-discovery.json"
+  local out="${SETUPHELFER_RESCUE_STATE_DIR}/partitions-preview.json"
+  "${SCRIPT_DIR}/setuphelfer-rescue-disk-discovery" >"$disc" 2>/dev/null || true
+  local pybin
+  pybin="$(setuphelfer_rescue_backend_python 2>/dev/null || command -v python3 || echo python3)"
+  PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath 2>/dev/null || echo /opt/setuphelfer-rescue/backend)" \
+    "$pybin" - "$disc" "$out" <<'PY' 2>/dev/null || true
+import json, sys
+from pathlib import Path
+from rescue.rescue_partitions_tui_preview import (
+    build_partitions_tui_preview,
+    format_partitions_tui_message,
+    write_partitions_preview_json,
+)
+disc = {}
+p = Path(sys.argv[1])
+if p.is_file():
+    try:
+        disc = json.loads(p.read_text(encoding="utf-8"))
+    except Exception:
+        disc = {}
+preview = build_partitions_tui_preview(disk_discovery=disc if isinstance(disc, dict) else None)
+write_partitions_preview_json(Path(sys.argv[2]), preview)
+print(format_partitions_tui_message(preview))
+PY
+  local msg
+  msg="$(cat "$out" >/dev/null 2>&1; PYTHONPATH="$(setuphelfer_rescue_backend_pythonpath 2>/dev/null || true)" "$pybin" -c 'import json,sys; from rescue.rescue_partitions_tui_preview import format_partitions_tui_message; print(format_partitions_tui_message(json.load(open(sys.argv[1]))))' "$out" 2>/dev/null || echo "Partitionsvorschau fehlgeschlagen.")"
+  setuphelfer_rescue_mirror_evidence_file "$out" "setuphelfer/evidence/partitions/partitions-preview.json" 2>/dev/null || true
+  setuphelfer_rescue_mirror_evidence_file "$disc" "setuphelfer/evidence/partitions/disk-discovery.json" 2>/dev/null || true
+  _tui_msg "${msg}"
+}
+
 _tui_start_gui() {
+  # PI-RS-ASUS-ROOTCAUSE-006: TUI-baseline / forensic must not enter startx via menu.
+  if setuphelfer_rescue_tui_baseline_active 2>/dev/null \
+     || setuphelfer_rescue_xorg_forensic_active 2>/dev/null \
+     || ! setuphelfer_rescue_should_start_gui 2>/dev/null; then
+    _tui_msg "Grafische Oberfläche in diesem Boot-Profil gesperrt.\nBitte ASUS-TUI-BASELINE ohne GUI belassen."
+    return 0
+  fi
   if setuphelfer_rescue_should_disable_gui_for_msi_compat; then
     setuphelfer_rescue_write_gui_blocked_msi_status true
     _tui_msg "$(setuphelfer_rescue_gui_disabled_message)"
@@ -127,22 +170,65 @@ _tui_shell() {
   chvt 2 2>/dev/null || true
 }
 
+_tui_show_autocapture_banner() {
+  local summary="${SETUPHELFER_RESCUE_STATE_DIR:-/run/setuphelfer}/tui-baseline-autocapture-summary.json"
+  [[ -f "$summary" ]] || return 0
+  local line
+  line="$(python3 - "$summary" <<'PY' 2>/dev/null || true
+import json, sys
+p = json.load(open(sys.argv[1], encoding="utf-8"))
+print(
+    f"Autocapture OK\n"
+    f"diag_rc={p.get('boot_diagnostics_rc')}  "
+    f"hw={p.get('hardware_baseline_status')} (rc={p.get('hardware_baseline_rc')})\n"
+    f"CPU/RAM/NVMe: read-only quick baseline\n"
+    f"GUI/startx/Chromium: nicht gestartet"
+)
+PY
+)"
+  [[ -n "$line" ]] || return 0
+  _tui_msg "$line"
+}
+
 _tui_main_menu() {
   local choice
+  local gui_allowed=1
+  if setuphelfer_rescue_tui_baseline_active 2>/dev/null \
+     || setuphelfer_rescue_xorg_forensic_active 2>/dev/null \
+     || ! setuphelfer_rescue_should_start_gui 2>/dev/null; then
+    gui_allowed=0
+  fi
+  _tui_show_autocapture_banner || true
   while true; do
-    choice="$(whiptail --title "Setuphelfer Rettungsstick — Textmodus" --menu \
-      "Sicherer Textmodus (kein Backup/Restore/Wipe)" 22 78 10 \
-      "detect" "System erkennen" \
-      "wifi" "Hardware/WLAN prüfen" \
-      "plan" "Backup-Plan erstellen (dry-run)" \
-      "evidence" "Evidence auf Stick speichern" \
-      "gui" "Grafische Oberfläche starten" \
-      "shell" "Shell öffnen (tty2)" \
-      "reboot" "Neustart" \
-      "poweroff" "Ausschalten" \
-      3>&1 1>"$_wt" 2>&3)" || return 0
+    if [[ "$gui_allowed" -eq 1 ]]; then
+      choice="$(whiptail --title "Setuphelfer Rettungsstick — Textmodus" --menu \
+        "Sicherer Textmodus (kein Backup/Restore/Wipe)" 22 78 11 \
+        "detect" "System erkennen" \
+        "partitions" "Partitionshelfer (nur Lesen)" \
+        "wifi" "Hardware/WLAN prüfen" \
+        "plan" "Backup-Plan erstellen (dry-run)" \
+        "evidence" "Evidence auf Stick speichern" \
+        "gui" "Grafische Oberfläche starten" \
+        "shell" "Shell öffnen (tty2)" \
+        "reboot" "Neustart" \
+        "poweroff" "Ausschalten" \
+        3>&1 1>"$_wt" 2>&3)" || return 0
+    else
+      choice="$(whiptail --title "Setuphelfer Rettungsstick — Textmodus" --menu \
+        "TUI-Baseline: Auto-Evidence aktiv (kein GUI/startx)" 22 78 10 \
+        "detect" "System erkennen" \
+        "partitions" "Partitionshelfer (nur Lesen)" \
+        "wifi" "Hardware/WLAN prüfen" \
+        "plan" "Backup-Plan erstellen (dry-run)" \
+        "evidence" "Evidence auf Stick speichern" \
+        "shell" "Shell öffnen (tty2)" \
+        "reboot" "Neustart" \
+        "poweroff" "Ausschalten" \
+        3>&1 1>"$_wt" 2>&3)" || return 0
+    fi
     case "$choice" in
       detect) _tui_run_system_detect ;;
+      partitions) _tui_run_partitions ;;
       wifi) _tui_run_wifi_diag ;;
       plan) _tui_run_backup_plan ;;
       evidence) _tui_collect_evidence ;;

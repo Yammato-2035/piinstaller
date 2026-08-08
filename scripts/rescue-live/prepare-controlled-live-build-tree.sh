@@ -350,11 +350,16 @@ write_rescue_network_telemetry_overlay() {
     setuphelfer-rescue-gui-start.sh:setuphelfer-rescue-gui-start \
     setuphelfer-rescue-gui-watchdog.sh:setuphelfer-rescue-gui-watchdog \
     setuphelfer-rescue-entrypoint.sh:setuphelfer-rescue-entrypoint \
-    setuphelfer-rescue-tui.sh:setuphelfer-rescue-tui; do
+    setuphelfer-rescue-tui.sh:setuphelfer-rescue-tui \
+    setuphelfer-rescue-highinfo-boot.sh:setuphelfer-rescue-highinfo-boot \
+    setuphelfer-rescue-tui-baseline-autocapture.sh:setuphelfer-rescue-tui-baseline-autocapture \
+    setuphelfer-rescue-startx-forensic.sh:setuphelfer-rescue-startx-forensic; do
     local src="${src_dst%%:*}"
     local dst="${src_dst##*:}"
     [[ -f "${image_src}/${src}" ]] || die "missing rescue image script: ${src}"
     copy_host_file "${image_src}/${src}" "${sbin}/${dst}" 0755
+    # Keep .sh name for dual-path lookup from entrypoint/highinfo.
+    copy_host_file "${image_src}/${src}" "${sbin}/${src}" 0755
   done
   copy_host_file "${image_src}/setuphelfer-rescue-boot-branding.txt" "${share}/boot-branding.txt" 0644
   write_text_file "${rescue_cfg}/network.env.example" 0644 <<'EOF'

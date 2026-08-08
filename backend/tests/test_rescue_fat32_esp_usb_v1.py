@@ -85,8 +85,9 @@ class RescueFat32EspUsbTests(unittest.TestCase):
             result = validate_fat32_esp_grub_cfg(cfg, mount_root=root)
             self.assertTrue(result["ok"], result["errors"])
             # 5 classic Setuphelfer entries + ASUS-00..05 + ASUS-RECOVERY
-            # ASUS-TUI-BASELINE / XORG-FORENSIC / GUI-CONTROLLED added (006).
-            self.assertEqual(result["boot_menu_entries"], 15)
+            # ASUS-TUI-BASELINE / XORG-FORENSIC / GUI-CONTROLLED (006)
+            # + ASUS-TUI-BASELINE-HIGHINFO (007).
+            self.assertEqual(result["boot_menu_entries"], 16)
             self.assertIn("ASUS-00 FORENSIC TUI SAFE", cfg)
             self.assertIn("setuphelfer_asus_profile=ASUS-00", cfg)
             self.assertIn("ASUS-RECOVERY FORCED TUI FALLBACK", cfg)

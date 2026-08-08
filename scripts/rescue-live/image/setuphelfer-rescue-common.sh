@@ -367,11 +367,34 @@ setuphelfer_rescue_shield_console_early() {
 # PI-RS-MSI-GUI-003: boot session + tty1 ownership helpers.
 setuphelfer_rescue_backend_pythonpath() {
   local py_backend="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}/backend"
+  local venv_site=""
+  # Prefer venv site-packages so deps like psutil resolve on the live stick.
+  if [[ -d "${py_backend}/venv/lib" ]]; then
+    venv_site="$(find "${py_backend}/venv/lib" -maxdepth 2 -type d -name site-packages 2>/dev/null | head -n1 || true)"
+  fi
   if [[ -d "$py_backend" ]]; then
-    printf '%s' "${py_backend}${PYTHONPATH:+:$PYTHONPATH}"
+    if [[ -n "$venv_site" ]]; then
+      printf '%s' "${py_backend}:${venv_site}${PYTHONPATH:+:$PYTHONPATH}"
+    else
+      printf '%s' "${py_backend}${PYTHONPATH:+:$PYTHONPATH}"
+    fi
     return 0
   fi
   printf '%s' "${PYTHONPATH:-}"
+}
+
+# Interpreter that can import backend + venv deps (psutil, etc.).
+setuphelfer_rescue_backend_python() {
+  local root="${SETUPHELFER_RESCUE_ROOT:-/opt/setuphelfer-rescue}"
+  if [[ -x "${root}/backend/venv/bin/python3" ]]; then
+    printf '%s' "${root}/backend/venv/bin/python3"
+    return 0
+  fi
+  if [[ -x "${root}/backend/venv/bin/python" ]]; then
+    printf '%s' "${root}/backend/venv/bin/python"
+    return 0
+  fi
+  command -v python3 2>/dev/null || printf '%s' python3
 }
 
 setuphelfer_rescue_read_boot_id() {
@@ -1110,7 +1133,17 @@ setuphelfer_rescue_boot_state_path() {
 
 setuphelfer_rescue_tui_baseline_active() {
   grep -Eq '(^| )setuphelfer_tui_baseline=1( |$)' /proc/cmdline 2>/dev/null \
-    || grep -Eq '(^| )setuphelfer_asus_profile=ASUS-TUI-BASELINE( |$)' /proc/cmdline 2>/dev/null
+    || grep -Eq '(^| )setuphelfer_asus_profile=ASUS-TUI-BASELINE(-HIGHINFO)?( |$)' /proc/cmdline 2>/dev/null \
+    || grep -Eq '(^| )setuphelfer_highinfo=1( |$)' /proc/cmdline 2>/dev/null
+}
+
+setuphelfer_rescue_highinfo_active() {
+  grep -Eq '(^| )setuphelfer_highinfo=1( |$)' /proc/cmdline 2>/dev/null \
+    || grep -Eq '(^| )setuphelfer_asus_profile=ASUS-TUI-BASELINE-HIGHINFO( |$)' /proc/cmdline 2>/dev/null
+}
+
+setuphelfer_rescue_xorg_probe_active() {
+  grep -Eq '(^| )setuphelfer_xorg_probe=1( |$)' /proc/cmdline 2>/dev/null
 }
 
 setuphelfer_rescue_xorg_forensic_active() {
