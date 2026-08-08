@@ -3,7 +3,7 @@
 **Stand:** 2026-08-07  
 **Branch:** `pi-rs-asus-rootcause-telemetry-006`  
 **Ausgangs-HEAD:** `b425097ba06b8a889ab95a2feb1ebcf5525ff7fa`  
-**Verdict jetzt:** `carrier_update_verified` + `insufficient_evidence` / **kein** `asus_tui_baseline_stable` (Stick 1.10.3.0 geschrieben; physischer TUI-Baseline-Boot ausstehend)
+**Verdict jetzt:** `boot1_tui_baseline_pass_with_notes` auf Payload **1.10.5.0**; zwei grüne TUI-Captures beobachtet (`20260807_221550`, `20260808_064943`); **kein** `asus_tui_baseline_stable` / `xorg_forensic_allowed` ohne Operator-ACK zur Zählung oder weiteren Boot
 
 ## Erledigt (Workspace)
 

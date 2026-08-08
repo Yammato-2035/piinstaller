@@ -1,0 +1,3 @@
+cat: /var/log/Xorg.0.log: Datei oder Verzeichnis nicht gefunden
+
+[command failed or timed out: cat /var/log/Xorg.0.log]

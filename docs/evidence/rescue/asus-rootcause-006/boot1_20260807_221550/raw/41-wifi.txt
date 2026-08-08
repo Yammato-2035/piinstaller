@@ -1,0 +1,27 @@
+0: hci0: Bluetooth
+	Soft blocked: no
+	Hard blocked: no
+1: phy0: Wireless LAN
+	Soft blocked: no
+	Hard blocked: no
+---iw dev---
+phy#0
+	Interface wlp3s0
+		ifindex 3
+		wdev 0x1
+		addr 22:ed:4c:51:03:00
+		type managed
+		txpower 3.00 dBm
+		multicast TXQ:
+			qsz-byt	qsz-pkt	flows	drops	marks	overlmt	hashcol	tx-bytes	tx-packets
+			0	0	0	0	0	0	0	0		0
+---/proc/net/wireless---
+Inter-| sta-|   Quality        |   Discarded packets               | Missed | WE
+ face | tus | link level noise |  nwid  crypt   frag  retry   misc | beacon | 22
+---nmcli radio---
+WIFI-HW    WIFI       WWAN-HW  WWAN      
+aktiviert  aktiviert  missing  aktiviert 
+---nmcli dev---
+enp2s0:ethernet:connected:Kabelgebundene Verbindung 1
+lo:loopback:connected (externally):lo
+wlp3s0:wifi:disconnected:

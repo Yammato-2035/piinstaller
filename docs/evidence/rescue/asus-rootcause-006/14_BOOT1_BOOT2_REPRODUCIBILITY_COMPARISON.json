@@ -1,0 +1,286 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-006B",
+  "boot1": "20260807_221550",
+  "boot2": "20260808_064943",
+  "classification": "reproducible",
+  "software_identity": {
+    "payload": {
+      "boot1": "1.10.5.0",
+      "boot2": "1.10.5.0"
+    },
+    "squashfs": {
+      "boot1": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+      "boot2": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51"
+    },
+    "cmdline_identical": true
+  },
+  "tui": {
+    "console_owner": {
+      "boot1": "tui_owned",
+      "boot2": "tui_owned"
+    },
+    "gui": {
+      "boot1": false,
+      "boot2": false
+    },
+    "startx": {
+      "boot1": false,
+      "boot2": false
+    },
+    "chromium": {
+      "boot1": false,
+      "boot2": false
+    }
+  },
+  "runtime": {
+    "failed_systemd_zero": {
+      "boot1": true,
+      "boot2": true
+    },
+    "backend_active": {
+      "boot1": true,
+      "boot2": true
+    },
+    "collector_status": {
+      "boot1": "ok",
+      "boot2": "ok"
+    },
+    "hardware_baseline_rc": {
+      "boot1": 0,
+      "boot2": 0
+    }
+  },
+  "gpu_network_storage_flags": {
+    "amdgpu": {
+      "boot1": true,
+      "boot2": true
+    },
+    "edp": {
+      "boot1": true,
+      "boot2": true
+    },
+    "mt7921e": {
+      "boot1": true,
+      "boot2": true
+    },
+    "r8169": {
+      "boot1": true,
+      "boot2": true
+    },
+    "nvidia_loaded": {
+      "boot1": false,
+      "boot2": false
+    }
+  },
+  "gate_comparison": {
+    "status": {
+      "boot1": "blocked",
+      "boot2": "blocked",
+      "match": true
+    },
+    "memory_status": {
+      "boot1": "immediate_issue_detected",
+      "boot2": "immediate_issue_detected",
+      "match": true
+    },
+    "cpu_status": {
+      "boot1": "immediate_issue_detected",
+      "boot2": "immediate_issue_detected",
+      "match": true
+    },
+    "gpu_status": {
+      "boot1": "immediate_issue_detected",
+      "boot2": "immediate_issue_detected",
+      "match": true
+    },
+    "storage_status": {
+      "boot1": "test_unavailable",
+      "boot2": "test_unavailable",
+      "match": true
+    },
+    "backup_allowed": {
+      "boot1": true,
+      "boot2": true,
+      "match": true
+    },
+    "restore_allowed": {
+      "boot1": false,
+      "boot2": false,
+      "match": true
+    },
+    "os_installation_allowed": {
+      "boot1": false,
+      "boot2": false,
+      "match": true
+    },
+    "gui_mode_allowed": {
+      "boot1": false,
+      "boot2": false,
+      "match": true
+    }
+  },
+  "gate_reasons_boot1": [
+    "memory baseline reports immediate_issue_detected.",
+    "cpu baseline reports immediate_issue_detected."
+  ],
+  "gate_reasons_boot2": [
+    "memory baseline reports immediate_issue_detected.",
+    "cpu baseline reports immediate_issue_detected."
+  ],
+  "findings_boot1": [
+    [
+      "memory",
+      "memory.kernel_uncorrected_error",
+      "red",
+      "1 machine-check event(s) found in kernel log."
+    ],
+    [
+      "memory",
+      "memory.extended_memtest_required",
+      "red",
+      "A full Memtest86+/UEFI memory diagnostic run is required before this memory can be trusted for restore or installation."
+    ],
+    [
+      "cpu",
+      "cpu.microcode_review_required",
+      "yellow",
+      "Microcode status could not be verified from /proc/cpuinfo."
+    ],
+    [
+      "cpu",
+      "cpu.machine_check_detected",
+      "red",
+      "1 machine-check event(s) found in kernel log."
+    ],
+    [
+      "cpu",
+      "cpu.extended_stress_test_recommended",
+      "yellow",
+      "A supervised, multi-hour CPU stability test is recommended before trusting this CPU under sustained load."
+    ],
+    [
+      "gpu",
+      "gpu.kernel_error_detected",
+      "red",
+      "GPU hang/reset/fence-timeout reported in kernel log."
+    ],
+    [
+      "gpu",
+      "gpu.driver_missing",
+      "yellow",
+      "No kernel driver in use for GPU pci:01:00.0."
+    ],
+    [
+      "gpu",
+      "gpu.drm_device_missing",
+      "yellow",
+      "No DRM card device created for GPU pci:06:00.0."
+    ],
+    [
+      "gpu",
+      "gpu.extended_render_test_recommended",
+      "yellow",
+      "A supervised GPU render-stress test is recommended before relying on GUI mode for extended sessions."
+    ],
+    [
+      "nvme",
+      "nvme.incomplete_smart_log",
+      "gray",
+      "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges)."
+    ],
+    [
+      "nvme",
+      "nvme.incomplete_smart_log",
+      "gray",
+      "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges)."
+    ]
+  ],
+  "findings_boot2": [
+    [
+      "memory",
+      "memory.kernel_uncorrected_error",
+      "red",
+      "1 machine-check event(s) found in kernel log."
+    ],
+    [
+      "memory",
+      "memory.extended_memtest_required",
+      "red",
+      "A full Memtest86+/UEFI memory diagnostic run is required before this memory can be trusted for restore or installation."
+    ],
+    [
+      "cpu",
+      "cpu.microcode_review_required",
+      "yellow",
+      "Microcode status could not be verified from /proc/cpuinfo."
+    ],
+    [
+      "cpu",
+      "cpu.machine_check_detected",
+      "red",
+      "1 machine-check event(s) found in kernel log."
+    ],
+    [
+      "cpu",
+      "cpu.extended_stress_test_recommended",
+      "yellow",
+      "A supervised, multi-hour CPU stability test is recommended before trusting this CPU under sustained load."
+    ],
+    [
+      "gpu",
+      "gpu.kernel_error_detected",
+      "red",
+      "GPU hang/reset/fence-timeout reported in kernel log."
+    ],
+    [
+      "gpu",
+      "gpu.driver_missing",
+      "yellow",
+      "No kernel driver in use for GPU pci:01:00.0."
+    ],
+    [
+      "gpu",
+      "gpu.drm_device_missing",
+      "yellow",
+      "No DRM card device created for GPU pci:06:00.0."
+    ],
+    [
+      "gpu",
+      "gpu.extended_render_test_recommended",
+      "yellow",
+      "A supervised GPU render-stress test is recommended before relying on GUI mode for extended sessions."
+    ],
+    [
+      "nvme",
+      "nvme.incomplete_smart_log",
+      "gray",
+      "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges)."
+    ],
+    [
+      "nvme",
+      "nvme.incomplete_smart_log",
+      "gray",
+      "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges)."
+    ]
+  ],
+  "mce_lines": {
+    "boot1": [
+      "[    7.348305] MCE: In-kernel MCE decoding enabled."
+    ],
+    "boot2": [
+      "[    7.410361] MCE: In-kernel MCE decoding enabled."
+    ]
+  },
+  "mode2_lines": {
+    "boot1": [
+      "[    8.376802] amdgpu 0000:06:00.0: amdgpu: MODE2 reset"
+    ],
+    "boot2": [
+      "[    8.431366] amdgpu 0000:06:00.0: amdgpu: MODE2 reset"
+    ]
+  },
+  "xorg_forensic_allowed": false,
+  "next_phase": "Phase 4 false-positive audit then heuristic fixes; Boot3 only after payload rebuild",
+  "timestamp_utc": "2026-08-08T07:40:26Z"
+}

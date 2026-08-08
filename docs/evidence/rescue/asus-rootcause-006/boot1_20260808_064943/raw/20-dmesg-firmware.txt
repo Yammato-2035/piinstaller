@@ -1,0 +1,43 @@
+[    0.062080] Spectre V2 : Enabling Restricted Speculation for firmware calls
+[    0.062091] Transient Scheduler Attacks: Vulnerable: Clear CPU buffers attempted, no microcode
+[    0.272386] ACPI: [Firmware Bug]: BIOS _OSI(Linux) query ignored
+[    0.284176] acpi PNP0A08:00: [Firmware Info]: MMCONFIG for domain 0000 [bus 00-7f] only partially covers this bridge
+[    0.627945] microcode: microcode updated early to new patch_level=0x0a500011
+[    0.628092] microcode: CPU0: patch_level=0x0a500011
+[    0.628176] microcode: CPU1: patch_level=0x0a500011
+[    0.628269] microcode: CPU2: patch_level=0x0a500011
+[    0.628354] microcode: CPU3: patch_level=0x0a500011
+[    0.628447] microcode: CPU4: patch_level=0x0a500011
+[    0.628530] microcode: CPU5: patch_level=0x0a500011
+[    0.628611] microcode: CPU6: patch_level=0x0a500011
+[    0.628693] microcode: CPU7: patch_level=0x0a500011
+[    0.628783] microcode: CPU8: patch_level=0x0a500011
+[    0.628869] microcode: CPU9: patch_level=0x0a500011
+[    0.628964] microcode: CPU10: patch_level=0x0a500011
+[    0.629051] microcode: CPU11: patch_level=0x0a500011
+[    0.629148] microcode: CPU12: patch_level=0x0a500011
+[    0.629235] microcode: CPU13: patch_level=0x0a500011
+[    0.629330] microcode: CPU14: patch_level=0x0a500011
+[    0.629420] microcode: CPU15: patch_level=0x0a500011
+[    0.629507] microcode: Microcode Update Driver: v2.2.
+[    7.044247] platform regulatory.0: firmware: direct-loading firmware regulatory.db
+[    7.070493] platform regulatory.0: firmware: direct-loading firmware regulatory.db.p7s
+[    7.365021] bluetooth hci0: firmware: direct-loading firmware mediatek/BT_RAM_CODE_MT7961_1_2_hdr.bin
+[    7.447537] mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_MT7961_patch_mcu_1_2_hdr.bin
+[    7.747186] mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_RAM_CODE_MT7961_1.bin
+[    7.755390] mt7921e 0000:03:00.0: WM Firmware Version: ____010000, Build Time: 20230117170942
+[    7.795637] mt7921e 0000:03:00.0: firmware: direct-loading firmware mediatek/WIFI_RAM_CODE_MT7961_1.bin
+[    8.409697] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_sdma.bin
+[    8.436515] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_asd.bin
+[    8.436596] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ta.bin
+[    8.441750] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_dmcub.bin
+[    8.441756] [drm] Loading DMUB firmware via PSP: version=0x01010024
+[    8.445206] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_pfp.bin
+[    8.447305] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_me.bin
+[    8.448032] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_ce.bin
+[    8.448107] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_rlc.bin
+[    8.450064] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_mec.bin
+[    8.463085] amdgpu 0000:06:00.0: firmware: direct-loading firmware amdgpu/green_sardine_vcn.bin
+[    8.463091] [drm] Found VCN firmware Version ENC: 1.19 DEC: 5 VEP: 0 Revision: 0
+[    8.463103] amdgpu 0000:06:00.0: amdgpu: Will use PSP to load VCN firmware
+[   11.957064] r8169 0000:02:00.0: firmware: direct-loading firmware rtl_nic/rtl8168h-2.fw

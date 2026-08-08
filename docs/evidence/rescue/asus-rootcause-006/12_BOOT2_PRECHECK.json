@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-006B",
+  "phase": "0_carrier_consistency",
+  "timestamp_utc": "2026-08-08T07:39:26Z",
+  "boot1_reference": {
+    "stamp": "20260807_221550",
+    "payload_version": "1.10.5.0",
+    "squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+    "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_baseline=1",
+    "profile_flags": [
+      "setuphelfer_rescue=1",
+      "setuphelfer_start_assistant=1",
+      "setuphelfer_msi_lab_auto=0",
+      "setuphelfer_auto_discovery=0",
+      "setuphelfer_telemetry_opt_in=1",
+      "setuphelfer_mode=text",
+      "setuphelfer_kiosk=0",
+      "setuphelfer_tui_baseline=1",
+      "setuphelfer_gui_watchdog=0",
+      "pci=noaer",
+      "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau",
+      "setuphelfer_asus_profile=ASUS-TUI-BASELINE",
+      "setuphelfer_auto_hw_baseline=1"
+    ],
+    "autocapture_exists": true
+  },
+  "carrier_now": {
+    "device": "/dev/sda",
+    "fingerprint": "ce2e34b7f5ea4e41",
+    "serial": "24111412110212",
+    "payload_version": "1.10.5.0",
+    "squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+    "grub_sha256": "fb7b8d5b4937e5a666ae544e81ae07d01cd8c2218831b421242e2b8a2c91e3ea",
+    "efi_grub_sha256": "fb7b8d5b4937e5a666ae544e81ae07d01cd8c2218831b421242e2b8a2c91e3ea",
+    "grub_default": "0"
+  },
+  "checks": {
+    "target_fingerprint_ok": true,
+    "payload_1_10_5_0": true,
+    "squashfs_prefix_c57c6fb8": true,
+    "squashfs_matches_boot1": true,
+    "grub_has_asus_tui_baseline": true,
+    "grub_default_0": true,
+    "boot1_profile_flags_present_in_grub": true
+  },
+  "esp_files_mtime_after_boot1": [],
+  "esp_core_change_count": 0,
+  "candidate_boot2_on_stick": {
+    "stamp": "20260808_064943",
+    "payload_version": "1.10.5.0",
+    "squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+    "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_baseline=1",
+    "profile_flags": [
+      "setuphelfer_rescue=1",
+      "setuphelfer_start_assistant=1",
+      "setuphelfer_msi_lab_auto=0",
+      "setuphelfer_auto_discovery=0",
+      "setuphelfer_telemetry_opt_in=1",
+      "setuphelfer_mode=text",
+      "setuphelfer_kiosk=0",
+      "setuphelfer_tui_baseline=1",
+      "setuphelfer_gui_watchdog=0",
+      "pci=noaer",
+      "modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau",
+      "setuphelfer_asus_profile=ASUS-TUI-BASELINE",
+      "setuphelfer_auto_hw_baseline=1"
+    ],
+    "cmdline_flags_identical_to_boot1": true,
+    "qualifies_as_boot2_software_identity": true
+  },
+  "identical_test_conditions": true,
+  "code_changes_before_boot2_forbidden": true,
+  "code_changes_performed": false,
+  "boot2_status": "candidate_already_present_may_use_as_boot2",
+  "notes": [
+    "No heuristic/code/payload/GRUB changes performed in this phase.",
+    "Existing morning boot 20260808_064943 may already satisfy Boot2 software identity if precheck identical."
+  ]
+}

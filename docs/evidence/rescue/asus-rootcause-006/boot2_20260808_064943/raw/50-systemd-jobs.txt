@@ -1,0 +1,8 @@
+JOB UNIT                                       TYPE  STATE
+99  systemd-update-utmp-runlevel.service       start waiting
+2   multi-user.target                          start waiting
+1   graphical.target                           start waiting
+108 setuphelfer-rescue-start-assistant.service start running
+114 setuphelfer-rescue-boot-logs.service       start waiting
+
+5 jobs listed.

@@ -1,0 +1,57 @@
+{
+  "status": "boot1_tui_baseline_pass_with_notes",
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-TELEMETRY-006",
+  "analyzed_boot": "20260808_064943",
+  "boot_id": "a53ca88a-67ef-40bf-a3f7-c0ac0485d904",
+  "profile": "ASUS-TUI-BASELINE",
+  "payload_version_on_stick": "1.10.5.0",
+  "squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+  "grub_sha256": "fb7b8d5b4937e5a666ae544e81ae07d01cd8c2218831b421242e2b8a2c91e3ea",
+  "hardware": {
+    "product": "ROG Strix G513QM_G513QM",
+    "board": "G513QM",
+    "bios": "G513QM.331"
+  },
+  "checks": {
+    "profile_asus_tui_baseline": true,
+    "console_owner_tui_owned": true,
+    "gui_started_false": true,
+    "startx_started_false": true,
+    "chromium_started_false": true,
+    "nvme_writes_false": true,
+    "hardware_baseline_ok": true,
+    "boot_diagnostics_rc_0": true,
+    "no_xorg_log": true,
+    "no_failed_systemd_units": true
+  },
+  "all_hard_checks_pass": true,
+  "yellow_notes": [
+    "runtime_diagnostics_rc=1 (non-zero; does not alone fail TUI baseline gate)",
+    "boot_stage_state.boot_profile still reports ASUS-00 while cmdline is ASUS-TUI-BASELINE (sentinel drift)",
+    "boot-progress.json message still says GUI \u00fcbernehmen during TUI baseline",
+    "media-check spot_checks_ok=false (path spot checks); squashfs_hash_ok=true",
+    "Stick payload is 1.10.5.0 (c57c6fb8\u2026), not the 1.10.3.0 (4629ca61\u2026) verified in 03_CARRIER_UPDATE_VERIFY \u2014 later update outside this worktree HEAD"
+  ],
+  "prior_tui_captures": {
+    "20260807_213327": {
+      "payload": "1.10.4.0",
+      "hw": "failed",
+      "console": "tui_owned"
+    },
+    "20260807_221550": {
+      "payload": "1.10.5.0",
+      "note": "same campaign; check payload below",
+      "squashfs": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51"
+    }
+  },
+  "same_payload_green_boots": [
+    "20260807_221550",
+    "20260808_064943"
+  ],
+  "xorg_forensic_allowed": false,
+  "operator_confirmation": "user reported clean boot; stick returned",
+  "timestamp_utc": "2026-08-08T06:52:52Z",
+  "prior_221550_hard_ok": true,
+  "repro_status": "two_green_tui_boots_on_1.10.5.0_observed",
+  "next_step": "Either confirm prior 20260807_221550 counts as Boot1 and this morning as Boot2, then ACK for XORG-FORENSIC; or run one more intentional ASUS-TUI-BASELINE boot for clean Boot2 labeling."
+}

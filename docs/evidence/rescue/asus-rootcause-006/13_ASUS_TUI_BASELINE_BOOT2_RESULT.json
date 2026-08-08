@@ -1,0 +1,328 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-ROOTCAUSE-006B",
+  "document": "13_ASUS_TUI_BASELINE_BOOT2_RESULT",
+  "stamp_utc": "20260808_064943",
+  "boot_id": "a53ca88a-67ef-40bf-a3f7-c0ac0485d904",
+  "profile": "ASUS-TUI-BASELINE",
+  "payload_version": "1.10.5.0",
+  "squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+  "grub_sha256_current_carrier": "fb7b8d5b4937e5a666ae544e81ae07d01cd8c2218831b421242e2b8a2c91e3ea",
+  "kernel": "Linux setuphelfer-rescue 6.1.0-52-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.180-1 (2026-08-03) x86_64 GNU/Linux",
+  "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_baseline=1",
+  "bios": "G513QM.331",
+  "product": "ROG Strix G513QM_G513QM",
+  "board": "G513QM",
+  "signals": {
+    "stamp": "20260808_064943",
+    "payload_version": "1.10.5.0",
+    "squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+    "boot_id": "a53ca88a-67ef-40bf-a3f7-c0ac0485d904",
+    "console_owner": "tui_owned",
+    "gui_started": false,
+    "startx_started": false,
+    "chromium_started": false,
+    "nvme_writes": false,
+    "hardware_baseline_status": "ok",
+    "hardware_baseline_rc": 0,
+    "boot_diagnostics_rc": 0,
+    "runtime_diagnostics_rc": 1,
+    "partitions_write_allowed": false,
+    "lifecycle_state": "tui_owned",
+    "failed_systemd_zero": true,
+    "xorg_absent": true,
+    "gui_process_hits": 0,
+    "tui_process_hits": 1,
+    "backend_active": true,
+    "amdgpu_loaded": true,
+    "mt7921e_loaded": true,
+    "r8169_loaded": true,
+    "nvidia_or_nouveau_loaded": false,
+    "edp_connected": true
+  },
+  "mce_lines": [
+    "[    7.410361] MCE: In-kernel MCE decoding enabled."
+  ],
+  "mode2_lines": [
+    "[    8.431366] amdgpu 0000:06:00.0: amdgpu: MODE2 reset"
+  ],
+  "gate": {
+    "status": "blocked",
+    "memory_status": "immediate_issue_detected",
+    "cpu_status": "immediate_issue_detected",
+    "gpu_status": "immediate_issue_detected",
+    "storage_status": "test_unavailable",
+    "backup_allowed": true,
+    "restore_allowed": false,
+    "os_installation_allowed": false,
+    "gui_mode_allowed": false,
+    "reasons": [
+      "memory baseline reports immediate_issue_detected.",
+      "cpu baseline reports immediate_issue_detected."
+    ],
+    "warnings": [
+      "gpu baseline reports immediate_issue_detected."
+    ],
+    "required_next_actions": [
+      "Review the red-flagged memory/CPU/storage findings before restore or OS installation.",
+      "Use safe TUI-only mode until the GPU kernel error is reviewed."
+    ]
+  },
+  "subsystem_summary": [
+    {
+      "name": "memory",
+      "status": "immediate_issue_detected",
+      "issues": null
+    },
+    {
+      "name": "cpu",
+      "status": "immediate_issue_detected",
+      "issues": null
+    },
+    {
+      "name": "gpu",
+      "status": "immediate_issue_detected",
+      "issues": null
+    },
+    {
+      "name": "hdd",
+      "status": "no_immediate_issue_detected",
+      "issues": null
+    },
+    {
+      "name": "nvme",
+      "status": "test_unavailable",
+      "issues": null
+    },
+    {
+      "name": "nvme",
+      "status": "test_unavailable",
+      "issues": null
+    }
+  ],
+  "subsystems_detail": [
+    {
+      "name": "memory",
+      "status": "immediate_issue_detected",
+      "findings": [
+        {
+          "code": "memory.kernel_uncorrected_error",
+          "severity": "red",
+          "message": "1 machine-check event(s) found in kernel log.",
+          "evidence": []
+        },
+        {
+          "code": "memory.extended_memtest_required",
+          "severity": "red",
+          "message": "A full Memtest86+/UEFI memory diagnostic run is required before this memory can be trusted for restore or installation.",
+          "evidence": []
+        }
+      ],
+      "devices": [],
+      "raw_keys": [
+        "checks_run",
+        "checks_skipped",
+        "completed_at",
+        "duration_ms",
+        "evidence",
+        "extended_test",
+        "findings",
+        "metrics",
+        "recommendations",
+        "severity",
+        "started_at",
+        "status",
+        "subsystem"
+      ]
+    },
+    {
+      "name": "cpu",
+      "status": "immediate_issue_detected",
+      "findings": [
+        {
+          "code": "cpu.microcode_review_required",
+          "severity": "yellow",
+          "message": "Microcode status could not be verified from /proc/cpuinfo.",
+          "evidence": []
+        },
+        {
+          "code": "cpu.machine_check_detected",
+          "severity": "red",
+          "message": "1 machine-check event(s) found in kernel log.",
+          "evidence": []
+        },
+        {
+          "code": "cpu.extended_stress_test_recommended",
+          "severity": "yellow",
+          "message": "A supervised, multi-hour CPU stability test is recommended before trusting this CPU under sustained load.",
+          "evidence": []
+        }
+      ],
+      "devices": [],
+      "raw_keys": [
+        "checks_run",
+        "checks_skipped",
+        "completed_at",
+        "duration_ms",
+        "evidence",
+        "extended_test",
+        "findings",
+        "metrics",
+        "recommendations",
+        "severity",
+        "started_at",
+        "status",
+        "subsystem"
+      ]
+    },
+    {
+      "name": "gpu",
+      "status": "immediate_issue_detected",
+      "findings": [
+        {
+          "code": "gpu.kernel_error_detected",
+          "severity": "red",
+          "message": "GPU hang/reset/fence-timeout reported in kernel log.",
+          "evidence": []
+        },
+        {
+          "code": "gpu.driver_missing",
+          "severity": "yellow",
+          "message": "No kernel driver in use for GPU pci:01:00.0.",
+          "evidence": []
+        },
+        {
+          "code": "gpu.drm_device_missing",
+          "severity": "yellow",
+          "message": "No DRM card device created for GPU pci:06:00.0.",
+          "evidence": []
+        },
+        {
+          "code": "gpu.extended_render_test_recommended",
+          "severity": "yellow",
+          "message": "A supervised GPU render-stress test is recommended before relying on GUI mode for extended sessions.",
+          "evidence": []
+        }
+      ],
+      "devices": [],
+      "raw_keys": [
+        "checks_run",
+        "checks_skipped",
+        "completed_at",
+        "duration_ms",
+        "evidence",
+        "extended_test",
+        "findings",
+        "metrics",
+        "recommendations",
+        "severity",
+        "started_at",
+        "status",
+        "subsystem"
+      ]
+    },
+    {
+      "name": "hdd",
+      "status": "no_immediate_issue_detected",
+      "findings": [],
+      "devices": [],
+      "raw_keys": [
+        "checks_run",
+        "checks_skipped",
+        "completed_at",
+        "device_id",
+        "duration_ms",
+        "evidence",
+        "extended_test",
+        "findings",
+        "metrics",
+        "recommendations",
+        "severity",
+        "started_at",
+        "status",
+        "subsystem"
+      ]
+    },
+    {
+      "name": "nvme",
+      "status": "test_unavailable",
+      "findings": [
+        {
+          "code": "nvme.incomplete_smart_log",
+          "severity": "gray",
+          "message": "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges).",
+          "evidence": []
+        }
+      ],
+      "devices": [],
+      "raw_keys": [
+        "checks_run",
+        "checks_skipped",
+        "completed_at",
+        "device_id",
+        "duration_ms",
+        "evidence",
+        "extended_test",
+        "findings",
+        "metrics",
+        "recommendations",
+        "severity",
+        "started_at",
+        "status",
+        "subsystem"
+      ]
+    },
+    {
+      "name": "nvme",
+      "status": "test_unavailable",
+      "findings": [
+        {
+          "code": "nvme.incomplete_smart_log",
+          "severity": "gray",
+          "message": "NVMe SMART log could not be parsed (empty or unsupported \u2014 common on USB-NVMe bridges).",
+          "evidence": []
+        }
+      ],
+      "devices": [],
+      "raw_keys": [
+        "checks_run",
+        "checks_skipped",
+        "completed_at",
+        "device_id",
+        "duration_ms",
+        "evidence",
+        "extended_test",
+        "findings",
+        "metrics",
+        "recommendations",
+        "severity",
+        "started_at",
+        "status",
+        "subsystem"
+      ]
+    }
+  ],
+  "writes_allowed": false,
+  "nvme_writes": false,
+  "collector_status": "ok",
+  "expectations": {
+    "tui_console_owner": true,
+    "gui_false": true,
+    "startx_false": true,
+    "chromium_false": true,
+    "xorg_absent": true,
+    "no_gui_processes": true,
+    "failed_units_zero": true,
+    "amdgpu_loaded": true,
+    "edp_connected": true,
+    "mt7921e_loaded": true,
+    "r8169_loaded": true,
+    "nvidia_not_loaded": true,
+    "write_allowed_false": true,
+    "collector_rc_ok": true
+  },
+  "identical_to_boot1_software": true,
+  "precheck_ref": "12_BOOT2_PRECHECK.md",
+  "timestamp_utc": "2026-08-08T07:40:26Z",
+  "all_hard_expectations_pass": true
+}

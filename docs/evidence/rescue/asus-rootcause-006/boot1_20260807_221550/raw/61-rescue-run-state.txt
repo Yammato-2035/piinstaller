@@ -1,0 +1,208 @@
+== /run/setuphelfer/boot_stage_state.json ==
+{
+  "run_id": "unknown",
+  "boot_id": "fe003550-4e70-4c05-a64d-0a52fc8ae40b",
+  "boot_attempt": 0,
+  "boot_profile": "ASUS-00",
+  "reached": [
+    "systemd_started"
+  ],
+  "failed": [],
+  "last_successful_marker": "systemd_started",
+  "first_failed_marker": null,
+  "boot_failure_scope": "none",
+  "updated_at": "2026-08-07T22:15:36Z"
+}
+
+== /run/setuphelfer/console-ownership.json ==
+{
+  "schema_version": 1,
+  "tty": "tty1",
+  "owner": "tui",
+  "lifecycle_state": "tui_owned",
+  "write_allowed_for": [
+    "tui"
+  ],
+  "clear_allowed_for": [
+    "tui"
+  ],
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": false,
+  "reason": "tui_owned",
+  "session_id": "20260807_221535_boot",
+  "boot_id": "eadd4a4d-ceba-48d3-88e7-9901fe6ceca4",
+  "updated_at": "2026-08-07T22:15:50Z"
+}
+
+== /run/setuphelfer/console-shield.json ==
+{
+  "schema_version": 2,
+  "enabled": true,
+  "reason": "autocapture_start",
+  "tty": "tty1",
+  "owner": "tui",
+  "lifecycle_state": "tui_owned",
+  "tty1_write_allowed": false,
+  "tty1_clear_allowed": false,
+  "boot_progress_write_allowed": false,
+  "boot_progress_clear_allowed": false,
+  "gui_write_allowed": false,
+  "gui_transition_allowed": false,
+  "write_allowed_for": [
+    "tui"
+  ],
+  "clear_allowed_for": [
+    "tui"
+  ],
+  "owner_since": "2026-08-07T22:15:50Z",
+  "session_id": "20260807_221535_boot",
+  "journal_to_console_blocked": true,
+  "production_ready": false
+}
+
+== /run/setuphelfer/current-session.json ==
+{
+  "schema_version": 1,
+  "session_id": "20260807_221535_boot",
+  "boot_id": "eadd4a4d-ceba-48d3-88e7-9901fe6ceca4",
+  "payload_version": "1.10.5.0",
+  "session_started_at": "2026-08-07T22:15:36Z",
+  "current_session_evidence": true,
+  "stale_evidence_detected": false
+}
+
+== /run/setuphelfer/kernel_excerpt.json ==
+{"lines": ["[Fri Aug  7 22:15:24 2026] Command line: BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_baseline=", "[Fri Aug  7 22:15:24 2026] Kernel command line: BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_ba", "[Fri Aug  7 22:15:24 2026] AMD-Vi: ivrs, add hid:AMDI0020, uid:\\_SB.FUR0, rdevid:160", "[Fri Aug  7 22:15:24 2026] AMD-Vi: ivrs, add hid:AMDI0020, uid:\\_SB.FUR1, rdevid:160", "[Fri Aug  7 22:15:24 2026] AMD-Vi: ivrs, add hid:AMDI0020, uid:\\_SB.FUR2, rdevid:160", "[Fri Aug  7 22:15:24 2026] AMD-Vi: ivrs, add hid:AMDI0020, uid:\\_SB.FUR3, rdevid:160", "[Fri Aug  7 22:15:24 2026] Spectre V2 : Enabling Restricted Speculation for firmware calls", "[Fri Aug  7 22:15:24 2026] ACPI: [Firmware Bug]: BIOS _OSI(Linux) query ignored", "[Fri Aug  7 22:15:24 2026] acpi PNP0A08:00: [Firmware Info]: MMCONFIG for domain 0000 [bus 00-7f] only partially covers this bridge", "[Fri Aug  7 22:15:24 2026] iommu: Default domain type: Translated", "[Fri Aug  7 22:15:24 2026] iommu: DMA domain TLB invalidation policy: lazy mode", "[Fri Aug  7 22:15:24 2026] EDAC MC: Ver: 3.0.0", "[Fri Aug  7 22:15:24 2026] pci 0000:00:00.2: AMD-Vi: IOMMU performance counters supported", "[Fri Aug  7 22:15:24 2026] pci 0000:00:01.0: Adding to iommu group 0", "[Fri Aug  7 22:15:24 2026] pci 0000:00:01.1: Adding to iommu group 1", "[Fri Aug  7 22:15:24 2026] pci 0000:00:02.0: Adding to iommu group 2", "[Fri Aug  7 22:15:24 2026] pci 0000:00:02.1: Adding to iommu group 3", "[Fri Aug  7 22:15:24 2026] pci 0000:00:02.2: Adding to iommu group 4", "[Fri Aug  7 22:15:24 2026] pci 0000:00:02.3: Adding to iommu group 5", "[Fri Aug  7 22:15:24 2026] pci 0000:00:02.4: Adding to iommu group 6", "[Fri Aug  7 22:15:24 2026] pci 0000:00:08.0: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:00:08.1: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:00:14.0: Adding to iommu group 8", "[Fri Aug  7 22:15:24 2026] pci 0000:00:14.3: Adding to iommu group 8", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.0: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.1: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.2: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.3: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.4: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.5: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.6: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:00:18.7: Adding to iommu group 9", "[Fri Aug  7 22:15:24 2026] pci 0000:01:00.0: Adding to iommu group 10", "[Fri Aug  7 22:15:24 2026] pci 0000:01:00.1: Adding to iommu group 10", "[Fri Aug  7 22:15:24 2026] pci 0000:02:00.0: Adding to iommu group 11", "[Fri Aug  7 22:15:24 2026] pci 0000:03:00.0: Adding to iommu group 12", "[Fri Aug  7 22:15:24 2026] pci 0000:04:00.0: Adding to iommu group 13", "[Fri Aug  7 22:15:24 2026] pci 0000:05:00.0: Adding to iommu group 14", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.0: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.1: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.2: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.3: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.4: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.5: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:06:00.6: Adding to iommu group 7", "[Fri Aug  7 22:15:24 2026] pci 0000:00:00.2: AMD-Vi: Found IOMMU cap 0x40", "[Fri Aug  7 22:15:24 2026] perf/amd_iommu: Detected AMD IOMMU #0 (2 banks, 4 counters/bank).", "[Fri Aug  7 22:15:24 2026] AMD-Vi: AMD IOMMUv2 loaded and initialized", "[Fri Aug  7 22:15:24 2026] i8042: PNP: PS/2 Controller [PNP030b:PS2K] at 0x60,0x64 irq 1", "[Fri Aug  7 22:15:24 2026] i8042: PNP: PS/2 appears to have AUX port disabled, if this is incorrect please boot with i8042.nopnp", "[Fri Aug  7 22:15:24 2026] serio: i8042 KBD port at 0x60,0x64 irq 1", "[Fri Aug  7 22:15:24 2026] atkbd serio0: Failed to deactivate keyboard on isa0060/serio0", "[Fri Aug  7 22:15:25 2026] hid: raw HID events driver (C) Jiri Kosina", "[Fri Aug  7 22:15:25 2026] ACPI: bus type USB registered", "[Fri Aug  7 22:15:25 2026] usbcore: registered new interface driver usbfs", "[Fri Aug  7 22:15:25 2026] usbcore: registered new interface driver hub", "[Fri Aug  7 22:15:25 2026] usbcore: registered new device driver usb", "[Fri Aug  7 22:15:25 2026] atkbd serio0: Failed to enable keyboard on isa0060/serio0", "[Fri Aug  7 22:15:25 2026] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input0", "[Fri Aug  7 22:15:25 2026] xhci_hcd 0000:06:00.3: new USB bus registered, assigned bus number 1", "[Fri Aug  7 22:15:25 2026] xhci_hcd 0000:06:00.3: new USB bus registered, assigned bus number 2", "[Fri Aug  7 22:15:25 2026] xhci_hcd 0000:06:00.3: Host supports USB 3.1 Enhanced SuperSpeed", "[Fri Aug  7 22:15:25 2026] usb usb1: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.01", "[Fri Aug  7 22:15:25 2026] usb usb1: New USB device strings: Mfr=3, Product=2, SerialNumber=1", "[Fri Aug  7 22:15:25 2026] usb usb1: Product: xHCI Host Controller", "[Fri Aug  7 22:15:25 2026] usb usb1: Manufacturer: Linux 6.1.0-52-amd64 xhci-hcd", "[Fri Aug  7 22:15:25 2026] usb usb1: SerialNumber: 0000:06:00.3", "[Fri Aug  7 22:15:25 2026] hub 1-0:1.0: USB hub found", "[Fri Aug  7 22:15:25 2026] usb usb2: We don't know the algorithms for LPM for this host, disabling LPM.", "[Fri Aug  7 22:15:25 2026] usb usb2: New USB device found, idVendor=1d6b, idProduct=0003, bcdDevice= 6.01", "[Fri Aug  7 22:15:25 2026] usb usb2: New USB device strings: Mfr=3, Product=2, SerialNumber=1", "[Fri Aug  7 22:15:25 2026] usb usb2: Product: xHCI Host Controller", "[Fri Aug  7 22:15:25 2026] usb usb2: Manufacturer: Linux 6.1.0-52-amd64 xhci-hcd", "[Fri Aug  7 22:15:25 2026] usb usb2: SerialNumber: 0000:06:00.3", "[Fri Aug  7 22:15:25 2026] nvme 0000:04:00.0: platform quirk: setting simple suspend", "[Fri Aug  7 22:15:25 2026] hub 2-0:1.0: USB hub found", "[Fri Aug  7 22:15:25 2026] nvme nvme0: pci function 0000:04:00.0", "[Fri Aug  7 22:15:25 2026] nvme 0000:05:00.0: platform quirk: setting simple suspend", "[Fri Aug  7 22:15:25 2026] nvme nvme1: pci function 0000:05:00.0", "[Fri Aug  7 22:15:25 2026] nvme nvme0: missing or invalid SUBNQN field.", "[Fri Aug  7 22:15:25 2026] xhci_hcd 0000:06:00.4: new USB bus registered, assigned bus number 3", "[Fri Aug  7 22:15:25 2026] nvme nvme0: Shutdown timeout set to 8 seconds", "[Fri Aug  7 22:15:25 2026] nvme nvme1: missing or invalid SUBNQN field.", "[Fri Aug  7 22:15:25 2026] xhci_hcd 0000:06:00.4: new USB bus registered, assigned bus number 4", "[Fri Aug  7 22:15:25 2026] nvme nvme0: 16/0/0 default/read/poll queues", "[Fri Aug  7 22:15:25 2026] nvme nvme1: Shutdown timeout set to 8 seconds", "[Fri Aug  7 22:15:25 2026] xhci_hcd 0000:06:00.4: Host supports USB 3.1 Enhanced SuperSpeed", "[Fri Aug  7 22:15:25 2026]  nvme0n1: p1 p2", "[Fri Aug  7 22:15:25 2026] usb usb3: New USB device found, idVendor=1d6b, idProduct=0002, bcdDevice= 6.01", "[Fri Aug  7 22:15:25 2026] usb usb3: New USB device strings: Mfr=3, Product=2, SerialNumber=1", "[Fri Aug  7 22:15:25 2026] usb usb3: Product: xHCI Host Controller", "[Fri Aug  7 22:15:25 2026] usb usb3: Manufacturer: Linux 6.1.0-52-amd64 xhci-hcd", "[Fri Aug  7 22:15:25 2026] usb usb3: SerialNumber: 0000:06:00.4", "[Fri Aug  7 22:15:25 2026] hub 3-0:1.0: USB hub found", "[Fri Aug  7 22:15:25 2026] usb usb4: We don't know the algorithms for LPM for this host, disabling LPM.", "[Fri Aug  7 22:15:25 2026] hid-generic 0018:04F3:319B.0001: input,hidraw0: I2C HID v1.00 Mouse [ASUE120A:00 04F3:319B] on i2c-ASUE120A:00", "[Fri Aug  7 22:15:25 2026] usb usb4: New USB device found, idVendor=1d6b, idProduct=0003, bcdDevice= 6.01", "[Fri Aug  7 22:15:25 2026] nvme nvme1: 16/0/0 default/read/poll queues", "[Fri Aug  7 22:15:25 2026] usb usb4: New USB device strings: Mfr=3, Product=2, SerialNumber=1", "[Fri Aug  7 22:15:25 2026] usb usb4: Product: xHCI Host Controller"]}
+
+== /run/setuphelfer-rescue/boot-progress.json ==
+{"schema_version": 1, "step_index": 0, "message": "Bootvorbereitung abgeschlossen \u2014 GUI \u00fcbernimmt.", "updated_at": "2026-08-07T22:15:37Z"}
+
+== /run/setuphelfer-rescue/boot_state.json ==
+{
+  "schema_version": 1,
+  "phase": "tui_baseline_autocapture_start",
+  "cmdline": "BOOT_IMAGE=/live/vmlinuz boot=live components init=/lib/systemd/systemd setuphelfer_rescue=1 setuphelfer_start_assistant=1 setuphelfer_msi_lab_auto=0 setuphelfer_auto_discovery=0 setuphelfer_telemetry_opt_in=1 setuphelfer_mode=text setuphelfer_kiosk=0 setuphelfer_tui_baseline=1 setuphelfer_gui_watchdog=0 pci=noaer modprobe.blacklist=nvidia,nvidia_drm,nvidia_modeset,nvidia_uvm,nouveau setuphelfer_asus_profile=ASUS-TUI-BASELINE setuphelfer_auto_hw_baseline=1",
+  "selected_mode": "text",
+  "kiosk_requested": false,
+  "text_mode_started": true,
+  "gui_requested": false,
+  "backup_execute_allowed": false
+}
+
+== /run/setuphelfer-rescue/media-check.json ==
+{
+  "checked_at": "2026-08-07T22:15:49Z",
+  "squashfs_path": "/run/live/medium/live/filesystem.squashfs",
+  "medium_root": "/run/live/medium",
+  "medium_mode": "fat32_esp",
+  "squashfs_read_ok": true,
+  "spot_checks_ok": false,
+  "spot_check_failures": [
+    "usr/bin/nmcli",
+    "usr/bin/curl",
+    "usr/local/sbin/setuphelfer-rescue-telemetry-push",
+    "usr/local/sbin/setuphelfer-rescue-telemetry-build-payload.py",
+    "usr/local/sbin/setuphelfer-rescue-network-onboarding",
+    "usr/local/sbin/setuphelfer-rescue-start-assistant",
+    "usr/share/setuphelfer/rescue/boot-branding.txt"
+  ],
+  "required_files_ok": true,
+  "required_files_missing": [],
+  "squashfs_hash_ok": true,
+  "expected_squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+  "actual_squashfs_sha256": "c57c6fb8bccc7f353b3bebc06b9f6782038fef3473ab1b4f7c4d151cbd5bca51",
+  "live_media_runtime_stable": true,
+  "evidence_status": "complete",
+  "operator_hints": [],
+  "error_code": null,
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/rescue-state.json ==
+{
+  "schema_version": 1,
+  "boot_status": {
+    "medium": {
+      "status": "review_required",
+      "squashfs_hash_ok": null,
+      "evidence_ok": null,
+      "required": true
+    },
+    "network": {
+      "status": "not_configured",
+      "required": false,
+      "wifi_scan_started": false
+    },
+    "telemetry": {
+      "status": "disabled",
+      "required": false,
+      "opt_in": false
+    },
+    "ui": {
+      "mode": "react",
+      "status": "ready",
+      "shows_systemd_failures": false
+    },
+    "rs001": {
+      "status": "yellow",
+      "reason": "hardware retest pending",
+      "ready_for_operator_retest": false
+    }
+  },
+  "spool": {
+    "schema_version": 1,
+    "base": "/run/setuphelfer",
+    "paths": [
+      "setuphelfer/evidence/boot",
+      "setuphelfer/evidence/medium-check",
+      "setuphelfer/evidence/network",
+      "setuphelfer/evidence/telemetry",
+      "setuphelfer/evidence/ui",
+      "setuphelfer/evidence/hardware",
+      "setuphelfer/logs/boot",
+      "setuphelfer/logs/journal",
+      "setuphelfer/state/rescue-state.json",
+      "setuphelfer/profiles/machines"
+    ],
+    "fallback": "/run/setuphelfer/evidence",
+    "secrets_exposed": false
+  },
+  "machine_profile": {
+    "schema_version": 1,
+    "machine_id": "b23a6a8439c0dde5515893e7c90c1e3233b8616e634470f20dc4928bcf3609bc",
+    "vendor": "",
+    "model": "",
+    "boot_mode": "uefi",
+    "secure_boot": "unknown",
+    "graphics_mode": "unknown",
+    "last_known_good_menu": "",
+    "network": {
+      "last_status": "not_configured",
+      "wifi_scan_supported": null,
+      "ethernet_detected": null
+    },
+    "rescue": {
+      "last_boot_status": "yellow",
+      "last_medium_check": "",
+      "last_ui_mode": ""
+    },
+    "updated_at": "2026-08-07T22:15:49.642808+00:00",
+    "secrets_exposed": false
+  },
+  "offline_first": {
+    "network_blocks_boot": false,
+    "telemetry_blocks_boot": false
+  },
+  "secrets_exposed": false
+}
+
+== /run/setuphelfer-rescue/task-pull-last.json ==
+{
+  "checked_at": "2026-08-07T22:15:36Z",
+  "boot_id": "eadd4a4d-ceba-48d3-88e7-9901fe6ceca4",
+  "task_available": false,
+  "secrets_exposed": false
+}
+
