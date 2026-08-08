@@ -1,0 +1,14 @@
+{
+  "status": "payload_build_verified",
+  "campaign": "PI-RS-ASUS-HIGHINFO-PHYSICAL-009",
+  "previous_payload": "1.10.6.0",
+  "payload_version": "1.10.6.1",
+  "payload_sha256": "9189c1407afc981e8fa99195a2e30688dc1a9313a3af6cb4df9176f8035a227e",
+  "build_mode": "squashfs-repack-from-1.10.6.0",
+  "source_commit_at_build_start": "b6c6fd0b360466ebc34782b7a6f2cdd097cb115d",
+  "build_timestamp": "2026-08-08T10:54:07.349638+00:00",
+  "carrier_expected_version": "1.10.6.1",
+  "evidence_mirror_in_squashfs": true,
+  "highinfo_xorg_evidence_module": true,
+  "nvme_write_allowed": false
+}

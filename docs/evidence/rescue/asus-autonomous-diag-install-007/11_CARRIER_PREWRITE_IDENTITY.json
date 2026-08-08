@@ -1,0 +1,22 @@
+{
+  "generated_at": "2026-08-08T10:54:07.331226+00:00",
+  "selected": {
+    "path": "/dev/sda",
+    "vendor": "Intenso",
+    "model": "Ultra Line",
+    "serial": "24111412110212",
+    "size_bytes": 63333990400,
+    "tran": "usb",
+    "rm": true,
+    "fingerprint": "ce2e34b7f5ea4e41",
+    "labels": [
+      "SETUPHELFER",
+      "SETUP_LOGS"
+    ]
+  },
+  "identity_ok": true,
+  "new_payload": "1.10.6.1",
+  "new_squashfs_sha256": "9189c1407afc981e8fa99195a2e30688dc1a9313a3af6cb4df9176f8035a227e",
+  "usb_write_allowed": false,
+  "nvme_write_allowed": false
+}
