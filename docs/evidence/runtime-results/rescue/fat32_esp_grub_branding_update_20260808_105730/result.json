@@ -1,0 +1,20 @@
+{
+  "grub_branding_update_schema_version": 1,
+  "target_device": "/dev/sda",
+  "started_at": "2026-08-08T10:57:30Z",
+  "completed_at": "2026-08-08T10:57:31.749220+00:00",
+  "grub_branding_update_executed": true,
+  "grub_branding_update_status": "success",
+  "verify_status": "success",
+  "branding_ok": true,
+  "errors": [],
+  "bootx64_sha256": "8502d4abb55765947a17c4a62a657f422d37f490622fae24dfde4227cbe62b9a",
+  "grub_cfg_sha256": "fcc66db6f32231d0875e57e4732320185d28eedad1649c939199a16bb7cc0ec6",
+  "evidence_dir": "/home/volker/piinstaller-asus-emergency-linux-telemetry-003/docs/evidence/runtime-results/rescue/fat32_esp_grub_branding_update_20260808_105730",
+  "failed_step": null,
+  "partition_rewritten": false,
+  "filesystem_reformatted": false,
+  "secrets_exposed": false,
+  "no_fake_green": true,
+  "rs001_status": "yellow"
+}

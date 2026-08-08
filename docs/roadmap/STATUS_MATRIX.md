@@ -5,7 +5,7 @@
 | Ziel | Status | Evidence / Notes |
 |------|--------|------------------|
 | A. Autonomous Rescue Diagnostics | `partial` | High-info orchestrator + allowlisted remediation; physical Boot3 pending |
-| B. High-Information Boot | `tested_fixture` | Orchestrator fixture-tested; carrier **1.10.6.0** verified (`carrier_1_10_6_0_verified`); physical Boot3 pending |
+| B. High-Information Boot | `partial` | Carrier **1.10.6.1** verified; Boot3 physical partial; Boot4 pending Xorg/telemetry proof |
 | C. Telemetry Diagnostic Loop | `partial` | Local case builder + spool contracts; IONOS live ACK pending physical |
 | D. ASUS Linux Installation | `planned` | Install readiness + dual confirm gates only; **no** internal NVMe write yet |
 | E. Persistent Linux Hardware Lab | `planned` | Depends on D + post-install boot evidence |
