@@ -78,6 +78,18 @@ const SubsystemTile: React.FC<{ result: RescueBaselineSubsystemResult; dict: Rec
               {result.findings.map((f, idx) => (
                 <li key={`${f.code}-${idx}`}>
                   <SeverityBadge severity={f.severity} label={f.code} /> {f.message}
+                  {f.category ? (
+                    <span className="rescue-hw-hint">
+                      {' '}
+                      [{f.category}
+                      {f.action_blocking === false
+                        ? ', non-blocking'
+                        : f.action_blocking === true
+                          ? ', action-blocking'
+                          : ''}
+                      ]
+                    </span>
+                  ) : null}
                 </li>
               ))}
             </ul>
@@ -213,6 +225,18 @@ export const RescueHardwareBaselinePanel: React.FC<{ locale: RescueLocale }> = (
               <PermissionRow label={tPath(dict, 'section.hardwareBaseline.permissionOsInstall')} allowed={result.gate.os_installation_allowed} dict={dict} />
               <PermissionRow label={tPath(dict, 'section.hardwareBaseline.permissionGuiMode')} allowed={result.gate.gui_mode_allowed} dict={dict} />
             </ul>
+            {result.gate.action_impact && Object.keys(result.gate.action_impact).length > 0 ? (
+              <div>
+                <strong>Action impact</strong>
+                <ul className="rescue-migration-list">
+                  {Object.entries(result.gate.action_impact).map(([k, v]) => (
+                    <li key={k}>
+                      {k}: {v}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
             {result.gate.reasons.length > 0 ? (
               <div>
                 <strong>{tPath(dict, 'section.hardwareBaseline.reasonsTitle')}</strong>

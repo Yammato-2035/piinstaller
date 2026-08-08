@@ -144,6 +144,9 @@ export interface RescueBaselineFinding {
   severity: 'green' | 'yellow' | 'red' | 'gray';
   message: string | null;
   evidence: string[];
+  confidence?: number | null;
+  action_blocking?: boolean | null;
+  category?: string | null;
 }
 
 export interface RescueBaselineExtendedTest {
@@ -184,6 +187,7 @@ export interface RescueBaselineGate {
   reasons: string[];
   warnings: string[];
   required_next_actions: string[];
+  action_impact?: Record<string, string>;
 }
 
 export interface RescueBaselineResult {

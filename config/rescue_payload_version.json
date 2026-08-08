@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
-  "rescue_payload_version": "1.10.3.0",
-  "previous_rescue_payload_version": "1.10.0.16",
+  "rescue_payload_version": "1.10.6.0",
+  "previous_rescue_payload_version": "1.10.5.0",
   "pi_rs_msi_gui_003": true,
   "version_source_of_truth": true
 }
