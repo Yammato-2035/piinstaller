@@ -5,7 +5,7 @@
 | Ziel | Status | Evidence / Notes |
 |------|--------|------------------|
 | A. Autonomous Rescue Diagnostics | `partial` | High-info orchestrator + allowlisted remediation; physical Boot3 pending |
-| B. High-Information Boot | `implemented` | `backend/rescue/high_information_boot_orchestrator.py` — fixture-tested; physical pending |
+| B. High-Information Boot | `tested_fixture` | Orchestrator fixture-tested; carrier **1.10.6.0** verified (`carrier_1_10_6_0_verified`); physical Boot3 pending |
 | C. Telemetry Diagnostic Loop | `partial` | Local case builder + spool contracts; IONOS live ACK pending physical |
 | D. ASUS Linux Installation | `planned` | Install readiness + dual confirm gates only; **no** internal NVMe write yet |
 | E. Persistent Linux Hardware Lab | `planned` | Depends on D + post-install boot evidence |
@@ -17,7 +17,7 @@
 
 | Milestone | Status | Blockers | Next acceptance |
 |-----------|--------|----------|-----------------|
-| MILESTONE A — ASUS Autonomous Rescue Diagnostics | `partial` | Boot3 high-info physical | Stages complete + TUI survives Xorg probe fail |
+| MILESTONE A — ASUS Autonomous Rescue Diagnostics | `partial` | Boot3 high-info physical on carrier 1.10.6.0 | Stages complete + TUI survives Xorg probe fail |
 | MILESTONE B — IONOS Telemetry Loop | `blocked` | TLS/proxy historically flaky; need live ACK | `accepted` + `case_id` + forwarding status |
 | MILESTONE C — Diagnostic Case Correlation | `partial` | Needs ≥2 high-info boots on same payload | persistent/intermittent/resolved labels |
 | MILESTONE D — Linux NVMe Installation | `planned` | Operator dual confirm + readiness=ready | Controlled install on Linux target only |

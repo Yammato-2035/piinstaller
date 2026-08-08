@@ -1,0 +1,12 @@
+{
+  "campaign": "PI-RS-ASUS-HIGHINFO-PHYSICAL-008",
+  "confirmation": 1,
+  "accepted": true,
+  "accepted_at": "2026-08-08T09:24:12.402407+00:00",
+  "device": "/dev/sda",
+  "model": "Intenso Ultra Line",
+  "fingerprint": "ce2e34b7f5ea4e41",
+  "phrase": "BEST\u00c4TIGUNG 1: Carrier 1.10.5.0 \u2192 1.10.6.0 korrekt",
+  "usb_write_allowed": false,
+  "nvme_write_allowed": false
+}

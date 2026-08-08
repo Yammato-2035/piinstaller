@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-HIGHINFO-PHYSICAL-008",
+  "phase": "target_reread_after_confirm1",
+  "generated_at": "2026-08-08T09:24:12.425931+00:00",
+  "current": {
+    "path": "/dev/sda",
+    "vendor": "Intenso",
+    "model": "Ultra Line",
+    "serial": "24111412110212",
+    "size_bytes": 63333990400,
+    "tran": "usb",
+    "rm": true,
+    "fingerprint": "ce2e34b7f5ea4e41",
+    "labels": [
+      "SETUPHELFER",
+      "SETUP_LOGS"
+    ],
+    "mountpoints": [
+      "/media/volker/SETUPHELFER1",
+      "/media/volker/SETUP_LOGS2"
+    ]
+  },
+  "checks": {
+    "path_ok": true,
+    "serial_ok": true,
+    "fingerprint_ok": true,
+    "model_ok": true,
+    "size_ok": true,
+    "tran_usb_ok": true,
+    "removable_ok": true,
+    "labels_ok": true
+  },
+  "identity_confirmed": true,
+  "usb_write_allowed": false,
+  "nvme_write_allowed": false
+}

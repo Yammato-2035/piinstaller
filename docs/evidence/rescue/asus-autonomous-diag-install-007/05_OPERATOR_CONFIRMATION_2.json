@@ -1,0 +1,14 @@
+{
+  "campaign": "PI-RS-ASUS-HIGHINFO-PHYSICAL-008",
+  "confirmation": 2,
+  "accepted": true,
+  "accepted_at": "2026-08-08T09:24:12.442470+00:00",
+  "phrase": "JA, SETUPHELFER-CARRIER SERIAL 24111412110212 / FINGERPRINT ce2e34b7f5ea4e41 AUF PAYLOAD 1.10.6.0 AKTUALISIEREN.",
+  "serial": "24111412110212",
+  "fingerprint": "ce2e34b7f5ea4e41",
+  "payload": "1.10.6.0",
+  "usb_write_allowed": true,
+  "nvme_write_allowed": false,
+  "writer_confirm_phrase": "UPDATE SETUPHELFER FAT32 ESP LIVE PAYLOAD",
+  "grub_confirm_phrase": "UPDATE SETUPHELFER FAT32 ESP GRUB BRANDING"
+}

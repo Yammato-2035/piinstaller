@@ -94,6 +94,10 @@ def apply_grub_branding_on_mount(
     grub_cfg_path = mount_root / "boot" / "grub" / "grub.cfg"
     grub_cfg_path.parent.mkdir(parents=True, exist_ok=True)
     grub_cfg_path.write_text(cfg_text, encoding="utf-8")
+    # Some firmwares load EFI/BOOT/grub.cfg; keep it identical to boot/grub/grub.cfg.
+    efi_grub_cfg_path = mount_root / "EFI" / "BOOT" / "grub.cfg"
+    efi_grub_cfg_path.parent.mkdir(parents=True, exist_ok=True)
+    efi_grub_cfg_path.write_text(cfg_text, encoding="utf-8")
 
     bootx64_path = mount_root / "EFI" / "BOOT" / "BOOTX64.EFI"
     bootx64_meta = build_fat32_esp_bootx64_efi(bootx64_path)

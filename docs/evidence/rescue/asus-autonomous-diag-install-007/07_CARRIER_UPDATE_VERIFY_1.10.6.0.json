@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "campaign": "PI-RS-ASUS-HIGHINFO-PHYSICAL-008",
+  "status": "carrier_1_10_6_0_verified",
+  "generated_at": "2026-08-08T10:33:49.925501+00:00",
+  "target": {
+    "path": "/dev/sda",
+    "vendor": "Intenso",
+    "model": "Ultra Line",
+    "serial": "24111412110212",
+    "size_bytes": 63333990400,
+    "tran": "usb",
+    "rm": true,
+    "fingerprint": "ce2e34b7f5ea4e41"
+  },
+  "payload_version": "1.10.6.0",
+  "squashfs_sha256": "4521968ef8df2e3d35bc44210e3345a0056cfe595a31472720398d95370b57ec",
+  "grub_sha256": "fcc66db6f32231d0875e57e4732320185d28eedad1649c939199a16bb7cc0ec6",
+  "grub_default_menuentry": "menuentry \"ASUS-TUI-BASELINE-HIGHINFO (007 high-info, TUI + Xorg probe)\" {",
+  "checks": {
+    "identity_serial": true,
+    "identity_fingerprint": true,
+    "payload_version": true,
+    "squashfs_sha": true,
+    "grub_highinfo_default_boot": true,
+    "grub_highinfo_default_efi": true,
+    "boot_efi_grub_identical": true,
+    "setup_logs_label": true
+  },
+  "hard_checks_passed": true,
+  "payload_update_evidence": "docs/evidence/runtime-results/rescue/fat32_esp_payload_update_20260808_092424",
+  "grub_update_evidence": "docs/evidence/runtime-results/rescue/fat32_esp_grub_branding_update_20260808_092616",
+  "efi_grub_sync": "copied boot/grub/grub.cfg -> EFI/BOOT/grub.cfg after branding (stale EFI cfg fixed)",
+  "nvme_write_allowed": false,
+  "usb_write_allowed_after": false,
+  "commit_id": "c4cf66b2ee8e79976bc27b369a8c8e32c37dd734"
+}
