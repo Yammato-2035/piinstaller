@@ -1,0 +1,4 @@
+{
+  "install": "sudo DEBIAN_FRONTEND=noninteractive apt-get update\nsudo DEBIAN_FRONTEND=noninteractive apt-get install -y python3.12-venv python3.12-dev\ncd backend\npython3 -m venv venv\n./venv/bin/pip install --upgrade pip\n./venv/bin/pip install -r requirements.txt\n./venv/bin/pip install ruff pytest pytest-asyncio httpx\ncd ../frontend\nnpm ci",
+  "start": "if curl -sf --max-time 2 http://127.0.0.1:8000/health >/dev/null; then echo 'backend already running'; exit 0; fi\ncd /workspace/backend\nnohup ./venv/bin/python -m uvicorn app:app --host 127.0.0.1 --port 8000 >/tmp/setuphelfer-backend.log 2>&1 &\nfor i in $(seq 1 90); do curl -sf --max-time 2 http://127.0.0.1:8000/health && exit 0; sleep 1; done\necho 'backend failed to become ready'; tail -n 80 /tmp/setuphelfer-backend.log || true\nexit 1"
+}

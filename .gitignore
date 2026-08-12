@@ -55,10 +55,12 @@ frontend/src-tauri/target/
 logs/
 *.log
 
-# IDE / Editor (Cursor: Projektregeln unter .cursor/rules/ versionieren)
+# IDE / Editor (Cursor: Projektregeln unter .cursor/rules/ versionieren;
+# Cloud-Agent-Bootstrap unter .cursor/environment.json versionieren)
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
+!.cursor/environment.json
 .idea/
 .vscode/
 *.swp
